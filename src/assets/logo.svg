@@ -1,0 +1,39 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cercle extérieur -->
+  <circle cx="100" cy="100" r="90" fill="#F3F4F6" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- Segments kaleidoscope arc-en-ciel -->
+  <!-- Rouge -->
+  <path d="M100 100 L100 10 A90 90 0 0 1 141.4 58.6 L100 100 Z" fill="#EF4444"/>
+  
+  <!-- Orange -->
+  <path d="M100 100 L141.4 58.6 A90 90 0 0 1 190 100 L100 100 Z" fill="#F97316"/>
+  
+  <!-- Jaune -->
+  <path d="M100 100 L190 100 A90 90 0 0 1 141.4 141.4 L100 100 Z" fill="#EAB308"/>
+  
+  <!-- Vert -->
+  <path d="M100 100 L141.4 141.4 A90 90 0 0 1 100 190 L100 100 Z" fill="#22C55E"/>
+  
+  <!-- Cyan -->
+  <path d="M100 100 L100 190 A90 90 0 0 1 58.6 141.4 L100 100 Z" fill="#06B6D4"/>
+  
+  <!-- Bleu -->
+  <path d="M100 100 L58.6 141.4 A90 90 0 0 1 10 100 L100 100 Z" fill="#3B82F6"/>
+  
+  <!-- Indigo -->
+  <path d="M100 100 L10 100 A90 90 0 0 1 58.6 58.6 L100 100 Z" fill="#6366F1"/>
+  
+  <!-- Violet -->
+  <path d="M100 100 L58.6 58.6 A90 90 0 0 1 100 10 L100 100 Z" fill="#8B5CF6"/>
+  
+  <!-- Cercle intérieur blanc -->
+  <circle cx="100" cy="100" r="50" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- Coeur au centre -->
+  <path d="M100 110 C100 105 95 100 90 100 C85 100 80 105 80 110 C80 120 100 135 100 135 C100 135 120 120 120 110 C120 105 115 100 110 100 C105 100 100 105 100 110 Z" fill="#EF4444" opacity="0.9"/>
+  
+  <!-- Effet de brillance -->
+  <circle cx="85" cy="85" r="8" fill="white" opacity="0.3"/>
+  <circle cx="115" cy="85" r="6" fill="white" opacity="0.2"/>
+</svg>

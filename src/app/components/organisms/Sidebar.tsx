@@ -1,15 +1,11 @@
 'use client';
 
-import { getBgColor, getBgColorLight } from '@/app/utils/colors';
+import { usePathname } from 'next/navigation';
 import FilterButton from '../atoms/FilterButton';
+import Logo from '../atoms/Logo';
+import Link from 'next/link';
 
 interface SidebarProps {
-  bodyparts: Array<{
-    id: number;
-    name: string;
-    count: number;
-    color: string;
-  }>;
   equipments: Array<{
     name: string;
     count: number;
@@ -23,72 +19,88 @@ interface SidebarProps {
   pendingCount: number;
 }
 
-export default function Sidebar({ bodyparts, equipments, selectedEquipment, onEquipmentSelect, statusFilter, onStatusFilterChange, totalExercices, completedCount, pendingCount }: SidebarProps) {
+export default function Sidebar({ equipments, selectedEquipment, onEquipmentSelect, statusFilter, onStatusFilterChange, totalExercices, completedCount, pendingCount }: SidebarProps) {
+  const pathname = usePathname();
+  
   return (
     <header className="w-60 border-r border-gray-200 flex flex-col p-4 h-screen overflow-y-auto">
-      <h1 className="text-xl font-semibold text-gray-900 mb-8">Réeduc' Calypso</h1>
+      <Logo size={50} className="mb-8" />
       
+      <div className="mb-8">
+        <nav className="flex flex-col gap-2">
+          <Link 
+            href="/" 
+            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              pathname === '/' 
+                ? 'text-gray-900 bg-blue-50 border border-blue-200' 
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            Exercices
+          </Link>
+          <Link 
+            href="/historique" 
+            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              pathname === '/historique' 
+                ? 'text-gray-900 bg-blue-50 border border-blue-200' 
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            Historique
+          </Link>
+        </nav>
+      </div>
    
 
-      <div className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-between">
-          <span>Exercices</span>
-        </h2>
-        <ul className="flex flex-col items-start space-y-2">
-          {bodyparts.map((data: { id: number; name: string; color: string; count: number }) => (
-            <li key={`${data?.id}-${data.name}`} className="w-full hover:text-white">
-              <a className={`w-full flex items-center justify-between gap-2 ${getBgColor(data.color, true)} hover:text-white ${getBgColorLight(data.color, false)} transition-colors duration-300 rounded px-2 py-1`} href={`#${data.name}`}>
-                <div className={`text-sm  rounded-md px-2 py-1`}>{data.name} </div>
-                <div className={`text-sm pr-1`}>{data?.count || ''}</div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
 
       <div className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Statut</h2>
-        <div className="flex flex-col gap-2">
-          <FilterButton
-            isActive={statusFilter === 'all'}
-            onClick={() => onStatusFilterChange('all')}
-            label="Tous"
-            count={totalExercices}
-          />
+        <h2 className="text-sm font-semibold text-gray-700 mb-3">Filtres</h2>
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">Statut</h3>
+            <div className="flex flex-col gap-2">
+              <FilterButton
+                isActive={statusFilter === 'all'}
+                onClick={() => onStatusFilterChange('all')}
+                label="Tous"
+                count={totalExercices}
+              />
 
-          <FilterButton
-            isActive={statusFilter === 'completed'}
-            onClick={() => onStatusFilterChange('completed')}
-            label="Complétés"
-            count={completedCount}
-          />
+              <FilterButton
+                isActive={statusFilter === 'completed'}
+                onClick={() => onStatusFilterChange('completed')}
+                label="Complétés"
+                count={completedCount}
+              />
 
-          <FilterButton
-            isActive={statusFilter === 'pending'}
-            onClick={() => onStatusFilterChange('pending')}
-            label="À compléter"
-            count={pendingCount}
-          />
-        </div>
-      </div>
+              <FilterButton
+                isActive={statusFilter === 'pending'}
+                onClick={() => onStatusFilterChange('pending')}
+                label="À compléter"
+                count={pendingCount}
+              />
+            </div>
+          </div>
 
-      <div>
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Équipement</h2>
-        <div className="flex flex-col gap-2">
-          <FilterButton
-            isActive={selectedEquipment === null}
-            onClick={() => onEquipmentSelect(null)}
-            label="Tous"
-          />
-          {equipments.map((equipment) => (
-            <FilterButton
-              key={equipment.name}
-              isActive={selectedEquipment === equipment.name}
-              onClick={() => onEquipmentSelect(equipment.name)}
-              label={equipment.name}
-              count={equipment.count}
-            />
-          ))}
+          <div>
+            <h3 className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">Équipement</h3>
+            <div className="flex flex-col gap-2">
+              <FilterButton
+                isActive={selectedEquipment === null}
+                onClick={() => onEquipmentSelect(null)}
+                label="Tous"
+              />
+              {equipments.map((equipment) => (
+                <FilterButton
+                  key={equipment.name}
+                  isActive={selectedEquipment === equipment.name}
+                  onClick={() => onEquipmentSelect(equipment.name)}
+                  label={equipment.name}
+                  count={equipment.count}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

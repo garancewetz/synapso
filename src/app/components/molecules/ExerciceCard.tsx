@@ -44,25 +44,54 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted, bodypa
     };
 
     return (
-        <div className="overflow-hidden relative p-5 border border-gray-300 rounded-lg transition-shadow bg-white grid grid-rows-[auto_1fr_auto] gap-4 text-gray-900">
-            
-         
-            {/* En haut : tags bodypart/equipment à gauche, boutons à droite */}
-            <div className={`  z-10 flex items-start justify-between z-20`}
-            >
-
-                <div className="flex flex-wrap gap-2">
-                    {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart: any, index: number) => (
-                        <Tag key={index} color={bodypart.color} className=" transition-all">
-                            {bodypart.name}
-                        </Tag>
-                    ))}
-
+        <div className="overflow-hidden relative p-6 border border-gray-200 rounded-lg transition-all bg-white hover:shadow-lg shadow-sm hover:border-gray-300 text-gray-900 min-h-[100px]">
+            <div className="flex items-center justify-between gap-6 h-full">
+                {/* Partie gauche : Titre et informations principales */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div className="flex items-center gap-3 mb-3">
+                        <h2 className="text-xl font-bold">{exercice.name}</h2>
+                        {exercice.completed && <span className="text-emerald-600 text-lg">✓</span>}
+                    </div>
+                    
+                    <p className="text-gray-600 mb-3 leading-relaxed">{exercice.description.text}</p>
+                    
+                    {exercice.description.comment && (
+                        <Alert className="mb-3">{exercice.description.comment}</Alert>
+                    )}
+                    
+                    {/* Tags compacts en ligne */}
+                    <div className="flex flex-wrap gap-2">
+                        {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart: any, index: number) => (
+                            <Tag key={index} color={bodypart.color} className="text-sm">
+                                {bodypart.name}
+                            </Tag>
+                        ))}
+                        
+                        {exercice.equipments && exercice.equipments.length > 0 &&
+                            exercice.equipments.map((equipment: string, index: number) => (
+                                <Tag key={index} className="text-sm">
+                                    {equipment}
+                                </Tag>
+                            ))
+                        }
+                        
+                        {exercice.workout.series && exercice.workout.series > 1 && (
+                            <Tag className="text-sm">Séries: {exercice.workout.series}</Tag>
+                        )}
+                        {exercice.workout.repeat && (
+                            <Tag className="text-sm">Répétitions: {exercice.workout.repeat}x</Tag>
+                        )}
+                        {exercice.workout.duration && (
+                            <Tag className="text-sm">{exercice.workout.duration}</Tag>
+                        )}
+                    </div>
                 </div>
-                <div className="flex gap-4 items-center">
+
+                {/* Partie droite : Boutons d'action */}
+                <div className="flex flex-col gap-3 items-center flex-shrink-0">
                     <button
                         onClick={handleEdit}
-                        className=" transition-colors cursor-pointer"
+                        className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                         title="Modifier"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,39 +99,18 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted, bodypa
                         </svg>
                     </button>
                     <button
-                onClick={handleComplete}
-                disabled={isCompleting}
-                className={`cursor-pointer w-8 h-8 flex justify-center items-center p-1 z-20 border rounded-md  ${exercice.completed ? ' text-white bg-emerald-500 border-emerald-500 scale-[1.3]': 'text-gray-800 '} hover:text-white hover:bg-emerald-500 hover:border-emerald-500 hover:scale-[1.3] duration-300`}
-                title={exercice.completed ? 'Complété' : 'Marquer comme complété'}
-            >
-               <div className="text">{isCompleting ? '...' : exercice.completed ? '✓' : '✓'}</div>
-            </button>
-     
-
-
+                        onClick={handleComplete}
+                        disabled={isCompleting}
+                        className={`w-10 h-10 flex justify-center items-center rounded-lg border transition-all ${
+                            exercice.completed 
+                                ? 'text-white bg-emerald-500 border-emerald-500 scale-105' 
+                                : 'text-gray-600 border-gray-300 hover:text-white hover:bg-emerald-500 hover:border-emerald-500 hover:scale-105'
+                        }`}
+                        title={exercice.completed ? 'Complété' : 'Marquer comme complété'}
+                    >
+                        <span className="text-lg font-bold">{isCompleting ? '...' : '✓'}</span>
+                    </button>
                 </div>
-            </div>
-
-            {/* Au milieu : titre, description et alertes - centré verticalement */}
-            <div className={`  relative z-10 flex flex-col mt-4`}>
-                <h2 className="text-xl font-bold  transition-colors">{exercice.name} {exercice.completed ? '✓' : ''}</h2>
-                <p className=" my-3 transition-colors">{exercice.description.text}</p>
-                {exercice.description.comment && <Alert className="peer-hover:bg-transparent  transition-all">{exercice.description.comment}</Alert>}
-
-            </div>
-
-            {/* En bas : tags workout et équipement */}
-            <div className={` relative z-10 flex flex-wrap gap-2`}>
-                {exercice.equipments && exercice.equipments.length > 0 &&
-                    exercice.equipments.map((equipment: string, index: number) => (
-                        <Tag key={index} className="peer-hover:bg-transparent  transition-all">
-                            {equipment}
-                        </Tag>
-                    ))
-                }
-                {exercice.workout.series && exercice.workout.series > 1 && <Tag className="peer-hover:bg-transparent peer-hover:text-white  transition-all">Séries: {exercice.workout.series}</Tag>}
-                {exercice.workout.repeat && <Tag className="peer-hover:bg-transparent  transition-all">Répétitions: {exercice.workout.repeat}x</Tag>}
-                {exercice.workout.duration && <Tag className="peer-hover:bg-transparent  transition-all">{exercice.workout.duration}</Tag>}
             </div>
         </div>
     );

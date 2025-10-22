@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import HistorySidebar from '@/app/components/organisms/HistorySidebar';
 import Tag from '@/app/components/atoms/Tag';
+import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
 interface HistoryEntry {
   id: number;
@@ -23,6 +24,7 @@ export default function HistoriquePage() {
     thisMonth: 0,
     byBodypart: {} as Record<string, number>,
   });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
   const fetchHistory = () => {
@@ -111,35 +113,41 @@ export default function HistoriquePage() {
     <div className="mx-auto min-h-screen">
       <main>
         <div className="flex">
-          <HistorySidebar />
-          <div className="flex-1 h-screen flex flex-col">
+          <HistorySidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <div className="flex-1 h-screen flex flex-col lg:ml-0">
             <div className="border-b border-gray-200">
-              <div className="flex justify-between items-center px-4 pt-4">
-                <h1 className="text-2xl font-bold text-gray-900">Historique</h1>
+              <div className="flex justify-between items-center p-4">
+                <div className="flex items-center gap-3">
+                  <HamburgerMenu 
+                    isOpen={isSidebarOpen} 
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                  />
+                  <h1 className="text-2xl font-bold text-gray-900">Historique</h1>
+                </div>
               </div>
             </div>
 
 
-            <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Total</h3>
-                  <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+            <div className="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Total</h3>
+                  <p className="text-xl sm:text-3xl font-bold text-gray-900">{stats.total}</p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Cette semaine</h3>
-                  <p className="text-3xl font-bold text-blue-600">{stats.thisWeek}</p>
+                <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Cette semaine</h3>
+                  <p className="text-xl sm:text-3xl font-bold text-blue-600">{stats.thisWeek}</p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Ce mois</h3>
-                  <p className="text-3xl font-bold text-green-600">{stats.thisMonth}</p>
+                <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Ce mois</h3>
+                  <p className="text-xl sm:text-3xl font-bold text-green-600">{stats.thisMonth}</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Partie la plus travaillée</h3>
-                  <p className="text-xl font-bold text-purple-600">
+                <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Partie la plus travaillée</h3>
+                  <p className="text-sm sm:text-xl font-bold text-purple-600">
                     {Object.keys(stats.byBodypart).length > 0
                       ? Object.entries(stats.byBodypart).sort((a, b) => b[1] - a[1])[0][0]
                       : '-'}
@@ -147,53 +155,53 @@ export default function HistoriquePage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Répartition par partie du corps</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Répartition par partie du corps</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {Object.entries(stats.byBodypart)
                     .sort((a, b) => b[1] - a[1])
                     .map(([name, count]) => (
                       <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span className="font-medium text-gray-700">{name}</span>
-                        <span className="text-lg font-bold text-gray-900">{count}</span>
+                        <span className="font-medium text-gray-700 text-sm sm:text-base">{name}</span>
+                        <span className="text-base sm:text-lg font-bold text-gray-900">{count}</span>
                       </div>
                     ))}
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Historique détaillé</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Historique détaillé</h2>
                 
                 {Object.keys(groupedHistory).length === 0 ? (
-                  <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-                    <p className="text-gray-500">Aucun exercice complété pour le moment</p>
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center">
+                    <p className="text-gray-500 text-sm sm:text-base">Aucun exercice complété pour le moment</p>
                   </div>
                 ) : (
                   Object.entries(groupedHistory).map(([date, entries]) => (
-                    <div key={date} className="bg-white rounded-lg border border-gray-200 p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 capitalize">{date}</h3>
-                      <div className="gap-3 grid grid-cols-2">
+                    <div key={date} className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 capitalize">{date}</h3>
+                      <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                         {entries.map((entry) => (
                           <div
                             key={entry.id}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                           >
                             <div className="flex-1">
-                              <h4 className="font-medium text-gray-900 mb-2">{entry.exercice.name}</h4>
-                              <div className="flex flex-wrap gap-2">
+                              <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">{entry.exercice.name}</h4>
+                              <div className="flex flex-wrap gap-1 sm:gap-2">
                                 {entry.exercice.bodyparts.map((bp) => (
-                                  <Tag key={bp.id} color={bp.color}>
+                                  <Tag key={bp.id} color={bp.color} className="text-xs sm:text-sm">
                                     {bp.name}
                                   </Tag>
                                 ))}
                                 {entry.exercice.equipments.map((equipment: string) => (
-                                  <Tag key={equipment}>
+                                  <Tag key={equipment} className="text-xs sm:text-sm">
                                     {equipment}
                                   </Tag>
                                 ))}
                               </div>
                             </div>
-                            <span className="text-sm text-gray-500 ml-4">
+                            <span className="text-xs sm:text-sm text-gray-500 ml-2 sm:ml-4">
                               {new Date(entry.completedAt).toLocaleTimeString('fr-FR', {
                                 hour: '2-digit',
                                 minute: '2-digit',

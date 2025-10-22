@@ -24,7 +24,7 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
       
       {/* Nom de l'application */}
       <div className="text-center">
-        <h1 className="text-xl font-bold text-gray-900">Re-volution</h1>
+        <h1 className="text-xl font-bold text-gray-900">Synapso</h1>
       </div>
     </div>
   );

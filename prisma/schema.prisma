@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Exercice {
+  id              Int      @id @default(autoincrement())
+  name            String
+  descriptionText String
+  descriptionComment String?
+  workoutRepeat   Int?
+  workoutSeries   Int?
+  workoutDuration String?
+  equipments      String   // Stocké en JSON string
+  bodyparts       ExerciceBodypart[]
+  history         History[]
+  completed       Boolean  @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Bodypart {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  color     String
+  exercices ExerciceBodypart[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExerciceBodypart {
+  exerciceId Int
+  bodypartId Int
+  exercice   Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
+  bodypart   Bodypart @relation(fields: [bodypartId], references: [id], onDelete: Cascade)
+
+  @@id([exerciceId, bodypartId])
+}
+
+model History {
+  id          Int      @id @default(autoincrement())
+  exerciceId  Int
+  exercice    Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}

@@ -56,10 +56,6 @@ Synapso est une application de rééducation qui permet de :
 ### Étapes
 
 1. **Cloner le repository** (si applicable)
-   ```bash
-   git clone <repository-url>
-   cd reedu-calypso
-   ```
 
 2. **Installer les dépendances**
    ```bash

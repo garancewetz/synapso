@@ -52,36 +52,9 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   }
 
   return (
-    <div className="mx-auto min-h-screen">
-      <div className="flex">
-        <Sidebar 
-          equipments={dummyEquipments}
-          selectedEquipment={null}
-          onEquipmentSelect={() => {}}
-          statusFilter="all"
-          onStatusFilterChange={() => {}}
-          totalExercices={0}
-          completedCount={0}
-          pendingCount={0}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
-        <div className="flex-1 h-screen flex flex-col lg:ml-0">
-          <div className="border-b border-gray-200">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 gap-2">
-              <div className="flex items-center gap-3">
-                <HamburgerMenu 
-                  isOpen={isSidebarOpen} 
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                />
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Modifier l'exercice</h1>
-              </div>
-              <p className="text-sm sm:text-base text-gray-600">Modifiez les informations de cet exercice</p>
-            </div>
-          </div>
-          <div className="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+
+          <div className="p-3 sm:p-6 bg-gray-50">
+              <div className="bg-white rounded-lg border border-gray-200">
                 <div className="p-4 sm:p-6">
                   <ExerciceForm
                     exerciceId={exerciceId}
@@ -89,11 +62,9 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
                     onCancel={handleCancel}
                   />
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
+    
   );
 }
+

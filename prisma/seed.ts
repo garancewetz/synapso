@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import exercicesData from '../src/app/datas/exercices.json';
+import exercicesData from '../src/datas/exercices.json';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +9,7 @@ async function main() {
   // Supprime toutes les données existantes
   await prisma.exercice.deleteMany();
   await prisma.bodypart.deleteMany();
+  await prisma.aphasieItem.deleteMany();
 
   // Extraire toutes les parties du corps uniques
   const allBodyparts = new Set<string>();
@@ -77,6 +78,42 @@ async function main() {
   }
 
   console.log(`✅ ${exercicesData.length} exercices ont été importés avec succès !`);
+
+  // Insère les items d'aphasie initiaux
+  console.log('💬 Insertion des items d\'aphasie...');
+  const aphasieItems = [
+    {
+      quote: "Le fachichme",
+      meaning: "Le fascisme",
+      date: "Octobre 2025",
+      comment: null,
+    },
+    {
+      quote: "C'est aluné",
+      meaning: "C'est annulé",
+      date: null,
+      comment: "",
+    },
+    {
+      quote: "Les mirketenshock",
+      meaning: "Les birtkenstock",
+      date: null,
+      comment: "",
+    },
+  ];
+
+  for (const item of aphasieItems) {
+    await prisma.aphasieItem.create({
+      data: {
+        quote: item.quote,
+        meaning: item.meaning,
+        date: item.date || null,
+        comment: item.comment || null,
+      },
+    });
+  }
+
+  console.log(`✅ ${aphasieItems.length} items d'aphasie ont été importés avec succès !`);
 }
 
 main()

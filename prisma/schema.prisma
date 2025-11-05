@@ -52,3 +52,13 @@ model History {
   completedAt DateTime @default(now())
   createdAt   DateTime @default(now())
 }
+
+model AphasieItem {
+  id        Int       @id @default(autoincrement())
+  quote     String
+  meaning   String
+  date      String?
+  comment   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

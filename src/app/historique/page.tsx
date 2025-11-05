@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import HistorySidebar from '@/app/components/organisms/HistorySidebar';
 import Tag from '@/app/components/atoms/Tag';
 import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
@@ -110,25 +109,9 @@ export default function HistoriquePage() {
   const groupedHistory = groupByDate();
 
   return (
-    <div className="mx-auto min-h-screen">
-      <main>
-        <div className="flex">
-          <HistorySidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-          <div className="flex-1 h-screen flex flex-col lg:ml-0">
-            <div className="border-b border-gray-200">
-              <div className="flex justify-between items-center p-4">
-                <div className="flex items-center gap-3">
-                  <HamburgerMenu 
-                    isOpen={isSidebarOpen} 
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                  />
-                  <h1 className="text-2xl font-bold text-gray-900">Historique</h1>
-                </div>
-              </div>
-            </div>
+   
 
-
-            <div className="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50">
+            <div className="p-3 sm:p-6 bg-gray-50">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                   <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Total</h3>
@@ -215,9 +198,6 @@ export default function HistoriquePage() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
+   
   );
 }

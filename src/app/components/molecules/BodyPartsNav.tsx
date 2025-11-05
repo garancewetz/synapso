@@ -1,6 +1,6 @@
 'use client';
 
-import { getBgColor, getBgColorLight } from '@/app/utils/colors';
+import { getBgColor, getBgColorLight } from '@/utils/colors';
 
 interface BodyPartsNavProps {
   bodyparts: Array<{
@@ -13,7 +13,7 @@ interface BodyPartsNavProps {
 
 export default function BodyPartsNav({ bodyparts }: BodyPartsNavProps) {
   return (
-    <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-3">
+    <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-3 sticky top-0 z-10">
       <div className="flex items-center gap-2 overflow-x-auto">
         <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap mr-2">Parties du corps :</span>
         <div className="flex gap-1 sm:gap-2">

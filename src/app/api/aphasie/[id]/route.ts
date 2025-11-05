@@ -1,0 +1,80 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
+    
+    const item = await prisma.aphasieItem.findUnique({
+      where: { id },
+    });
+    
+    if (!item) {
+      return NextResponse.json(
+        { error: 'Aphasie item not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(item);
+  } catch (error) {
+    console.error('Error fetching aphasie item:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch aphasie item' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
+    const updatedData = await request.json();
+
+    const item = await prisma.aphasieItem.update({
+      where: { id },
+      data: {
+        quote: updatedData.quote,
+        meaning: updatedData.meaning,
+        date: updatedData.date || null,
+        comment: updatedData.comment || null,
+      },
+    });
+
+    return NextResponse.json(item);
+  } catch (error) {
+    console.error('Error updating aphasie item:', error);
+    return NextResponse.json(
+      { error: 'Failed to update aphasie item' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
+    
+    await prisma.aphasieItem.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting aphasie item:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete aphasie item' },
+      { status: 500 }
+    );
+  }
+}
+

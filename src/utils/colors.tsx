@@ -119,3 +119,4 @@ const getBgColor = (color: string, hover: boolean = false) => {
 }
 
 export { getBgColorLight, getBgColor };
+

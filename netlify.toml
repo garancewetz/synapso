@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Plugin Next.js pour Netlify
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Variables d'environnement (à configurer dans le dashboard Netlify)
+# DATABASE_URL - Connection string PostgreSQL
+# EXERCISE_EDIT_PASSWORD - Mot de passe admin
+

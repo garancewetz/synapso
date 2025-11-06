@@ -6,34 +6,34 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Exercice {
-  id              Int      @id @default(autoincrement())
-  name            String
-  descriptionText String
+  id                 Int                @id @default(autoincrement())
+  name               String
+  descriptionText    String
   descriptionComment String?
-  workoutRepeat   Int?
-  workoutSeries   Int?
-  workoutDuration String?
-  equipments      String   // Stocké en JSON string
-  bodyparts       ExerciceBodypart[]
-  history         History[]
-  completed       Boolean  @default(false)
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  workoutRepeat      Int?
+  workoutSeries      Int?
+  workoutDuration    String?
+  equipments         String // Stocké en JSON string
+  bodyparts          ExerciceBodypart[]
+  history            History[]
+  completed          Boolean            @default(false)
+  completedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 }
 
 model Bodypart {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        Int                @id @default(autoincrement())
+  name      String             @unique
   color     String
   exercices ExerciceBodypart[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 }
 
 model ExerciceBodypart {
@@ -54,13 +54,13 @@ model History {
 }
 
 model AphasieItem {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   quote     String
   meaning   String
   date      String?
   comment   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tache {

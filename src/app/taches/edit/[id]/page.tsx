@@ -1,11 +1,13 @@
 'use client';
 
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import TacheForm from '@/app/components/organisms/TacheForm';
 
-export default function TachesEditPage({ params }: { params: { id: string } }) {
+export default function TachesEditPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const tacheId = parseInt(params.id);
+  const { id } = use(params);
+  const tacheId = parseInt(id);
 
   const handleSuccess = () => {
     router.push('/taches');

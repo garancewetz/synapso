@@ -1,19 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceForm from '@/app/components/organisms/ExerciceForm';
 import Sidebar from '@/app/components/organisms/Sidebar';
 import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
 interface AdminEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function AdminEditPage({ params }: AdminEditPageProps) {
-  const [exerciceId, setExerciceId] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
 
@@ -21,17 +20,13 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   const dummyEquipments = [{ name: 'Aucun', count: 0 }];
 
   // Extraire l'ID de l'exercice depuis les paramètres
-  const id = params?.id ? parseInt(params.id) : null;
+  const { id } = use(params);
+  const exerciceId = id ? parseInt(id) : null;
 
-  useEffect(() => {
-    // Vérifier que l'ID est valide
-    if (id && !isNaN(id)) {
-      setExerciceId(id);
-    } else if (params?.id) {
-      // Si params.id existe mais n'est pas un nombre valide, rediriger
-      router.push('/');
-    }
-  }, [id, router, params?.id]);
+  if (!exerciceId || isNaN(exerciceId)) {
+    router.push('/');
+    return null;
+  }
 
   const handleSuccess = () => {
     router.push('/');
@@ -40,16 +35,6 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   const handleCancel = () => {
     router.push('/');
   };
-
-  if (!exerciceId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
 

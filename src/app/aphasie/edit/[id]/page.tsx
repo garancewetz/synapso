@@ -1,28 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import AphasieForm from '@/app/components/organisms/AphasieForm';
 
 interface AphasieEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function AphasieEditPage({ params }: AphasieEditPageProps) {
-  const [itemId, setItemId] = useState<number | null>(null);
   const router = useRouter();
+  const { id } = use(params);
+  const itemId = id ? parseInt(id) : null;
 
-  const id = params?.id ? parseInt(params.id) : null;
-
-  useEffect(() => {
-    if (id && !isNaN(id)) {
-      setItemId(id);
-    } else if (params?.id) {
-      router.push('/aphasie');
-    }
-  }, [id, router, params?.id]);
+  if (!itemId || isNaN(itemId)) {
+    router.push('/aphasie');
+    return null;
+  }
 
   const handleSuccess = () => {
     router.push('/aphasie');
@@ -31,16 +27,6 @@ export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   const handleCancel = () => {
     router.push('/aphasie');
   };
-
-  if (!itemId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-3 sm:p-6 bg-gray-50">

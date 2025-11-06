@@ -1,0 +1,640 @@
+[
+  {
+    "id": 1,
+    "name": "Papillon",
+    "descriptionText": "sur le dos, genoux écartés. On écarte les deux genoux vers droite et gauche.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Lit\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.901Z",
+    "updatedAt": "2025-11-05T06:56:53.901Z",
+    "bodyparts": [
+      {
+        "exerciceId": 1,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Torsion",
+    "descriptionText": "Sur le dos, genoux ensemble. Droite et gauche.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Lit\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.908Z",
+    "updatedAt": "2025-11-05T06:56:53.908Z",
+    "bodyparts": [
+      {
+        "exerciceId": 2,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Montée de genoux",
+    "descriptionText": "Allongée, montée de genoux vers la poitrine, alterner droite et gauche",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Lit\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.921Z",
+    "updatedAt": "2025-11-05T06:56:53.921Z",
+    "bodyparts": [
+      {
+        "exerciceId": 3,
+        "bodypartId": 43,
+        "bodypart": {
+          "id": 43,
+          "name": "Corps",
+          "color": "amber",
+          "createdAt": "2025-11-05T06:56:53.877Z",
+          "updatedAt": "2025-11-05T06:56:53.877Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Le pont",
+    "descriptionText": "Décoller fesses du lit, genoux pliés.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Lit\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.928Z",
+    "updatedAt": "2025-11-05T06:56:53.928Z",
+    "bodyparts": [
+      {
+        "exerciceId": 4,
+        "bodypartId": 41,
+        "bodypart": {
+          "id": 41,
+          "name": "Bassin",
+          "color": "cyan",
+          "createdAt": "2025-11-05T06:56:53.869Z",
+          "updatedAt": "2025-11-05T06:56:53.869Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Assis / Debout",
+    "descriptionText": "Descendre très lentement",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 4,
+    "workoutDuration": null,
+    "equipments": "[\"Chaise\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.934Z",
+    "updatedAt": "2025-11-05T06:56:53.934Z",
+    "bodyparts": [
+      {
+        "exerciceId": 5,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Levée de bâton (paume vers le bas)",
+    "descriptionText": "Les deux mains attrapent le bâton au milieu et le lève le plus haut possible.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Bâton\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.940Z",
+    "updatedAt": "2025-11-05T06:56:53.940Z",
+    "bodyparts": [
+      {
+        "exerciceId": 6,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Levée de bâton (paume vers le haut)",
+    "descriptionText": "Les deux mains attrapent le bâton au milieu et le lève vers la poitrine en pliant les coudes.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Bâton\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.947Z",
+    "updatedAt": "2025-11-05T06:56:53.947Z",
+    "bodyparts": [
+      {
+        "exerciceId": 7,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Etirer les bras",
+    "descriptionText": "Attraper une rambarde et reculer les pieds, se pencher en avant. Compter jusqu'à 100.",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Rambarde\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.952Z",
+    "updatedAt": "2025-11-05T06:56:53.952Z",
+    "bodyparts": [
+      {
+        "exerciceId": 8,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Escaliers",
+    "descriptionText": "Monter et descendre les escaliers sur un étage",
+    "descriptionComment": "Bonus: Tout faire avec le côté droit",
+    "workoutRepeat": 2,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Escaliers\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.958Z",
+    "updatedAt": "2025-11-05T06:56:53.958Z",
+    "bodyparts": [
+      {
+        "exerciceId": 9,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Ouvrir et fermer la main",
+    "descriptionText": "Serrer la main puis l'ouvrir et la relâcher.",
+    "descriptionComment": null,
+    "workoutRepeat": 30,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.965Z",
+    "updatedAt": "2025-11-05T06:56:53.965Z",
+    "bodyparts": [
+      {
+        "exerciceId": 10,
+        "bodypartId": 48,
+        "bodypart": {
+          "id": 48,
+          "name": "Mains",
+          "color": "lime",
+          "createdAt": "2025-11-05T06:56:53.896Z",
+          "updatedAt": "2025-11-05T06:56:53.896Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Etirer la main",
+    "descriptionText": "Etirer la main vers l'arrière.",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": "90 secondes",
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.969Z",
+    "updatedAt": "2025-11-05T06:56:53.969Z",
+    "bodyparts": [
+      {
+        "exerciceId": 11,
+        "bodypartId": 48,
+        "bodypart": {
+          "id": 48,
+          "name": "Mains",
+          "color": "lime",
+          "createdAt": "2025-11-05T06:56:53.896Z",
+          "updatedAt": "2025-11-05T06:56:53.896Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Etirer la main sur la table",
+    "descriptionText": "Etirer la main vers l'arrière sur la table, bras tendu.",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": "90 secondes",
+    "equipments": "[\"Table\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.974Z",
+    "updatedAt": "2025-11-05T06:56:53.974Z",
+    "bodyparts": [
+      {
+        "exerciceId": 12,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      },
+      {
+        "exerciceId": 12,
+        "bodypartId": 48,
+        "bodypart": {
+          "id": 48,
+          "name": "Mains",
+          "color": "lime",
+          "createdAt": "2025-11-05T06:56:53.896Z",
+          "updatedAt": "2025-11-05T06:56:53.896Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Inclinaison de la tête",
+    "descriptionText": "Tourner et incliner la tête vers la gauche.",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.983Z",
+    "updatedAt": "2025-11-05T06:56:53.983Z",
+    "bodyparts": [
+      {
+        "exerciceId": 13,
+        "bodypartId": 45,
+        "bodypart": {
+          "id": 45,
+          "name": "Epaules",
+          "color": "emerald",
+          "createdAt": "2025-11-05T06:56:53.885Z",
+          "updatedAt": "2025-11-05T06:56:53.885Z"
+        }
+      },
+      {
+        "exerciceId": 13,
+        "bodypartId": 49,
+        "bodypart": {
+          "id": 49,
+          "name": "Nuque / Cervicales",
+          "color": "indigo",
+          "createdAt": "2025-11-05T06:56:53.899Z",
+          "updatedAt": "2025-11-05T06:56:53.899Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Squat accrochée au balcon",
+    "descriptionText": "Squat accrochée au balcon. 70% jambes, 30% bras. Descendre le plus bas possible.",
+    "descriptionComment": "Rechercher l'échec",
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": "90 secondes",
+    "equipments": "[\"Rambarde\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:53.991Z",
+    "updatedAt": "2025-11-05T06:56:53.991Z",
+    "bodyparts": [
+      {
+        "exerciceId": 14,
+        "bodypartId": 44,
+        "bodypart": {
+          "id": 44,
+          "name": "Dos",
+          "color": "blue",
+          "createdAt": "2025-11-05T06:56:53.883Z",
+          "updatedAt": "2025-11-05T06:56:53.883Z"
+        }
+      },
+      {
+        "exerciceId": 14,
+        "bodypartId": 46,
+        "bodypart": {
+          "id": 46,
+          "name": "Fessier",
+          "color": "teal",
+          "createdAt": "2025-11-05T06:56:53.889Z",
+          "updatedAt": "2025-11-05T06:56:53.889Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Pompes accrochée au balcon",
+    "descriptionText": "Pompes bras inclinés.",
+    "descriptionComment": "Plus on recule, plus c'est difficile.",
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Rambarde\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.001Z",
+    "updatedAt": "2025-11-05T06:56:54.001Z",
+    "bodyparts": [
+      {
+        "exerciceId": 15,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      },
+      {
+        "exerciceId": 15,
+        "bodypartId": 44,
+        "bodypart": {
+          "id": 44,
+          "name": "Dos",
+          "color": "blue",
+          "createdAt": "2025-11-05T06:56:53.883Z",
+          "updatedAt": "2025-11-05T06:56:53.883Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Equilibre sur une jambe",
+    "descriptionText": "",
+    "descriptionComment": "Se tenir si nécessaire.",
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": "30 secondes chaque jambe",
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.011Z",
+    "updatedAt": "2025-11-05T06:56:54.011Z",
+    "bodyparts": [
+      {
+        "exerciceId": 16,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Levée de genoux",
+    "descriptionText": "Debout à côté d'une porte, lever le genoux et tenir 30 secondes. Alterner. ",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": "30 secondes",
+    "equipments": "[\"Porte\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.016Z",
+    "updatedAt": "2025-11-05T06:56:54.016Z",
+    "bodyparts": [
+      {
+        "exerciceId": 17,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Montée et descente de genoux",
+    "descriptionText": "Debout à côté d'une porte, montée et descente de genoux, alterner droit et gauche. Puis, 10x coups de pieds vers l'arrière, 10x coups de pieds vers le côté (jambe tendu).",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Porte\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.022Z",
+    "updatedAt": "2025-11-05T06:56:54.022Z",
+    "bodyparts": [
+      {
+        "exerciceId": 18,
+        "bodypartId": 47,
+        "bodypart": {
+          "id": 47,
+          "name": "Jambes",
+          "color": "yellow",
+          "createdAt": "2025-11-05T06:56:53.893Z",
+          "updatedAt": "2025-11-05T06:56:53.893Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Montée d'épaules",
+    "descriptionText": "Monter la pointe des épaules vers les oreilles le plus haut possible.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.028Z",
+    "updatedAt": "2025-11-05T06:56:54.028Z",
+    "bodyparts": [
+      {
+        "exerciceId": 19,
+        "bodypartId": 45,
+        "bodypart": {
+          "id": 45,
+          "name": "Epaules",
+          "color": "emerald",
+          "createdAt": "2025-11-05T06:56:53.885Z",
+          "updatedAt": "2025-11-05T06:56:53.885Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Etirement des doigts",
+    "descriptionText": "Orienter les doigts vers la cuisse, tendre le bras et étirer pendannt 2 minutes. ",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": "120 secondes",
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.033Z",
+    "updatedAt": "2025-11-05T06:56:54.033Z",
+    "bodyparts": [
+      {
+        "exerciceId": 20,
+        "bodypartId": 48,
+        "bodypart": {
+          "id": 48,
+          "name": "Mains",
+          "color": "lime",
+          "createdAt": "2025-11-05T06:56:53.896Z",
+          "updatedAt": "2025-11-05T06:56:53.896Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Etirement de la nuque",
+    "descriptionText": "Avec la main gauche, attraper la tempe droite et pencher la tête et RESPIRER. ",
+    "descriptionComment": null,
+    "workoutRepeat": 1,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.038Z",
+    "updatedAt": "2025-11-05T06:56:54.038Z",
+    "bodyparts": [
+      {
+        "exerciceId": 21,
+        "bodypartId": 49,
+        "bodypart": {
+          "id": 49,
+          "name": "Nuque / Cervicales",
+          "color": "indigo",
+          "createdAt": "2025-11-05T06:56:53.899Z",
+          "updatedAt": "2025-11-05T06:56:53.899Z"
+        }
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Pliage du coude",
+    "descriptionText": "Allonger, plier le coude et déplier tout doucement en forçant sur l'extension.",
+    "descriptionComment": null,
+    "workoutRepeat": 10,
+    "workoutSeries": 1,
+    "workoutDuration": null,
+    "equipments": "[\"Lit\"]",
+    "completed": false,
+    "completedAt": null,
+    "createdAt": "2025-11-05T06:56:54.043Z",
+    "updatedAt": "2025-11-05T06:56:54.043Z",
+    "bodyparts": [
+      {
+        "exerciceId": 22,
+        "bodypartId": 42,
+        "bodypart": {
+          "id": 42,
+          "name": "Bras",
+          "color": "rose",
+          "createdAt": "2025-11-05T06:56:53.873Z",
+          "updatedAt": "2025-11-05T06:56:53.873Z"
+        }
+      }
+    ]
+  }
+]

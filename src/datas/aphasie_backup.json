@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "quote": "Le fachichme",
+    "meaning": "Le fascisme",
+    "date": "Octobre 2025",
+    "comment": null,
+    "createdAt": "2025-11-05T06:56:54.048Z",
+    "updatedAt": "2025-11-05T06:56:54.048Z"
+  },
+  {
+    "id": 2,
+    "quote": "C'est aluné",
+    "meaning": "C'est annulé",
+    "date": "Juillet 2025",
+    "comment": null,
+    "createdAt": "2025-11-05T06:56:54.050Z",
+    "updatedAt": "2025-11-05T07:21:54.146Z"
+  },
+  {
+    "id": 3,
+    "quote": "Les mirketenshock",
+    "meaning": "Les birtkenstock",
+    "date": "Juillet 2025",
+    "comment": "À Arles",
+    "createdAt": "2025-11-05T06:56:54.052Z",
+    "updatedAt": "2025-11-05T07:17:04.944Z"
+  },
+  {
+    "id": 4,
+    "quote": "Tu dois contacter la vodka",
+    "meaning": "Tu dois contacter l'avocat",
+    "date": "Septembre 2025",
+    "comment": "Phrase adressée à Laure",
+    "createdAt": "2025-11-05T07:15:54.373Z",
+    "updatedAt": "2025-11-05T07:15:54.373Z"
+  }
+]

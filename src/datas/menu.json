@@ -1,0 +1,98 @@
+[
+  {
+    "label": "Exercices",
+    "href": "/",
+    "title": "Exercices",
+    "subtitle": null,
+    "button": {
+      "href": "/exercice/add",
+      "label": "Ajouter un exercice",
+      "labelMobile": "+"
+    },
+    "children": [
+      {
+        "label": "Historique",
+        "href": "/historique",
+        "title": "Historique",
+        "subtitle": null,
+        "button": {
+          "href": "/exercice/add",
+          "label": "Ajouter un exercice",
+          "labelMobile": "+"
+        }
+      },
+      {
+        "label": "Ajouter un exercice",
+        "href": "/exercice/add",
+        "title": "Ajouter un exercice",
+        "subtitle": "Créez un nouvel exercice pour votre programme d'entraînement",
+        "button": null
+      }
+    ],
+    "editRoutes": [
+      {
+        "pattern": "/exercice/edit/",
+        "title": "Modifier l'exercice",
+        "subtitle": null,
+        "button": {
+          "href": "/exercice/add",
+          "label": "Ajouter un exercice",
+          "labelMobile": "+"
+        }
+      }
+    ]
+  },
+  {
+    "label": "Aphasie",
+    "href": "/aphasie",
+    "title": "Aphasie",
+    "subtitle": null,
+    "button": {
+      "href": "/aphasie/add",
+      "label": "Ajouter une citation",
+      "labelMobile": null
+    },
+    "children": [
+      {
+        "label": "Ajouter une citation",
+        "href": "/aphasie/add",
+        "title": "Ajouter une citation",
+        "subtitle": "Créez une nouvelle citation pour votre liste d'aphasie",
+        "button": null
+      }
+    ],
+    "editRoutes": [
+      {
+        "pattern": "/aphasie/edit/",
+        "title": "Modifier la citation",
+        "subtitle": null,
+        "button": {
+          "href": "/aphasie/add",
+          "label": "Ajouter une citation",
+          "labelMobile": null
+        }
+      }
+    ]
+  },
+  {
+    "label": "Liste de tâches",
+    "href": "/taches",
+    "title": "Liste de tâches",
+    "subtitle": null,
+    "button": {
+      "href": "/taches/add",
+      "label": "Ajouter une tâche",
+      "labelMobile": "+"
+    },
+    "children": [
+      {
+        "label": "Ajouter une tâche",
+        "href": "/taches/add",
+        "title": "Ajouter une tâche",
+        "subtitle": null,
+        "button": null
+      }
+    ],
+    "editRoutes": []
+  }
+]

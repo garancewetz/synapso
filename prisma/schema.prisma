@@ -62,3 +62,14 @@ model AphasieItem {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
+model Tache {
+  id         Int      @id @default(autoincrement())
+  title      String
+  url        String
+  identifier String
+  password   String
+  isMonthly  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

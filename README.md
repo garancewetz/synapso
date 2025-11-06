@@ -20,7 +20,7 @@ Synapso est une application de rééducation qui permet de :
 - Filtres par équipement et par statut (tous/complétés/à compléter)
 - Compteurs en temps réel (total, complétés, à compléter)
 - Marquage des exercices comme complétés (réinitialisable chaque jour)
-- Actions admin protégées par mot de passe (ajout/modification)
+- Actions admin directes (ajout/modification sans mot de passe supplémentaire)
 
 ### Page Historique
 - Statistiques globales :
@@ -36,13 +36,13 @@ Synapso est une application de rééducation qui permet de :
 - Liste des citations avec leur signification correcte
 - Affichage des dates et commentaires associés
 - Tri par date (plus récentes en premier)
-- Actions admin protégées par mot de passe (ajout/modification)
+- Actions admin directes (ajout/modification sans mot de passe supplémentaire)
 
 ## 🛠️ Stack technique
 
 - **Framework** : Next.js 15.5.6 (App Router)
 - **Langage** : TypeScript
-- **Base de données** : SQLite avec Prisma ORM
+- **Base de données** : PostgreSQL (Neon) avec Prisma ORM
 - **Styling** : Tailwind CSS 4
 - **Animations** : Framer Motion
 - **Runtime** : Node.js
@@ -66,14 +66,22 @@ Synapso est une application de rééducation qui permet de :
    
    Créez un fichier `.env` à la racine du projet :
    ```env
-   DATABASE_URL="file:./prisma/dev.db"
-   EXERCISE_EDIT_PASSWORD="votre_mot_de_passe_admin"
+   # Base de données PostgreSQL (Neon)
+   DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require&schema=public"
+   
+   # Mot de passe pour accéder au site
+   SITE_PASSWORD="votre_mot_de_passe_site"
    ```
+   
+   Pour obtenir une connection string Neon :
+   - Allez sur [neon.tech](https://neon.tech) et créez un compte
+   - Créez un nouveau projet
+   - Copiez la connection string depuis le dashboard
 
 4. **Initialiser la base de données**
    ```bash
    npm run db:generate
-   npm run db:migrate
+   npm run db:push
    npm run db:seed
    ```
 
@@ -98,6 +106,9 @@ Synapso est une application de rééducation qui permet de :
 - `npm run db:seed` : Initialise la base de données avec des données de test
 - `npm run db:reset` : Réinitialise la base de données (supprime toutes les données et réapplique les migrations)
 - `npm run db:push` : Pousse les changements du schéma vers la base de données sans migration
+- `npm run db:backup` : Exporte toutes les tables Prisma dans des fichiers JSON de backup
+- `npm run db:import` : Importe les données depuis les fichiers de backup JSON
+- `npm run db:migrate:deploy` : Applique les migrations en production
 
 ## 🗄️ Structure de la base de données
 
@@ -108,18 +119,21 @@ Synapso est une application de rééducation qui permet de :
 - **ExerciceBodypart** : Relation many-to-many entre exercices et parties du corps
 - **History** : Historique des exercices complétés avec date et heure
 - **AphasieItem** : Journal des erreurs d'aphasie (citations avec leur signification correcte, date et commentaire)
+- **Tache** : Tâches récurrentes avec lien, identifiant, mot de passe et récurrence mensuelle
 
 ## 🔐 Sécurité
 
-Les actions d'administration (ajout et modification d'exercices/items d'aphasie) sont protégées par un système de mot de passe. Le mot de passe est stocké dans la variable d'environnement `EXERCISE_EDIT_PASSWORD`.
+L'application est protégée par un mot de passe global. Le mot de passe est stocké dans la variable d'environnement `SITE_PASSWORD`. Une fois authentifié, l'utilisateur peut accéder à toutes les fonctionnalités sans mot de passe supplémentaire.
 
 ## 📁 Structure du projet
 
 ```
-reedu-calypso/
+synapso/
 ├── prisma/
 │   ├── schema.prisma          # Schéma de base de données
 │   ├── seed.ts                 # Script d'initialisation des données
+│   ├── backup.ts               # Script de backup des données
+│   ├── import-backup.ts        # Script d'import des données depuis backup
 │   └── migrations/             # Migrations de base de données
 ├── src/
 │   ├── app/
@@ -127,9 +141,10 @@ reedu-calypso/
 │   │   ├── components/         # Composants React (atoms, molecules, organisms)
 │   │   ├── aphasie/            # Pages pour la gestion d'aphasie
 │   │   ├── exercice/           # Pages pour la gestion d'exercices
+│   │   ├── taches/              # Pages pour la gestion des tâches
 │   │   ├── historique/         # Page d'historique
 │   │   └── page.tsx            # Page d'accueil
-│   ├── datas/                  # Fichiers JSON de données initiales
+│   ├── datas/                  # Fichiers JSON de données initiales et backups
 │   ├── lib/                    # Utilitaires (Prisma client)
 │   └── utils/                  # Fonctions utilitaires
 └── public/                     # Fichiers statiques
@@ -144,19 +159,35 @@ L'application suit une architecture atomique :
 
 ## 📝 Notes de développement
 
-- L'application utilise SQLite pour la base de données, ce qui est idéal pour le développement et les déploiements simples
+- L'application utilise PostgreSQL (Neon) pour la base de données, idéal pour le développement et la production
 - Les exercices peuvent être complétés chaque jour (réinitialisation automatique)
 - Les données initiales sont chargées depuis des fichiers JSON dans `src/datas/`
 - Le système de couleurs pour les parties du corps est défini dans le script de seed
+- Les backups peuvent être créés avec `npm run db:backup` et restaurés avec `npm run db:import`
 
 ## 🚢 Déploiement
 
-Pour déployer en production :
-1. Configurez votre base de données (SQLite ou autre base de données supportée par Prisma)
-2. Mettez à jour la `DATABASE_URL` dans les variables d'environnement
-3. Configurez `EXERCISE_EDIT_PASSWORD` pour la sécurité
-4. Exécutez `npm run build` pour compiler l'application
-5. Exécutez `npm run start` pour lancer le serveur de production
+Pour déployer en production sur Netlify :
+
+1. **Créez une base de données PostgreSQL** sur [Neon](https://neon.tech)
+   - Créez un compte et un nouveau projet
+   - Copiez la connection string
+
+2. **Configurez les variables d'environnement sur Netlify**
+   - `DATABASE_URL` : votre connection string PostgreSQL (avec `&schema=public` à la fin)
+   - `SITE_PASSWORD` : votre mot de passe pour accéder au site
+
+3. **Déployez sur Netlify**
+   - Connectez votre repository GitHub à Netlify
+   - Netlify détectera automatiquement la configuration dans `netlify.toml`
+   - Le build inclut automatiquement `prisma generate`
+
+4. **Exécutez les migrations** (après le premier déploiement)
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+Pour plus de détails, consultez le fichier `DEPLOY.md`.
 
 ## 📄 Licence
 

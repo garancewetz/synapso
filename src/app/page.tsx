@@ -6,7 +6,6 @@ import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import Sidebar from '@/app/components/organisms/Sidebar';
 import BodyPartsNav from '@/app/components/molecules/BodyPartsNav';
 import Button from '@/app/components/atoms/Button';
-import PasswordModal from '@/app/components/atoms/PasswordModal';
 import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 import FiltersExercices from '@/app/components/organisms/FiltersExercices';
 
@@ -16,9 +15,6 @@ export default function Home() {
   const [exercices, setExercices] = useState<any[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'add' | 'edit' | null>(null);
-  const [pendingId, setPendingId] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
 
@@ -145,32 +141,11 @@ export default function Home() {
   }
 
   const handleEditClick = (id: number) => {
-    setPendingAction('edit');
-    setPendingId(id);
-    setShowPasswordModal(true);
+    router.push(`/exercice/edit/${id}`);
   };
 
   const handleAddClick = () => {
-    setPendingAction('add');
-    setPendingId(null);
-    setShowPasswordModal(true);
-  };
-
-  const handlePasswordSuccess = () => {
-    if (pendingAction === 'add') {
-      router.push('/exercice/add');
-    } else if (pendingAction === 'edit' && pendingId) {
-      router.push(`/exercice/edit/${pendingId}`);
-    }
-    setShowPasswordModal(false);
-    setPendingAction(null);
-    setPendingId(null);
-  };
-
-  const handlePasswordModalClose = () => {
-    setShowPasswordModal(false);
-    setPendingAction(null);
-    setPendingId(null);
+    router.push('/exercice/add');
   };
 
   const handleCompleted = () => {
@@ -265,12 +240,6 @@ export default function Home() {
         </div>
       </div>
 
-      <PasswordModal
-        isOpen={showPasswordModal}
-        onClose={handlePasswordModalClose}
-        onSuccess={handlePasswordSuccess}
-        title={pendingAction === 'add' ? 'Accès Admin - Ajouter un exercice' : 'Accès Admin - Modifier un exercice'}
-      />
     </section>
   );
 }

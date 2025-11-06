@@ -2,15 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import PasswordModal from '@/app/components/atoms/PasswordModal';
 import Button from '@/app/components/atoms/Button';
 import TacheCard from '@/app/components/molecules/TacheCard';
 
 export default function TachesPage() {
   const [taches, setTaches] = useState<any[]>([]);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'add' | 'edit' | 'delete' | null>(null);
-  const [pendingId, setPendingId] = useState<number | null>(null);
   const router = useRouter();
 
   const fetchTaches = () => {
@@ -35,70 +31,29 @@ export default function TachesPage() {
   }, []);
 
   const handleEditClick = (id: number) => {
-    setPendingAction('edit');
-    setPendingId(id);
-    setShowPasswordModal(true);
+    router.push(`/taches/edit/${id}`);
   };
 
-  const handleDeleteClick = (id: number) => {
-    setPendingAction('delete');
-    setPendingId(id);
-    setShowPasswordModal(true);
+  const handleDeleteClick = async (id: number) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+      try {
+        const response = await fetch(`/api/taches/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          fetchTaches();
+        } else {
+          console.error('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+      }
+    }
   };
 
   const handleAddClick = () => {
-    setPendingAction('add');
-    setPendingId(null);
-    setShowPasswordModal(true);
-  };
-
-  const handlePasswordSuccess = async () => {
-    if (pendingAction === 'add') {
-      router.push('/taches/add');
-      setShowPasswordModal(false);
-      setPendingAction(null);
-      setPendingId(null);
-    } else if (pendingAction === 'edit' && pendingId) {
-      router.push(`/taches/edit/${pendingId}`);
-      setShowPasswordModal(false);
-      setPendingAction(null);
-      setPendingId(null);
-    } else if (pendingAction === 'delete' && pendingId) {
-      const idToDelete = pendingId;
-      setShowPasswordModal(false);
-      setPendingAction(null);
-      setPendingId(null);
-      await handleDelete(idToDelete);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      const response = await fetch(`/api/taches/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        fetchTaches();
-      } else {
-        console.error('Erreur lors de la suppression');
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
-  const handlePasswordModalClose = () => {
-    setShowPasswordModal(false);
-    setPendingAction(null);
-    setPendingId(null);
-  };
-
-  const getModalTitle = () => {
-    if (pendingAction === 'add') return 'Accès Admin - Ajouter une tâche';
-    if (pendingAction === 'edit') return 'Accès Admin - Modifier une tâche';
-    if (pendingAction === 'delete') return 'Accès Admin - Supprimer une tâche';
-    return '';
+    router.push('/taches/add');
   };
 
   return (
@@ -131,12 +86,6 @@ export default function TachesPage() {
         )}
       </div>
 
-      <PasswordModal
-        isOpen={showPasswordModal}
-        onClose={handlePasswordModalClose}
-        onSuccess={handlePasswordSuccess}
-        title={getModalTitle()}
-      />
     </div>
   );
 }

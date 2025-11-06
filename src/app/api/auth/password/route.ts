@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const { password } = await request.json();
     
-    const expectedPassword = process.env.EXERCISE_EDIT_PASSWORD;
+    const expectedPassword = process.env.SITE_PASSWORD;
     
     if (!expectedPassword) {
       return NextResponse.json(

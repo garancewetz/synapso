@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import PasswordModal from '@/app/components/atoms/PasswordModal';
 import Button from '@/app/components/atoms/Button';
 
 export default function AphasiePage() {
   const [items, setItems] = useState<any[]>([]);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'add' | 'edit' | null>(null);
-  const [pendingId, setPendingId] = useState<number | null>(null);
   const router = useRouter();
 
   const fetchItems = () => {
@@ -41,32 +37,11 @@ export default function AphasiePage() {
   }, []);
 
   const handleEditClick = (id: number) => {
-    setPendingAction('edit');
-    setPendingId(id);
-    setShowPasswordModal(true);
+    router.push(`/aphasie/edit/${id}`);
   };
 
   const handleAddClick = () => {
-    setPendingAction('add');
-    setPendingId(null);
-    setShowPasswordModal(true);
-  };
-
-  const handlePasswordSuccess = () => {
-    if (pendingAction === 'add') {
-      router.push('/aphasie/add');
-    } else if (pendingAction === 'edit' && pendingId) {
-      router.push(`/aphasie/edit/${pendingId}`);
-    }
-    setShowPasswordModal(false);
-    setPendingAction(null);
-    setPendingId(null);
-  };
-
-  const handlePasswordModalClose = () => {
-    setShowPasswordModal(false);
-    setPendingAction(null);
-    setPendingId(null);
+    router.push('/aphasie/add');
   };
 
   return (
@@ -96,12 +71,6 @@ export default function AphasiePage() {
         ))}
       </ul>
 
-      <PasswordModal
-        isOpen={showPasswordModal}
-        onClose={handlePasswordModalClose}
-        onSuccess={handlePasswordSuccess}
-        title={pendingAction === 'add' ? 'Accès Admin - Ajouter un item d\'aphasie' : 'Accès Admin - Modifier un item d\'aphasie'}
-      />
     </div>
   );
 }

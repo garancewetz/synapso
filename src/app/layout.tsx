@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/app/components/organisms/Sidebar";
 import UpBar from "@/app/components/organisms/UpBar";
+import SiteProtection from "@/app/components/organisms/SiteProtection";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,15 +22,17 @@ export default function RootLayout({
       <body
         className={` antialiased flex`}
       >
-        <Sidebar />
-        <main className="flex-1 mx-auto min-h-screen max-h-screen overflow-auto">
-          <div className="flex-1">
-            <UpBar />
-        
-            
-            {children}
-          </div>
-        </main>
+        <SiteProtection>
+          <Sidebar />
+          <main className="flex-1 mx-auto min-h-screen max-h-screen overflow-auto">
+            <div className="flex-1">
+              <UpBar />
+          
+              
+              {children}
+            </div>
+          </main>
+        </SiteProtection>
       </body>
     </html>
   );

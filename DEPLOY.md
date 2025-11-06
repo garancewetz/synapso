@@ -9,21 +9,37 @@ Ce guide vous explique comment déployer l'application Synapso sur Netlify avec 
 
 ## 🗄️ Étape 1: Créer une base de données PostgreSQL
 
-### Option A: Supabase (Recommandé)
+### Option A: Neon (Recommandé - Le plus simple)
 
-1. Allez sur [supabase.com](https://supabase.com) et créez un compte
-2. Créez un nouveau projet
-3. Allez dans **Settings** → **Database**
-4. Copiez la **Connection string** (URI) qui ressemble à:
+1. Allez sur [neon.tech](https://neon.tech) et créez un compte (GitHub, Google, etc.)
+2. Cliquez sur **"Create a project"**
+3. Donnez un nom à votre projet (ex: "synapso")
+4. Sélectionnez une région (ex: Europe)
+5. Cliquez sur **"Create project"**
+6. Une fois créé, allez dans le dashboard et copiez la **"Connection string"**
+7. Elle ressemble à:
+   ```
+   postgresql://[user]:[password]@[host]/[database]?sslmode=require
+   ```
+8. Ajoutez `&schema=public` à la fin pour obtenir:
+   ```
+   postgresql://[user]:[password]@[host]/[database]?sslmode=require&schema=public
+   ```
+
+### Option B: Supabase
+
+**⚠️ Important**: Si vous voyez "You do not have permission to create a project", vous devez créer votre propre organisation :
+1. Allez sur [app.supabase.com](https://app.supabase.com)
+2. Cliquez sur votre profil (en bas à gauche) → **Settings**
+3. Allez dans **Organizations**
+4. Cliquez sur **"New Organization"**
+5. Créez une nouvelle organisation avec votre nom
+6. Créez ensuite un nouveau projet dans cette organisation
+7. Allez dans **Settings** → **Database**
+8. Copiez la **Connection string** (URI) qui ressemble à:
    ```
    postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
    ```
-
-### Option B: Neon
-
-1. Allez sur [neon.tech](https://neon.tech) et créez un compte
-2. Créez un nouveau projet
-3. Copiez la **Connection string** depuis le dashboard
 
 ## 🔧 Étape 2: Configurer le projet localement
 
@@ -38,8 +54,8 @@ Ce guide vous explique comment déployer l'application Synapso sur Netlify avec 
    DATABASE_URL_SQLITE="file:./prisma/dev.db"
    DATABASE_URL_POSTGRES="postgresql://user:password@host:port/database?schema=public"
    
-   # Mot de passe admin
-   EXERCISE_EDIT_PASSWORD="votre_mot_de_passe_admin"
+   # Mot de passe pour accéder au site
+   SITE_PASSWORD="votre_mot_de_passe_site"
    ```
 
 3. **Générez le client Prisma**:
@@ -73,7 +89,7 @@ Ce guide vous explique comment déployer l'application Synapso sur Netlify avec 
    - Allez dans **Site settings** → **Environment variables**
    - Ajoutez:
      - `DATABASE_URL`: votre connection string PostgreSQL
-     - `EXERCISE_EDIT_PASSWORD`: votre mot de passe admin
+     - `SITE_PASSWORD`: votre mot de passe pour accéder au site
 
 4. **Configurez les commandes de build** (déjà dans `netlify.toml`):
    - Build command: `npm run build`
@@ -103,7 +119,7 @@ Ce guide vous explique comment déployer l'application Synapso sur Netlify avec 
 4. **Configurez les variables d'environnement**:
    ```bash
    netlify env:set DATABASE_URL "postgresql://..."
-   netlify env:set EXERCISE_EDIT_PASSWORD "votre_mot_de_passe"
+   netlify env:set SITE_PASSWORD "votre_mot_de_passe"
    ```
 
 5. **Déployez**:
@@ -161,7 +177,7 @@ npx prisma migrate deploy
 ## 🔐 Sécurité
 
 - ⚠️ **Ne commitez jamais** votre `.env` ou `.env.local`
-- ⚠️ Utilisez des mots de passe forts pour `EXERCISE_EDIT_PASSWORD`
+- ⚠️ Utilisez des mots de passe forts pour `SITE_PASSWORD`
 - ⚠️ Gardez votre `DATABASE_URL` privée (utilisez les variables d'environnement Netlify)
 
 ## 📝 Notes

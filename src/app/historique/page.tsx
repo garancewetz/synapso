@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Tag from '@/app/components/atoms/Tag';
-import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
 interface HistoryEntry {
   id: number;
@@ -23,28 +22,9 @@ export default function HistoriquePage() {
     thisMonth: 0,
     byBodypart: {} as Record<string, number>,
   });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
-  const fetchHistory = () => {
-    fetch('/api/history')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setHistory(data);
-          calculateStats(data);
-        } else {
-          console.error('API error:', data);
-          setHistory([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setHistory([]);
-      });
-  };
-
-  const calculateStats = (data: HistoryEntry[]) => {
+  const calculateStats = useCallback((data: HistoryEntry[]) => {
     const now = new Date();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
@@ -78,11 +58,29 @@ export default function HistoriquePage() {
       thisMonth,
       byBodypart,
     });
-  };
+  }, []);
+
+  const fetchHistory = useCallback(() => {
+    fetch('/api/history')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setHistory(data);
+          calculateStats(data);
+        } else {
+          console.error('API error:', data);
+          setHistory([]);
+        }
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        setHistory([]);
+      });
+  }, [calculateStats]);
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [fetchHistory]);
 
 
 

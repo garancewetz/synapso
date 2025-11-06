@@ -41,7 +41,7 @@ export async function GET(
         duration: exercice.workoutDuration,
       },
       equipments: JSON.parse(exercice.equipments),
-      bodyparts: exercice.bodyparts.map((eb: any) => ({
+      bodyparts: exercice.bodyparts.map((eb) => ({
         id: eb.bodypart.id,
         name: eb.bodypart.name,
         color: eb.bodypart.color,
@@ -70,7 +70,7 @@ export async function PUT(
     const updatedData = await request.json();
 
     // Mettre à jour l'exercice
-    const exercice = await prisma.exercice.update({
+    await prisma.exercice.update({
       where: { id },
       data: {
         name: updatedData.name,
@@ -133,7 +133,7 @@ export async function PUT(
         duration: exerciceWithRelations!.workoutDuration,
       },
       equipments: JSON.parse(exerciceWithRelations!.equipments),
-      bodyparts: exerciceWithRelations!.bodyparts.map((eb: any) => ({
+      bodyparts: exerciceWithRelations!.bodyparts.map((eb) => ({
         id: eb.bodypart.id,
         name: eb.bodypart.name,
         color: eb.bodypart.color,

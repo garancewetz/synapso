@@ -2,10 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/app/components/atoms/Button';
+
+interface AphasieItem {
+  id: number;
+  quote: string;
+  meaning: string;
+  date: string | null;
+  comment: string | null;
+  createdAt: string;
+}
 
 export default function AphasiePage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<AphasieItem[]>([]);
   const router = useRouter();
 
   const fetchItems = () => {
@@ -38,10 +46,6 @@ export default function AphasiePage() {
 
   const handleEditClick = (id: number) => {
     router.push(`/aphasie/edit/${id}`);
-  };
-
-  const handleAddClick = () => {
-    router.push('/aphasie/add');
   };
 
   return (

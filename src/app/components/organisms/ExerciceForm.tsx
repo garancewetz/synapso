@@ -55,12 +55,12 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
             workoutSeries: data.workout?.series?.toString() || '',
             workoutDuration: data.workout?.duration || '',
             equipments: data.equipments || [],
-            bodyparts: data.bodyparts ? data.bodyparts.map((bp: any) => bp.name) : [],
+            bodyparts: data.bodyparts ? data.bodyparts.map((bp: { name: string }) => bp.name) : [],
           });
         })
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
-          setError('Erreur lors du chargement de l\'exercice');
+          setError('Erreur lors du chargement de l&apos;exercice');
         });
     }
   }, [exerciceId]);
@@ -198,7 +198,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Nom de l'exercice *
+          Nom de l&apos;exercice *
         </label>
         <input
           type="text"
@@ -381,7 +381,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
                 : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-300'
             }`}
           >
-            {showDeleteConfirm ? '⚠️ Confirmer la suppression' : 'Supprimer l\'exercice'}
+            {showDeleteConfirm ? '⚠️ Confirmer la suppression' : 'Supprimer l&apos;exercice'}
           </button>
         )}
       </div>

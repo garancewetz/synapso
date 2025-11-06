@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AphasieForm from '@/app/components/organisms/AphasieForm';
 

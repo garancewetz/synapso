@@ -43,7 +43,7 @@ export default function UpBar() {
     );
   };
 
-  const findRouteInfo = (path: string): { title: string; subtitle: string | null; button: any } | null => {
+  const findRouteInfo = (path: string): { title: string; subtitle: string | null; button: { href: string; label: string; labelMobile: string | null } | null } | null => {
     // Chercher dans les routes d'édition d'abord
     for (const menuItem of menuData as MenuItem[]) {
       if (menuItem.editRoutes) {

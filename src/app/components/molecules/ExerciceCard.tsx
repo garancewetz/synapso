@@ -2,18 +2,47 @@
 
 import { useState } from "react";
 import Tag from "../atoms/Tag";
-import Alert from "../atoms/Alert";
-import { getBgColor, getBgColorLight } from "@/utils/colors";
+
+interface Bodypart {
+  id: number;
+  name: string;
+  color: string;
+}
+
+interface Exercice {
+  id: number;
+  name: string;
+  description: {
+    text: string;
+    comment: string | null;
+  };
+  workout: {
+    repeat: number | null;
+    series: number | null;
+    duration: string | null;
+  };
+  equipments: string[];
+  bodyparts: Bodypart[];
+  completed: boolean;
+  completedAt: Date | null;
+}
+
+interface BodypartSection {
+  id: number;
+  name: string;
+  color: string;
+  count: number;
+}
 
 interface ExerciceCardProps {
     id: number;
-    exercice: any;
+    exercice: Exercice;
     onEdit?: (id: number) => void;
     onCompleted?: () => void;
-    bodypartSection: any;
+    bodypartSection: BodypartSection;
 }
 
-export default function ExerciceCard({ id, exercice, onEdit, onCompleted, bodypartSection }: ExerciceCardProps) {
+export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: ExerciceCardProps) {
     const [isCompleting, setIsCompleting] = useState(false);
 
     const handleEdit = () => {
@@ -51,7 +80,7 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted, bodypa
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 mb-2">
                         <h2 className="text-base sm:text-lg font-bold">{exercice.name}</h2>
                         <div className="flex flex-wrap gap-1.5">
-                            {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart: any, index: number) => (
+                            {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart, index: number) => (
                                 <Tag key={index} color={bodypart.color} className="text-xs">
                                     {bodypart.name}
                                 </Tag>

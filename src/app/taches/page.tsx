@@ -5,8 +5,17 @@ import { useRouter } from 'next/navigation';
 import Button from '@/app/components/atoms/Button';
 import TacheCard from '@/app/components/molecules/TacheCard';
 
+interface Tache {
+  id: number;
+  title: string;
+  url: string;
+  identifier: string;
+  password: string;
+  isMonthly: boolean;
+}
+
 export default function TachesPage() {
-  const [taches, setTaches] = useState<any[]>([]);
+  const [taches, setTaches] = useState<Tache[]>([]);
   const router = useRouter();
 
   const fetchTaches = () => {
@@ -69,7 +78,7 @@ export default function TachesPage() {
         {taches.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p>Aucune tâche pour le moment.</p>
-            <p className="text-sm mt-2">Cliquez sur "Ajouter une tâche" pour en créer une.</p>
+            <p className="text-sm mt-2">Cliquez sur &quot;Ajouter une tâche&quot; pour en créer une.</p>
           </div>
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">

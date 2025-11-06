@@ -1,7 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+interface HistoryEntry {
+  id: number;
+  completedAt: Date;
+  exercice: {
+    id: number;
+    name: string;
+    descriptionText: string;
+    descriptionComment: string | null;
+    workoutRepeat: number | null;
+    workoutSeries: number | null;
+    workoutDuration: string | null;
+    equipments: string;
+    bodyparts: Array<{
+      exerciceId: number;
+      bodypartId: number;
+      bodypart: {
+        id: number;
+        name: string;
+        color: string;
+      };
+    }>;
+  };
+}
+
+export async function GET() {
   try {
     const history = await prisma.history.findMany({
       include: {
@@ -16,10 +40,10 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { completedAt: 'desc' },
-    });
+    }) as HistoryEntry[];
 
     // Reformater les données
-    const formattedHistory = history.map((entry: any) => ({
+    const formattedHistory = history.map((entry) => ({
       id: entry.id,
       completedAt: entry.completedAt,
       exercice: {
@@ -35,7 +59,7 @@ export async function GET(request: NextRequest) {
           duration: entry.exercice.workoutDuration,
         },
         equipments: JSON.parse(entry.exercice.equipments),
-        bodyparts: entry.exercice.bodyparts.map((eb: any) => ({
+        bodyparts: entry.exercice.bodyparts.map((eb) => ({
           id: eb.bodypart.id,
           name: eb.bodypart.name,
           color: eb.bodypart.color,

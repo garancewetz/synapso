@@ -22,7 +22,9 @@ export default function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; 
       {/* Sidebar */}
       <header className={`fixed lg:static inset-y-0 left-0 z-50 w-60 border-r border-gray-200 flex flex-col p-4 h-screen overflow-y-auto bg-white transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}>
-        <Logo size={50} className="mb-8" />
+          <Link href="/">
+            <Logo size={50} className="mb-8" />
+          </Link>
 
         <div className="mb-8">
           <nav className="flex flex-col gap-2">

@@ -1,10 +1,8 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceForm from '@/app/components/organisms/ExerciceForm';
-import Sidebar from '@/app/components/organisms/Sidebar';
-import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
 interface AdminEditPageProps {
   params: Promise<{
@@ -13,11 +11,7 @@ interface AdminEditPageProps {
 }
 
 export default function AdminEditPage({ params }: AdminEditPageProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
-
-  // Données factices pour la sidebar (non utilisées dans les pages admin)
-  const dummyEquipments = [{ name: 'Aucun', count: 0 }];
 
   // Extraire l'ID de l'exercice depuis les paramètres
   const { id } = use(params);

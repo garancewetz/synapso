@@ -1,7 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+interface ExerciceWithBodyparts {
+  id: number;
+  name: string;
+  descriptionText: string;
+  descriptionComment: string | null;
+  workoutRepeat: number | null;
+  workoutSeries: number | null;
+  workoutDuration: string | null;
+  equipments: string;
+  completed: boolean;
+  completedAt: Date | null;
+  bodyparts: Array<{
+    exerciceId: number;
+    bodypartId: number;
+    bodypart: {
+      id: number;
+      name: string;
+      color: string;
+    };
+  }>;
+}
+
+export async function GET() {
   try {
     const exercices = await prisma.exercice.findMany({
       include: {
@@ -12,10 +34,10 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { id: 'asc' },
-    });
+    }) as ExerciceWithBodyparts[];
 
     // Reformater les données pour correspondre à l'ancien format
-    const formattedExercices = exercices.map((exercice: any) => {
+    const formattedExercices = exercices.map((exercice) => {
       // Vérifier si l'exercice a été complété aujourd'hui
       let completedToday = false;
       if (exercice.completedAt) {
@@ -40,7 +62,7 @@ export async function GET(request: NextRequest) {
           duration: exercice.workoutDuration,
         },
         equipments: JSON.parse(exercice.equipments),
-        bodyparts: exercice.bodyparts.map((eb: any) => ({
+        bodyparts: exercice.bodyparts.map((eb) => ({
           id: eb.bodypart.id,
           name: eb.bodypart.name,
           color: eb.bodypart.color,
@@ -122,7 +144,7 @@ export async function POST(request: NextRequest) {
         duration: exerciceWithRelations!.workoutDuration,
       },
       equipments: JSON.parse(exerciceWithRelations!.equipments),
-      bodyparts: exerciceWithRelations!.bodyparts.map((eb: any) => ({
+      bodyparts: exerciceWithRelations!.bodyparts.map((eb) => ({
         id: eb.bodypart.id,
         name: eb.bodypart.name,
         color: eb.bodypart.color,

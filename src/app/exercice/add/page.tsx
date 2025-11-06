@@ -1,17 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceForm from '@/app/components/organisms/ExerciceForm';
-import Sidebar from '@/app/components/organisms/Sidebar';
-import HamburgerMenu from '@/app/components/atoms/HamburgerMenu';
 
 export default function AdminAddPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Données factices pour la sidebar (non utilisées dans les pages admin)
-  const dummyEquipments = [{ name: 'Aucun', count: 0 }];
 
   const handleSuccess = () => {
     router.push('/');

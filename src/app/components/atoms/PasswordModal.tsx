@@ -33,7 +33,7 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
         setError('Mot de passe incorrect');
         setPassword('');
       }
-    } catch (error) {
+    } catch {
       setError('Erreur lors de la vérification du mot de passe');
     }
   };

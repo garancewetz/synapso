@@ -17,13 +17,13 @@ export async function GET() {
     });
 
     const equipmentsSet = new Set<string>();
-    exercices.forEach((exercice: any) => {
-      const equipments = JSON.parse(exercice.equipments);
+    exercices.forEach((exercice) => {
+      const equipments = JSON.parse(exercice.equipments) as string[];
       equipments.forEach((eq: string) => equipmentsSet.add(eq));
     });
 
     return NextResponse.json({
-      bodyparts: bodyparts.map((bp: any) => bp.name),
+      bodyparts: bodyparts.map((bp) => bp.name),
       equipments: Array.from(equipmentsSet).sort(),
     });
   } catch (error) {

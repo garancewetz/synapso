@@ -16,7 +16,7 @@ interface FiltersExercicesProps {
     onClose?: () => void;
   }
 
-export default function FiltersExercices({ equipments, selectedEquipment, onEquipmentSelect, statusFilter, onStatusFilterChange, totalExercices, completedCount, pendingCount, isOpen = true, onClose }: FiltersExercicesProps) {
+export default function FiltersExercices({ equipments, selectedEquipment, onEquipmentSelect, statusFilter, onStatusFilterChange, totalExercices, completedCount, pendingCount }: FiltersExercicesProps) {
   return (
     <div>
         <div className="mb-8">

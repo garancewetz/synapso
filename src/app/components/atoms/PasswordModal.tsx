@@ -11,6 +11,7 @@ interface PasswordModalProps {
 
 export default function PasswordModal({ isOpen, onClose, onSuccess, title }: PasswordModalProps) {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,10 +58,12 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Mot de passe requis
+              Mot de passe
             </label>
+            <div className="relative">
+
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -68,22 +71,25 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
               placeholder="Entrez le mot de passe"
               autoFocus
             />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              onClick={() => setShowPassword((previous) => !previous)}
+              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+            </div>
             {error && (
               <p className="mt-2 text-sm text-red-600">{error}</p>
             )}
           </div>
           
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-            >
-              Annuler
-            </button>
+          
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
             >
               Valider
             </button>

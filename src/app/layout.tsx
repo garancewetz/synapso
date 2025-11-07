@@ -4,10 +4,20 @@ import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
 
 export const metadata: Metadata = {
-  title: "Synapso",
-  description: "Application de suivi et gestion d'exercices de rééducation",
+  title: "Synapso - Caly",
+  description: "Les exercices de Calypso",
   icons: {
     icon: '/icon.svg',
+  },
+  openGraph: {
+    title: "Synapso - Caly",
+    description: "Les exercices de Calypso",
+    images: [
+      {
+        url: '/assets/logoBrain.svg',
+        alt: 'Logo Synapso',
+      },
+    ],
   },
 };
 

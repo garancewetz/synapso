@@ -226,7 +226,7 @@ export default function Home() {
                     <span className='bg-white z-1 pr-3'>{bodypart.name}</span>
                     <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
                   </h2>
-                  <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+                  <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
                     {bodypart.exercices.map((exercice) => (
                       <ExerciceCard
                         key={exercice.id}

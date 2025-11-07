@@ -14,7 +14,7 @@ export default function NavBar() {
   }));
 
   return (
-    <nav className="bg-white  w-9/10 mx-auto rounded-full mt-6 mb-12">
+    <nav className="bg-white max-w-9xl w-8/10 mx-auto rounded-full mt-6 mb-12">
       <div className="flex items-center justify-between px-6 py-3">
         <Link href="/">
           <Logo size={32} />

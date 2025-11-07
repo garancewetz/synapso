@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="200" height="200" role="img" aria-labelledby="title-desc">
+  <title id="title">Logo Synapso</title>
+  <!-- forme extérieure (presque un rond) -->
+  <defs>
+    <clipPath id="clipBrain">
+      <!-- forme légèrement organique, ferme la silhouette du "cerveau" -->
+      <path d="M50 6
+               C71 6 90 23 90 46
+               C90 70 73 92 50 92
+               C27 92 10 70 10 46
+               C10 23 29 6 50 6 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- moitié gauche remplie en noir, découpée par la silhouette -->
+  <g clip-path="url(#clipBrain)">
+    <!-- rectangle couvrant la moitié gauche -->
+    <rect x="0" y="0" width="50" height="100" fill="#000"/>
+  </g>
+
+  <!-- contour fin autour du cerveau -->
+  <path d="M50 6
+           C71 6 90 23 90 46
+           C90 70 73 92 50 92
+           C27 92 10 70 10 46
+           C10 23 29 6 50 6 Z"
+        fill="none" stroke="#000" stroke-width="1"/>
+
+</svg>

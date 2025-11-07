@@ -73,15 +73,6 @@ async function backup() {
     );
     console.log(`✅ ${aphasieItems.length} items d'aphasie sauvegardés`);
 
-    // Backup Tache
-    const taches = await prisma.tache.findMany();
-    writeFileSync(
-      join(process.cwd(), 'src/datas/taches_backup.json'),
-      JSON.stringify(taches, null, 2),
-      'utf-8'
-    );
-    console.log(`✅ ${taches.length} tâches sauvegardées`);
-
     console.log('✨ Backup terminé avec succès!');
   } catch (error) {
     console.error('❌ Erreur lors du backup:', error);

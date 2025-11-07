@@ -2,15 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface AphasieItem {
-  id: number;
-  quote: string;
-  meaning: string;
-  date: string | null;
-  comment: string | null;
-  createdAt: string;
-}
+import Link from 'next/link';
+import Button from '@/app/components/atoms/Button';
+import type { AphasieItem } from '@/types';
 
 export default function AphasiePage() {
   const [items, setItems] = useState<AphasieItem[]>([]);
@@ -49,8 +43,17 @@ export default function AphasiePage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 bg-gray-50">
-      <ul className="space-y-4">
+    <div className="p-6">
+      <div className='flex justify-center mb-6'>
+
+      <Link href="/aphasie/add">
+        <Button>
+          Ajouter une citation
+          </Button>
+          
+        </Link>
+      </div>
+      <ul className="space-y-4 mt-6">
         {items.map(item => (
           <li key={item.id} className="bg-white px-4 py-3 rounded-lg border border-gray-200">
             <div className="mb-3 flex items-center space-x-6">

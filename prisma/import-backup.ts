@@ -137,34 +137,6 @@ async function importBackup() {
     }
     console.log(`✅ ${aphasieData.length} items d'aphasie importés`);
 
-    // 6. Importer Taches
-    console.log('📦 Importation des tâches...');
-    const tachesData = JSON.parse(
-      readFileSync(join(process.cwd(), 'src/datas/taches_backup.json'), 'utf-8')
-    );
-    
-    for (const tache of tachesData) {
-      await prisma.tache.upsert({
-        where: { id: tache.id },
-        update: {
-          title: tache.title,
-          url: tache.url,
-          identifier: tache.identifier,
-          password: tache.password,
-          isMonthly: tache.isMonthly,
-        },
-        create: {
-          id: tache.id,
-          title: tache.title,
-          url: tache.url,
-          identifier: tache.identifier,
-          password: tache.password,
-          isMonthly: tache.isMonthly,
-        },
-      });
-    }
-    console.log(`✅ ${tachesData.length} tâches importées`);
-
     console.log('✨ Importation terminée avec succès!');
   } catch (error) {
     console.error('❌ Erreur lors de l\'importation:', error);

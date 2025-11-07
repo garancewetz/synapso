@@ -160,31 +160,6 @@ async function migrateToPostgres() {
     }
     console.log(`✅ ${aphasieItems.length} items d'aphasie migrés`);
 
-    // 5. Migrer Taches
-    console.log('📦 Migration des tâches...');
-    const taches = await sqliteClient.tache.findMany();
-    for (const tache of taches) {
-      await postgresClient.tache.upsert({
-        where: { id: tache.id },
-        update: {
-          title: tache.title,
-          url: tache.url,
-          identifier: tache.identifier,
-          password: tache.password,
-          isMonthly: tache.isMonthly,
-        },
-        create: {
-          id: tache.id,
-          title: tache.title,
-          url: tache.url,
-          identifier: tache.identifier,
-          password: tache.password,
-          isMonthly: tache.isMonthly,
-        },
-      });
-    }
-    console.log(`✅ ${taches.length} tâches migrées`);
-
     console.log('✨ Migration terminée avec succès!');
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error);

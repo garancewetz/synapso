@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/app/components/organisms/Sidebar";
-import UpBar from "@/app/components/organisms/UpBar";
+import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
 
 export const metadata: Metadata = {
@@ -19,17 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={` antialiased flex`}
+        className={` antialiased`}
       >
         <SiteProtection>
-          <Sidebar />
-          <main className="flex-1 mx-auto min-h-screen max-h-screen overflow-auto">
-            <div className="flex-1">
-              <UpBar />
-          
-              
+          <NavBar />
+          <main className="flex-1 mx-auto min-h-screen h-full w-full max-w-9xl">
               {children}
-            </div>
           </main>
         </SiteProtection>
       </body>

@@ -5,38 +5,9 @@ import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import BodyPartsNav from '@/app/components/molecules/BodyPartsNav';
 import FiltersExercices from '@/app/components/organisms/FiltersExercices';
-
-interface Bodypart {
-  id: number;
-  name: string;
-  color: string;
-}
-
-interface Exercice {
-  id: number;
-  name: string;
-  description: {
-    text: string;
-    comment: string | null;
-  };
-  workout: {
-    repeat: number | null;
-    series: number | null;
-    duration: string | null;
-  };
-  equipments: string[];
-  bodyparts: Bodypart[];
-  completed: boolean;
-  completedAt: Date | null;
-}
-
-interface BodypartWithCount extends Bodypart {
-  count: number;
-}
-
-interface BodypartWithExercices extends BodypartWithCount {
-  exercices: Exercice[];
-}
+import Link from 'next/link';
+import Button from '@/app/components/atoms/Button';
+import type { Exercice, BodypartWithCount, BodypartWithExercices } from '@/types';
 
 export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
@@ -178,14 +149,23 @@ export default function Home() {
   return (
     <section>
 
-      <div className="flex flex-col lg:ml-0">
+      <div className="flex flex-col mt-10">
+        <div className='flex justify-center mb-6'>
+
+        <Link href="/exercice/add" >
+            <Button>
+              Ajouter un exercice
+            </Button>
+          </Link>
+        </div>
+
 
         <BodyPartsNav bodyparts={allBodyparts()} />
 
         <div className='flex '>
           <div className='w-60 p-4'>
-            <div className='sticky top-20'>
-
+            <div className='sticky top-20 space-y-4 flex flex-col'>
+     
             <FiltersExercices
               equipments={getEquipments()}
               selectedEquipment={selectedEquipment}
@@ -198,7 +178,7 @@ export default function Home() {
             />
             </div>
           </div>
-          <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex-1 scroll-smooth bg-gray-50">
+          <div className="flex-1 p-6  flex-1 scroll-smooth space-y-6">
             {(() => {
               const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
 
@@ -241,8 +221,11 @@ export default function Home() {
               }
 
               return filteredBodyParts.map((bodypart) => (
-                <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 mb-6 sm:mb-8 not-first:border-t border-gray-200 not-first:pt-4 sm:not-first:pt-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-3 sm:mb-4">{bodypart.name}</h2>
+                <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 not-first:pt-4">
+                  <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
+                    <span className='bg-white z-1 pr-3'>{bodypart.name}</span>
+                    <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
+                  </h2>
                   <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                     {bodypart.exercices.map((exercice) => (
                       <ExerciceCard

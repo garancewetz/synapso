@@ -119,7 +119,6 @@ Synapso est une application de rééducation qui permet de :
 - **ExerciceBodypart** : Relation many-to-many entre exercices et parties du corps
 - **History** : Historique des exercices complétés avec date et heure
 - **AphasieItem** : Journal des erreurs d'aphasie (citations avec leur signification correcte, date et commentaire)
-- **Tache** : Tâches récurrentes avec lien, identifiant, mot de passe et récurrence mensuelle
 
 ## 🔐 Sécurité
 
@@ -141,7 +140,6 @@ synapso/
 │   │   ├── components/         # Composants React (atoms, molecules, organisms)
 │   │   ├── aphasie/            # Pages pour la gestion d'aphasie
 │   │   ├── exercice/           # Pages pour la gestion d'exercices
-│   │   ├── taches/              # Pages pour la gestion des tâches
 │   │   ├── historique/         # Page d'historique
 │   │   └── page.tsx            # Page d'accueil
 │   ├── datas/                  # Fichiers JSON de données initiales et backups

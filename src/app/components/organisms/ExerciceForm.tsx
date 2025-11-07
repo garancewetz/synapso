@@ -1,16 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { Metadata } from '@/types';
 
 interface ExerciceFormProps {
   exerciceId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
-}
-
-interface Metadata {
-  bodyparts: string[];
-  equipments: string[];
 }
 
 export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: ExerciceFormProps) {

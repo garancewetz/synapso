@@ -2,17 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Tag from '@/app/components/atoms/Tag';
-
-interface HistoryEntry {
-  id: number;
-  completedAt: string;
-  exercice: {
-    id: number;
-    name: string;
-    bodyparts: Array<{ id: number; name: string; color: string }>;
-    equipments: string[];
-  };
-}
+import type { HistoryEntry } from '@/types';
 
 export default function HistoriquePage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);

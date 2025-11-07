@@ -230,7 +230,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Répétitions
@@ -274,7 +274,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
           Parties du corps
         </label>
         <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
             {metadata.bodyparts.map((bodypart) => (
               <label key={bodypart} className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -312,7 +312,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
           Équipements
         </label>
         <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
             {metadata.equipments.map((equipment) => (
               <label key={equipment} className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -346,7 +346,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       </div>
 
       <div className="space-y-3 pt-4">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="submit"
             disabled={loading}

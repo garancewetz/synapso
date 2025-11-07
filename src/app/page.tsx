@@ -13,6 +13,7 @@ export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
 
   const fetchExercices = () => {
@@ -149,10 +150,18 @@ export default function Home() {
   return (
     <section>
 
-      <div className="mt-10">
-        <div className='flex justify-center mb-6'>
-
-        <Link href="/exercice/add" >
+      <div className="mt-4 md:mt-10">
+        <div className='flex justify-center gap-3 mb-6 px-4'>
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="md:hidden px-4 py-2 bg-gray-100 text-gray-700 rounded-lg flex items-center gap-2 hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filtres
+          </button>
+          <Link href="/exercice/add" >
             <Button>
               Ajouter un exercice
             </Button>
@@ -162,8 +171,8 @@ export default function Home() {
 
         <BodyPartsNav bodyparts={allBodyparts()} />
 
-        <div className='flex '>
-          <div className='w-60 p-4'>
+        <div className='flex'>
+          <div className='hidden md:block w-60 p-4'>
             <div className='sticky top-20 space-y-4 flex flex-col'>
      
             <FiltersExercices
@@ -178,7 +187,7 @@ export default function Home() {
             />
             </div>
           </div>
-          <div className="flex-1 p-6  flex-1 scroll-smooth space-y-6">
+          <div className="flex-1 p-4 md:p-6 scroll-smooth space-y-6">
             {(() => {
               const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
 
@@ -244,6 +253,36 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {isFilterOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-white/20 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
+          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Filtres</h2>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="p-2 text-gray-600 hover:text-gray-900"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <FiltersExercices
+                equipments={getEquipments()}
+                selectedEquipment={selectedEquipment}
+                onEquipmentSelect={setSelectedEquipment}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                totalExercices={getCounts().totalExercices}
+                completedCount={getCounts().completedCount}
+                pendingCount={getCounts().pendingCount}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </section>
   );

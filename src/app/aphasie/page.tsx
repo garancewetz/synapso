@@ -43,7 +43,7 @@ export default function AphasiePage() {
   };
 
   return (
-    <div className="mt-10">
+    <div className="mt-4 md:mt-10 px-4 md:px-6">
       <div className='flex justify-center mb-6'>
 
       <Link href="/aphasie/add">
@@ -56,9 +56,9 @@ export default function AphasiePage() {
       <ul className="space-y-4 mt-6">
         {items.map(item => (
           <li key={item.id} className="bg-white px-4 py-3 rounded-lg border border-gray-200">
-            <div className="mb-3 flex items-center space-x-6">
-              <div className="text-xl font-bold text-gray-900 w-1/3">{item.quote}</div>
-              <div className="text-gray-700 italic">{item.meaning}</div>
+            <div className="mb-3 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
+              <div className="text-lg md:text-xl font-bold text-gray-900 md:w-1/3">{item.quote}</div>
+              <div className="text-gray-700 italic text-sm md:text-base">{item.meaning}</div>
             </div>
             {item.comment && (
               <div className="mb-2 text-xs text-gray-400 italic">{item.comment}</div>

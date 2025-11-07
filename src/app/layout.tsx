@@ -21,7 +21,9 @@ export default function RootLayout({
         className={` antialiased`}
       >
         <SiteProtection>
-          <NavBar />
+          <div className="px-4 md:px-6 lg:px-8">
+            <NavBar />
+          </div>
           <main className="flex-1 mx-auto min-h-screen h-full w-full max-w-9xl">
               {children}
           </main>

@@ -43,7 +43,7 @@ export default function AphasiePage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="mt-10">
       <div className='flex justify-center mb-6'>
 
       <Link href="/aphasie/add">

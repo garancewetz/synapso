@@ -149,7 +149,7 @@ export default function Home() {
   return (
     <section>
 
-      <div className="flex flex-col mt-10">
+      <div className="mt-10">
         <div className='flex justify-center mb-6'>
 
         <Link href="/exercice/add" >

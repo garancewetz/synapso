@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     description: "Les exercices de Calypso",
     images: [
       {
-        url: '/assets/logoBrain.svg',
+        url: '/logoBrain.png',
         alt: 'Logo Synapso',
       },
     ],

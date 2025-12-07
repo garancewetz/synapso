@@ -36,10 +36,10 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="bg-white max-w-9xl w-fullmx-auto rounded-full  mb-12">
-      <div className="flex items-center justify-between lg:px-6 py-3">
+    <nav className="bg-white max-w-9xl w-fullmx-auto rounded-full mb-4 md:mb-12">
+      <div className="flex items-center justify-between lg:px-6 py-2 md:py-3">
         <Link href="/">
-          <Logo size={32} />
+          <Logo size={20} className="md:scale-125" />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -80,9 +80,9 @@ export default function NavBar() {
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+          className="md:hidden p-1.5 text-gray-600 hover:text-gray-900"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isMenuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -93,8 +93,8 @@ export default function NavBar() {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden px-6 pb-4">
-          <div className="flex flex-col gap-3">
+        <div className="md:hidden px-4 pb-3">
+          <div className="flex flex-col gap-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href || 
                 (item.href !== '/' && pathname.startsWith(item.href));
@@ -104,10 +104,10 @@ export default function NavBar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`text-base font-medium transition-colors py-2 ${
+                  className={`text-sm font-medium transition-colors py-1.5 ${
                     isActive
-                      ? 'text-gray-900 border-l-4 border-gray-900 pl-3'
-                      : 'text-gray-600 hover:text-gray-900 pl-4'
+                      ? 'text-gray-900 border-l-4 border-gray-900 pl-2.5'
+                      : 'text-gray-600 hover:text-gray-900 pl-3'
                   }`}
                 >
                   {item.label}
@@ -115,7 +115,7 @@ export default function NavBar() {
               );
             })}
             <div className="pt-2 border-t border-gray-200">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
                 Utilisateur
               </label>
               <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function NavBar() {
                     setIsMenuOpen(false);
                   }}
                   disabled={changingUser}
-                  className="flex-1 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>

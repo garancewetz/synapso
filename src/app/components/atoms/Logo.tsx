@@ -9,7 +9,7 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
         <div className="w-15">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" className="size-15">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" className="w-5 h-5 md:w-8 md:h-8">
         <title id="title">Logo Synapso</title>
         <defs>
           <clipPath id="clipBrain">
@@ -35,7 +35,7 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
         </div>
       
       {/* Nom de l'application */}
-      <div className="text-center">
+      <div className="text-center hidden md:block">
         <h1 className="text uppercase text-gray-900">Synapso</h1>
       </div>
     </div>

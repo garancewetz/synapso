@@ -155,6 +155,18 @@ export default function Home() {
     return { totalExercices, completedCount, pendingCount };
   }
 
+  const getTodayCompletedCount = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return exercices.filter((exercice) => {
+      if (!exercice.completedAt) return false;
+      const completedDate = new Date(exercice.completedAt);
+      completedDate.setHours(0, 0, 0, 0);
+      return completedDate.getTime() === today.getTime();
+    }).length;
+  }
+
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
   };
@@ -168,18 +180,30 @@ export default function Home() {
     <section>
 
       <div className="mt-4 md:mt-10">
-        <div className='flex justify-center gap-3 mb-6 px-4'>
+        {currentUser && (
+          <div className="px-4 mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900">
+              C'est parti {currentUser.name} !
+            </h2>
+            {!loadingExercices && getTodayCompletedCount() > 0 && (
+              <p className="text-sm md:text-base text-gray-600 mt-1">
+                Déjà {getTodayCompletedCount()} exercice{getTodayCompletedCount() > 1 ? 's' : ''} fait{getTodayCompletedCount() > 1 ? 's' : ''} aujourd'hui !
+              </p>
+            )}
+          </div>
+        )}
+        <div className='flex gap-2 mb-4 md:mb-6 px-4 md:justify-center'>
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="md:hidden px-4 py-2 bg-gray-100 text-gray-700 rounded-lg flex items-center gap-2 hover:bg-gray-200 transition-colors"
+            className="md:hidden flex-1 px-3 py-2.5 bg-gray-100 text-gray-700 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-sm font-medium"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
             Filtres
           </button>
-          <Link href="/exercice/add" >
-            <Button>
+          <Link href="/exercice/add" className="flex-1 md:flex-initial">
+            <Button className="w-full md:w-auto text-sm md:text-base py-2.5 md:py-2">
               Ajouter un exercice
             </Button>
           </Link>

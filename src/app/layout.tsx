@@ -4,6 +4,7 @@ import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
 import DevBanner from "@/app/components/atoms/DevBanner";
 import PWARegister from "@/app/components/atoms/PWARegister";
+import NotificationManager from "@/app/components/atoms/NotificationManager";
 import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function RootLayout({
       >
         <PWARegister />
         <UserProvider>
+          <NotificationManager />
           <DevBanner />
           <SiteProtection>
             <div className="px-4 md:px-6 lg:px-8">

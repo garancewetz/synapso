@@ -72,12 +72,12 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
     };
 
     return (
-        <div className="relative p-2.5 sm:p-4 border border-gray-200 rounded-lg transition-all text-gray-900">
+        <div className="relative border border-gray-200 rounded-lg transition-all text-gray-900">
             {/* Boutons en haut à droite : Édition (gauche) et Pin (droite, plus grand) */}
-            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 sm:gap-2 z-10">
+            <div className="absolute top-1 right-1 flex items-center gap-1 z-10">
                 <button
                     onClick={handleEdit}
-                    className="p-2 sm:p-2.5 sm:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer touch-manipulation"
+                    className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors cursor-pointer touch-manipulation"
                     title="Modifier"
                     aria-label="Modifier"
                 >
@@ -88,7 +88,7 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
                 <button
                     onClick={handlePin}
                     disabled={isPinning}
-                    className={`p-2 sm:p-2.5 sm:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer touch-manipulation ${
+                    className={`p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors cursor-pointer touch-manipulation ${
                         exercice.pinned 
                             ? 'text-amber-500 hover:text-amber-600' 
                             : ''
@@ -102,19 +102,12 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
                 </button>
             </div>
 
-            <div className="flex flex-col gap-1.5 sm:gap-2 sm:gap-3 h-full pr-14 sm:pr-16 sm:pr-20">
+            <div className=" p-2.5 sm:p-4  flex flex-col gap-1.5 sm:gap-2 sm:gap-3 h-full pr-14 sm:pr-16 sm:pr-20">
                 {/* Partie gauche : Titre et informations principales */}
                 <div className="">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5 sm:gap-2 mb-2 sm:mb-4">
                         <h2 className="text-sm sm:text-base sm:text-lg text-gray-800 pr-12 sm:pr-0">{exercice.name}</h2>
-                        <div className="flex flex-wrap gap-1 sm:gap-1.5">
-                            {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart, index: number) => (
-                                <Tag key={index} color={bodypart.color} className="text-xs">
-                                    {bodypart.name}
-                                </Tag>
-                            ))}
-                            {exercice.completed && <span className="text-emerald-600 text-sm sm:text-base">✓</span>}
-                        </div>
+                        {exercice.completed && <span className="text-emerald-600 text-sm sm:text-base">✓</span>}
                     </div>
                     
                     {/* Description expandable */}
@@ -166,6 +159,11 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
                     
                     {/* Tags compacts en ligne */}
                     <div className="flex flex-wrap gap-1 mt-2 sm:mt-3">
+                        {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart, index: number) => (
+                            <Tag key={index} color={bodypart.color} className="text-xs">
+                                {bodypart.name}
+                            </Tag>
+                        ))}
                         {exercice.equipments && exercice.equipments.length > 0 &&
                             exercice.equipments.map((equipment: string, index: number) => (
                                 <Tag key={index} className="text-xs bg-gray-50 border-gray-100">
@@ -191,7 +189,7 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
             <button
                 onClick={handleComplete}
                 disabled={isCompleting}
-                className={`absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-8 h-8 sm:w-9 sm:h-9 sm:w-10 sm:h-10 flex justify-center items-center rounded-lg border transition-all cursor-pointer touch-manipulation z-10 ${
+                className={`absolute bottom-1 right-1 w-8 h-8 sm:w-9 sm:h-9 sm:w-10 sm:h-10 flex justify-center items-center rounded border transition-all cursor-pointer touch-manipulation z-10 ${
                     exercice.completed 
                         ? 'text-white bg-emerald-500 border-emerald-500 scale-105' 
                         : 'text-gray-600 border-gray-300 hover:text-white hover:bg-emerald-500 hover:border-emerald-500 hover:scale-110'

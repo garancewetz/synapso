@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
+import DevBanner from "@/app/components/atoms/DevBanner";
 
 export const metadata: Metadata = {
   title: "Synapso - Caly",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={` antialiased`}
       >
+        <DevBanner />
         <SiteProtection>
           <div className="px-4 md:px-6 lg:px-8">
             <NavBar />

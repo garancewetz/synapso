@@ -3,13 +3,22 @@ import "./globals.css";
 import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
 import DevBanner from "@/app/components/atoms/DevBanner";
+import PWARegister from "@/app/components/atoms/PWARegister";
 import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
   title: "Synapso - Caly",
   description: "Les exercices de Calypso",
+  manifest: "/manifest.json",
+  themeColor: "#000000",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Synapso",
+  },
   icons: {
     icon: '/icon.svg',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: "Synapso - Caly",
@@ -31,10 +40,11 @@ export default function RootLayout({
 
 
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={` antialiased`}
       >
+        <PWARegister />
         <UserProvider>
           <DevBanner />
           <SiteProtection>

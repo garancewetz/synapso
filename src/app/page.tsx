@@ -183,11 +183,11 @@ export default function Home() {
         {currentUser && (
           <div className="px-4 mb-4 md:mb-6">
             <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-              C'est parti {currentUser.name} !
+              C&apos;est parti {currentUser.name} !
             </h2>
             {!loadingExercices && getTodayCompletedCount() > 0 && (
               <p className="text-sm md:text-base text-gray-600 mt-1">
-                Déjà {getTodayCompletedCount()} exercice{getTodayCompletedCount() > 1 ? 's' : ''} fait{getTodayCompletedCount() > 1 ? 's' : ''} aujourd'hui !
+                Déjà {getTodayCompletedCount()} exercice{getTodayCompletedCount() > 1 ? 's' : ''} fait{getTodayCompletedCount() > 1 ? 's' : ''} aujourd&apos;hui !
               </p>
             )}
           </div>

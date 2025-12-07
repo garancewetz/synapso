@@ -123,7 +123,7 @@ export default function Home() {
       exercices: filteredExercices.filter((exercice) =>
         exercice.bodyparts?.some((bp) => bp.id === bodypart.id)
       )
-    }));
+    })).filter((bodypart) => bodypart.exercices.length > 0);
   }
 
   const getEquipments = () => {
@@ -210,65 +210,128 @@ export default function Home() {
             ) : (
               (() => {
                 const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
+                
+                // Récupérer tous les exercices filtrés
+                let filteredExercices = exercices;
 
-              if (filteredBodyParts.length === 0) {
-                // Construire le message des filtres actifs
-                const activeFilters = [];
-
-                if (statusFilter !== 'all') {
-                  const statusLabels = {
-                    'completed': 'Complétés',
-                    'pending': 'À compléter'
-                  };
-                  activeFilters.push(statusLabels[statusFilter]);
-                }
-
+                // Filtre par équipement
                 if (selectedEquipment) {
-                  activeFilters.push(selectedEquipment);
+                  filteredExercices = filteredExercices.filter((exercice) =>
+                    exercice.equipments && exercice.equipments.includes(selectedEquipment)
+                  );
                 }
 
-                const filterText = activeFilters.length > 0
-                  ? `avec les filtres &quot;${activeFilters.join('&quot; et &quot;')}&quot;`
-                  : '';
+                // Filtre par statut
+                if (statusFilter === 'completed') {
+                  filteredExercices = filteredExercices.filter((exercice) => exercice.completed);
+                } else if (statusFilter === 'pending') {
+                  filteredExercices = filteredExercices.filter((exercice) => !exercice.completed);
+                }
+
+                // Séparer les exercices épinglés (avec vérification pour s'assurer que pinned existe)
+                const pinnedExercices = filteredExercices.filter((exercice) => exercice.pinned === true);
+
+                if (filteredBodyParts.length === 0 && pinnedExercices.length === 0) {
+                  // Construire le message des filtres actifs
+                  const activeFilters = [];
+
+                  if (statusFilter !== 'all') {
+                    const statusLabels = {
+                      'completed': 'Complétés',
+                      'pending': 'À compléter'
+                    };
+                    activeFilters.push(statusLabels[statusFilter]);
+                  }
+
+                  if (selectedEquipment) {
+                    activeFilters.push(selectedEquipment);
+                  }
+
+                  const filterText = activeFilters.length > 0
+                    ? `avec les filtres &quot;${activeFilters.join('&quot; et &quot;')}&quot;`
+                    : '';
+
+                  return (
+                    <div className="flex items-center justify-center min-h-[400px]">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                          Aucun exercice trouvé
+                        </h3>
+                        <p className="text-gray-600">
+                          Aucun résultat n&apos;est disponible {filterText}.
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Essayez de modifier vos filtres ou de réinitialiser la recherche.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
 
                 return (
-                  <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">🔍</div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        Aucun exercice trouvé
-                      </h3>
-                      <p className="text-gray-600">
-                        Aucun résultat n&apos;est disponible {filterText}.
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Essayez de modifier vos filtres ou de réinitialiser la recherche.
-                      </p>
-                    </div>
-                  </div>
-                );
-              }
+                  <>
+                    {/* Section des exercices épinglés */}
+                    {pinnedExercices.length > 0 && (
+                      <div className="mb-8">
+                        <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
+                          <span className='bg-white z-1 pr-3'>📌 Exercices épinglés</span>
+                          <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
+                        </h2>
+                        <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+                          {pinnedExercices.map((exercice) => {
+                            // Trouver le bodypart pour cet exercice (prendre le premier)
+                            const bodypart = exercice.bodyparts && exercice.bodyparts.length > 0
+                              ? filteredBodyParts.find((bp) => bp.id === exercice.bodyparts[0].id) || filteredBodyParts[0]
+                              : filteredBodyParts[0];
 
-              return filteredBodyParts.map((bodypart) => (
-                <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 not-first:pt-4">
-                  <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
-                    <span className='bg-white z-1 pr-3'>{bodypart.name}</span>
-                    <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
-                  </h2>
-                  <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
-                    {bodypart.exercices.map((exercice) => (
-                      <ExerciceCard
-                        key={exercice.id}
-                        id={exercice.id}
-                        exercice={exercice}
-                        onEdit={handleEditClick}
-                        onCompleted={handleCompleted}
-                        bodypartSection={bodypart}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ));
+                            return (
+                              <ExerciceCard
+                                key={exercice.id}
+                                id={exercice.id}
+                                exercice={exercice}
+                                onEdit={handleEditClick}
+                                onCompleted={handleCompleted}
+                                bodypartSection={bodypart || { id: 0, name: '', color: '', count: 0 }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Section des exercices par bodypart (non épinglés) */}
+                    {filteredBodyParts.map((bodypart) => {
+                      // Filtrer pour ne garder que les exercices non épinglés de ce bodypart
+                      const unpinnedBodypartExercices = bodypart.exercices.filter((exercice) => exercice.pinned !== true);
+                      
+                      if (unpinnedBodypartExercices.length === 0) {
+                        return null;
+                      }
+
+                      return (
+                        <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 not-first:pt-4">
+                          <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
+                            <span className='bg-white z-1 pr-3'>{bodypart.name}</span>
+                            <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
+                          </h2>
+                          <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+                            {unpinnedBodypartExercices.map((exercice) => (
+                              <ExerciceCard
+                                key={exercice.id}
+                                id={exercice.id}
+                                exercice={exercice}
+                                onEdit={handleEditClick}
+                                onCompleted={handleCompleted}
+                                bodypartSection={bodypart}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                );
               })()
             )}
           </div>

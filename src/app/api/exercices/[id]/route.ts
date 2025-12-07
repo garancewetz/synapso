@@ -68,6 +68,7 @@ export async function GET(
       })),
       completed: exercice.completed,
       completedAt: exercice.completedAt,
+      pinned: exercice.pinned,
     };
 
     return NextResponse.json(formattedExercice);
@@ -190,6 +191,7 @@ export async function PUT(
       })),
       completed: exerciceWithRelations!.completed,
       completedAt: exerciceWithRelations!.completedAt,
+      pinned: exerciceWithRelations!.pinned,
     };
 
     return NextResponse.json(formattedExercice);

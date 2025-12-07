@@ -33,6 +33,7 @@ model Exercice {
   history            History[]
   completed          Boolean            @default(false)
   completedAt        DateTime?
+  pinned             Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 }

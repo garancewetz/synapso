@@ -20,6 +20,7 @@ export interface Exercice {
   bodyparts: Bodypart[];
   completed: boolean;
   completedAt: Date | null;
+  pinned: boolean;
 }
 
 export interface BodypartWithCount extends Bodypart {

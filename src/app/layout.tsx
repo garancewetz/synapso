@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: "Synapso - Caly",
+    title: "Synapso",
     description: "Les exercices de Calypso",
     images: [
       {

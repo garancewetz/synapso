@@ -12,6 +12,7 @@ interface ExerciceWithBodyparts {
   equipments: string;
   completed: boolean;
   completedAt: Date | null;
+  pinned: boolean;
   bodyparts: Array<{
     exerciceId: number;
     bodypartId: number;
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
         })),
         completed: completedToday,
         completedAt: exercice.completedAt,
+        pinned: exercice.pinned ?? false,
       };
     });
 
@@ -188,6 +190,7 @@ export async function POST(request: NextRequest) {
       })),
       completed: exerciceWithRelations!.completed,
       completedAt: exerciceWithRelations!.completedAt,
+      pinned: exerciceWithRelations!.pinned,
     };
 
     return NextResponse.json(formattedExercice, { status: 201 });

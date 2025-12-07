@@ -15,6 +15,7 @@ interface ExerciceCardProps {
 
 export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: ExerciceCardProps) {
     const [isCompleting, setIsCompleting] = useState(false);
+    const [isPinning, setIsPinning] = useState(false);
     const { currentUser } = useUser();
 
     const handleEdit = () => {
@@ -46,13 +47,65 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
         }
     };
 
+    const handlePin = async () => {
+        if (!currentUser) return;
+        
+        setIsPinning(true);
+        try {
+            const response = await fetch(`/api/exercices/${id}/pin?userId=${currentUser.id}`, {
+                method: 'PATCH',
+            });
+
+            if (response.ok) {
+                if (onCompleted) {
+                    onCompleted();
+                }
+            } else {
+                console.error('Erreur lors de la mise à jour du pin');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+        } finally {
+            setIsPinning(false);
+        }
+    };
+
     return (
         <div className="relative p-4 border border-gray-200 rounded-lg transition-all text-gray-900">
-            <div className="flex justify-between gap-2 sm:gap-3 h-full">
+            {/* Boutons en haut à droite : Édition (gauche) et Pin (droite, plus grand) */}
+            <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+                <button
+                    onClick={handleEdit}
+                    className="p-2.5 sm:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer touch-manipulation"
+                    title="Modifier"
+                    aria-label="Modifier"
+                >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+                <button
+                    onClick={handlePin}
+                    disabled={isPinning}
+                    className={`p-2.5 sm:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer touch-manipulation ${
+                        exercice.pinned 
+                            ? 'text-amber-500 hover:text-amber-600' 
+                            : ''
+                    }`}
+                    title={exercice.pinned ? 'Désépingler' : 'Épingler'}
+                    aria-label={exercice.pinned ? 'Désépingler' : 'Épingler'}
+                >
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill={exercice.pinned ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:gap-3 h-full pr-16 sm:pr-20">
                 {/* Partie gauche : Titre et informations principales */}
                 <div className="">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 mb-4">
-                        <h2 className="text-base sm:text-lg text-gray-800 ">{exercice.name}</h2>
+                        <h2 className="text-base sm:text-lg text-gray-800 pr-12 sm:pr-0">{exercice.name}</h2>
                         <div className="flex flex-wrap gap-1.5">
                             {exercice.bodyparts && exercice.bodyparts.length > 0 && exercice.bodyparts.map((bodypart, index: number) => (
                                 <Tag key={index} color={bodypart.color} className="text-xs">
@@ -93,26 +146,18 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
                     </div>
                 </div>
 
-                {/* Partie droite : Boutons d'action */}
-                <div className="flex flex-col gap-2  justify-between flex-shrink-0">
-                    <button
-                        onClick={handleEdit}
-                        className="p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                        title="Modifier"
-                    >
-                        <svg className="w-4 h-4 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
+                {/* Bouton compléter en bas */}
+                <div className="flex justify-start mt-2">
                     <button
                         onClick={handleComplete}
                         disabled={isCompleting}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 flex justify-center items-center rounded-lg border transition-all cursor-pointer ${
+                        className={`w-9 h-9 sm:w-10 sm:h-10 flex justify-center items-center rounded-lg border transition-all cursor-pointer touch-manipulation ${
                             exercice.completed 
                                 ? 'text-white bg-emerald-500 border-emerald-500 scale-105' 
                                 : 'text-gray-600 border-gray-300 hover:text-white hover:bg-emerald-500 hover:border-emerald-500 hover:scale-110'
                         }`}
                         title={exercice.completed ? 'Complété' : 'Marquer comme complété'}
+                        aria-label={exercice.completed ? 'Complété' : 'Marquer comme complété'}
                     >
                         <span className="text-sm font-bold">{isCompleting ? '...' : '✓'}</span>
                     </button>

@@ -6,11 +6,12 @@ import { usePathname } from 'next/navigation';
 import Logo from '@/app/components/atoms/Logo';
 import menuData from '@/datas/menu.json';
 import { useUser } from '@/contexts/UserContext';
+import Loader from '@/app/components/atoms/Loader';
 
 export default function NavBar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser, setCurrentUser, users } = useUser();
+  const { currentUser, setCurrentUser, users, changingUser } = useUser();
 
   // Filtrer les éléments du menu selon l'utilisateur actif
   const navItems = menuData
@@ -60,17 +61,21 @@ export default function NavBar() {
               </Link>
             );
           })}
-          <select
-            value={currentUser?.id || ''}
-            onChange={(e) => handleUserChange(Number(e.target.value))}
-            className="text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent cursor-pointer"
-          >
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={currentUser?.id || ''}
+              onChange={(e) => handleUserChange(Number(e.target.value))}
+              disabled={changingUser}
+              className="text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+            {changingUser && <Loader size="small" />}
+          </div>
         </div>
 
         <button
@@ -113,20 +118,24 @@ export default function NavBar() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Utilisateur
               </label>
-              <select
-                value={currentUser?.id || ''}
-                onChange={(e) => {
-                  handleUserChange(Number(e.target.value));
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              >
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={currentUser?.id || ''}
+                  onChange={(e) => {
+                    handleUserChange(Number(e.target.value));
+                    setIsMenuOpen(false);
+                  }}
+                  disabled={changingUser}
+                  className="flex-1 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
+                {changingUser && <Loader size="small" />}
+              </div>
             </div>
           </div>
         </div>

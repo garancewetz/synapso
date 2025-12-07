@@ -12,6 +12,7 @@ type UserContextType = {
   setCurrentUser: (user: User | null) => void;
   users: User[];
   loading: boolean;
+  changingUser: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,6 +24,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [changingUser, setChangingUser] = useState(false);
 
   // Charger les utilisateurs depuis l'API
   useEffect(() => {
@@ -69,16 +71,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setCurrentUser = (user: User | null) => {
+    setChangingUser(true);
     setCurrentUserState(user);
     if (user) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
+    // Réinitialiser l'état de chargement après un délai pour permettre le rechargement des données
+    setTimeout(() => {
+      setChangingUser(false);
+    }, 500);
   };
 
   return (
-    <UserContext.Provider value={{ currentUser, setCurrentUser, users, loading }}>
+    <UserContext.Provider value={{ currentUser, setCurrentUser, users, loading, changingUser }}>
       {children}
     </UserContext.Provider>
   );

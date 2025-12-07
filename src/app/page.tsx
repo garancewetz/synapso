@@ -7,6 +7,7 @@ import BodyPartsNav from '@/app/components/molecules/BodyPartsNav';
 import FiltersExercices from '@/app/components/organisms/FiltersExercices';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
+import Loader from '@/app/components/atoms/Loader';
 import type { Exercice, BodypartWithCount, BodypartWithExercices } from '@/types';
 import { useUser } from '@/contexts/UserContext';
 
@@ -15,12 +16,14 @@ export default function Home() {
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [loadingExercices, setLoadingExercices] = useState(false);
   const router = useRouter();
   const { currentUser } = useUser();
 
   const fetchExercices = () => {
     if (!currentUser) return;
     
+    setLoadingExercices(true);
     fetch(`/api/exercices?userId=${currentUser.id}`)
       .then(res => res.json())
       .then(data => {
@@ -34,12 +37,19 @@ export default function Home() {
       .catch(error => {
         console.error('Fetch error:', error);
         setExercices([]);
+      })
+      .finally(() => {
+        setLoadingExercices(false);
       });
   };
 
 
   useEffect(() => {
-    fetchExercices();
+    if (currentUser) {
+      fetchExercices();
+    } else {
+      setLoadingExercices(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
@@ -193,8 +203,13 @@ export default function Home() {
             </div>
           </div>
           <div className="flex-1 p-4 md:p-6 scroll-smooth space-y-6">
-            {(() => {
-              const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
+            {loadingExercices ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <Loader size="large" />
+              </div>
+            ) : (
+              (() => {
+                const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
 
               if (filteredBodyParts.length === 0) {
                 // Construire le message des filtres actifs
@@ -254,7 +269,8 @@ export default function Home() {
                   </div>
                 </div>
               ));
-            })()}
+              })()
+            )}
           </div>
         </div>
       </div>

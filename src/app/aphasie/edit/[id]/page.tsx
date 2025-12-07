@@ -1,8 +1,9 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AphasieForm from '@/app/components/organisms/AphasieForm';
+import { useUser } from '@/contexts/UserContext';
 
 interface AphasieEditPageProps {
   params: Promise<{
@@ -12,11 +13,24 @@ interface AphasieEditPageProps {
 
 export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   const router = useRouter();
+  const { currentUser } = useUser();
   const { id } = use(params);
   const itemId = id ? parseInt(id) : null;
 
+  // Rediriger si l'utilisateur n'est pas Calypso
+  useEffect(() => {
+    if (currentUser && currentUser.name !== 'Calypso') {
+      router.push('/');
+    }
+  }, [currentUser, router]);
+
   if (!itemId || isNaN(itemId)) {
     router.push('/aphasie');
+    return null;
+  }
+
+  // Ne rien afficher si l'utilisateur n'est pas Calypso
+  if (!currentUser || currentUser.name !== 'Calypso') {
     return null;
   }
 

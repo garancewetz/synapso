@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { setAuthCookie } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
     
     if (password === expectedPassword) {
-      return NextResponse.json({ success: true });
+      const response = NextResponse.json({ success: true });
+      return setAuthCookie(response);
     } else {
       return NextResponse.json(
         { error: 'Mot de passe incorrect' },

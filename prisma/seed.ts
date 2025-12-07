@@ -6,6 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Début du seed de la base de données...');
 
+  // Récupérer ou créer l'utilisateur Calypso (par défaut)
+  const calypso = await prisma.user.upsert({
+    where: { name: 'Calypso' },
+    update: {},
+    create: { name: 'Calypso' },
+  });
+
   // Supprime toutes les données existantes
   await prisma.exercice.deleteMany();
   await prisma.bodypart.deleteMany();
@@ -60,6 +67,7 @@ async function main() {
         workoutSeries: exercice.workout.series,
         workoutDuration: exercice.workout.duration,
         equipments: JSON.stringify(exercice.equipments),
+        userId: calypso.id,
       },
     });
 

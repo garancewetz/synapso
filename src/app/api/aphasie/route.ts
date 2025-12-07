@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -18,6 +19,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Vérifier l'authentification
+  const authError = await requireAuth(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const data = await request.json();
 

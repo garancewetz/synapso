@@ -30,7 +30,16 @@ async function importBackup() {
     }
     console.log(`✅ ${bodypartsData.length} bodyparts importés`);
 
-    // 2. Importer Exercices
+    // 2. Récupérer l'utilisateur Calypso (par défaut)
+    const calypso = await prisma.user.findUnique({
+      where: { name: 'Calypso' },
+    });
+    
+    if (!calypso) {
+      throw new Error('Utilisateur Calypso non trouvé. Veuillez d\'abord exécuter la migration des utilisateurs.');
+    }
+
+    // 3. Importer Exercices
     console.log('📦 Importation des exercices...');
     const exercicesData = JSON.parse(
       readFileSync(join(process.cwd(), 'src/datas/exercices_backup.json'), 'utf-8')
@@ -49,6 +58,7 @@ async function importBackup() {
           equipments: exercice.equipments,
           completed: exercice.completed,
           completedAt: exercice.completedAt ? new Date(exercice.completedAt) : null,
+          userId: calypso.id,
         },
         create: {
           id: exercice.id,
@@ -61,12 +71,13 @@ async function importBackup() {
           equipments: exercice.equipments,
           completed: exercice.completed,
           completedAt: exercice.completedAt ? new Date(exercice.completedAt) : null,
+          userId: calypso.id,
         },
       });
     }
     console.log(`✅ ${exercicesData.length} exercices importés`);
 
-    // 3. Importer ExerciceBodyparts
+    // 4. Importer ExerciceBodyparts
     console.log('📦 Importation des relations exercice-bodypart...');
     const exerciceBodypartsData = JSON.parse(
       readFileSync(join(process.cwd(), 'src/datas/exerciceBodyparts_backup.json'), 'utf-8')
@@ -89,7 +100,7 @@ async function importBackup() {
     }
     console.log(`✅ ${exerciceBodypartsData.length} relations exercice-bodypart importées`);
 
-    // 4. Importer History
+    // 5. Importer History
     console.log('📦 Importation de l\'historique...');
     const historyData = JSON.parse(
       readFileSync(join(process.cwd(), 'src/datas/history_backup.json'), 'utf-8')
@@ -111,7 +122,7 @@ async function importBackup() {
     }
     console.log(`✅ ${historyData.length} entrées d'historique importées`);
 
-    // 5. Importer AphasieItems
+    // 6. Importer AphasieItems
     console.log('📦 Importation des items d\'aphasie...');
     const aphasieData = JSON.parse(
       readFileSync(join(process.cwd(), 'src/datas/aphasie_backup.json'), 'utf-8')

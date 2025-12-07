@@ -4,18 +4,35 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/app/components/atoms/Logo';
-import LogoBrain from '@/assets/logoBrain.svg';
 import menuData from '@/datas/menu.json';
-import Image from 'next/image';
+import { useUser } from '@/contexts/UserContext';
 
 export default function NavBar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser, setCurrentUser, users } = useUser();
 
-  const navItems = menuData.map(item => ({
-    label: item.label,
-    href: item.href
-  }));
+  // Filtrer les éléments du menu selon l'utilisateur actif
+  const navItems = menuData
+    .filter(item => {
+      // Afficher le journal d'aphasie uniquement pour Calypso
+      if (item.href === '/aphasie') {
+        return currentUser?.name === 'Calypso';
+      }
+      return true;
+    })
+    .map(item => ({
+      label: item.label,
+      href: item.href
+    }));
+
+  const handleUserChange = (userId: number) => {
+    const selectedUser = users.find(u => u.id === userId);
+    if (selectedUser) {
+      setCurrentUser(selectedUser);
+      // Les composants se rechargeront automatiquement via useEffect quand currentUser change
+    }
+  };
 
   return (
     <nav className="bg-white max-w-9xl w-fullmx-auto rounded-full  mb-12">
@@ -24,7 +41,7 @@ export default function NavBar() {
           <Logo size={32} />
         </Link>
 
-        <div className="hidden md:flex gap-8">
+        <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => {
             const isActive = pathname === item.href || 
               (item.href !== '/' && pathname.startsWith(item.href));
@@ -43,6 +60,17 @@ export default function NavBar() {
               </Link>
             );
           })}
+          <select
+            value={currentUser?.id || ''}
+            onChange={(e) => handleUserChange(Number(e.target.value))}
+            className="text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent cursor-pointer"
+          >
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button
@@ -81,6 +109,25 @@ export default function NavBar() {
                 </Link>
               );
             })}
+            <div className="pt-2 border-t border-gray-200">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Utilisateur
+              </label>
+              <select
+                value={currentUser?.id || ''}
+                onChange={(e) => {
+                  handleUserChange(Number(e.target.value));
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              >
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       )}

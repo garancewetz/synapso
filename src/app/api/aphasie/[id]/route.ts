@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -34,6 +35,12 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Vérifier l'authentification
+  const authError = await requireAuth(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
@@ -63,6 +70,12 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Vérifier l'authentification
+  const authError = await requireAuth(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);

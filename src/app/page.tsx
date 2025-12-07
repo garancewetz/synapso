@@ -8,6 +8,7 @@ import FiltersExercices from '@/app/components/organisms/FiltersExercices';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import type { Exercice, BodypartWithCount, BodypartWithExercices } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
@@ -15,9 +16,12 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
+  const { currentUser } = useUser();
 
   const fetchExercices = () => {
-    fetch('/api/exercices')
+    if (!currentUser) return;
+    
+    fetch(`/api/exercices?userId=${currentUser.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -36,7 +40,8 @@ export default function Home() {
 
   useEffect(() => {
     fetchExercices();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
 
 
 

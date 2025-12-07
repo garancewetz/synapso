@@ -10,6 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  exercices Exercice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 model Exercice {
   id                 Int                @id @default(autoincrement())
   name               String
@@ -19,6 +27,8 @@ model Exercice {
   workoutSeries      Int?
   workoutDuration    String?
   equipments         String // Stocké en JSON string
+  userId             Int
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   bodyparts          ExerciceBodypart[]
   history            History[]
   completed          Boolean            @default(false)

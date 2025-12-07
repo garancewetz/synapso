@@ -8,9 +8,29 @@ export async function GET(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
     
-    const exercice = await prisma.exercice.findUnique({
-      where: { id },
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+    
+    const exercice = await prisma.exercice.findFirst({
+      where: { 
+        id,
+        userId: userIdNumber,
+      },
       include: {
         bodyparts: {
           include: {
@@ -68,6 +88,36 @@ export async function PUT(
     const { id: idParam } = await params;
     const id = parseInt(idParam);
     const updatedData = await request.json();
+
+    if (!updatedData.userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(updatedData.userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que l'exercice appartient à l'utilisateur
+    const existingExercice = await prisma.exercice.findFirst({
+      where: { 
+        id,
+        userId: userIdNumber,
+      },
+    });
+
+    if (!existingExercice) {
+      return NextResponse.json(
+        { error: 'Exercice not found' },
+        { status: 404 }
+      );
+    }
 
     // Mettre à jour l'exercice
     await prisma.exercice.update({
@@ -159,6 +209,38 @@ export async function DELETE(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que l'exercice appartient à l'utilisateur
+    const existingExercice = await prisma.exercice.findFirst({
+      where: { 
+        id,
+        userId: userIdNumber,
+      },
+    });
+
+    if (!existingExercice) {
+      return NextResponse.json(
+        { error: 'Exercice not found' },
+        { status: 404 }
+      );
+    }
     
     await prisma.exercice.delete({
       where: { id },

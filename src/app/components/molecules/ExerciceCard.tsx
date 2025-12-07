@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Tag from "../atoms/Tag";
 import type { Exercice, BodypartSection } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 interface ExerciceCardProps {
     id: number;
@@ -14,6 +15,7 @@ interface ExerciceCardProps {
 
 export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: ExerciceCardProps) {
     const [isCompleting, setIsCompleting] = useState(false);
+    const { currentUser } = useUser();
 
     const handleEdit = () => {
         if (onEdit) {
@@ -22,9 +24,11 @@ export default function ExerciceCard({ id, exercice, onEdit, onCompleted }: Exer
     };
 
     const handleComplete = async () => {
+        if (!currentUser) return;
+        
         setIsCompleting(true);
         try {
-            const response = await fetch(`/api/exercices/${id}/complete`, {
+            const response = await fetch(`/api/exercices/${id}/complete?userId=${currentUser.id}`, {
                 method: 'PATCH',
             });
 

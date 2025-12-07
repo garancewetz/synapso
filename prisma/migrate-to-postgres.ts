@@ -59,7 +59,16 @@ async function migrateToPostgres() {
     }
     console.log(`✅ ${bodyparts.length} bodyparts migrés`);
 
-    // 2. Migrer Exercices
+    // 2. Récupérer l'utilisateur Calypso (par défaut)
+    const calypso = await postgresClient.user.findUnique({
+      where: { name: 'Calypso' },
+    });
+    
+    if (!calypso) {
+      throw new Error('Utilisateur Calypso non trouvé. Veuillez d\'abord créer les utilisateurs.');
+    }
+
+    // 3. Migrer Exercices
     console.log('📦 Migration des exercices...');
     const exercices = await sqliteClient.exercice.findMany({
       include: {
@@ -84,6 +93,7 @@ async function migrateToPostgres() {
           equipments: exercice.equipments,
           completed: exercice.completed,
           completedAt: exercice.completedAt,
+          userId: calypso.id,
         },
         create: {
           id: exercice.id,
@@ -96,6 +106,7 @@ async function migrateToPostgres() {
           equipments: exercice.equipments,
           completed: exercice.completed,
           completedAt: exercice.completedAt,
+          userId: calypso.id,
         },
       });
 
@@ -118,7 +129,7 @@ async function migrateToPostgres() {
     }
     console.log(`✅ ${exercices.length} exercices migrés`);
 
-    // 3. Migrer History
+    // 4. Migrer History
     console.log('📦 Migration de l\'historique...');
     const history = await sqliteClient.history.findMany();
     for (const entry of history) {
@@ -137,7 +148,7 @@ async function migrateToPostgres() {
     }
     console.log(`✅ ${history.length} entrées d'historique migrées`);
 
-    // 4. Migrer AphasieItems
+    // 5. Migrer AphasieItems
     console.log('📦 Migration des items d\'aphasie...');
     const aphasieItems = await sqliteClient.aphasieItem.findMany();
     for (const item of aphasieItems) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Metadata } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 interface ExerciceFormProps {
   exerciceId?: number;
@@ -10,6 +11,7 @@ interface ExerciceFormProps {
 }
 
 export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: ExerciceFormProps) {
+  const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -38,9 +40,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
         console.error('Erreur lors du chargement des métadonnées:', err);
       });
 
-    if (exerciceId) {
+    if (exerciceId && currentUser) {
       // Charger l'exercice existant
-      fetch(`/api/exercices/${exerciceId}`)
+      fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`)
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -59,7 +61,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
           setError('Erreur lors du chargement de l&apos;exercice');
         });
     }
-  }, [exerciceId]);
+  }, [exerciceId, currentUser]);
 
   const toggleBodypart = (bodypart: string) => {
     setFormData((prev) => ({
@@ -109,6 +111,11 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      setError('Utilisateur non défini');
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -125,6 +132,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       },
       equipments: formData.equipments,
       bodyparts: formData.bodyparts,
+      userId: currentUser.id,
     };
 
     try {
@@ -160,11 +168,16 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       return;
     }
 
+    if (!currentUser) {
+      setError('Utilisateur non défini');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`/api/exercices/${exerciceId}`, {
+      const response = await fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`, {
         method: 'DELETE',
       });
 

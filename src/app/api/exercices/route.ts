@@ -23,9 +23,30 @@ interface ExerciceWithBodyparts {
   }>;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     const exercices = await prisma.exercice.findMany({
+      where: {
+        userId: userIdNumber,
+      },
       include: {
         bodyparts: {
           include: {
@@ -86,6 +107,21 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
 
+    if (!data.userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(data.userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     // Créer l'exercice
     const exercice = await prisma.exercice.create({
       data: {
@@ -96,6 +132,7 @@ export async function POST(request: NextRequest) {
         workoutSeries: data.workout.series,
         workoutDuration: data.workout.duration,
         equipments: JSON.stringify(data.equipments),
+        userId: userIdNumber,
       },
     });
 

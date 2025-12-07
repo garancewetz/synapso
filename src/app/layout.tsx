@@ -3,6 +3,7 @@ import "./globals.css";
 import NavBar from "@/app/components/organisms/NavBar";
 import SiteProtection from "@/app/components/organisms/SiteProtection";
 import DevBanner from "@/app/components/atoms/DevBanner";
+import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
   title: "Synapso - Caly",
@@ -34,15 +35,17 @@ export default function RootLayout({
       <body
         className={` antialiased`}
       >
-        <DevBanner />
-        <SiteProtection>
-          <div className="px-4 md:px-6 lg:px-8">
-            <NavBar />
-          </div>
-          <main className="flex-1 mx-auto min-h-screen h-full w-full max-w-9xl">
-              {children}
-          </main>
-        </SiteProtection>
+        <UserProvider>
+          <DevBanner />
+          <SiteProtection>
+            <div className="px-4 md:px-6 lg:px-8">
+              <NavBar />
+            </div>
+            <main className="flex-1 mx-auto min-h-screen h-full w-full max-w-9xl">
+                {children}
+            </main>
+          </SiteProtection>
+        </UserProvider>
       </body>
     </html>
   );

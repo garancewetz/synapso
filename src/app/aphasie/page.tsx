@@ -5,10 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import type { AphasieItem } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 export default function AphasiePage() {
   const [items, setItems] = useState<AphasieItem[]>([]);
   const router = useRouter();
+  const { currentUser } = useUser();
+
+  // Rediriger si l'utilisateur n'est pas Calypso
+  useEffect(() => {
+    if (currentUser && currentUser.name !== 'Calypso') {
+      router.push('/');
+    }
+  }, [currentUser, router]);
 
   const fetchItems = () => {
     fetch('/api/aphasie')
@@ -41,6 +50,11 @@ export default function AphasiePage() {
   const handleEditClick = (id: number) => {
     router.push(`/aphasie/edit/${id}`);
   };
+
+  // Ne rien afficher si l'utilisateur n'est pas Calypso
+  if (!currentUser || currentUser.name !== 'Calypso') {
+    return null;
+  }
 
   return (
     <div className="mt-4 md:mt-10 px-4 md:px-6">

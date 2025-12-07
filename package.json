@@ -25,10 +25,10 @@
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "framer-motion": "^12.23.24",
-    "next": "15.5.6",
+    "next": "15.5.7",
     "prisma": "^6.17.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "19.1.2",
+    "react-dom": "19.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -37,7 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.6",
+    "eslint-config-next": "15.5.7",
     "sharp": "^0.33.5",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",

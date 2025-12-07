@@ -3,6 +3,7 @@
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceForm from '@/app/components/organisms/ExerciceForm';
+import FormPageWrapper from '@/app/components/organisms/FormPageWrapper';
 
 interface AdminEditPageProps {
   params: Promise<{
@@ -31,19 +32,13 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   };
 
   return (
-
-          <div className="p-3 sm:p-6 bg-gray-50">
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="p-4 sm:p-6">
-                  <ExerciceForm
-                    exerciceId={exerciceId}
-                    onSuccess={handleSuccess}
-                    onCancel={handleCancel}
-                  />
-                </div>
-            </div>
-        </div>
-    
+    <FormPageWrapper>
+      <ExerciceForm
+        exerciceId={exerciceId}
+        onSuccess={handleSuccess}
+        onCancel={handleCancel}
+      />
+    </FormPageWrapper>
   );
 }
 

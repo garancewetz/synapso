@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import BodyPartsNav from '@/app/components/molecules/BodyPartsNav';
 import FiltersExercices from '@/app/components/organisms/FiltersExercices';
+import SectionTitle from '@/app/components/molecules/SectionTitle';
+import EmptyState from '@/app/components/molecules/EmptyState';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import Loader from '@/app/components/atoms/Loader';
@@ -248,24 +250,16 @@ export default function Home() {
                   }
 
                   const filterText = activeFilters.length > 0
-                    ? `avec les filtres &quot;${activeFilters.join('&quot; et &quot;')}&quot;`
+                    ? `avec les filtres "${activeFilters.join('" et "')}"`
                     : '';
 
                   return (
-                    <div className="flex items-center justify-center min-h-[400px]">
-                      <div className="text-center">
-                        <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                          Aucun exercice trouvé
-                        </h3>
-                        <p className="text-gray-600">
-                          Aucun résultat n&apos;est disponible {filterText}.
-                        </p>
-                        <p className="text-sm text-gray-500 mt-2">
-                          Essayez de modifier vos filtres ou de réinitialiser la recherche.
-                        </p>
-                      </div>
-                    </div>
+                    <EmptyState
+                      icon="🔍"
+                      title="Aucun exercice trouvé"
+                      message={`Aucun résultat n'est disponible ${filterText}.`}
+                      subMessage="Essayez de modifier vos filtres ou de réinitialiser la recherche."
+                    />
                   );
                 }
 
@@ -274,10 +268,7 @@ export default function Home() {
                     {/* Section des exercices épinglés */}
                     {pinnedExercices.length > 0 && (
                       <div className="mb-8">
-                        <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
-                          <span className='bg-white z-1 pr-3'>📌 Exercices épinglés</span>
-                          <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
-                        </h2>
+                        <SectionTitle>📌 Exercices épinglés</SectionTitle>
                         <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
                           {pinnedExercices.map((exercice) => {
                             // Trouver le bodypart pour cet exercice (prendre le premier)
@@ -311,10 +302,7 @@ export default function Home() {
 
                       return (
                         <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 not-first:pt-4">
-                          <h2 className="text-lg uppercase text-gray-900 mb-3 sm:mb-4 relative">
-                            <span className='bg-white z-1 pr-3'>{bodypart.name}</span>
-                            <hr className='my-4 border-gray-200 absolute w-full left-0 top-0 h-1 -z-1' />
-                          </h2>
+                          <SectionTitle>{bodypart.name}</SectionTitle>
                           <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
                             {unpinnedBodypartExercices.map((exercice) => (
                               <ExerciceCard

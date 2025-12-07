@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import type { Metadata } from '@/types';
 import { useUser } from '@/contexts/UserContext';
+import Input from '@/app/components/atoms/Input';
+import Textarea from '@/app/components/atoms/Textarea';
+import ErrorMessage from '@/app/components/atoms/ErrorMessage';
+import FormActions from '@/app/components/molecules/FormActions';
 
 interface ExerciceFormProps {
   exerciceId?: number;
@@ -199,87 +203,53 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+      <ErrorMessage message={error} />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Nom de l&apos;exercice *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <Input
+        label="Nom de l'exercice"
+        type="text"
+        required
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description *
-        </label>
-        <textarea
-          required
-          rows={3}
-          value={formData.descriptionText}
-          onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <Textarea
+        label="Description"
+        required
+        rows={3}
+        value={formData.descriptionText}
+        onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Commentaire
-        </label>
-        <input
-          type="text"
-          value={formData.descriptionComment}
-          onChange={(e) => setFormData({ ...formData, descriptionComment: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <Input
+        label="Commentaire"
+        type="text"
+        value={formData.descriptionComment}
+        onChange={(e) => setFormData({ ...formData, descriptionComment: e.target.value })}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Répétitions
-          </label>
-          <input
-            type="number"
-            value={formData.workoutRepeat}
-            onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <Input
+          label="Répétitions"
+          type="number"
+          value={formData.workoutRepeat}
+          onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Séries
-          </label>
-          <input
-            type="number"
-            value={formData.workoutSeries}
-            onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <Input
+          label="Séries"
+          type="number"
+          value={formData.workoutSeries}
+          onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Durée
-          </label>
-          <input
-            type="text"
-            placeholder="ex: 120 secondes"
-            value={formData.workoutDuration}
-            onChange={(e) => setFormData({ ...formData, workoutDuration: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <Input
+          label="Durée"
+          type="text"
+          placeholder="ex: 120 secondes"
+          value={formData.workoutDuration}
+          onChange={(e) => setFormData({ ...formData, workoutDuration: e.target.value })}
+        />
       </div>
 
       <div>
@@ -358,42 +328,16 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
         </div>
       </div>
 
-      <div className="space-y-3 pt-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Enregistrement...' : exerciceId ? 'Modifier' : 'Créer'}
-          </button>
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={loading}
-              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Annuler
-            </button>
-          )}
-        </div>
-
-        {exerciceId && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={loading}
-            className={`w-full py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              showDeleteConfirm
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-300'
-            }`}
-          >
-            {showDeleteConfirm ? '⚠️ Confirmer la suppression' : 'Supprimer l&apos;exercice'}
-          </button>
-        )}
-      </div>
+      <FormActions
+        loading={loading}
+        onSubmitLabel={exerciceId ? 'Modifier' : 'Créer'}
+        onCancel={onCancel}
+        showDelete={!!exerciceId}
+        onDelete={handleDelete}
+        deleteConfirm={showDeleteConfirm}
+        deleteLabel="Supprimer l'exercice"
+        deleteConfirmLabel="⚠️ Confirmer la suppression"
+      />
     </form>
   );
 }

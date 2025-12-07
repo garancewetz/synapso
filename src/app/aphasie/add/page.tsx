@@ -1,20 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AphasieForm from '@/app/components/organisms/AphasieForm';
-import { useUser } from '@/contexts/UserContext';
+import FormPageWrapper from '@/app/components/organisms/FormPageWrapper';
+import { useCalypsoCheck } from '@/hooks/useCalypsoCheck';
 
 export default function AphasieAddPage() {
   const router = useRouter();
-  const { currentUser } = useUser();
-
-  // Rediriger si l'utilisateur n'est pas Calypso
-  useEffect(() => {
-    if (currentUser && currentUser.name !== 'Calypso') {
-      router.push('/');
-    }
-  }, [currentUser, router]);
+  const { isCalypso } = useCalypsoCheck();
 
   const handleSuccess = () => {
     router.push('/aphasie');
@@ -25,21 +18,17 @@ export default function AphasieAddPage() {
   };
 
   // Ne rien afficher si l'utilisateur n'est pas Calypso
-  if (!currentUser || currentUser.name !== 'Calypso') {
+  if (!isCalypso) {
     return null;
   }
 
   return (
-    <div className="p-3 sm:p-6 bg-gray-50">
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 sm:p-6">
-          <AphasieForm
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
-          />
-        </div>
-      </div>
-    </div>
+    <FormPageWrapper>
+      <AphasieForm
+        onSuccess={handleSuccess}
+        onCancel={handleCancel}
+      />
+    </FormPageWrapper>
   );
 }
 

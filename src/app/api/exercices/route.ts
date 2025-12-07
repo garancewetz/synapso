@@ -141,19 +141,28 @@ export async function POST(request: NextRequest) {
     // Créer les relations avec les bodyparts
     if (data.bodyparts && Array.isArray(data.bodyparts)) {
       for (const bodypartName of data.bodyparts) {
-        // Trouver le bodypart par son nom
-        const bodypart = await prisma.bodypart.findUnique({
+        // Trouver ou créer le bodypart par son nom
+        let bodypart = await prisma.bodypart.findUnique({
           where: { name: bodypartName },
         });
 
-        if (bodypart) {
-          await prisma.exerciceBodypart.create({
+        // Si le bodypart n'existe pas, le créer avec une couleur par défaut
+        if (!bodypart) {
+          bodypart = await prisma.bodypart.create({
             data: {
-              exerciceId: exercice.id,
-              bodypartId: bodypart.id,
+              name: bodypartName,
+              color: 'gray', // Couleur par défaut
             },
           });
         }
+
+        // Créer la relation
+        await prisma.exerciceBodypart.create({
+          data: {
+            exerciceId: exercice.id,
+            bodypartId: bodypart.id,
+          },
+        });
       }
     }
 

@@ -38,8 +38,9 @@ export default function NavBar() {
   return (
     <nav className="bg-white max-w-9xl w-fullmx-auto rounded-full mb-4 md:mb-12">
       <div className="flex items-center justify-between lg:px-6 py-2 md:py-3">
-        <Link href="/">
+        <Link href="/" className="flex items-center gap-2">
           <Logo size={20} className="md:scale-125" />
+          <span className="text-base md:text-lg font-semibold text-gray-900">Synapso</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

@@ -7,8 +7,7 @@ interface LogoProps {
 
 export default function Logo({ size = 20, className = "" }: LogoProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-        <div className="lg:w-15">
+    <div className={className}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" className="w-5 h-5 md:w-8 md:h-8">
         <title id="title">Logo Synapso</title>
         <defs>
@@ -32,12 +31,6 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
                  C10 23 29 6 50 6 Z"
               fill="none" stroke="#000" strokeWidth="1"/>
       </svg>
-        </div>
-      
-      {/* Nom de l'application */}
-      <div className="text-center hidden md:block">
-        <h1 className="text uppercase text-gray-900">Synapso</h1>
-      </div>
     </div>
   );
 }

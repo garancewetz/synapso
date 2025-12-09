@@ -118,5 +118,83 @@ const getBgColor = (color: string, hover: boolean = false) => {
   }
 }
 
-export { getBgColorLight, getBgColor };
+const getBorderColor = (color: string) => {
+  switch (color) {
+    case 'cyan':
+      return 'border-cyan-500';
+    case 'green':
+      return 'border-green-500';
+    case 'orange':
+      return 'border-orange-500';
+    case 'blue':
+      return 'border-blue-500';
+    case 'yellow':
+      return 'border-yellow-500';
+    case 'red':
+      return 'border-red-500';
+    case 'purple':
+      return 'border-purple-500';
+    case 'pink':
+      return 'border-pink-500';
+    case 'gray':
+      return 'border-gray-500';
+    case 'amber':
+      return 'border-amber-500';
+    case 'indigo':
+      return 'border-indigo-500';
+    case 'teal':
+      return 'border-teal-500';
+    case 'rose':
+      return 'border-rose-500';
+    case 'emerald':
+      return 'border-emerald-500';
+    case 'lime':
+      return 'border-lime-500';
+    case 'sky':
+      return 'border-sky-500';
+    default:
+      return 'border-gray-500';
+  }
+}
+
+const getBorderColorHover = (color: string) => {
+  switch (color) {
+    case 'cyan':
+      return 'hover:border-cyan-500';
+    case 'green':
+      return 'hover:border-green-500';
+    case 'orange':
+      return 'hover:border-orange-500';
+    case 'blue':
+      return 'hover:border-blue-500';
+    case 'yellow':
+      return 'hover:border-yellow-500';
+    case 'red':
+      return 'hover:border-red-500';
+    case 'purple':
+      return 'hover:border-purple-500';
+    case 'pink':
+      return 'hover:border-pink-500';
+    case 'gray':
+      return 'hover:border-gray-500';
+    case 'amber':
+      return 'hover:border-amber-500';
+    case 'indigo':
+      return 'hover:border-indigo-500';
+    case 'teal':
+      return 'hover:border-teal-500';
+    case 'rose':
+      return 'hover:border-rose-500';
+    case 'emerald':
+      return 'hover:border-emerald-500';
+    case 'lime':
+      return 'hover:border-lime-500';
+    case 'sky':
+      return 'hover:border-sky-500';
+    default:
+      return 'hover:border-gray-500';
+  }
+}
+
+export { getBgColorLight, getBgColor, getBorderColor, getBorderColorHover };
 

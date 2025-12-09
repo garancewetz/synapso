@@ -19,6 +19,7 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [loadingExercices, setLoadingExercices] = useState(false);
+  const [activeBodypart, setActiveBodypart] = useState<string | null>(null);
   const router = useRouter();
   const { currentUser } = useUser();
 
@@ -54,6 +55,45 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
+
+  // Observer les sections pour détecter le bodypart actif au scroll
+  useEffect(() => {
+    const sections = document.querySelectorAll('[id]');
+    // rootMargin correspond à scroll-mt-20 (5rem = 80px) pour que l'observer détecte
+    // la section active au même moment que le scroll s'arrête après un clic
+    const observerOptions = {
+      root: null,
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      // Trier les entrées par leur position dans le viewport
+      // La section la plus proche du haut (après le scroll-mt) est considérée comme active
+      const visibleEntries = entries.filter(entry => entry.isIntersecting);
+      
+      if (visibleEntries.length > 0) {
+        // Prendre la première section visible (la plus haute)
+        const topEntry = visibleEntries.reduce((prev, current) => {
+          const prevTop = prev.boundingClientRect.top;
+          const currentTop = current.boundingClientRect.top;
+          return currentTop < prevTop ? current : prev;
+        });
+        
+        setActiveBodypart(topEntry.target.id);
+      }
+    }, observerOptions);
+
+    sections.forEach((section) => {
+      if (section.id) {
+        observer.observe(section);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [exercices, selectedEquipment, statusFilter]);
 
 
 
@@ -210,7 +250,7 @@ export default function Home() {
         </div>
 
 
-        <BodyPartsNav bodyparts={allBodyparts()} />
+        <BodyPartsNav bodyparts={allBodyparts()} activeBodypart={activeBodypart} />
 
         <div className='flex'>
           <div className='hidden md:block w-60 p-4'>
@@ -228,7 +268,7 @@ export default function Home() {
             />
             </div>
           </div>
-          <div className="flex-1 p-4 md:p-6 scroll-smooth space-y-6">
+          <div className="flex-1 p-4 md:p-6 pb-16 scroll-smooth space-y-6">
             {loadingExercices ? (
               <div className="flex items-center justify-center min-h-[400px]">
                 <Loader size="large" />

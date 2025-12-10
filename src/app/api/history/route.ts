@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 interface HistoryEntry {
@@ -13,6 +13,7 @@ interface HistoryEntry {
     workoutSeries: number | null;
     workoutDuration: string | null;
     equipments: string;
+    userId: number;
     bodyparts: Array<{
       exerciceId: number;
       bodypartId: number;
@@ -25,9 +26,24 @@ interface HistoryEntry {
   };
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
     const history = await prisma.history.findMany({
+      where: {
+        exercice: {
+          userId: parseInt(userId),
+        },
+      },
       include: {
         exercice: {
           include: {

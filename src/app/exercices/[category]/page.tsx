@@ -6,34 +6,25 @@ import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import Loader from '@/app/components/atoms/Loader';
 import type { Exercice } from '@/types';
-import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types/exercice';
+import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
 import { useUser } from '@/contexts/UserContext';
 import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
-
-// Emojis pour chaque catégorie
-const CATEGORY_ICONS: Record<ExerciceCategory, string> = {
-  LOWER_BODY: '🦵',
-  UPPER_BODY: '💪',
-  STRETCHING: '🧘',
-};
+import Link from 'next/link';
 
 export default function CategoryPage() {
-  const params = useParams();
-  const categoryParam = params.category as string;
-  const category = categoryParam?.toUpperCase() as ExerciceCategory;
-  
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const params = useParams();
   const { currentUser } = useUser();
 
-  // Vérifier que la catégorie est valide
-  const isValidCategory = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(category);
-  const categoryStyle = isValidCategory ? CATEGORY_COLORS[category] : null;
+  // Convertir le paramètre URL en catégorie
+  const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
+  const isValidCategory = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(categoryParam);
 
   const fetchExercices = () => {
     if (USE_MOCK_DATA) {
-      const filtered = MOCK_EXERCICES.filter(e => e.category === category);
+      const filtered = MOCK_EXERCICES.filter(e => e.category === categoryParam);
       setExercices(filtered);
       setLoading(false);
       return;
@@ -46,9 +37,10 @@ export default function CategoryPage() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          const filtered = data.filter((e: Exercice) => e.category === category);
+          const filtered = data.filter((e: Exercice) => e.category === categoryParam);
           setExercices(filtered);
         } else {
+          console.error('API error:', data);
           setExercices([]);
         }
       })
@@ -62,16 +54,13 @@ export default function CategoryPage() {
   };
 
   useEffect(() => {
-    // Scroll en haut de la page
-    window.scrollTo(0, 0);
-    
     if (!isValidCategory) {
       router.push('/');
       return;
     }
 
     if (USE_MOCK_DATA) {
-      const filtered = MOCK_EXERCICES.filter(e => e.category === category);
+      const filtered = MOCK_EXERCICES.filter(e => e.category === categoryParam);
       setExercices(filtered);
       setLoading(false);
       return;
@@ -83,7 +72,7 @@ export default function CategoryPage() {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser, category]);
+  }, [currentUser, categoryParam, isValidCategory]);
 
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
@@ -102,7 +91,7 @@ export default function CategoryPage() {
     ));
   };
 
-  // Séparer épinglés et réguliers
+  // Séparer les exercices épinglés des autres
   const pinned = exercices.filter(e => e.pinned);
   const regular = exercices.filter(e => !e.pinned);
   const completedCount = exercices.filter(e => e.completed).length;
@@ -112,76 +101,59 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="min-h-screen pb-24">
-      <div className="max-w-5xl mx-auto pt-6 md:pt-10">
-        
+    <section className="min-h-screen">
+      <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header avec retour */}
         <div className="px-4 mb-6">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4 cursor-pointer"
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Retour
-          </button>
-          
-          {/* Titre de la catégorie */}
-          <div className={`p-6 rounded-2xl ${categoryStyle?.bg}`}>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">{CATEGORY_ICONS[category]}</span>
-              <div>
-                <h1 className={`text-2xl font-bold ${categoryStyle?.text}`}>
-                  {CATEGORY_LABELS[category]}
-                </h1>
-                <p className="text-gray-600 text-sm mt-1">
-                  {completedCount} / {exercices.length} exercices complétés
-                </p>
-              </div>
-            </div>
-            
-            {/* Barre de progression de la catégorie */}
-            <div className="h-2 bg-white/50 rounded-full overflow-hidden mt-4">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${categoryStyle?.accent}`}
-                style={{ width: `${exercices.length > 0 ? (completedCount / exercices.length) * 100 : 0}%` }}
-              />
-            </div>
-          </div>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {CATEGORY_LABELS[categoryParam]}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            {completedCount}/{exercices.length} exercices complétés
+          </p>
         </div>
 
-        {/* Contenu */}
+        {/* Contenu principal */}
         <div className="px-4">
           {loading ? (
-            <div className="flex items-center justify-center min-h-[300px]">
+            <div className="flex items-center justify-center min-h-[400px]">
               <Loader size="large" />
             </div>
           ) : exercices.length === 0 ? (
             <EmptyState
-              icon={CATEGORY_ICONS[category]}
-              title={`Aucun exercice ${CATEGORY_LABELS[category].toLowerCase()}`}
+              icon="📂"
+              title={`Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`}
               message="Cette catégorie est vide pour le moment."
-              subMessage="Retournez à l'accueil pour ajouter des exercices."
+              subMessage="Ajoutez des exercices depuis le menu."
             />
           ) : (
             <div className="space-y-6">
-              {/* Exercices épinglés */}
+              {/* Section des exercices épinglés */}
               {pinned.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
                     Priorités
                   </h2>
-                  <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                     {pinned.map((exercice) => (
                       <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
                         <ExerciceCard
                           exercice={exercice}
                           onEdit={handleEditClick}
                           onCompleted={handleCompleted}
+                          showCategory={false}
                         />
                       </div>
                     ))}
@@ -192,16 +164,19 @@ export default function CategoryPage() {
               {/* Tous les exercices */}
               {regular.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Tous les exercices ({regular.length})
-                  </h2>
-                  <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                  {pinned.length > 0 && (
+                    <h2 className="text-base font-semibold text-gray-900 mb-3">
+                      Autres exercices
+                    </h2>
+                  )}
+                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                     {regular.map((exercice) => (
                       <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
                         <ExerciceCard
                           exercice={exercice}
                           onEdit={handleEditClick}
                           onCompleted={handleCompleted}
+                          showCategory={false}
                         />
                       </div>
                     ))}

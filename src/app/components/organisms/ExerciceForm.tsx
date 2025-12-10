@@ -295,7 +295,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       </div>
 
       <Input
-        label="Nom de l'exercice *"
+        label="Nom de l'exercice"
         type="text"
         required
         placeholder="Ex: Montée de genoux"
@@ -304,7 +304,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       />
 
       <Textarea
-        label="Description *"
+        label="Description"
         required
         rows={4}
         placeholder="Décrivez comment réaliser l'exercice..."

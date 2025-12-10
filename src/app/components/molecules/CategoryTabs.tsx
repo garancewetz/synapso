@@ -1,10 +1,9 @@
 'use client';
 
 import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
+import { useCategory } from '@/contexts/CategoryContext';
 
 interface CategoryTabsProps {
-  activeCategory: ExerciceCategory | null;
-  onCategoryChange: (category: ExerciceCategory | null) => void;
   counts: Record<ExerciceCategory, number>;
 }
 
@@ -35,17 +34,18 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
   },
 };
 
-export default function CategoryTabs({ activeCategory, onCategoryChange, counts }: CategoryTabsProps) {
+export default function CategoryTabs({ counts }: CategoryTabsProps) {
+  const { activeCategory, setActiveCategory } = useCategory();
   const categories: ExerciceCategory[] = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
   const totalCount = categories.reduce((sum, cat) => sum + (counts[cat] || 0), 0);
 
   return (
-    <div className="px-4 mb-6">
-      {/* Container - grille 2x2 sur mobile, flex sur desktop */}
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
+    <div className="hidden md:block px-4 mb-6">
+      {/* Container - flex sur desktop */}
+      <div className="flex flex-wrap justify-center gap-2">
         {/* Bouton "Tous" */}
         <button
-          onClick={() => onCategoryChange(null)}
+          onClick={() => setActiveCategory(null)}
           className={`
             flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 
             font-medium text-sm transition-all duration-200
@@ -72,7 +72,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange, counts 
           return (
             <button
               key={category}
-              onClick={() => onCategoryChange(category)}
+              onClick={() => setActiveCategory(category)}
               className={`
                 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 
                 font-medium text-sm transition-all duration-200 cursor-pointer

@@ -16,9 +16,10 @@ interface ExerciceCardProps {
     exercice: Exercice;
     onEdit?: (id: number) => void;
     onCompleted?: () => void;
+    showCategory?: boolean; // Masquer le badge catégorie si déjà dans une section
 }
 
-export default function ExerciceCard({ exercice, onEdit, onCompleted }: ExerciceCardProps) {
+export default function ExerciceCard({ exercice, onEdit, onCompleted, showCategory = true }: ExerciceCardProps) {
     const [isCompleting, setIsCompleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -111,21 +112,34 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                     <div className="p-4 md:p-5">
                         <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="flex-1 min-w-0 flex items-start gap-2.5">
-                                {/* Emoji de catégorie aligné avec label + titre */}
-                                <span className="flex-shrink-0 text-2xl" role="img" aria-label={CATEGORY_LABELS[exercice.category]}>
-                                    {CATEGORY_ICONS[exercice.category]}
-                                </span>
+                                {/* Emoji de catégorie - affiché seulement si showCategory */}
+                                {showCategory && (
+                                    <span className="flex-shrink-0 text-2xl" role="img" aria-label={CATEGORY_LABELS[exercice.category]}>
+                                        {CATEGORY_ICONS[exercice.category]}
+                                    </span>
+                                )}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-xs font-medium uppercase tracking-wide ${categoryStyle.text}`}>
-                                            {CATEGORY_LABELS[exercice.category]}
-                                        </span>
-                                        {exercice.pinned && (
+                                    {/* Label catégorie - affiché seulement si showCategory */}
+                                    {showCategory && (
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`text-xs font-medium uppercase tracking-wide ${categoryStyle.text}`}>
+                                                {CATEGORY_LABELS[exercice.category]}
+                                            </span>
+                                            {exercice.pinned && (
+                                                <svg className="w-3.5 h-3.5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    )}
+                                    {/* Icône épinglé si pas de catégorie affichée */}
+                                    {!showCategory && exercice.pinned && (
+                                        <div className="flex items-center gap-2 mb-1">
                                             <svg className="w-3.5 h-3.5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                             </svg>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                     <h3 className="text-base md:text-lg font-semibold text-gray-900 leading-tight">
                                         {exercice.name}
                                     </h3>
@@ -258,10 +272,10 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                             disabled={isCompleting}
                             className={`
                                 flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-                                font-medium text-sm transition-all duration-200
+                                font-semibold text-sm transition-all duration-200 shadow-sm
                                 ${exercice.completed
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                    : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400'
                                 }
                             `}
                             title={exercice.completed ? 'Démarquer' : 'Marquer comme fait'}

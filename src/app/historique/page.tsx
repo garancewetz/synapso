@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Tag from '@/app/components/atoms/Tag';
 import type { HistoryEntry } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 export default function HistoriquePage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -12,7 +13,7 @@ export default function HistoriquePage() {
     thisMonth: 0,
     byBodypart: {} as Record<string, number>,
   });
-
+  const { currentUser } = useUser();
 
   const calculateStats = useCallback((data: HistoryEntry[]) => {
     const now = new Date();
@@ -51,7 +52,9 @@ export default function HistoriquePage() {
   }, []);
 
   const fetchHistory = useCallback(() => {
-    fetch('/api/history')
+    if (!currentUser) return;
+    
+    fetch(`/api/history?userId=${currentUser.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -66,11 +69,13 @@ export default function HistoriquePage() {
         console.error('Fetch error:', error);
         setHistory([]);
       });
-  }, [calculateStats]);
+  }, [calculateStats, currentUser]);
 
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    if (currentUser) {
+      fetchHistory();
+    }
+  }, [fetchHistory, currentUser]);
 
 
 

@@ -10,6 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ExerciceCategory {
+  UPPER_BODY   // Haut du corps
+  LOWER_BODY   // Bas du corps
+  STRETCHING   // Étirement
+}
+
 model User {
   id        Int       @id @default(autoincrement())
   name      String    @unique
@@ -27,9 +33,10 @@ model Exercice {
   workoutSeries      Int?
   workoutDuration    String?
   equipments         String // Stocké en JSON string
+  category           ExerciceCategory   @default(UPPER_BODY)
   userId             Int
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bodyparts          ExerciceBodypart[]
+  bodyparts          ExerciceBodypart[] // Gardé pour compatibilité, sera supprimé après migration
   history            History[]
   completed          Boolean            @default(false)
   completedAt        DateTime?

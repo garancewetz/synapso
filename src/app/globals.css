@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8FAFB;
+  --foreground: #1F2937;
+  --card-bg: #FFFFFF;
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --success: #10B981;
+  --success-light: #D1FAE5;
+  --upper-body: #3B82F6;
+  --upper-body-light: #DBEAFE;
+  --lower-body: #F59E0B;
+  --lower-body-light: #FEF3C7;
+  --stretching: #10B981;
+  --stretching-light: #D1FAE5;
 }
 
 @theme inline {
@@ -19,7 +30,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
 }
 
 a {
@@ -31,15 +43,103 @@ a {
   scroll-behavior: smooth;
 }
 
-
-svg > path {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: draw 3s linear forwards;
+/* Animation de succès */
+@keyframes success-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
 }
 
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
+.success-animation {
+  animation: success-pulse 0.6s ease-out;
+}
+
+/* Animation d'entrée des cartes */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter {
+  animation: slide-up 0.4s ease-out;
+}
+
+/* Animation de la barre de progression */
+@keyframes progress-fill {
+  from {
+    width: 0%;
+  }
+}
+
+.progress-animated {
+  animation: progress-fill 1s ease-out;
+}
+
+/* Confettis animation */
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+.confetti {
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+/* Focus states améliorés pour l'accessibilité */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Touch-friendly button sizes */
+@media (pointer: coarse) {
+  button, a {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Cartes avec effet de hover doux */
+.exercise-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exercise-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.exercise-card:active {
+  transform: translateY(0);
+}
+
+/* Tab navigation géante */
+.category-tab {
+  transition: all 0.3s ease;
+}
+
+.category-tab:hover:not(.active) {
+  transform: scale(1.02);
+}
+
+.category-tab.active {
+  transform: scale(1.05);
 }

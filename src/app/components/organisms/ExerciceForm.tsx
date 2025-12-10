@@ -1,18 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Metadata } from '@/types';
 import { useUser } from '@/contexts/UserContext';
 import Input from '@/app/components/atoms/Input';
 import Textarea from '@/app/components/atoms/Textarea';
 import ErrorMessage from '@/app/components/atoms/ErrorMessage';
 import FormActions from '@/app/components/molecules/FormActions';
+import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS } from '@/types/exercice';
 
 interface ExerciceFormProps {
   exerciceId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
+
+// Liste des bodyparts disponibles
+const AVAILABLE_BODYPARTS = [
+  'Jambes',
+  'Bassin',
+  'Bras',
+  'Mains',
+  'Épaules',
+  'Dos',
+  'Nuque / Cervicales',
+  'Pied',
+  'Fessier',
+];
 
 export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: ExerciceFormProps) {
   const { currentUser } = useUser();
@@ -23,25 +36,25 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     workoutRepeat: '',
     workoutSeries: '',
     workoutDuration: '',
-    equipments: [] as string[],
+    category: 'UPPER_BODY' as ExerciceCategory,
     bodyparts: [] as string[],
+    equipments: [] as string[],
   });
-  const [metadata, setMetadata] = useState<Metadata>({ bodyparts: [], equipments: [] });
-  const [newBodypart, setNewBodypart] = useState('');
+  const [equipmentsList, setEquipmentsList] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    // Charger les métadonnées
+    // Charger la liste des équipements existants
     fetch('/api/metadata')
       .then((res) => res.json())
       .then((data) => {
-        setMetadata(data);
+        setEquipmentsList(data.equipments || []);
       })
       .catch((err) => {
-        console.error('Erreur lors du chargement des métadonnées:', err);
+        console.error('Erreur lors du chargement des équipements:', err);
       });
 
     if (exerciceId && currentUser) {
@@ -56,13 +69,14 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
             workoutRepeat: data.workout?.repeat?.toString() || '',
             workoutSeries: data.workout?.series?.toString() || '',
             workoutDuration: data.workout?.duration || '',
+            category: data.category || 'UPPER_BODY',
+            bodyparts: data.bodyparts || [],
             equipments: data.equipments || [],
-            bodyparts: data.bodyparts ? data.bodyparts.map((bp: { name: string }) => bp.name) : [],
           });
         })
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
-          setError('Erreur lors du chargement de l&apos;exercice');
+          setError('Erreur lors du chargement de l\'exercice');
         });
     }
   }, [exerciceId, currentUser]);
@@ -85,30 +99,13 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     }));
   };
 
-  const addNewBodypart = () => {
-    if (newBodypart && !formData.bodyparts.includes(newBodypart)) {
-      setFormData((prev) => ({
-        ...prev,
-        bodyparts: [...prev.bodyparts, newBodypart],
-      }));
-      setMetadata((prev) => ({
-        ...prev,
-        bodyparts: [...prev.bodyparts, newBodypart].sort(),
-      }));
-      setNewBodypart('');
-    }
-  };
-
   const addNewEquipment = () => {
     if (newEquipment && !formData.equipments.includes(newEquipment)) {
       setFormData((prev) => ({
         ...prev,
         equipments: [...prev.equipments, newEquipment],
       }));
-      setMetadata((prev) => ({
-        ...prev,
-        equipments: [...prev.equipments, newEquipment].sort(),
-      }));
+      setEquipmentsList((prev) => [...new Set([...prev, newEquipment])].sort());
       setNewEquipment('');
     }
   };
@@ -117,6 +114,11 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     e.preventDefault();
     if (!currentUser) {
       setError('Utilisateur non défini');
+      return;
+    }
+
+    if (formData.bodyparts.length === 0) {
+      setError('Sélectionnez au moins une partie du corps');
       return;
     }
     
@@ -134,8 +136,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
         series: formData.workoutSeries ? parseInt(formData.workoutSeries) : null,
         duration: formData.workoutDuration || null,
       },
-      equipments: formData.equipments,
+      category: formData.category,
       bodyparts: formData.bodyparts,
+      equipments: formData.equipments,
       userId: currentUser.id,
     };
 
@@ -201,136 +204,188 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     }
   };
 
+  const categories: ExerciceCategory[] = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <ErrorMessage message={error} />
 
+      {/* Sélection de catégorie */}
+      <div>
+        <label className="block text-base font-semibold text-gray-900 mb-3">
+          Catégorie *
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {categories.map((category) => {
+            const isSelected = formData.category === category;
+            const colors = CATEGORY_COLORS[category];
+            
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setFormData({ ...formData, category })}
+                className={`
+                  flex items-center justify-center p-4 rounded-lg border-2 
+                  transition-all duration-200
+                  ${isSelected 
+                    ? `${colors.bg} ${colors.border} ${colors.text}` 
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  }
+                `}
+                aria-pressed={isSelected}
+              >
+                <span className="font-medium text-sm">{CATEGORY_LABELS[category]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sélection des parties du corps */}
+      <div className="bg-gray-50 rounded-lg p-4">
+        <label className="block text-base font-semibold text-gray-900 mb-2">
+          Parties du corps ciblées *
+        </label>
+        <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps</p>
+        <div className="flex flex-wrap gap-2">
+          {AVAILABLE_BODYPARTS.map((bodypart) => {
+            const isSelected = formData.bodyparts.includes(bodypart);
+            const colorClass = BODYPART_COLORS[bodypart] || 'bg-gray-100 text-gray-600';
+            
+            return (
+              <button
+                key={bodypart}
+                type="button"
+                onClick={() => toggleBodypart(bodypart)}
+                className={`
+                  px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  ${isSelected 
+                    ? `${colorClass} ring-2 ring-offset-1 ring-gray-300` 
+                    : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                  }
+                `}
+              >
+                {bodypart}
+                {isSelected && (
+                  <svg className="inline-block w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {formData.bodyparts.length === 0 && (
+          <p className="text-sm text-red-600 mt-2">Sélectionnez au moins une partie du corps</p>
+        )}
+      </div>
+
       <Input
-        label="Nom de l'exercice"
+        label="Nom de l'exercice *"
         type="text"
         required
+        placeholder="Ex: Montée de genoux"
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
       />
 
       <Textarea
-        label="Description"
+        label="Description *"
         required
-        rows={3}
+        rows={4}
+        placeholder="Décrivez comment réaliser l'exercice..."
         value={formData.descriptionText}
         onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
       />
 
       <Input
-        label="Commentaire"
+        label="Conseil ou note (optionnel)"
         type="text"
+        placeholder="Ajoutez un conseil ou une remarque..."
         value={formData.descriptionComment}
         onChange={(e) => setFormData({ ...formData, descriptionComment: e.target.value })}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
-          label="Répétitions"
-          type="number"
-          value={formData.workoutRepeat}
-          onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
-        />
-
-        <Input
-          label="Séries"
-          type="number"
-          value={formData.workoutSeries}
-          onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
-        />
-
-        <Input
-          label="Durée"
-          type="text"
-          placeholder="ex: 120 secondes"
-          value={formData.workoutDuration}
-          onChange={(e) => setFormData({ ...formData, workoutDuration: e.target.value })}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Parties du corps
+      <div className="bg-gray-50 rounded-lg p-4">
+        <label className="block text-base font-semibold text-gray-900 mb-4">
+          Paramètres de l&apos;exercice
         </label>
-        <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-            {metadata.bodyparts.map((bodypart) => (
-              <label key={bodypart} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.bodyparts.includes(bodypart)}
-                  onChange={() => toggleBodypart(bodypart)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm">{bodypart}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex gap-2 pt-2 border-t border-gray-200">
-            <input
-              type="text"
-              placeholder="Ajouter une nouvelle partie..."
-              value={newBodypart}
-              onChange={(e) => setNewBodypart(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewBodypart())}
-              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="button"
-              onClick={addNewBodypart}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
-            >
-              +
-            </button>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Input
+            label="Répétitions"
+            type="number"
+            placeholder="Ex: 10"
+            value={formData.workoutRepeat}
+            onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
+          />
+
+          <Input
+            label="Séries"
+            type="number"
+            placeholder="Ex: 3"
+            value={formData.workoutSeries}
+            onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
+          />
+
+          <Input
+            label="Durée"
+            type="text"
+            placeholder="Ex: 30 secondes"
+            value={formData.workoutDuration}
+            onChange={(e) => setFormData({ ...formData, workoutDuration: e.target.value })}
+          />
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Équipements
+      <div className="bg-gray-50 rounded-lg p-4">
+        <label className="block text-base font-semibold text-gray-900 mb-4">
+          Équipements (optionnel)
         </label>
-        <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-            {metadata.equipments.map((equipment) => (
-              <label key={equipment} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.equipments.includes(equipment)}
-                  onChange={() => toggleEquipment(equipment)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm">{equipment}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex gap-2 pt-2 border-t border-gray-200">
-            <input
-              type="text"
-              placeholder="Ajouter un nouvel équipement..."
-              value={newEquipment}
-              onChange={(e) => setNewEquipment(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
-              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="button"
-              onClick={addNewEquipment}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
-            >
-              +
-            </button>
-          </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {equipmentsList.map((equipment) => {
+            const isSelected = formData.equipments.includes(equipment);
+            return (
+              <button
+                key={equipment}
+                type="button"
+                onClick={() => toggleEquipment(equipment)}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${isSelected 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
+                  }
+                `}
+              >
+                {equipment}
+                {isSelected && ' ✓'}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Ajouter un équipement..."
+            value={newEquipment}
+            onChange={(e) => setNewEquipment(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
+            className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <button
+            type="button"
+            onClick={addNewEquipment}
+            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
+          >
+            + Ajouter
+          </button>
         </div>
       </div>
 
       <FormActions
         loading={loading}
-        onSubmitLabel={exerciceId ? 'Modifier' : 'Créer'}
+        onSubmitLabel={exerciceId ? 'Enregistrer les modifications' : 'Créer l\'exercice'}
         onCancel={onCancel}
         showDelete={!!exerciceId}
         onDelete={handleDelete}
@@ -341,4 +396,3 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     </form>
   );
 }
-

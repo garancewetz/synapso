@@ -3,27 +3,34 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
-import BodyPartsNav from '@/app/components/molecules/BodyPartsNav';
-import FiltersExercices from '@/app/components/organisms/FiltersExercices';
-import SectionTitle from '@/app/components/molecules/SectionTitle';
+import CategoryTabs from '@/app/components/molecules/CategoryTabs';
+import WelcomeHeader from '@/app/components/molecules/WelcomeHeader';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import Link from 'next/link';
 import Button from '@/app/components/atoms/Button';
 import Loader from '@/app/components/atoms/Loader';
-import type { Exercice, BodypartWithCount, BodypartWithExercices } from '@/types';
+import type { Exercice } from '@/types';
+import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
 import { useUser } from '@/contexts/UserContext';
+import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
+
+// Nombre d'exercices visibles par défaut par catégorie
+const EXERCICES_LIMIT = 6;
 
 export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending'>('all');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<ExerciceCategory | null>(null);
   const [loadingExercices, setLoadingExercices] = useState(false);
-  const [activeBodypart, setActiveBodypart] = useState<string | null>(null);
   const router = useRouter();
   const { currentUser } = useUser();
 
   const fetchExercices = () => {
+    if (USE_MOCK_DATA) {
+      setExercices(MOCK_EXERCICES);
+      setLoadingExercices(false);
+      return;
+    }
+
     if (!currentUser) return;
     
     setLoadingExercices(true);
@@ -46,8 +53,12 @@ export default function Home() {
       });
   };
 
-
   useEffect(() => {
+    if (USE_MOCK_DATA) {
+      setExercices(MOCK_EXERCICES);
+      return;
+    }
+    
     if (currentUser) {
       fetchExercices();
     } else {
@@ -56,370 +67,245 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
-  // Observer les sections pour détecter le bodypart actif au scroll
-  useEffect(() => {
-    const sections = document.querySelectorAll('[id]');
-    // rootMargin correspond à scroll-mt-20 (5rem = 80px) pour que l'observer détecte
-    // la section active au même moment que le scroll s'arrête après un clic
-    const observerOptions = {
-      root: null,
-      rootMargin: '-80px 0px -60% 0px',
-      threshold: 0
+  // Calculer les compteurs par catégorie
+  const getCategoryCounts = (): Record<ExerciceCategory, number> => {
+    return {
+      UPPER_BODY: exercices.filter(e => e.category === 'UPPER_BODY').length,
+      LOWER_BODY: exercices.filter(e => e.category === 'LOWER_BODY').length,
+      STRETCHING: exercices.filter(e => e.category === 'STRETCHING').length,
     };
+  };
 
-    const observer = new IntersectionObserver((entries) => {
-      // Trier les entrées par leur position dans le viewport
-      // La section la plus proche du haut (après le scroll-mt) est considérée comme active
-      const visibleEntries = entries.filter(entry => entry.isIntersecting);
-      
-      if (visibleEntries.length > 0) {
-        // Prendre la première section visible (la plus haute)
-        const topEntry = visibleEntries.reduce((prev, current) => {
-          const prevTop = prev.boundingClientRect.top;
-          const currentTop = current.boundingClientRect.top;
-          return currentTop < prevTop ? current : prev;
-        });
-        
-        setActiveBodypart(topEntry.target.id);
-      }
-    }, observerOptions);
+  // Filtrer les exercices par catégorie active
+  const getFilteredExercices = () => {
+    if (!activeCategory) return exercices;
+    return exercices.filter(e => e.category === activeCategory);
+  };
 
-    sections.forEach((section) => {
-      if (section.id) {
-        observer.observe(section);
-      }
-    });
-
-    return () => {
-      observer.disconnect();
+  // Séparer les exercices épinglés des autres
+  const getPinnedAndRegularExercices = () => {
+    const filtered = getFilteredExercices();
+    return {
+      pinned: filtered.filter(e => e.pinned),
+      regular: filtered.filter(e => !e.pinned),
     };
-  }, [exercices, selectedEquipment, statusFilter]);
-
-
-
-  const allBodyparts = (): BodypartWithCount[] => {
-    const objectBodyparts: { [key: string]: BodypartWithCount } = exercices.flatMap((exercice) => exercice.bodyparts || []).reduce((acc, bodypart) => {
-      const key = bodypart.name;
-      if (!acc[key]) {
-        acc[key] = {
-          name: bodypart.name,
-          count: 0,
-          color: bodypart.color,
-          id: bodypart.id
-        };
-      }
-      return acc;
-    }, {} as { [key: string]: BodypartWithCount });
-
-    // Compter les exercices pour chaque bodypart en tenant compte des filtres
-    let filteredExercices = exercices;
-
-    // Filtre par équipement
-    if (selectedEquipment) {
-      filteredExercices = filteredExercices.filter((exercice) =>
-        exercice.equipments && exercice.equipments.includes(selectedEquipment)
-      );
-    }
-
-    // Filtre par statut
-    if (statusFilter === 'completed') {
-      filteredExercices = filteredExercices.filter((exercice) => exercice.completed);
-    } else if (statusFilter === 'pending') {
-      filteredExercices = filteredExercices.filter((exercice) => !exercice.completed);
-    }
-
-    filteredExercices.forEach((exercice) => {
-      exercice.bodyparts?.forEach((bp) => {
-        if (objectBodyparts[bp.name]) {
-          objectBodyparts[bp.name].count++;
-        }
-      });
-    });
-
-    return Object.values(objectBodyparts)
-      .filter((bodypart) => bodypart.count > 0)
-      .sort((a, b) => b.count - a.count);
-  }
-
-
-  const exercicesByBodyPart = (): BodypartWithExercices[] => {
-    const bodyparts = allBodyparts();
-    let filteredExercices = exercices;
-
-    // Filtre par équipement
-    if (selectedEquipment) {
-      filteredExercices = filteredExercices.filter((exercice) =>
-        exercice.equipments && exercice.equipments.includes(selectedEquipment)
-      );
-    }
-
-    // Filtre par statut
-    if (statusFilter === 'completed') {
-      filteredExercices = filteredExercices.filter((exercice) => exercice.completed);
-    } else if (statusFilter === 'pending') {
-      filteredExercices = filteredExercices.filter((exercice) => !exercice.completed);
-    }
-
-    return bodyparts.map((bodypart) => ({
-      ...bodypart,
-      exercices: filteredExercices.filter((exercice) =>
-        exercice.bodyparts?.some((bp) => bp.id === bodypart.id)
-      )
-    })).filter((bodypart) => bodypart.exercices.length > 0);
-  }
-
-  const getEquipments = () => {
-    const equipmentCounts: { [key: string]: number } = {};
-
-    exercices.forEach((exercice) => {
-      if (exercice.equipments && Array.isArray(exercice.equipments)) {
-        exercice.equipments.forEach((equipment: string) => {
-          if (!equipmentCounts[equipment]) {
-            equipmentCounts[equipment] = 0;
-          }
-          equipmentCounts[equipment]++;
-        });
-      }
-    });
-
-    return Object.entries(equipmentCounts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-  }
-
-  const getCounts = () => {
-    const totalExercices = exercices.length;
-    const completedCount = exercices.filter((exercice) => exercice.completed).length;
-    const pendingCount = totalExercices - completedCount;
-
-    return { totalExercices, completedCount, pendingCount };
-  }
+  };
 
   const getTodayCompletedCount = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return exercices.filter((exercice) => {
-      if (!exercice.completedAt) return false;
-      const completedDate = new Date(exercice.completedAt);
-      completedDate.setHours(0, 0, 0, 0);
-      return completedDate.getTime() === today.getTime();
-    }).length;
-  }
+    return exercices.filter((exercice) => exercice.completed).length;
+  };
 
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
   };
 
   const handleCompleted = () => {
+    if (USE_MOCK_DATA) return;
     fetchExercices();
   };
 
+  // Toggle completion pour le mode mock
+  const toggleMockComplete = (id: number) => {
+    if (!USE_MOCK_DATA) return;
+    setExercices(prev => prev.map(ex => 
+      ex.id === id ? { ...ex, completed: !ex.completed, completedAt: ex.completed ? null : new Date() } : ex
+    ));
+  };
+
+  const { pinned, regular } = getPinnedAndRegularExercices();
+  const displayName = USE_MOCK_DATA ? "Calypso" : (currentUser?.name || "");
 
   return (
-    <section>
-
-      <div className="mt-4 md:mt-10">
-        {currentUser && (
-          <div className="px-4 mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-              C&apos;est parti {currentUser.name} !
-            </h2>
-            {!loadingExercices && getTodayCompletedCount() > 0 && (
-              <p className="text-sm md:text-base text-gray-600 mt-1">
-                Déjà {getTodayCompletedCount()} exercice{getTodayCompletedCount() > 1 ? 's' : ''} fait{getTodayCompletedCount() > 1 ? 's' : ''} aujourd&apos;hui !
-              </p>
-            )}
+    <section className="min-h-screen pb-24">
+      <div className="max-w-5xl mx-auto pt-6 md:pt-10">
+        
+        {/* Banner mode démo */}
+        {USE_MOCK_DATA && (
+          <div className="mx-4 mb-4 p-3 bg-slate-100 border border-slate-200 rounded-lg text-center">
+            <span className="text-slate-600 text-sm font-medium">Mode démonstration — Données fictives</span>
           </div>
         )}
-        <div className='flex gap-2 mb-4 md:mb-6 px-4 md:justify-center'>
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="md:hidden flex-1 px-3 py-2.5 bg-gray-100 text-gray-700 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-            Filtres
-          </button>
-          <Link href="/exercice/add" className="flex-1 md:flex-initial">
-            <Button className="w-full md:w-auto text-sm md:text-base py-2.5 md:py-2">
-              Ajouter un exercice
+
+        {/* Header d'accueil avec progression */}
+        {!loadingExercices && (
+          <WelcomeHeader
+            userName={displayName}
+            totalExercices={exercices.length}
+            completedToday={getTodayCompletedCount()}
+          />
+        )}
+
+        {/* Navigation par catégories */}
+        {!loadingExercices && exercices.length > 0 && (
+          <CategoryTabs
+            counts={getCategoryCounts()}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+        )}
+
+        {/* Bouton d'ajout */}
+        <div className="px-4 mb-6 flex justify-center">
+          <Link href="/exercice/add">
+            <Button className="text-base px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+              + Ajouter un exercice
             </Button>
           </Link>
         </div>
 
-
-        <BodyPartsNav bodyparts={allBodyparts()} activeBodypart={activeBodypart} />
-
-        <div className='flex'>
-          <div className='hidden md:block w-60 p-4'>
-            <div className='sticky top-20 space-y-4 flex flex-col'>
-     
-            <FiltersExercices
-              equipments={getEquipments()}
-              selectedEquipment={selectedEquipment}
-              onEquipmentSelect={setSelectedEquipment}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              totalExercices={getCounts().totalExercices}
-              completedCount={getCounts().completedCount}
-              pendingCount={getCounts().pendingCount}
-            />
+        {/* Contenu principal */}
+        <div className="px-4">
+          {loadingExercices ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Loader size="large" />
             </div>
-          </div>
-          <div className="flex-1 p-4 md:p-6 pb-16 scroll-smooth space-y-6">
-            {loadingExercices ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <Loader size="large" />
-              </div>
-            ) : (
-              (() => {
-                const filteredBodyParts = exercicesByBodyPart().filter((bodypart) => bodypart.exercices.length > 0);
-                
-                // Récupérer tous les exercices filtrés
-                let filteredExercices = exercices;
-
-                // Filtre par équipement
-                if (selectedEquipment) {
-                  filteredExercices = filteredExercices.filter((exercice) =>
-                    exercice.equipments && exercice.equipments.includes(selectedEquipment)
-                  );
-                }
-
-                // Filtre par statut
-                if (statusFilter === 'completed') {
-                  filteredExercices = filteredExercices.filter((exercice) => exercice.completed);
-                } else if (statusFilter === 'pending') {
-                  filteredExercices = filteredExercices.filter((exercice) => !exercice.completed);
-                }
-
-                // Séparer les exercices épinglés (avec vérification pour s'assurer que pinned existe)
-                const pinnedExercices = filteredExercices.filter((exercice) => exercice.pinned === true);
-
-                if (filteredBodyParts.length === 0 && pinnedExercices.length === 0) {
-                  // Construire le message des filtres actifs
-                  const activeFilters = [];
-
-                  if (statusFilter !== 'all') {
-                    const statusLabels = {
-                      'completed': 'Complétés',
-                      'pending': 'À compléter'
-                    };
-                    activeFilters.push(statusLabels[statusFilter]);
-                  }
-
-                  if (selectedEquipment) {
-                    activeFilters.push(selectedEquipment);
-                  }
-
-                  const filterText = activeFilters.length > 0
-                    ? `avec les filtres "${activeFilters.join('" et "')}"`
-                    : '';
-
-                  return (
-                    <EmptyState
-                      icon="🔍"
-                      title="Aucun exercice trouvé"
-                      message={`Aucun résultat n'est disponible ${filterText}.`}
-                      subMessage="Essayez de modifier vos filtres ou de réinitialiser la recherche."
-                    />
-                  );
-                }
-
-                return (
-                  <>
-                    {/* Section des exercices épinglés */}
-                    {pinnedExercices.length > 0 && (
-                      <div className="mb-8">
-                        <SectionTitle>📌 Exercices épinglés</SectionTitle>
-                        <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
-                          {pinnedExercices.map((exercice) => {
-                            // Trouver le bodypart pour cet exercice (prendre le premier)
-                            const bodypart = exercice.bodyparts && exercice.bodyparts.length > 0
-                              ? filteredBodyParts.find((bp) => bp.id === exercice.bodyparts[0].id) || filteredBodyParts[0]
-                              : filteredBodyParts[0];
-
-                            return (
-                              <ExerciceCard
-                                key={exercice.id}
-                                id={exercice.id}
-                                exercice={exercice}
-                                onEdit={handleEditClick}
-                                onCompleted={handleCompleted}
-                                bodypartSection={bodypart || { id: 0, name: '', color: '', count: 0 }}
-                              />
-                            );
-                          })}
-                        </div>
+          ) : exercices.length === 0 ? (
+            <EmptyState
+              icon="+"
+              title="Aucun exercice"
+              message="Commencez par ajouter votre premier exercice."
+              subMessage="Cliquez sur le bouton ci-dessus pour créer un exercice."
+            />
+          ) : getFilteredExercices().length === 0 ? (
+            <EmptyState
+              icon="📂"
+              title={`Aucun exercice ${CATEGORY_LABELS[activeCategory!].toLowerCase()}`}
+              message="Cette catégorie est vide pour le moment."
+              subMessage="Ajoutez des exercices ou sélectionnez une autre catégorie."
+            />
+          ) : (
+            <div className="space-y-8">
+              {/* Section des exercices épinglés */}
+              {pinned.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    Mes priorités
+                  </h2>
+                  <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                    {pinned.map((exercice) => (
+                      <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
+                        <ExerciceCard
+                          exercice={exercice}
+                          onEdit={handleEditClick}
+                          onCompleted={handleCompleted}
+                        />
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section des exercices par catégorie */}
+              {activeCategory ? (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      {CATEGORY_LABELS[activeCategory]}
+                      <span className="text-sm font-normal text-gray-500">
+                        ({regular.filter(e => e.completed).length}/{regular.length})
+                      </span>
+                    </h2>
+                    {regular.length > EXERCICES_LIMIT && (
+                      <Link 
+                        href={`/exercices/${activeCategory.toLowerCase()}`}
+                        className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                        scroll={true}
+                      >
+                        Voir tout
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
                     )}
-
-                    {/* Section des exercices par bodypart (non épinglés) */}
-                    {filteredBodyParts.map((bodypart) => {
-                      // Filtrer pour ne garder que les exercices non épinglés de ce bodypart
-                      const unpinnedBodypartExercices = bodypart.exercices.filter((exercice) => exercice.pinned !== true);
-                      
-                      if (unpinnedBodypartExercices.length === 0) {
-                        return null;
-                      }
-
-                      return (
-                        <div id={bodypart.name} key={bodypart.id} className="scroll-mt-20 not-first:pt-4">
-                          <SectionTitle>{bodypart.name}</SectionTitle>
-                          <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
-                            {unpinnedBodypartExercices.map((exercice) => (
-                              <ExerciceCard
-                                key={exercice.id}
-                                id={exercice.id}
-                                exercice={exercice}
-                                onEdit={handleEditClick}
-                                onCompleted={handleCompleted}
-                                bodypartSection={bodypart}
-                              />
-                            ))}
+                  </div>
+                  <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                    {regular.slice(0, EXERCICES_LIMIT).map((exercice) => (
+                      <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
+                        <ExerciceCard
+                          exercice={exercice}
+                          onEdit={handleEditClick}
+                          onCompleted={handleCompleted}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {regular.length > EXERCICES_LIMIT && (
+                    <Link 
+                      href={`/exercices/${activeCategory.toLowerCase()}`}
+                      className="w-full mt-4 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      scroll={true}
+                    >
+                      Voir les {regular.length - EXERCICES_LIMIT} autres exercices
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                (['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'] as ExerciceCategory[]).map(category => {
+                  const categoryExercices = regular.filter(e => e.category === category);
+                  if (categoryExercices.length === 0) return null;
+                  
+                  const visibleExercices = categoryExercices.slice(0, EXERCICES_LIMIT);
+                  const hiddenCount = categoryExercices.length - EXERCICES_LIMIT;
+                  
+                  return (
+                    <div key={category}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                          {CATEGORY_LABELS[category]}
+                          <span className="text-sm font-normal text-gray-500">
+                            ({categoryExercices.filter(e => e.completed).length}/{categoryExercices.length})
+                          </span>
+                        </h2>
+                        {hiddenCount > 0 && (
+                          <Link 
+                            href={`/exercices/${category.toLowerCase()}`}
+                            className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                            scroll={true}
+                          >
+                            Voir tout
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        )}
+                      </div>
+                      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                        {visibleExercices.map((exercice) => (
+                          <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
+                            <ExerciceCard
+                              exercice={exercice}
+                              onEdit={handleEditClick}
+                              onCompleted={handleCompleted}
+                            />
                           </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                );
-              })()
-            )}
-          </div>
+                        ))}
+                      </div>
+                      {hiddenCount > 0 && (
+                        <Link 
+                          href={`/exercices/${category.toLowerCase()}`}
+                          className="w-full mt-4 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                          scroll={true}
+                        >
+                          Voir les {hiddenCount} autres exercices de {CATEGORY_LABELS[category]}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {isFilterOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-white/20 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
-          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">Filtres</h2>
-                <button
-                  onClick={() => setIsFilterOpen(false)}
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <FiltersExercices
-                equipments={getEquipments()}
-                selectedEquipment={selectedEquipment}
-                onEquipmentSelect={setSelectedEquipment}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                totalExercices={getCounts().totalExercices}
-                completedCount={getCounts().completedCount}
-                pendingCount={getCounts().pendingCount}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ExerciceCategory } from '@/types/exercice';
 
 export async function GET(
   request: NextRequest,
@@ -47,7 +48,7 @@ export async function GET(
       );
     }
 
-    // Reformater les données pour correspondre à l'ancien format
+    // Reformater les données
     const formattedExercice = {
       id: exercice.id,
       name: exercice.name,
@@ -60,12 +61,9 @@ export async function GET(
         series: exercice.workoutSeries,
         duration: exercice.workoutDuration,
       },
-      equipments: JSON.parse(exercice.equipments),
-      bodyparts: exercice.bodyparts.map((eb) => ({
-        id: eb.bodypart.id,
-        name: eb.bodypart.name,
-        color: eb.bodypart.color,
-      })),
+      equipments: JSON.parse(exercice.equipments || '[]'),
+      bodyparts: exercice.bodyparts?.map(eb => eb.bodypart.name) || [],
+      category: exercice.category as ExerciceCategory,
       completed: exercice.completed,
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,
@@ -120,8 +118,16 @@ export async function PUT(
       );
     }
 
+    // Valider la catégorie si fournie
+    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(updatedData.category)) {
+      return NextResponse.json(
+        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, or STRETCHING' },
+        { status: 400 }
+      );
+    }
+
     // Mettre à jour l'exercice
-    await prisma.exercice.update({
+    const exercice = await prisma.exercice.update({
       where: { id },
       data: {
         name: updatedData.name,
@@ -131,34 +137,25 @@ export async function PUT(
         workoutSeries: updatedData.workout?.series,
         workoutDuration: updatedData.workout?.duration,
         equipments: updatedData.equipments ? JSON.stringify(updatedData.equipments) : undefined,
+        category: updatedData.category,
       },
     });
 
-    // Mettre à jour les relations bodyparts si fourni
+    // Mettre à jour les bodyparts si fournis
     if (updatedData.bodyparts && Array.isArray(updatedData.bodyparts)) {
-      // Supprimer les relations existantes
+      // Supprimer les anciennes relations
       await prisma.exerciceBodypart.deleteMany({
         where: { exerciceId: id },
       });
 
       // Créer les nouvelles relations
       for (const bodypartName of updatedData.bodyparts) {
-        // Trouver ou créer le bodypart par son nom
-        let bodypart = await prisma.bodypart.findUnique({
+        const bodypart = await prisma.bodypart.upsert({
           where: { name: bodypartName },
+          update: {},
+          create: { name: bodypartName, color: 'gray' },
         });
-
-        // Si le bodypart n'existe pas, le créer avec une couleur par défaut
-        if (!bodypart) {
-          bodypart = await prisma.bodypart.create({
-            data: {
-              name: bodypartName,
-              color: 'gray', // Couleur par défaut
-            },
-          });
-        }
-
-        // Créer la relation
+        
         await prisma.exerciceBodypart.create({
           data: {
             exerciceId: id,
@@ -168,40 +165,25 @@ export async function PUT(
       }
     }
 
-    // Récupérer l'exercice mis à jour avec ses relations
-    const exerciceWithRelations = await prisma.exercice.findUnique({
-      where: { id },
-      include: {
-        bodyparts: {
-          include: {
-            bodypart: true,
-          },
-        },
-      },
-    });
-
-    // Reformater les données pour correspondre à l'ancien format
+    // Reformater les données
     const formattedExercice = {
-      id: exerciceWithRelations!.id,
-      name: exerciceWithRelations!.name,
+      id: exercice.id,
+      name: exercice.name,
       description: {
-        text: exerciceWithRelations!.descriptionText,
-        comment: exerciceWithRelations!.descriptionComment,
+        text: exercice.descriptionText,
+        comment: exercice.descriptionComment,
       },
       workout: {
-        repeat: exerciceWithRelations!.workoutRepeat,
-        series: exerciceWithRelations!.workoutSeries,
-        duration: exerciceWithRelations!.workoutDuration,
+        repeat: exercice.workoutRepeat,
+        series: exercice.workoutSeries,
+        duration: exercice.workoutDuration,
       },
-      equipments: JSON.parse(exerciceWithRelations!.equipments),
-      bodyparts: exerciceWithRelations!.bodyparts.map((eb) => ({
-        id: eb.bodypart.id,
-        name: eb.bodypart.name,
-        color: eb.bodypart.color,
-      })),
-      completed: exerciceWithRelations!.completed,
-      completedAt: exerciceWithRelations!.completedAt,
-      pinned: exerciceWithRelations!.pinned,
+      equipments: JSON.parse(exercice.equipments || '[]'),
+      bodyparts: updatedData.bodyparts || [],
+      category: exercice.category as ExerciceCategory,
+      completed: exercice.completed,
+      completedAt: exercice.completedAt,
+      pinned: exercice.pinned,
     };
 
     return NextResponse.json(formattedExercice);
@@ -267,4 +249,3 @@ export async function DELETE(
     );
   }
 }
-

@@ -12,4 +12,3 @@ export default function ErrorMessage({ message, className = '' }: ErrorMessagePr
     </div>
   );
 }
-

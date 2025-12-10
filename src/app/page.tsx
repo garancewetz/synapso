@@ -15,7 +15,7 @@ import { useUser } from '@/contexts/UserContext';
 import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
 
 // Nombre d'exercices visibles par défaut par catégorie
-const EXERCICES_LIMIT = 6;
+const EXERCICES_LIMIT = 4;
 
 export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
@@ -130,7 +130,6 @@ export default function Home() {
         {!loadingExercices && (
           <WelcomeHeader
             userName={displayName}
-            totalExercices={exercices.length}
             completedToday={getTodayCompletedCount()}
           />
         )}

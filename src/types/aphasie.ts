@@ -6,4 +6,3 @@ export interface AphasieItem {
   comment: string | null;
   createdAt: string;
 }
-

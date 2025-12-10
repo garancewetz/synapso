@@ -5,68 +5,29 @@ interface TagProps {
   className?: string;
 }
 
+const COLOR_CLASSES: Record<string, string> = {
+  cyan: 'bg-cyan-50 text-cyan-600 border border-cyan-600',
+  green: 'bg-green-50 text-green-600 border border-green-600',
+  orange: 'bg-orange-50 text-orange-600 border border-orange-600',
+  blue: 'bg-blue-50 text-blue-600 border border-blue-600',
+  yellow: 'bg-yellow-50 text-yellow-600 border border-yellow-600',
+  red: 'bg-red-50 text-red-600 border border-red-600',
+  purple: 'bg-purple-50 text-purple-600 border border-purple-600',
+  pink: 'bg-pink-50 text-pink-600 border border-pink-600',
+  gray: 'bg-gray-50 text-gray-600 border border-gray-600',
+  amber: 'bg-amber-50 text-amber-600 border border-amber-600',
+  indigo: 'bg-indigo-50 text-indigo-600 border border-indigo-600',
+  teal: 'bg-teal-50 text-teal-600 border border-teal-600',
+  rose: 'bg-rose-50 text-rose-600 border border-rose-600',
+  lime: 'bg-lime-50 text-lime-600 border border-lime-600',
+  emerald: 'bg-emerald-50 text-emerald-600 border border-emerald-600',
+  sky: 'bg-sky-50 text-sky-600 border border-sky-600',
+  violet: 'bg-violet-50 text-violet-600 border border-violet-600',
+  fuchsia: 'bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-600',
+};
 
 export default function Tag({ children, icon, color, className = '' }: TagProps) {
-  let colorClass = '';
-  switch (color) {
-    case 'cyan':
-      colorClass = 'bg-cyan-50 text-cyan-600 border border-cyan-600';
-      break;
-    case 'green':
-      colorClass = 'bg-green-50 text-green-600 border border-green-600';
-      break;
-    case 'orange':
-        colorClass = 'bg-orange-50 text-orange-600 border border-orange-600';
-      break;
-    case 'blue':
-      colorClass = 'bg-blue-50 text-blue-600 border border-blue-600';
-      break;
-    case 'yellow':  
-      colorClass = 'bg-yellow-50 text-yellow-600 border border-yellow-600';
-      break;
-    case 'red':
-      colorClass = 'bg-red-50 text-red-600 border border-red-600';
-      break;
-    case 'purple':
-      colorClass = 'bg-purple-50 text-purple-600 border border-purple-600';
-      break;
-    case 'pink':
-      colorClass = 'bg-pink-50 text-pink-600 border border-pink-600';
-      break;
-    case 'gray':
-      colorClass = 'bg-gray-50 text-gray-600 border border-gray-600';
-      break;
-    case 'amber':
-      colorClass = 'bg-amber-50 text-amber-600 border border-amber-600';
-      break;
-    case 'indigo':
-      colorClass = 'bg-indigo-50 text-indigo-600 border border-indigo-600';
-      break;
-    case 'teal':
-      colorClass = 'bg-teal-50 text-teal-600 border border-teal-600';
-      break;
-    case 'rose':
-      colorClass = 'bg-rose-50 text-rose-600 border border-rose-600';
-      break;
-    case 'lime':
-      colorClass = 'bg-lime-50 text-lime-600 border border-lime-600';
-      break;
-    case 'emerald':
-      colorClass = 'bg-emerald-50 text-emerald-600 border border-emerald-600';
-      break;
-    case 'sky':
-      colorClass = 'bg-sky-50 text-sky-600 border border-sky-600';
-      break;
-    case 'violet':
-        colorClass = 'bg-violet-50 text-violet-600 border border-violet-600';
-      break;
-    case 'fuchsia':
-      colorClass = 'bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-600';
-      break;
-    default:
-      colorClass = 'currentColor border border-currentColor';
-      break;
-  }
+  const colorClass = color ? COLOR_CLASSES[color] || 'bg-gray-100 text-gray-600 border border-gray-300' : 'bg-gray-100 text-gray-600 border border-gray-300';
 
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass} ${className}`}>
@@ -75,4 +36,3 @@ export default function Tag({ children, icon, color, className = '' }: TagProps)
     </span>
   );
 }
-

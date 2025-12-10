@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         { pinned: 'desc' },
-        { id: 'asc' },
+        { id: 'desc' },
       ],
     });
 

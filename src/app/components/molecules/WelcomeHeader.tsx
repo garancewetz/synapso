@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 
 interface WelcomeHeaderProps {
   userName: string;
-  totalExercices: number;
   completedToday: number;
 }
 

@@ -8,4 +8,3 @@ export interface HistoryEntry {
     equipments: string[];
   };
 }
-

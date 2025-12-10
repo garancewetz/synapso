@@ -6,6 +6,7 @@ import Input from '@/app/components/atoms/Input';
 import Textarea from '@/app/components/atoms/Textarea';
 import ErrorMessage from '@/app/components/atoms/ErrorMessage';
 import FormActions from '@/app/components/molecules/FormActions';
+import Loader from '@/app/components/atoms/Loader';
 import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS } from '@/types/exercice';
 
 interface ExerciceFormProps {
@@ -43,6 +44,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
   const [equipmentsList, setEquipmentsList] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(!!exerciceId);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -77,6 +79,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
           setError('Erreur lors du chargement de l\'exercice');
+        })
+        .finally(() => {
+          setInitialLoading(false);
         });
     }
   }, [exerciceId, currentUser]);
@@ -205,6 +210,14 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
   };
 
   const categories: ExerciceCategory[] = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
+
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader size="large" />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

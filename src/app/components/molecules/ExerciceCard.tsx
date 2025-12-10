@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Exercice } from '@/types';
-import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS } from '@/types/exercice';
+import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types/exercice';
 import { useUser } from '@/contexts/UserContext';
 
 // Emojis pour chaque catégorie (accessibilité : couleur + icône)

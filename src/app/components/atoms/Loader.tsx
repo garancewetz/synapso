@@ -22,4 +22,3 @@ export default function Loader({ size = 'medium', className = '' }: LoaderProps)
     </div>
   );
 }
-

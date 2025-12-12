@@ -15,7 +15,7 @@ const CATEGORY_ICONS: Record<ExerciceCategory, string> = {
 interface ExerciceCardProps {
     exercice: Exercice;
     onEdit?: (id: number) => void;
-    onCompleted?: () => void;
+    onCompleted?: (updatedExercice: Exercice) => void;
     showCategory?: boolean; // Masquer le badge catégorie si déjà dans une section
 }
 
@@ -46,12 +46,20 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
             });
 
             if (response.ok) {
-                if (!exercice.completed) {
+                const data = await response.json();
+                const wasCompleted = exercice.completed;
+                // Créer l'exercice mis à jour localement avec les nouvelles valeurs
+                const updatedExercice: Exercice = {
+                    ...exercice,
+                    completed: data.completed,
+                    completedAt: data.completedAt ? new Date(data.completedAt) : null,
+                };
+                if (!wasCompleted && updatedExercice.completed) {
                     setShowSuccess(true);
                     setTimeout(() => setShowSuccess(false), 1500);
                 }
                 if (onCompleted) {
-                    onCompleted();
+                    onCompleted(updatedExercice);
                 }
             } else {
                 console.error('Erreur lors de la mise à jour');
@@ -74,8 +82,14 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
             });
 
             if (response.ok) {
+                const data = await response.json();
+                // Créer l'exercice mis à jour localement avec le nouveau statut pinned
+                const updatedExercice: Exercice = {
+                    ...exercice,
+                    pinned: data.pinned,
+                };
                 if (onCompleted) {
-                    onCompleted();
+                    onCompleted(updatedExercice);
                 }
             } else {
                 console.error('Erreur lors de la mise à jour du pin');

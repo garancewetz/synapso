@@ -99,9 +99,12 @@ export default function Home() {
     router.push(`/exercice/edit/${id}`);
   };
 
-  const handleCompleted = () => {
+  const handleCompleted = (updatedExercice: Exercice) => {
     if (USE_MOCK_DATA) return;
-    fetchExercices();
+    // Mettre à jour uniquement l'exercice concerné sans recharger toute la liste
+    setExercices(prev => prev.map(ex => 
+      ex.id === updatedExercice.id ? updatedExercice : ex
+    ));
   };
 
   // Toggle completion pour le mode mock

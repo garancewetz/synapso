@@ -7,6 +7,8 @@ import Button from '@/app/components/atoms/Button';
 import type { AphasieItem } from '@/types';
 import { useCalypsoCheck } from '@/hooks/useCalypsoCheck';
 
+export const dynamic = 'force-dynamic';
+
 export default function AphasiePage() {
   const [items, setItems] = useState<AphasieItem[]>([]);
   const router = useRouter();

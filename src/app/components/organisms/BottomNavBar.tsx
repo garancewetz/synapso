@@ -45,7 +45,7 @@ const CATEGORY_CONFIG: Record<ExerciceCategory | 'ALL', {
 export default function BottomNavBar() {
   const pathname = usePathname();
   
-  const categories: (ExerciceCategory | 'ALL')[] = ['ALL', 'LOWER_BODY', 'UPPER_BODY', 'STRETCHING'];
+  const categories: (ExerciceCategory | 'ALL')[] = ['ALL', 'UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
 
   const isActive = (category: ExerciceCategory | 'ALL') => {
     const config = CATEGORY_CONFIG[category];

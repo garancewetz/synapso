@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Exercice } from '@/types';
 import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types/exercice';
 import { useUser } from '@/contexts/UserContext';
-
+import { triggerCompletedCountRefresh } from '@/hooks/useTodayCompletedCount';
 // Emojis pour chaque catégorie (accessibilité : couleur + icône)
 const CATEGORY_ICONS: Record<ExerciceCategory, string> = {
     LOWER_BODY: '🦵',   // Jambe = Bas du corps
@@ -61,6 +61,8 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                 if (onCompleted) {
                     onCompleted(updatedExercice);
                 }
+                // Déclencher le rafraîchissement du compteur
+                triggerCompletedCountRefresh();
             } else {
                 console.error('Erreur lors de la mise à jour');
             }

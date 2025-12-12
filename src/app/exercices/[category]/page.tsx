@@ -107,23 +107,25 @@ export default function CategoryPage() {
     <section className="min-h-screen">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header avec retour */}
-        <div className="px-4 mb-6">
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Retour
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {CATEGORY_LABELS[categoryParam]}
-          </h1>
-          <p className="text-gray-500 mt-1">
-            {completedCount}/{exercices.length} exercices complétés
-          </p>
-        </div>
+        {!loading && (
+          <div className="px-4 mb-6">
+            <Link 
+              href="/"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Retour
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {CATEGORY_LABELS[categoryParam]}
+            </h1>
+            <p className="text-gray-500 mt-1">
+              {completedCount}/{exercices.length} exercices complétés
+            </p>
+          </div>
+        )}
 
         {/* Contenu principal */}
         <div className="px-4">

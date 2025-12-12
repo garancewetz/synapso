@@ -29,19 +29,24 @@ const COMPLETION_MESSAGES = [
 ];
 
 // Composant Emoji qui tombe avec les confettis
-function PopEmoji({ delay, x, emoji }: { delay: number; x: number; emoji: string }) {
+function PopEmoji({ delay, x, emoji, fromWindow = false }: { delay: number; x: number; emoji: string; fromWindow?: boolean }) {
   const swayAmount = 20 + Math.random() * 30;
   const swayDirection = Math.random() > 0.5 ? 1 : -1;
   
   return (
     <motion.div
-      className="absolute pointer-events-none text-3xl"
-      style={{ left: `${x}%`, top: '-10%' }}
+      className={fromWindow ? "fixed pointer-events-none text-3xl z-50" : "absolute pointer-events-none text-3xl"}
+      style={{ 
+        left: fromWindow ? `${x}vw` : `${x}%`, 
+        top: fromWindow ? '-5vh' : '-10%' 
+      }}
       initial={{ opacity: 0, scale: 0, y: 0 }}
       animate={{ 
         opacity: [0, 1, 1, 1, 1, 0.8, 0],
         scale: [0.5, 1.4, 1.3, 1.2, 1.1, 1, 0.8],
-        y: [0, 20, 60, 100, 140, 180, 220],
+        y: fromWindow 
+          ? [0, '20vh', '40vh', '60vh', '80vh', '100vh', '120vh']
+          : [0, 20, 60, 100, 140, 180, 220],
         x: [
           0,
           swayDirection * swayAmount * 0.3,
@@ -65,27 +70,29 @@ function PopEmoji({ delay, x, emoji }: { delay: number; x: number; emoji: string
   );
 }
 
-// Composant Confetti amélioré - chute fluide et naturelle, caché avant de tomber
-function Confetti({ delay, startX, color, size }: { delay: number; startX: number; color: string; size: number }) {
+// Composant Confetti amélioré - chute fluide
+function Confetti({ delay, startX, color, size, fromWindow = false }: { delay: number; startX: number; color: string; size: number; fromWindow?: boolean }) {
   const randomRotation = Math.random() * 720;
   const swayAmount = 15 + Math.random() * 25; // Amplitude du balancement
   const swayDirection = Math.random() > 0.5 ? 1 : -1;
   
   return (
     <motion.div
-      className="absolute pointer-events-none"
+      className={fromWindow ? "fixed pointer-events-none z-50" : "absolute pointer-events-none"}
       style={{ 
-        left: `${startX}%`, 
-        top: '-5%',
+        left: fromWindow ? `${startX}vw` : `${startX}%`, 
+        top: fromWindow ? '-2vh' : '-5%',
         width: size,
         height: size * 1.8,
         backgroundColor: color,
         borderRadius: '1px',
       }}
-      initial={{ opacity: 0, y: -10, x: 0, rotate: 0, rotateX: 0 }}
+      initial={{ opacity: 0, y: 0, x: 0, rotate: 0, rotateX: 0 }}
       animate={{ 
         opacity: [0, 1, 1, 1, 0.9, 0.7, 0],
-        y: [-10, 30, 60, 95, 130, 165, 200],
+        y: fromWindow 
+          ? [0, '15vh', '30vh', '50vh', '70vh', '90vh', '110vh']
+          : [-10, 30, 60, 95, 130, 165, 200],
         x: [
           0, 
           swayDirection * swayAmount * 0.5, 
@@ -111,7 +118,10 @@ function Confetti({ delay, startX, color, size }: { delay: number; startX: numbe
 export default function WelcomeHeader({ userName, completedToday }: WelcomeHeaderProps) {
   const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showBonusAnimation, setShowBonusAnimation] = useState(false);
   const prevCompletedRef = useRef(completedToday);
+  const prevBonusRef = useRef(0);
+  const isAnimatingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Progression basée sur l'objectif quotidien de 5 exercices
@@ -124,28 +134,73 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
     setEncouragement(ENCOURAGEMENTS[randomIndex]);
   }, []);
 
-  // Déclencher la célébration quand l'objectif est atteint
+  // Déclencher la célébration quand l'objectif est atteint ou à chaque exercice bonus
   useEffect(() => {
-    const wasGoalReached = prevCompletedRef.current >= DAILY_GOAL;
+    const prevCompleted = prevCompletedRef.current;
+    const wasGoalReached = prevCompleted >= DAILY_GOAL;
     const isNowGoalReached = completedToday >= DAILY_GOAL;
+    const prevBonus = prevBonusRef.current;
+    const currentBonus = bonusExercices;
     
-    // Déclencher seulement si on vient d'atteindre l'objectif
-    if (!wasGoalReached && isNowGoalReached) {
-      // Scroll fluide vers la carte pour voir la célébration
-      cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Ignorer si les valeurs n'ont pas changé (premier render ou pas de changement)
+    if (prevCompleted === completedToday && prevBonus === currentBonus) {
+      return;
+    }
+    
+    // Ignorer si une animation est déjà en cours
+    if (isAnimatingRef.current) {
+      prevCompletedRef.current = completedToday;
+      prevBonusRef.current = currentBonus;
+      return;
+    }
+    
+    // Vérifier que le nombre d'exercices complétés augmente strictement (pas diminue ou égal)
+    const isIncreasing = completedToday > prevCompleted;
+    
+    // Si le nombre diminue, on met juste à jour les refs sans déclencher d'animation
+    if (!isIncreasing) {
+      prevCompletedRef.current = completedToday;
+      prevBonusRef.current = currentBonus;
+      return;
+    }
+    
+    // Déclencher si on vient d'atteindre l'objectif pour la première fois
+    const justReachedGoal = !wasGoalReached && isNowGoalReached;
+    
+    // Déclencher si on a un nouvel exercice en bonus (au-delà de l'objectif)
+    const newBonusExercise = isNowGoalReached && currentBonus > prevBonus;
+    
+    if (justReachedGoal || newBonusExercise) {
+      // Marquer qu'une animation est en cours
+      isAnimatingRef.current = true;
       
-      // Petit délai pour laisser le scroll se faire avant l'animation
-      setTimeout(() => {
-        setShowCelebration(true);
-      }, 300);
+      // Mettre à jour les refs immédiatement pour éviter les doubles déclenchements
+      prevCompletedRef.current = completedToday;
+      prevBonusRef.current = currentBonus;
+      
+      // Déclencher l'animation immédiatement
+      setShowCelebration(true);
+      // Déclencher l'animation de la gauge pour les exercices bonus
+      if (newBonusExercise) {
+        setShowBonusAnimation(true);
+        // Garder l'animation active plus longtemps pour être visible
+        setTimeout(() => setShowBonusAnimation(false), 1200);
+      }
       
       // Célébration plus longue pour voir tous les effets
-      const timer = setTimeout(() => setShowCelebration(false), 4800);
+      const timer = setTimeout(() => {
+        setShowCelebration(false);
+        // Réinitialiser le flag après la fin de l'animation
+        isAnimatingRef.current = false;
+      }, 4800);
+      
       return () => clearTimeout(timer);
     }
     
+    // Mettre à jour les refs même si on ne déclenche pas l'animation
     prevCompletedRef.current = completedToday;
-  }, [completedToday]);
+    prevBonusRef.current = currentBonus;
+  }, [completedToday, bonusExercices]);
 
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
@@ -169,27 +224,44 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
   const confettiColors = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6', '#ef4444', '#06b6d4'];
   const emojis = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'];
 
-  // Générer les emojis qui tombent avec les confettis
-  const popEmojis = Array.from({ length: 7 }, (_, i) => ({
-    id: i,
+  // Générer les emojis qui tombent depuis la fenêtre
+  const popEmojisWindow = Array.from({ length: 7 }, (_, i) => ({
+    id: `window-emoji-${i}`,
+    x: 5 + Math.random() * 90,
+    delay: 0.1 + i * 0.15 + Math.random() * 0.2,
+    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+  }));
+
+  // Générer les emojis qui tombent depuis la carte
+  const popEmojisCard = Array.from({ length: 5 }, (_, i) => ({
+    id: `card-emoji-${i}`,
     x: 10 + Math.random() * 80,
     delay: 0.1 + i * 0.15 + Math.random() * 0.2,
     emoji: emojis[Math.floor(Math.random() * emojis.length)],
   }));
 
-  // Générer les confettis qui tombent - apparition étalée pour plus de fluidité
-  const confettis = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    startX: 5 + Math.random() * 90,
-    delay: (i * 0.04) + Math.random() * 0.3, // Apparition progressive et naturelle
+  // Générer les confettis qui tombent depuis la fenêtre
+  const confettisWindow = Array.from({ length: 40 }, (_, i) => ({
+    id: `window-confetti-${i}`,
+    startX: 2 + Math.random() * 96,
+    delay: (i * 0.04) + Math.random() * 0.3,
     color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
     size: 5 + Math.random() * 5,
+  }));
+
+  // Générer les confettis qui tombent depuis la carte
+  const confettisCard = Array.from({ length: 20 }, (_, i) => ({
+    id: `card-confetti-${i}`,
+    startX: 5 + Math.random() * 90,
+    delay: (i * 0.05) + Math.random() * 0.2,
+    color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+    size: 4 + Math.random() * 4,
   }));
 
   return (
     <div 
       ref={cardRef}
-      className={`relative bg-white rounded-2xl shadow-sm border p-5 md:p-6 mx-4 mb-6 overflow-hidden transition-all duration-500 ${
+      className={`relative bg-white rounded-2xl shadow-sm border p-5 mx-4 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
         isGoalReached ? 'border-emerald-300 shadow-emerald-100' : 'border-gray-200'
       }`}
     >
@@ -207,33 +279,56 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
         />
       )}
 
-      {/* 🎊 Pluie de confettis et emojis 🎊 */}
-      <AnimatePresence>
-        {showCelebration && (
-          <>
-            {/* Emojis qui tombent */}
-            {popEmojis.map((emoji) => (
-              <PopEmoji
-                key={`emoji-${emoji.id}`}
-                delay={emoji.delay}
-                x={emoji.x}
-                emoji={emoji.emoji}
-              />
-            ))}
-            
-            {/* Confettis qui tombent */}
-            {confettis.map((confetti) => (
-              <Confetti
-                key={`confetti-${confetti.id}`}
-                delay={confetti.delay}
-                startX={confetti.startX}
-                color={confetti.color}
-                size={confetti.size}
-              />
-            ))}
-          </>
-        )}
-      </AnimatePresence>
+      {/* 🎊 Pluie de confettis et emojis 🎊 - depuis la fenêtre ET la carte */}
+      {showCelebration && (
+        <>
+          {/* Emojis qui tombent depuis le haut de la fenêtre */}
+          {popEmojisWindow.map((emoji) => (
+            <PopEmoji
+              key={emoji.id}
+              delay={emoji.delay}
+              x={emoji.x}
+              emoji={emoji.emoji}
+              fromWindow={true}
+            />
+          ))}
+          
+          {/* Confettis qui tombent depuis le haut de la fenêtre */}
+          {confettisWindow.map((confetti) => (
+            <Confetti
+              key={confetti.id}
+              delay={confetti.delay}
+              startX={confetti.startX}
+              color={confetti.color}
+              size={confetti.size}
+              fromWindow={true}
+            />
+          ))}
+          
+          {/* Emojis qui tombent depuis le haut de la carte */}
+          {popEmojisCard.map((emoji) => (
+            <PopEmoji
+              key={emoji.id}
+              delay={emoji.delay}
+              x={emoji.x}
+              emoji={emoji.emoji}
+              fromWindow={false}
+            />
+          ))}
+          
+          {/* Confettis qui tombent depuis le haut de la carte */}
+          {confettisCard.map((confetti) => (
+            <Confetti
+              key={confetti.id}
+              delay={confetti.delay}
+              startX={confetti.startX}
+              color={confetti.color}
+              size={confetti.size}
+              fromWindow={false}
+            />
+          ))}
+        </>
+      )}
 
       {/* Paillettes continues quand objectif atteint */}
       {isGoalReached && !showCelebration && (
@@ -289,15 +384,36 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
           </span>
           <span className="text-sm font-semibold text-gray-700">
             {completedToday} / {DAILY_GOAL}
+            {bonusExercices > 0 && (
+              <span className="text-emerald-600 ml-1">+{bonusExercices}</span>
+            )}
           </span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden relative">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress * 100}%` }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 relative overflow-hidden"
+            animate={{ 
+              width: `${progress * 100}%`,
+            }}
+            transition={{ 
+              duration: 0.5, 
+              ease: "easeOut" 
+            }}
           />
+          {/* Indicateur de dépassement visuel pour les exercices bonus */}
+          {bonusExercices > 0 && (
+            <motion.div
+              className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 opacity-60"
+              style={{ width: `${Math.min((bonusExercices / DAILY_GOAL) * 100, 100)}%` }}
+              animate={{ 
+                x: `${progress * 100}%`,
+              }}
+              transition={{ 
+                duration: 0.5, 
+                ease: "easeOut",
+              }}
+            />
+          )}
         </div>
         {/* Indicateurs discrets */}
         <div className="flex justify-between mt-1.5 px-0.5">

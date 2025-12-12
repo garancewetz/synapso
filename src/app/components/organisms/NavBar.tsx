@@ -32,7 +32,7 @@ export default function NavBar() {
   return (
     <>
       {/* Header minimaliste */}
-      <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6">
+      <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6">
         <div className="flex items-center justify-between py-3 md:py-4">
           {/* Logo et nom à gauche */}
           <Link href="/" className="flex items-center gap-2">

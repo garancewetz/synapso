@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
-import WelcomeHeader from '@/app/components/molecules/WelcomeHeader';
 import CategoryTabs from '@/app/components/molecules/CategoryTabs';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import Link from 'next/link';
@@ -21,7 +20,7 @@ export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loadingExercices, setLoadingExercices] = useState(false);
   const router = useRouter();
-  const { currentUser } = useUser();
+  const { currentUser, loading: userLoading } = useUser();
   const { activeCategory } = useCategory();
 
   const fetchExercices = () => {
@@ -56,6 +55,13 @@ export default function Home() {
   useEffect(() => {
     if (USE_MOCK_DATA) {
       setExercices(MOCK_EXERCICES);
+      setLoadingExercices(false);
+      return;
+    }
+    
+    // Attendre que le UserContext ait fini de charger
+    if (userLoading) {
+      setLoadingExercices(true);
       return;
     }
     
@@ -63,9 +69,10 @@ export default function Home() {
       fetchExercices();
     } else {
       setLoadingExercices(false);
+      setExercices([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [currentUser, userLoading]);
 
   // Calculer les compteurs par catégorie
   const getCategoryCounts = (): Record<ExerciceCategory, number> => {
@@ -91,9 +98,6 @@ export default function Home() {
     };
   };
 
-  const getTodayCompletedCount = () => {
-    return exercices.filter((exercice) => exercice.completed).length;
-  };
 
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
@@ -116,7 +120,6 @@ export default function Home() {
   };
 
   const { pinned, regular } = getPinnedAndRegularExercices();
-  const displayName = USE_MOCK_DATA ? "Calypso" : (currentUser?.name || "");
 
   return (
     <section className="min-h-screen">
@@ -127,14 +130,6 @@ export default function Home() {
           <div className="mx-4 mb-4 p-3 bg-slate-100 border border-slate-200 rounded-lg text-center">
             <span className="text-slate-600 text-sm font-medium">Mode démonstration — Données fictives</span>
           </div>
-        )}
-
-        {/* Header d'accueil avec progression */}
-        {!loadingExercices && (
-          <WelcomeHeader
-            userName={displayName}
-            completedToday={getTodayCompletedCount()}
-          />
         )}
 
         {/* Filtres par catégorie (desktop uniquement) */}

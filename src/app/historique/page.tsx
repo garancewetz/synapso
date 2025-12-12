@@ -102,9 +102,8 @@ export default function HistoriquePage() {
   const groupedHistory = groupByDate();
 
   return (
-   
-
-            <div className="p-3 sm:p-6 bg-gray-50">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+      <div className="p-3 sm:p-6 bg-gray-50">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                   <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Total</h3>
@@ -191,6 +190,6 @@ export default function HistoriquePage() {
                 )}
               </div>
             </div>
-   
+    </div>
   );
 }

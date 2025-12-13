@@ -11,17 +11,17 @@ datasource db {
 }
 
 enum ExerciceCategory {
-  UPPER_BODY   // Haut du corps
-  LOWER_BODY   // Bas du corps
-  STRETCHING   // Étirement
+  UPPER_BODY // Haut du corps
+  LOWER_BODY // Bas du corps
+  STRETCHING // Étirement
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
   exercices Exercice[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model Exercice {
@@ -35,7 +35,7 @@ model Exercice {
   equipments         String // Stocké en JSON string
   category           ExerciceCategory   @default(UPPER_BODY)
   userId             Int
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bodyparts          ExerciceBodypart[] // Gardé pour compatibilité, sera supprimé après migration
   history            History[]
   completed          Boolean            @default(false)

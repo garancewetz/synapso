@@ -2,21 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ExerciceCategory } from '@/types/exercice';
 
-interface ExerciceFromDB {
-  id: number;
-  name: string;
-  descriptionText: string;
-  descriptionComment: string | null;
-  workoutRepeat: number | null;
-  workoutSeries: number | null;
-  workoutDuration: string | null;
-  equipments: string;
-  category: ExerciceCategory;
-  completed: boolean;
-  completedAt: Date | null;
-  pinned: boolean;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -75,6 +60,8 @@ export async function GET(request: NextRequest) {
           completedDate.getFullYear() === today.getFullYear();
       }
 
+      const exerciceWithCategory = exercice as typeof exercice & { category: ExerciceCategory };
+
       return {
         id: exercice.id,
         name: exercice.name,
@@ -89,7 +76,7 @@ export async function GET(request: NextRequest) {
         },
         equipments: JSON.parse(exercice.equipments || '[]'),
         bodyparts: exercice.bodyparts?.map((eb: { bodypart: { name: string } }) => eb.bodypart.name) || [],
-        category: exercice.category,
+        category: exerciceWithCategory.category,
         completed: completedToday,
         completedAt: exercice.completedAt,
         pinned: exercice.pinned ?? false,
@@ -125,8 +112,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Valider le nom
+    if (!data.name || !data.name.trim()) {
+      return NextResponse.json(
+        { error: 'Le nom de l\'exercice est obligatoire' },
+        { status: 400 }
+      );
+    }
+
     // Valider la catégorie
-    const category = data.category || 'UPPER_BODY';
+    const category: ExerciceCategory = (data.category || 'UPPER_BODY') as ExerciceCategory;
     if (!['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(category)) {
       return NextResponse.json(
         { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, or STRETCHING' },
@@ -137,15 +132,25 @@ export async function POST(request: NextRequest) {
     // Créer l'exercice
     const exercice = await prisma.exercice.create({
       data: {
-        name: data.name,
-        descriptionText: data.description.text,
-        descriptionComment: data.description.comment,
+        name: data.name.trim(),
+        descriptionText: data.description?.text || '',
+        descriptionComment: data.description?.comment || null,
         workoutRepeat: data.workout.repeat,
         workoutSeries: data.workout.series,
         workoutDuration: data.workout.duration,
         equipments: JSON.stringify(data.equipments || []),
         category: category,
         userId: userIdNumber,
+      } as {
+        name: string;
+        descriptionText: string;
+        descriptionComment: string | null;
+        workoutRepeat: number | null;
+        workoutSeries: number | null;
+        workoutDuration: string | null;
+        equipments: string;
+        category: ExerciceCategory;
+        userId: number;
       },
     });
 
@@ -170,6 +175,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Reformater les données
+    const exerciceWithCategory = exercice as typeof exercice & { category: ExerciceCategory };
     const formattedExercice = {
       id: exercice.id,
       name: exercice.name,
@@ -184,7 +190,7 @@ export async function POST(request: NextRequest) {
       },
       equipments: JSON.parse(exercice.equipments),
       bodyparts: data.bodyparts || [],
-      category: exercice.category,
+      category: exerciceWithCategory.category,
       completed: exercice.completed,
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,

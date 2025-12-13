@@ -50,11 +50,9 @@ export default function RootLayout({
             <NotificationManager />
             <DevBanner />
             <SiteProtection>
-              <div className="px-4 md:px-6 lg:px-8">
                 <NavBar />
-              </div>
               <WelcomeHeaderWrapper />
-              <main className="flex-1 mx-auto min-h-screen h-full w-full max-w-9xl pb-24 md:pb-8">
+              <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
                 {children}
               </main>
               <BottomNavBar />

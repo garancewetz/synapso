@@ -13,6 +13,7 @@ interface ExerciceFormProps {
   exerciceId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialCategory?: ExerciceCategory;
 }
 
 // Liste des bodyparts disponibles
@@ -28,7 +29,7 @@ const AVAILABLE_BODYPARTS = [
   'Fessier',
 ];
 
-export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: ExerciceFormProps) {
+export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: ExerciceFormProps) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     name: '',
@@ -37,7 +38,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
     workoutRepeat: '',
     workoutSeries: '',
     workoutDuration: '',
-    category: 'UPPER_BODY' as ExerciceCategory,
+    category: (initialCategory || 'UPPER_BODY') as ExerciceCategory,
     bodyparts: [] as string[],
     equipments: [] as string[],
   });
@@ -122,8 +123,8 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       return;
     }
 
-    if (formData.bodyparts.length === 0) {
-      setError('Sélectionnez au moins une partie du corps');
+    if (!formData.name.trim()) {
+      setError('Le nom de l\'exercice est obligatoire');
       return;
     }
     
@@ -258,9 +259,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
       {/* Sélection des parties du corps */}
       <div className="bg-gray-50 rounded-lg p-4">
         <label className="block text-base font-semibold text-gray-900 mb-2">
-          Parties du corps ciblées *
+          Parties du corps ciblées
         </label>
-        <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps</p>
+        <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps (optionnel)</p>
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_BODYPARTS.map((bodypart) => {
             const isSelected = formData.bodyparts.includes(bodypart);
@@ -289,9 +290,6 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
             );
           })}
         </div>
-        {formData.bodyparts.length === 0 && (
-          <p className="text-sm text-red-600 mt-2">Sélectionnez au moins une partie du corps</p>
-        )}
       </div>
 
       <Input
@@ -305,9 +303,8 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel }: Exerci
 
       <Textarea
         label="Description"
-        required
         rows={4}
-        placeholder="Décrivez comment réaliser l'exercice..."
+        placeholder="Décrivez comment réaliser l'exercice... (optionnel)"
         value={formData.descriptionText}
         onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
       />

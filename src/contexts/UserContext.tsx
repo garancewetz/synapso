@@ -13,6 +13,7 @@ type UserContextType = {
   users: User[];
   loading: boolean;
   changingUser: boolean;
+  refreshUsers: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,49 +27,65 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [changingUser, setChangingUser] = useState(false);
 
-  // Charger les utilisateurs depuis l'API
-  useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then((data: User[]) => {
-        if (Array.isArray(data)) {
-          setUsers(data);
-          
-          // Charger l'utilisateur depuis localStorage
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            try {
-              const storedUser = JSON.parse(stored);
-              // Vérifier que l'utilisateur stocké existe toujours dans la liste
-              const foundUser = data.find(u => u.id === storedUser.id);
-              if (foundUser) {
-                setCurrentUserState(foundUser);
-              } else {
-                // Si l'utilisateur stocké n'existe plus, utiliser le défaut
-                const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+  // Fonction pour charger les utilisateurs
+  const loadUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data: User[] = await res.json();
+      
+      if (Array.isArray(data)) {
+        setUsers(data);
+        
+        // Charger l'utilisateur depuis localStorage
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          try {
+            const storedUser = JSON.parse(stored);
+            // Vérifier que l'utilisateur stocké existe toujours dans la liste
+            const foundUser = data.find(u => u.id === storedUser.id);
+            if (foundUser) {
+              setCurrentUserState(foundUser);
+            } else {
+              // Si l'utilisateur stocké n'existe plus, utiliser le défaut
+              const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+              if (defaultUser) {
                 setCurrentUserState(defaultUser);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
               }
-            } catch (error) {
-              console.error('Erreur lors du chargement de l\'utilisateur:', error);
-              const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+            }
+          } catch (error) {
+            console.error('Erreur lors du chargement de l\'utilisateur:', error);
+            const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+            if (defaultUser) {
               setCurrentUserState(defaultUser);
               localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
             }
-          } else {
-            // Par défaut, utiliser Calypso
-            const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+          }
+        } else {
+          // Par défaut, utiliser Calypso ou le premier utilisateur
+          const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
+          if (defaultUser) {
             setCurrentUserState(defaultUser);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
           }
         }
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-        setLoading(false);
-      });
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+      setLoading(false);
+    }
+  };
+
+  // Charger les utilisateurs au montage
+  useEffect(() => {
+    loadUsers();
   }, []);
+
+  // Fonction pour recharger les utilisateurs
+  const refreshUsers = async () => {
+    await loadUsers();
+  };
 
   const setCurrentUser = (user: User | null) => {
     setChangingUser(true);
@@ -85,7 +102,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ currentUser, setCurrentUser, users, loading, changingUser }}>
+    <UserContext.Provider value={{ currentUser, setCurrentUser, users, loading, changingUser, refreshUsers }}>
       {children}
     </UserContext.Provider>
   );

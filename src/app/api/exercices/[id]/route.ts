@@ -118,6 +118,14 @@ export async function PUT(
       );
     }
 
+    // Valider le nom si fourni
+    if (updatedData.name !== undefined && (!updatedData.name || !updatedData.name.trim())) {
+      return NextResponse.json(
+        { error: 'Le nom de l\'exercice est obligatoire' },
+        { status: 400 }
+      );
+    }
+
     // Valider la catégorie si fournie
     if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(updatedData.category)) {
       return NextResponse.json(
@@ -130,9 +138,9 @@ export async function PUT(
     const exercice = await prisma.exercice.update({
       where: { id },
       data: {
-        name: updatedData.name,
-        descriptionText: updatedData.description?.text,
-        descriptionComment: updatedData.description?.comment,
+        name: updatedData.name !== undefined ? updatedData.name.trim() : undefined,
+        descriptionText: updatedData.description?.text !== undefined ? (updatedData.description.text || '') : undefined,
+        descriptionComment: updatedData.description?.comment !== undefined ? (updatedData.description.comment || null) : undefined,
         workoutRepeat: updatedData.workout?.repeat,
         workoutSeries: updatedData.workout?.series,
         workoutDuration: updatedData.workout?.duration,

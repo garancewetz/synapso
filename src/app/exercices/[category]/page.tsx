@@ -10,6 +10,7 @@ import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
 import { useUser } from '@/contexts/UserContext';
 import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
 import Link from 'next/link';
+import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 
 export default function CategoryPage() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
@@ -118,9 +119,12 @@ export default function CategoryPage() {
               </svg>
               Retour
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {CATEGORY_LABELS[categoryParam]}
-            </h1>
+            <div className="flex items-center justify-between gap-4">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {CATEGORY_LABELS[categoryParam]}
+              </h1>
+              <AddExerciceButton category={categoryParam} />
+            </div>
             <p className="text-gray-500 mt-1">
               {completedCount}/{exercices.length} exercices complétés
             </p>

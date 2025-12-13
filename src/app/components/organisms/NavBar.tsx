@@ -5,15 +5,67 @@ import Link from 'next/link';
 import { useUser } from '@/contexts/UserContext';
 import Loader from '@/app/components/atoms/Loader';
 import Logo from '@/app/components/atoms/Logo';
+import Input from '@/app/components/atoms/Input';
+import Button from '@/app/components/atoms/Button';
+import ErrorMessage from '@/app/components/atoms/ErrorMessage';
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser, setCurrentUser, users, changingUser } = useUser();
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [createUserError, setCreateUserError] = useState('');
+  const { currentUser, setCurrentUser, users, changingUser, refreshUsers } = useUser();
 
   const handleUserChange = (userId: number) => {
     const selectedUser = users.find(u => u.id === userId);
     if (selectedUser) {
       setCurrentUser(selectedUser);
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newUserName.trim()) {
+      setCreateUserError('Le nom est obligatoire');
+      return;
+    }
+
+    setCreatingUser(true);
+    setCreateUserError('');
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newUserName.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la création');
+      }
+
+      const newUser = await response.json();
+      
+      // Recharger la liste des utilisateurs
+      await refreshUsers();
+      
+      // Définir le nouvel utilisateur comme utilisateur actuel
+      setCurrentUser(newUser);
+      
+      // Réinitialiser le formulaire
+      setNewUserName('');
+      setShowCreateUser(false);
+      setCreateUserError('');
+    } catch (err) {
+      console.error('Erreur:', err);
+      setCreateUserError(err instanceof Error ? err.message : 'Erreur lors de la création de l\'utilisateur');
+    } finally {
+      setCreatingUser(false);
     }
   };
 
@@ -94,7 +146,7 @@ export default function NavBar() {
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
               Profil
             </h3>
-            <div className="bg-gray-50 rounded-xl p-2">
+            <div className="bg-gray-50 rounded-xl p-2 space-y-2">
               {users.map((user) => (
                 <button
                   key={user.id}
@@ -118,6 +170,62 @@ export default function NavBar() {
                   )}
                 </button>
               ))}
+              
+              {!showCreateUser ? (
+                <button
+                  onClick={() => setShowCreateUser(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-blue-600 hover:bg-blue-50 border border-blue-200"
+                >
+                  <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </span>
+                  <span className="font-medium">Créer un utilisateur</span>
+                </button>
+              ) : (
+                <form onSubmit={handleCreateUser} className="bg-white rounded-lg p-3 space-y-3 border border-gray-200">
+                  <ErrorMessage message={createUserError} />
+                  <Input
+                    label="Nom"
+                    type="text"
+                    required
+                    placeholder="Ex: Calypso"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    disabled={creatingUser}
+                    className="text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={creatingUser || !newUserName.trim()}
+                      className="flex-1 text-sm py-2"
+                    >
+                      {creatingUser ? (
+                        <>
+                          <Loader size="small" />
+                          <span>Création...</span>
+                        </>
+                      ) : (
+                        'Créer'
+                      )}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreateUser(false);
+                        setNewUserName('');
+                        setCreateUserError('');
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                      disabled={creatingUser}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
 

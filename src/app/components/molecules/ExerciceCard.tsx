@@ -116,7 +116,6 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                 ${showSuccess ? 'success-animation' : ''}
             `}
             onClick={toggleExpand}
-            role="article"
             aria-expanded={isExpanded}
         >
             {/* Indicateur de catégorie - barre latérale */}

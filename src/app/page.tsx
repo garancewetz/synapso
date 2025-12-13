@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import CategoryTabs from '@/app/components/molecules/CategoryTabs';
 import EmptyState from '@/app/components/molecules/EmptyState';
+import CreateUserCard from '@/app/components/molecules/CreateUserCard';
+import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 import Link from 'next/link';
 import Loader from '@/app/components/atoms/Loader';
 import type { Exercice } from '@/types';
@@ -20,7 +22,7 @@ export default function Home() {
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loadingExercices, setLoadingExercices] = useState(false);
   const router = useRouter();
-  const { currentUser, loading: userLoading } = useUser();
+  const { currentUser, users, loading: userLoading } = useUser();
   const { activeCategory } = useCategory();
 
   const fetchExercices = () => {
@@ -122,33 +124,32 @@ export default function Home() {
   const { pinned, regular } = getPinnedAndRegularExercices();
 
   return (
-    <section className="min-h-screen">
+    <section>
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         
-        {/* Banner mode démo */}
-        {USE_MOCK_DATA && (
-          <div className="mx-4 mb-4 p-3 bg-slate-100 border border-slate-200 rounded-lg text-center">
-            <span className="text-slate-600 text-sm font-medium">Mode démonstration — Données fictives</span>
-          </div>
-        )}
-
         {/* Filtres par catégorie (desktop uniquement) */}
         {!loadingExercices && exercices.length > 0 && (
           <CategoryTabs counts={getCategoryCounts()} />
         )}
 
         {/* Contenu principal */}
-        <div className="px-4">
-          {loadingExercices ? (
-            <div className="flex items-center justify-center min-h-[400px]">
+        <div className="px-3 md:px-4">
+          {loadingExercices || userLoading ? (
+            <div className="flex items-center justify-center py-12">
               <Loader size="large" />
+            </div>
+          ) : users.length === 0 ? (
+            <div className="max-w-md mx-auto py-8">
+              <CreateUserCard />
             </div>
           ) : exercices.length === 0 ? (
             <EmptyState
               icon="+"
               title="Aucun exercice"
               message="Commencez par ajouter votre premier exercice."
-              subMessage="Ouvrez le menu pour créer un exercice."
+              subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
+              actionHref="/exercice/add"
+              actionLabel="Créer mon premier exercice"
             />
           ) : getFilteredExercices().length === 0 ? (
             <EmptyState
@@ -162,19 +163,23 @@ export default function Home() {
               {/* Section des exercices épinglés */}
               {pinned.length > 0 && (
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
-                    Mes priorités
-                  </h2>
-                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                      Mes priorités
+                    </h2>
+                    <AddExerciceButton />
+                  </div>
+                  <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
                     {pinned.map((exercice) => (
                       <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
                         <ExerciceCard
                           exercice={exercice}
                           onEdit={handleEditClick}
                           onCompleted={handleCompleted}
+                          showCategory={false}
                         />
                       </div>
                     ))}
@@ -189,12 +194,13 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                       {CATEGORY_LABELS[activeCategory]}
-                      <span className="text-sm font-normal text-gray-500">
+                      <span className="text-xs md:text-sm font-normal text-gray-500">
                         ({regular.filter(e => e.completed).length}/{regular.length})
                       </span>
                     </h2>
+                    <AddExerciceButton category={activeCategory} />
                   </div>
-                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                  <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
                     {regular.map((exercice) => (
                       <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
                         <ExerciceCard
@@ -225,20 +231,23 @@ export default function Home() {
                             ({categoryExercices.filter(e => e.completed).length}/{categoryExercices.length})
                           </span>
                         </h2>
-                        {hiddenCount > 0 && (
-                          <Link 
-                            href={`/exercices/${category.toLowerCase()}`}
-                            className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
-                            scroll={true}
-                          >
-                            Voir tout
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </Link>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <AddExerciceButton category={category} />
+                          {hiddenCount > 0 && (
+                            <Link 
+                              href={`/exercices/${category.toLowerCase()}`}
+                              className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                              scroll={true}
+                            >
+                              Voir tout
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          )}
+                        </div>
                       </div>
-                      <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                      <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
                         {visibleExercices.map((exercice) => (
                           <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
                             <ExerciceCard
@@ -253,11 +262,11 @@ export default function Home() {
                       {hiddenCount > 0 && (
                         <Link 
                           href={`/exercices/${category.toLowerCase()}`}
-                          className="w-full mt-4 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full mt-3 md:mt-4 py-2.5 md:py-3 px-3 md:px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium text-xs md:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                           scroll={true}
                         >
                           Voir les {hiddenCount} autres exercices de {CATEGORY_LABELS[category]}
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </Link>

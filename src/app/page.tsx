@@ -80,6 +80,7 @@ export default function Home() {
   const getCategoryCounts = (): Record<ExerciceCategory, number> => {
     return {
       UPPER_BODY: exercices.filter(e => e.category === 'UPPER_BODY').length,
+      CORE: exercices.filter(e => e.category === 'CORE').length,
       LOWER_BODY: exercices.filter(e => e.category === 'LOWER_BODY').length,
       STRETCHING: exercices.filter(e => e.category === 'STRETCHING').length,
     };
@@ -215,7 +216,7 @@ export default function Home() {
                 </div>
               ) : (
                 // Vue "Tous" - toutes les catégories
-                (['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'] as ExerciceCategory[]).map(category => {
+                (['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'] as ExerciceCategory[]).map(category => {
                   const categoryExercices = regular.filter(e => e.category === category);
                   if (categoryExercices.length === 0) return null;
                   

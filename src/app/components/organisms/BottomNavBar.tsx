@@ -40,12 +40,19 @@ const CATEGORY_CONFIG: Record<ExerciceCategory | 'ALL', {
     activeClasses: 'bg-purple-600 text-white border-purple-600',
     inactiveClasses: 'bg-white text-gray-600 border-purple-300',
   },
+  CORE: {
+    label: 'Tronc',
+    icon: '🎯',
+    href: '/exercices/core',
+    activeClasses: 'bg-teal-600 text-white border-teal-600',
+    inactiveClasses: 'bg-white text-gray-600 border-teal-300',
+  },
 };
 
 export default function BottomNavBar() {
   const pathname = usePathname();
   
-  const categories: (ExerciceCategory | 'ALL')[] = ['ALL', 'UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
+  const categories: (ExerciceCategory | 'ALL')[] = ['ALL', 'UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
   const isActive = (category: ExerciceCategory | 'ALL') => {
     const config = CATEGORY_CONFIG[category];
@@ -58,7 +65,7 @@ export default function BottomNavBar() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 pb-safe md:hidden">
       <div className="px-2 py-2">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {categories.map((category) => {
             const config = CATEGORY_CONFIG[category];
             const active = isActive(category);

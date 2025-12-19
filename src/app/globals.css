@@ -14,6 +14,8 @@
   --lower-body-light: #FEF3C7;
   --stretching: #10B981;
   --stretching-light: #D1FAE5;
+  --core: #14B8A6;
+  --core-light: #CCFBF1;
 }
 
 @theme inline {

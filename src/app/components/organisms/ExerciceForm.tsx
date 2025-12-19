@@ -210,7 +210,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
     }
   };
 
-  const categories: ExerciceCategory[] = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
+  const categories: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
   if (initialLoading) {
     return (

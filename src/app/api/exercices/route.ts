@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Filtrer par catégorie si spécifiée
-    if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(category)) {
+    if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
       whereClause.category = category;
     }
 
@@ -122,9 +122,9 @@ export async function POST(request: NextRequest) {
 
     // Valider la catégorie
     const category: ExerciceCategory = (data.category || 'UPPER_BODY') as ExerciceCategory;
-    if (!['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(category)) {
+    if (!['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
       return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, or STRETCHING' },
+        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
         { status: 400 }
       );
     }

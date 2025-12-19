@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 // Mapping direct des noms d'exercices vers les catégories
 // Basé sur le fichier mockExercices.ts
-const EXERCICE_CATEGORIES: Record<string, 'LOWER_BODY' | 'UPPER_BODY' | 'STRETCHING'> = {
+const EXERCICE_CATEGORIES: Record<string, 'LOWER_BODY' | 'UPPER_BODY' | 'STRETCHING' | 'CORE'> = {
   // BAS DU CORPS
   "Papillon": "LOWER_BODY",
   "Torsion": "LOWER_BODY",
@@ -56,7 +56,7 @@ const LOWER_BODY_KEYWORDS = ['jambe', 'genou', 'pied', 'bassin', 'fessier', 'cui
 const UPPER_BODY_KEYWORDS = ['bras', 'main', 'épaule', 'epaule', 'poignet', 'doigt', 'biceps', 'triceps', 'pompe'];
 const STRETCHING_KEYWORDS = ['étirement', 'etirement', 'stretch', 'respiration', 'relaxation', 'cou', 'dos', 'nuque', 'trapèze'];
 
-function detectCategory(name: string, description: string): 'LOWER_BODY' | 'UPPER_BODY' | 'STRETCHING' {
+function detectCategory(name: string, description: string): 'LOWER_BODY' | 'UPPER_BODY' | 'STRETCHING' | 'CORE' {
   const text = (name + ' ' + description).toLowerCase();
   
   // Vérifier les mots-clés d'étirement en premier

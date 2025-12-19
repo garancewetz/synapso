@@ -14,6 +14,7 @@ enum ExerciceCategory {
   UPPER_BODY // Haut du corps
   LOWER_BODY // Bas du corps
   STRETCHING // Étirement
+  CORE // Tronc
 }
 
 model User {

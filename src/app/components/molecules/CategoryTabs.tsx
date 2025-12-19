@@ -32,11 +32,17 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     inactiveClasses: 'bg-white text-gray-600 border-purple-300 hover:border-purple-400',
     dotColor: 'bg-purple-500',
   },
+  CORE: {
+    icon: '🎯',
+    activeClasses: 'bg-teal-600 text-white border-teal-600',
+    inactiveClasses: 'bg-white text-gray-600 border-teal-300 hover:border-teal-400',
+    dotColor: 'bg-teal-500',
+  },
 };
 
 export default function CategoryTabs({ counts }: CategoryTabsProps) {
   const { activeCategory, setActiveCategory } = useCategory();
-  const categories: ExerciceCategory[] = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'];
+  const categories: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
   const totalCount = categories.reduce((sum, cat) => sum + (counts[cat] || 0), 0);
 
   return (

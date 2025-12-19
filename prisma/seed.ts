@@ -209,6 +209,7 @@ async function main() {
   let upperCount = 0;
   let lowerCount = 0;
   let stretchingCount = 0;
+  let coreCount = 0;
 
   for (const exercice of mockExercices) {
     await prisma.exercice.create({
@@ -220,7 +221,7 @@ async function main() {
         workoutSeries: exercice.workoutSeries,
         workoutDuration: exercice.workoutDuration,
         equipments: JSON.stringify(exercice.equipments),
-        category: exercice.category as "UPPER_BODY" | "LOWER_BODY" | "STRETCHING",
+        category: exercice.category as "UPPER_BODY" | "LOWER_BODY" | "STRETCHING" | "CORE",
         pinned: exercice.pinned,
         userId: calypso.id,
       },
@@ -229,6 +230,7 @@ async function main() {
     // Compter par catégorie
     if (exercice.category === 'UPPER_BODY') upperCount++;
     else if (exercice.category === 'LOWER_BODY') lowerCount++;
+    else if (exercice.category === 'CORE') coreCount++;
     else stretchingCount++;
 
     console.log(`  ✓ ${exercice.name}`);
@@ -240,6 +242,7 @@ async function main() {
   console.log(`💪 Haut du corps : ${upperCount} exercices`);
   console.log(`🦵 Bas du corps  : ${lowerCount} exercices`);
   console.log(`🧘 Étirements    : ${stretchingCount} exercices`);
+  console.log(`🎯 Tronc         : ${coreCount} exercices`);
   console.log(`📌 Épinglés      : ${mockExercices.filter(e => e.pinned).length} exercices`);
   console.log('═'.repeat(50));
   console.log(`\n✅ ${mockExercices.length} exercices ont été importés avec succès !`);

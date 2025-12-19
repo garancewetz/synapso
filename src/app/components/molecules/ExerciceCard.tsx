@@ -10,6 +10,7 @@ const CATEGORY_ICONS: Record<ExerciceCategory, string> = {
     LOWER_BODY: '🦵',   // Jambe = Bas du corps
     UPPER_BODY: '💪',   // Bras = Haut du corps
     STRETCHING: '🧘',   // Yoga = Étirements
+    CORE: '🎯',         // Cible = Tronc
 };
 
 interface ExerciceCardProps {

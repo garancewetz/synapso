@@ -127,9 +127,9 @@ export async function PUT(
     }
 
     // Valider la catégorie si fournie
-    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(updatedData.category)) {
+    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(updatedData.category)) {
       return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, or STRETCHING' },
+        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
         { status: 400 }
       );
     }

@@ -21,7 +21,7 @@ export default function CategoryPage() {
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
-  const isValidCategory = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(categoryParam);
+  const isValidCategory = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(categoryParam);
 
   const fetchExercices = () => {
     if (USE_MOCK_DATA) {

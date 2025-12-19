@@ -15,7 +15,7 @@ export default function AdminAddPage() {
     if (!param) return undefined;
     // Convertir "upper_body" ou "upper-body" en "UPPER_BODY"
     const normalized = param.toUpperCase().replace(/-/g, '_');
-    if (['UPPER_BODY', 'LOWER_BODY', 'STRETCHING'].includes(normalized)) {
+    if (['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'].includes(normalized)) {
       return normalized as ExerciceCategory;
     }
     return undefined;

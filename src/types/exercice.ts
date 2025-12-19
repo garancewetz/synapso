@@ -1,17 +1,19 @@
-// Les 3 catégories simples pour les exercices
-export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING';
+// Les 4 catégories simples pour les exercices
+export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING' | 'CORE';
 
 // Labels affichés pour chaque catégorie
 export const CATEGORY_LABELS: Record<ExerciceCategory, string> = {
   UPPER_BODY: 'Haut du corps',
   LOWER_BODY: 'Bas du corps',
   STRETCHING: 'Étirement',
+  CORE: 'Tronc',
 };
 
 // Couleurs pour chaque catégorie (palette apaisante et accessible)
 // 🦵 Bleu = Bas du corps (ancrage, stabilité)
 // 💪 Orange = Haut du corps (énergie, action)
 // 🧘 Violet = Étirements (détente, souplesse)
+// 🎯 Teal = Tronc (force centrale, stabilité)
 // ✅ Vert Émeraude réservé pour validation
 export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: string; text: string; accent: string; tag: string }> = {
   LOWER_BODY: {
@@ -34,6 +36,13 @@ export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: str
     text: 'text-purple-700',
     accent: 'bg-purple-500',
     tag: 'bg-purple-100 text-purple-600', // Couleur pâle pour les tags bodypart
+  },
+  CORE: {
+    bg: 'bg-teal-50',
+    border: 'border-teal-200',
+    text: 'text-teal-700',
+    accent: 'bg-teal-500',
+    tag: 'bg-teal-100 text-teal-600', // Couleur pâle pour les tags bodypart
   },
 };
 

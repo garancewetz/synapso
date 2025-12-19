@@ -6,10 +6,10 @@ import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import Loader from '@/app/components/atoms/Loader';
 import type { Exercice } from '@/types';
-import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
+import { ExerciceCategory } from '@/types/exercice';
+import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/contexts/UserContext';
 import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
-import Link from 'next/link';
 import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 
 export default function CategoryPage() {
@@ -21,7 +21,7 @@ export default function CategoryPage() {
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
-  const isValidCategory = ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(categoryParam);
+  const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
   const fetchExercices = () => {
     if (USE_MOCK_DATA) {
@@ -41,12 +41,10 @@ export default function CategoryPage() {
           const filtered = data.filter((e: Exercice) => e.category === categoryParam);
           setExercices(filtered);
         } else {
-          console.error('API error:', data);
           setExercices([]);
         }
       })
-      .catch(error => {
-        console.error('Fetch error:', error);
+      .catch(() => {
         setExercices([]);
       })
       .finally(() => {
@@ -105,20 +103,11 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="min-h-screen">
+    <section className="max-sm:min-h-screen">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
-        {/* Header avec retour */}
+        {/* Header */}
         {!loading && (
           <div className="px-4 mb-6">
-            <Link 
-              href="/"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Retour
-            </Link>
             <div className="flex items-center justify-between gap-4">
               <h1 className="text-2xl font-bold text-gray-900">
                 {CATEGORY_LABELS[categoryParam]}

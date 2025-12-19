@@ -7,7 +7,8 @@ import Textarea from '@/app/components/atoms/Textarea';
 import ErrorMessage from '@/app/components/atoms/ErrorMessage';
 import FormActions from '@/app/components/molecules/FormActions';
 import Loader from '@/app/components/atoms/Loader';
-import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS } from '@/types/exercice';
+import { ExerciceCategory } from '@/types/exercice';
+import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
 interface ExerciceFormProps {
   exerciceId?: number;
@@ -15,19 +16,6 @@ interface ExerciceFormProps {
   onCancel?: () => void;
   initialCategory?: ExerciceCategory;
 }
-
-// Liste des bodyparts disponibles
-const AVAILABLE_BODYPARTS = [
-  'Jambes',
-  'Bassin',
-  'Bras',
-  'Mains',
-  'Épaules',
-  'Dos',
-  'Nuque / Cervicales',
-  'Pied',
-  'Fessier',
-];
 
 export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: ExerciceFormProps) {
   const { currentUser } = useUser();
@@ -56,9 +44,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       .then((data) => {
         setEquipmentsList(data.equipments || []);
       })
-      .catch((err) => {
-        console.error('Erreur lors du chargement des équipements:', err);
-      });
+      .catch(() => {});
 
     if (exerciceId && currentUser) {
       // Charger l'exercice existant
@@ -69,16 +55,15 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
             name: data.name || '',
             descriptionText: data.description?.text || '',
             descriptionComment: data.description?.comment || '',
-            workoutRepeat: data.workout?.repeat?.toString() || '',
-            workoutSeries: data.workout?.series?.toString() || '',
+            workoutRepeat: data.workout?.repeat || '',
+            workoutSeries: data.workout?.series || '',
             workoutDuration: data.workout?.duration || '',
             category: data.category || 'UPPER_BODY',
             bodyparts: data.bodyparts || [],
             equipments: data.equipments || [],
           });
         })
-        .catch((err) => {
-          console.error('Erreur lors du chargement:', err);
+        .catch(() => {
           setError('Erreur lors du chargement de l\'exercice');
         })
         .finally(() => {
@@ -138,8 +123,8 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         comment: formData.descriptionComment || null,
       },
       workout: {
-        repeat: formData.workoutRepeat ? parseInt(formData.workoutRepeat) : null,
-        series: formData.workoutSeries ? parseInt(formData.workoutSeries) : null,
+        repeat: formData.workoutRepeat || null,
+        series: formData.workoutSeries || null,
         duration: formData.workoutDuration || null,
       },
       category: formData.category,
@@ -168,7 +153,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         onSuccess();
       }
     } catch (err) {
-      console.error('Erreur:', err);
+      console.error('Erreur lors de l\'enregistrement:', err);
       setError('Erreur lors de l\'enregistrement de l\'exercice');
     } finally {
       setLoading(false);
@@ -202,7 +187,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         onSuccess();
       }
     } catch (err) {
-      console.error('Erreur:', err);
+      console.error('Erreur lors de la suppression:', err);
       setError('Erreur lors de la suppression de l\'exercice');
     } finally {
       setLoading(false);
@@ -210,7 +195,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
     }
   };
 
-  const categories: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
+  const categories: ExerciceCategory[] = CATEGORY_ORDER;
 
   if (initialLoading) {
     return (
@@ -229,7 +214,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         <label className="block text-base font-semibold text-gray-900 mb-3">
           Catégorie *
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {categories.map((category) => {
             const isSelected = formData.category === category;
             const colors = CATEGORY_COLORS[category];
@@ -324,7 +309,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
             label="Répétitions"
-            type="number"
+            type="text"
             placeholder="Ex: 10"
             value={formData.workoutRepeat}
             onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
@@ -332,7 +317,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
           <Input
             label="Séries"
-            type="number"
+            type="text"
             placeholder="Ex: 3"
             value={formData.workoutSeries}
             onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
@@ -374,7 +359,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
             );
           })}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             placeholder="Ajouter un équipement..."
@@ -386,7 +371,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
           <button
             type="button"
             onClick={addNewEquipment}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
+            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium sm:w-auto w-full"
           >
             + Ajouter
           </button>

@@ -17,12 +17,18 @@ enum ExerciceCategory {
   CORE // Tronc
 }
 
+enum ResetFrequency {
+  DAILY  // Tous les jours à minuit
+  WEEKLY // Une fois par semaine, le dimanche à minuit
+}
+
 model User {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
-  exercices Exercice[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  resetFrequency ResetFrequency  @default(DAILY)
+  exercices      Exercice[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Exercice {
@@ -30,8 +36,8 @@ model Exercice {
   name               String
   descriptionText    String
   descriptionComment String?
-  workoutRepeat      Int?
-  workoutSeries      Int?
+  workoutRepeat      String?
+  workoutSeries      String?
   workoutDuration    String?
   equipments         String // Stocké en JSON string
   category           ExerciceCategory   @default(UPPER_BODY)

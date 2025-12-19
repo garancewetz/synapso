@@ -9,8 +9,8 @@ interface HistoryEntry {
     name: string;
     descriptionText: string;
     descriptionComment: string | null;
-    workoutRepeat: number | null;
-    workoutSeries: number | null;
+    workoutRepeat: string | null;
+    workoutSeries: string | null;
     workoutDuration: string | null;
     equipments: string;
     userId: number;

@@ -4,9 +4,10 @@ import { useRouter } from 'next/navigation';
 
 interface FormPageWrapperProps {
   children: React.ReactNode;
+  title?: string;
 }
 
-export default function FormPageWrapper({ children }: FormPageWrapperProps) {
+export default function FormPageWrapper({ children, title }: FormPageWrapperProps) {
   const router = useRouter();
 
   const handleBack = () => {
@@ -27,6 +28,9 @@ export default function FormPageWrapper({ children }: FormPageWrapperProps) {
             </svg>
             <span className="text-sm font-medium">Retour</span>
           </button>
+          {title && (
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
+          )}
           {children}
         </div>
       </div>

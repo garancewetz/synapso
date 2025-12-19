@@ -1,98 +1,77 @@
 'use client';
 
-import { ExerciceCategory, CATEGORY_LABELS } from '@/types/exercice';
-import { useCategory } from '@/contexts/CategoryContext';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { ExerciceCategory } from '@/types/exercice';
+import { 
+  CATEGORY_LABELS, 
+  CATEGORY_ORDER, 
+  CATEGORY_HREFS, 
+  CATEGORY_NAV_CONFIG,
+  CATEGORY_ICONS
+} from '@/app/constants/exercice.constants';
 
 interface CategoryTabsProps {
   counts: Record<ExerciceCategory, number>;
 }
 
-// Emojis et couleurs pour chaque catégorie
-const CATEGORY_CONFIG: Record<ExerciceCategory, { 
-  icon: string;
-  activeClasses: string;
-  inactiveClasses: string;
-  dotColor: string;
-}> = {
-  LOWER_BODY: {
-    icon: '🦵',
-    activeClasses: 'bg-blue-600 text-white border-blue-600',
-    inactiveClasses: 'bg-white text-gray-600 border-blue-300 hover:border-blue-400',
-    dotColor: 'bg-blue-500',
-  },
-  UPPER_BODY: {
-    icon: '💪',
-    activeClasses: 'bg-orange-600 text-white border-orange-600',
-    inactiveClasses: 'bg-white text-gray-600 border-orange-300 hover:border-orange-400',
-    dotColor: 'bg-orange-500',
-  },
-  STRETCHING: {
-    icon: '🧘',
-    activeClasses: 'bg-purple-600 text-white border-purple-600',
-    inactiveClasses: 'bg-white text-gray-600 border-purple-300 hover:border-purple-400',
-    dotColor: 'bg-purple-500',
-  },
-  CORE: {
-    icon: '🎯',
-    activeClasses: 'bg-teal-600 text-white border-teal-600',
-    inactiveClasses: 'bg-white text-gray-600 border-teal-300 hover:border-teal-400',
-    dotColor: 'bg-teal-500',
-  },
-};
-
 export default function CategoryTabs({ counts }: CategoryTabsProps) {
-  const { activeCategory, setActiveCategory } = useCategory();
-  const categories: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
-  const totalCount = categories.reduce((sum, cat) => sum + (counts[cat] || 0), 0);
+  const pathname = usePathname();
+  const totalCount = CATEGORY_ORDER.reduce((sum, cat) => sum + (counts[cat] || 0), 0);
+
+  // Déterminer si on est sur la page d'accueil
+  const isHomePage = pathname === '/';
 
   return (
     <div className="hidden md:block px-4 mb-6">
       {/* Container - flex sur desktop */}
       <div className="flex flex-wrap justify-center gap-2">
-        {/* Bouton "Tous" */}
-        <button
-          onClick={() => setActiveCategory(null)}
+        {/* Lien "Tous" */}
+        <Link
+          href="/"
           className={`
             flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 
             font-medium text-sm transition-all duration-200
-            ${activeCategory === null
-              ? 'bg-gray-800 text-white border-gray-800'
+            ${isHomePage
+              ? 'bg-gray-800 !text-white border-gray-800'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
             }
           `}
         >
           <span>Tous</span>
           <span className={`text-xs px-1.5 py-0.5 rounded ${
-            activeCategory === null ? 'bg-gray-600' : 'bg-gray-100'
+            isHomePage ? 'bg-gray-600' : 'bg-gray-100'
           }`}>
             {totalCount}
           </span>
-        </button>
+        </Link>
 
-        {/* Boutons de catégorie */}
-        {categories.map((category) => {
-          const config = CATEGORY_CONFIG[category];
-          const isActive = activeCategory === category;
+        {/* Liens de catégorie */}
+        {CATEGORY_ORDER.map((category) => {
+          const config = CATEGORY_NAV_CONFIG[category];
+          const href = CATEGORY_HREFS[category];
+          const icon = CATEGORY_ICONS[category];
+          const isActive = pathname === href;
           const count = counts[category] || 0;
 
           return (
-            <button
+            <Link
               key={category}
-              onClick={() => setActiveCategory(category)}
+              href={href}
               className={`
                 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 
                 font-medium text-sm transition-all duration-200 cursor-pointer
                 ${isActive ? config.activeClasses : config.inactiveClasses}
               `}
             >
-              <span className={`w-2 h-2 rounded-full ${config.dotColor}`} />
-              <span className="text-xs">{CATEGORY_LABELS[category]}</span>
+              <span className="text-base">{icon}</span>
+              <span className={`text-xs ${isActive ? 'text-white' : ''}`}>{CATEGORY_LABELS[category]}</span>
               <span className={`text-xs px-1.5 py-0.5 rounded ${
-                isActive ? 'bg-white/20' : 'bg-gray-100'
+                isActive ? 'bg-white/20 text-white' : 'bg-gray-100'
               }`}>
                 {count}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>

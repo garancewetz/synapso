@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 type User = {
   id: number;
   name: string;
+  resetFrequency?: 'DAILY' | 'WEEKLY';
 };
 
 type UserContextType = {

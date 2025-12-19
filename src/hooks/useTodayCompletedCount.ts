@@ -5,7 +5,7 @@ import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
 const REFRESH_EVENT = 'exercice-completed-refresh';
 
 export function useTodayCompletedCount() {
-  const [completedToday, setCompletedToday] = useState(0);
+  const [completedToday, setCompletedToday] = useState<number | null>(null);
   const { currentUser } = useUser();
 
   const fetchCompletedCount = useCallback(() => {
@@ -25,23 +25,35 @@ export function useTodayCompletedCount() {
     }
 
     if (!currentUser) {
-      setCompletedToday(0);
+      setCompletedToday(null);
       return;
     }
 
-    fetch(`/api/exercices?userId=${currentUser.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const today = new Date();
-          const count = data.filter((ex: { completed?: boolean; completedAt?: string | Date | null }) => {
+    Promise.all([
+      fetch(`/api/exercices?userId=${currentUser.id}`).then(res => res.json()),
+      fetch(`/api/users/${currentUser.id}`).then(res => res.json())
+    ])
+      .then(([exercicesData, userData]) => {
+        if (Array.isArray(exercicesData)) {
+          const resetFrequency = userData?.resetFrequency || 'DAILY';
+          const now = new Date();
+          
+          let startOfPeriod: Date;
+          
+          if (resetFrequency === 'DAILY') {
+            startOfPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          } else if (resetFrequency === 'WEEKLY') {
+            startOfPeriod = new Date(now);
+            startOfPeriod.setDate(now.getDate() - now.getDay()); // Dimanche = 0
+            startOfPeriod.setHours(0, 0, 0, 0);
+          } else {
+            startOfPeriod = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          }
+          
+          const count = exercicesData.filter((ex: { completed?: boolean; completedAt?: string | Date | null }) => {
             if (!ex.completed || !ex.completedAt) return false;
             const completedDate = new Date(ex.completedAt);
-            return (
-              completedDate.getDate() === today.getDate() &&
-              completedDate.getMonth() === today.getMonth() &&
-              completedDate.getFullYear() === today.getFullYear()
-            );
+            return completedDate.getTime() >= startOfPeriod.getTime();
           }).length;
           setCompletedToday(count);
         } else {
@@ -49,7 +61,7 @@ export function useTodayCompletedCount() {
         }
       })
       .catch(() => {
-        setCompletedToday(0);
+        setCompletedToday(null);
       });
   }, [currentUser]);
 

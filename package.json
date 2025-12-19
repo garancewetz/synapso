@@ -16,6 +16,7 @@
     "db:backup": "tsx prisma/backup.ts",
     "db:import": "tsx prisma/import-backup.ts",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:apply-reset-frequency": "tsx prisma/apply-reset-frequency-migration.ts",
     "postinstall": "prisma generate",
     "pwa:icons": "tsx scripts/generate-icons.ts"
   },

@@ -1,17 +1,11 @@
 'use client';
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Exercice } from '@/types';
-import { ExerciceCategory, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types/exercice';
+import { CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/hooks/useTodayCompletedCount';
-// Emojis pour chaque catégorie (accessibilité : couleur + icône)
-const CATEGORY_ICONS: Record<ExerciceCategory, string> = {
-    LOWER_BODY: '🦵',   // Jambe = Bas du corps
-    UPPER_BODY: '💪',   // Bras = Haut du corps
-    STRETCHING: '🧘',   // Yoga = Étirements
-    CORE: '🎯',         // Cible = Tronc
-};
 
 interface ExerciceCardProps {
     exercice: Exercice;
@@ -64,11 +58,9 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                 }
                 // Déclencher le rafraîchissement du compteur
                 triggerCompletedCountRefresh();
-            } else {
-                console.error('Erreur lors de la mise à jour');
             }
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors de la mise à jour:', error);
         } finally {
             setIsCompleting(false);
         }
@@ -94,11 +86,9 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                 if (onCompleted) {
                     onCompleted(updatedExercice);
                 }
-            } else {
-                console.error('Erreur lors de la mise à jour du pin');
             }
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors de la mise à jour du pin:', error);
         } finally {
             setIsPinning(false);
         }
@@ -187,7 +177,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                                 ))
                             }
                             {/* Séries */}
-                            {exercice.workout.series && exercice.workout.series > 1 && (
+                            {exercice.workout.series && exercice.workout.series !== '1' && (
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md font-medium">
                                     {exercice.workout.series} séries
                                 </span>
@@ -217,20 +207,57 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                             }
                         </div>
 
-                        {/* Description - visible si étendu */}
-                        {isExpanded && (
-                            <div className="mt-4 space-y-3 animate-in slide-in-from-top duration-200">
-                                <p className="text-gray-600 leading-relaxed text-sm">
-                                    {exercice.description.text}
-                                </p>
-                                {exercice.description.comment && (
-                                    <div className="p-3 bg-slate-50 border-l-2 border-slate-300 text-slate-700 text-sm rounded-r">
-                                        <span className="font-semibold">Conseil : </span>
-                                        {exercice.description.comment}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* Description - visible si étendu avec animation smooth */}
+                        <AnimatePresence>
+                            {isExpanded && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    animate={{ 
+                                        opacity: 1, 
+                                        height: "auto",
+                                        marginTop: 16
+                                    }}
+                                    exit={{ 
+                                        opacity: 0, 
+                                        height: 0,
+                                        marginTop: 0
+                                    }}
+                                    transition={{ 
+                                        duration: 0.3,
+                                        ease: [0.4, 0, 0.2, 1]
+                                    }}
+                                    className="overflow-hidden space-y-3"
+                                >
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ 
+                                            duration: 0.3,
+                                            delay: 0.1,
+                                            ease: [0.4, 0, 0.2, 1]
+                                        }}
+                                        className="text-gray-600 leading-relaxed text-sm"
+                                    >
+                                        {exercice.description.text}
+                                    </motion.p>
+                                    {exercice.description.comment && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ 
+                                                duration: 0.3,
+                                                delay: 0.15,
+                                                ease: [0.4, 0, 0.2, 1]
+                                            }}
+                                            className="p-3 bg-slate-50 border-l-2 border-slate-300 text-slate-700 text-sm rounded-r"
+                                        >
+                                            <span className="font-semibold">Conseil : </span>
+                                            {exercice.description.comment}
+                                        </motion.div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* Indicateur d'expansion */}
                         <div className="flex justify-center mt-2">

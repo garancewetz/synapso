@@ -6,7 +6,8 @@ import ConfettiRain from '@/app/components/atoms/ConfettiRain';
 
 interface WelcomeHeaderProps {
   userName: string;
-  completedToday: number;
+  completedToday: number | null;
+  resetFrequency?: 'DAILY' | 'WEEKLY' | null;
 }
 
 // Objectif quotidien : 5 exercices par jour
@@ -36,7 +37,7 @@ const CONFETTI_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', 
 const CELEBRATION_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'];
 
 
-export default function WelcomeHeader({ userName, completedToday }: WelcomeHeaderProps) {
+export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: WelcomeHeaderProps) {
   const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
@@ -45,9 +46,12 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
   const isAnimatingRef = useRef(false);
   
   // Progression basée sur l'objectif quotidien de 5 exercices
-  const progress = Math.min(completedToday / DAILY_GOAL, 1);
-  const isGoalReached = completedToday >= DAILY_GOAL;
-  const bonusExercices = Math.max(0, completedToday - DAILY_GOAL);
+  // Si completedToday est null, on considère qu'on est en train de charger
+  const isLoading = completedToday === null;
+  const count = completedToday ?? 0;
+  const progress = isLoading ? 0 : Math.min(count / DAILY_GOAL, 1);
+  const isGoalReached = !isLoading && count >= DAILY_GOAL;
+  const bonusExercices = isLoading ? 0 : Math.max(0, count - DAILY_GOAL);
 
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * ENCOURAGEMENTS.length);
@@ -68,17 +72,24 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
       prevBonusRef.current = currentBonus;
     };
     
-    // Ignorer si les valeurs n'ont pas changé ou si une animation est en cours
+    // Ignorer si on est en train de charger ou si les valeurs n'ont pas changé
+    if (completedToday === null || isAnimatingRef.current) {
+      if (completedToday !== null) {
+        updateRefs();
+      }
+      return;
+    }
+    
+    // Ignorer si les valeurs n'ont pas changé ou si on a régressé
     if (
       (prevCompleted === completedToday && prevBonus === currentBonus) ||
-      isAnimatingRef.current ||
-      completedToday <= prevCompleted
+      (prevCompleted !== null && completedToday <= prevCompleted)
     ) {
       updateRefs();
       return;
     }
     
-    const wasGoalReached = prevCompleted >= DAILY_GOAL;
+    const wasGoalReached = prevCompleted !== null && prevCompleted >= DAILY_GOAL;
     const isNowGoalReached = completedToday >= DAILY_GOAL;
     const justReachedGoal = !wasGoalReached && isNowGoalReached;
     const newBonusExercise = isNowGoalReached && currentBonus > prevBonus;
@@ -211,12 +222,52 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
 
       {/* Greeting */}
       <div className="mb-5 relative z-10">
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
-          {getTimeGreeting()}, {userName}
-        </h1>
-        <p className="text-gray-500 text-sm md:text-base mt-1">
-          {getCompletionMessage()}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
+              {getTimeGreeting()}, {userName}
+            </h1>
+            {/* Badge de réinitialisation - affiché seulement si l'information est chargée */}
+            {resetFrequency && (
+              <span className={`
+                inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium mb-2
+                ${resetFrequency === 'DAILY' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'bg-purple-100 text-purple-700'
+                }
+              `}>
+                {resetFrequency === 'DAILY' ? (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                   Rythme quotidien
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Rythme hebdomadaire
+                  </>
+                )}
+              </span>
+            )}
+            <p className="text-gray-500 text-sm md:text-base mt-1">
+              {getCompletionMessage()}
+            </p>
+          </div>
+          <a
+            href="/settings"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex-shrink-0"
+            aria-label="Paramètres"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </a>
+        </div>
       </div>
 
       {/* Progress bar */}
@@ -226,8 +277,8 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
             Objectif du jour
           </span>
           <span className="text-sm font-semibold text-gray-700">
-            {completedToday} / {DAILY_GOAL}
-            {bonusExercices > 0 && (
+            {isLoading ? '...' : `${count} / ${DAILY_GOAL}`}
+            {!isLoading && bonusExercices > 0 && (
               <span className="text-emerald-600 ml-1">+{bonusExercices}</span>
             )}
           </span>
@@ -235,11 +286,12 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden relative">
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 relative overflow-hidden"
+            initial={{ width: '0%' }}
             animate={{ 
-              width: `${progress * 100}%`,
+              width: isLoading ? '0%' : `${progress * 100}%`,
             }}
             transition={{ 
-              duration: 0.5, 
+              duration: isLoading ? 0 : 0.5, 
               ease: "easeOut" 
             }}
           />
@@ -264,11 +316,11 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
             <motion.div 
               key={step}
               className={`w-1.5 h-1.5 rounded-full ${
-                completedToday >= step ? 'bg-emerald-400' : 'bg-gray-200'
+                !isLoading && count >= step ? 'bg-emerald-400' : 'bg-gray-200'
               }`}
-              animate={completedToday >= step ? {
-                scale: [1, 1.3, 1],
-              } : {}}
+            animate={!isLoading && count >= step ? {
+              scale: [1, 1.3, 1],
+            } : {}}
               transition={{ duration: 0.3, delay: step * 0.1 }}
             />
           ))}
@@ -276,7 +328,7 @@ export default function WelcomeHeader({ userName, completedToday }: WelcomeHeade
       </div>
 
       {/* Encouragement discret */}
-      {completedToday > 0 && !isGoalReached && (
+      {!isLoading && count > 0 && !isGoalReached && (
         <p className="text-sm text-gray-500 mt-3 relative z-10">
           {encouragement}
         </p>

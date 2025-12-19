@@ -1,9 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ExerciceCategory } from '@/types/exercice';
+import { Prisma, ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
+
+// Types pour les résultats SQL bruts
+interface ExerciceRaw {
+  id: number;
+  name: string;
+  descriptionText: string;
+  descriptionComment: string | null;
+  workoutRepeat: string | null;
+  workoutSeries: string | null;
+  workoutDuration: string | null;
+  equipments: string;
+  category: ExerciceCategory;
+  userId: number;
+  completed: boolean;
+  completedAt: Date | null;
+  pinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface BodypartRaw {
+  exerciceId: number;
+  bodypartId: number;
+  bodypart_id: number;
+  bodypart_name: string;
+  bodypart_color: string;
+  bodypart_createdAt: Date;
+  bodypart_updatedAt: Date;
+}
+
+interface ExerciceWithBodyparts extends ExerciceRaw {
+  bodyparts: Array<{ bodypart: { id: number; name: string; color: string; createdAt: Date; updatedAt: Date } }>;
+}
 
 export async function GET(request: NextRequest) {
   try {
+    if (!prisma) {
+      throw new Error('Prisma client non initialisé');
+    }
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const category = searchParams.get('category') as ExerciceCategory | null;
@@ -16,10 +54,23 @@ export async function GET(request: NextRequest) {
     }
 
     const userIdNumber = parseInt(userId);
+    
     if (isNaN(userIdNumber)) {
       return NextResponse.json(
         { error: 'Invalid userId' },
         { status: 400 }
+      );
+    }
+
+    // Vérifier que l'utilisateur existe
+    const userExists = await prisma.user.findUnique({
+      where: { id: userIdNumber },
+    });
+
+    if (!userExists) {
+      return NextResponse.json(
+        { error: `User with id ${userIdNumber} not found` },
+        { status: 404 }
       );
     }
 
@@ -32,62 +83,171 @@ export async function GET(request: NextRequest) {
       whereClause.category = category;
     }
 
-    const exercices = await prisma.exercice.findMany({
-      where: whereClause,
-      include: {
-        bodyparts: {
-          include: {
-            bodypart: true,
+    // Utiliser une requête SQL brute pour contourner le problème de cache PostgreSQL
+    let exercicesRaw: ExerciceRaw[];
+    try {
+      // Construire la requête SQL avec Prisma.sql pour éviter le cache
+      let sql = Prisma.sql`
+        SELECT 
+          id, name, "descriptionText", "descriptionComment",
+          "workoutRepeat", "workoutSeries", "workoutDuration",
+          equipments, category, "userId", completed, "completedAt",
+          pinned, "createdAt", "updatedAt"
+        FROM "Exercice"
+        WHERE "userId" = ${userIdNumber}
+      `;
+      
+      if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
+        sql = Prisma.sql`
+          SELECT 
+            id, name, "descriptionText", "descriptionComment",
+            "workoutRepeat", "workoutSeries", "workoutDuration",
+            equipments, category, "userId", completed, "completedAt",
+            pinned, "createdAt", "updatedAt"
+          FROM "Exercice"
+          WHERE "userId" = ${userIdNumber} AND category = ${category}
+          ORDER BY pinned DESC, id DESC
+        `;
+      } else {
+        sql = Prisma.sql`
+          SELECT 
+            id, name, "descriptionText", "descriptionComment",
+            "workoutRepeat", "workoutSeries", "workoutDuration",
+            equipments, category, "userId", completed, "completedAt",
+            pinned, "createdAt", "updatedAt"
+          FROM "Exercice"
+          WHERE "userId" = ${userIdNumber}
+          ORDER BY pinned DESC, id DESC
+        `;
+      }
+      
+      exercicesRaw = await prisma.$queryRaw(sql) as ExerciceRaw[];
+    } catch (error) {
+      throw error;
+    }
+
+    // Ensuite récupérer les bodyparts séparément via SQL brute
+    const exerciceIds = exercicesRaw.map((e: ExerciceRaw) => e.id);
+    
+    let exerciceBodyparts: Array<{
+      exerciceId: number;
+      bodypartId: number;
+      bodypart: { id: number; name: string; color: string; createdAt: Date; updatedAt: Date };
+    }> = [];
+    if (exerciceIds.length > 0) {
+      try {
+        // Utiliser SQL brute pour éviter le cache
+        // Construire la liste des IDs pour la clause IN (les IDs sont déjà des nombres, donc sécurisé)
+        const idsList = exerciceIds.join(', ');
+        const bodypartsSql = `
+          SELECT 
+            eb."exerciceId",
+            eb."bodypartId",
+            b.id as "bodypart_id",
+            b.name as "bodypart_name",
+            b.color as "bodypart_color",
+            b."createdAt" as "bodypart_createdAt",
+            b."updatedAt" as "bodypart_updatedAt"
+          FROM "ExerciceBodypart" eb
+          INNER JOIN "Bodypart" b ON eb."bodypartId" = b.id
+          WHERE eb."exerciceId" IN (${idsList})
+        `;
+        
+        const bodypartsRaw = await prisma.$queryRawUnsafe(bodypartsSql) as BodypartRaw[];
+        
+        // Transformer les résultats pour correspondre à la structure attendue
+        exerciceBodyparts = bodypartsRaw.map((row: BodypartRaw) => ({
+          exerciceId: row.exerciceId,
+          bodypartId: row.bodypartId,
+          bodypart: {
+            id: row.bodypart_id,
+            name: row.bodypart_name,
+            color: row.bodypart_color,
+            createdAt: row.bodypart_createdAt,
+            updatedAt: row.bodypart_updatedAt,
           },
-        },
-      },
-      orderBy: [
-        { pinned: 'desc' },
-        { id: 'desc' },
-      ],
+        }));
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    // Reconstruire la structure avec les bodyparts
+    const exercices = exercicesRaw.map(exercice => {
+      const exerciceBodypartsFiltered = exerciceBodyparts
+        .filter(eb => eb.exerciceId === exercice.id)
+        .map(eb => ({ bodypart: eb.bodypart }));
+      
+      return {
+        ...exercice,
+        bodyparts: exerciceBodypartsFiltered,
+      };
     });
 
     // Reformater les données
     const formattedExercices = exercices.map((exercice) => {
-      // Vérifier si l'exercice a été complété aujourd'hui
-      let completedToday = false;
-      if (exercice.completedAt) {
-        const completedDate = new Date(exercice.completedAt);
-        const today = new Date();
-        completedToday = 
-          completedDate.getDate() === today.getDate() &&
-          completedDate.getMonth() === today.getMonth() &&
-          completedDate.getFullYear() === today.getFullYear();
+      try {
+        // Vérifier si l'exercice a été complété aujourd'hui
+        let completedToday = false;
+        if (exercice.completedAt) {
+          const completedDate = new Date(exercice.completedAt);
+          const today = new Date();
+          completedToday = 
+            completedDate.getDate() === today.getDate() &&
+            completedDate.getMonth() === today.getMonth() &&
+            completedDate.getFullYear() === today.getFullYear();
+        }
+
+        // Parser les équipements
+        let equipmentsParsed = [];
+        try {
+          equipmentsParsed = JSON.parse(exercice.equipments || '[]');
+        } catch {
+          equipmentsParsed = [];
+        }
+
+        // Extraire les noms des bodyparts
+        let bodypartsNames: string[] = [];
+        try {
+          bodypartsNames = (exercice as ExerciceWithBodyparts).bodyparts?.map((eb) => eb.bodypart.name) || [];
+        } catch {
+          bodypartsNames = [];
+        }
+
+        const formatted = {
+          id: exercice.id,
+          name: exercice.name,
+          description: {
+            text: exercice.descriptionText,
+            comment: exercice.descriptionComment,
+          },
+          workout: {
+            repeat: exercice.workoutRepeat,
+            series: exercice.workoutSeries,
+            duration: exercice.workoutDuration,
+          },
+          equipments: equipmentsParsed,
+          bodyparts: bodypartsNames,
+          category: exercice.category as ExerciceCategory,
+          completed: completedToday,
+          completedAt: exercice.completedAt,
+          pinned: exercice.pinned ?? false,
+        };
+
+        return formatted;
+      } catch (formatError) {
+        throw formatError;
       }
-
-      const exerciceWithCategory = exercice as typeof exercice & { category: ExerciceCategory };
-
-      return {
-        id: exercice.id,
-        name: exercice.name,
-        description: {
-          text: exercice.descriptionText,
-          comment: exercice.descriptionComment,
-        },
-        workout: {
-          repeat: exercice.workoutRepeat,
-          series: exercice.workoutSeries,
-          duration: exercice.workoutDuration,
-        },
-        equipments: JSON.parse(exercice.equipments || '[]'),
-        bodyparts: exercice.bodyparts?.map((eb: { bodypart: { name: string } }) => eb.bodypart.name) || [],
-        category: exerciceWithCategory.category,
-        completed: completedToday,
-        completedAt: exercice.completedAt,
-        pinned: exercice.pinned ?? false,
-      };
     });
-
+    
     return NextResponse.json(formattedExercices);
   } catch (error) {
-    console.error('Error fetching exercices:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch exercices', details: String(error) },
+      { 
+        error: 'Failed to fetch exercices', 
+        details: error instanceof Error ? error.message : String(error),
+        type: error?.constructor?.name || 'Unknown',
+      },
       { status: 500 }
     );
   }
@@ -121,7 +281,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Valider la catégorie
-    const category: ExerciceCategory = (data.category || 'UPPER_BODY') as ExerciceCategory;
+    const category = (data.category || 'UPPER_BODY') as ExerciceCategory;
     if (!['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
       return NextResponse.json(
         { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
@@ -135,22 +295,12 @@ export async function POST(request: NextRequest) {
         name: data.name.trim(),
         descriptionText: data.description?.text || '',
         descriptionComment: data.description?.comment || null,
-        workoutRepeat: data.workout.repeat,
-        workoutSeries: data.workout.series,
-        workoutDuration: data.workout.duration,
+        workoutRepeat: data.workout?.repeat || null,
+        workoutSeries: data.workout?.series || null,
+        workoutDuration: data.workout?.duration || null,
         equipments: JSON.stringify(data.equipments || []),
-        category: category,
+        category: category as PrismaExerciceCategory,
         userId: userIdNumber,
-      } as {
-        name: string;
-        descriptionText: string;
-        descriptionComment: string | null;
-        workoutRepeat: number | null;
-        workoutSeries: number | null;
-        workoutDuration: string | null;
-        equipments: string;
-        category: ExerciceCategory;
-        userId: number;
       },
     });
 
@@ -197,8 +347,7 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(formattedExercice, { status: 201 });
-  } catch (error) {
-    console.error('Error creating exercice:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to create exercice' },
       { status: 500 }

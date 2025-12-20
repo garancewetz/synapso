@@ -47,6 +47,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                 const updatedExercice: Exercice = {
                     ...exercice,
                     completed: data.completed,
+                    completedToday: data.completedToday ?? false,
                     completedAt: data.completedAt ? new Date(data.completedAt) : null,
                 };
                 if (!wasCompleted && updatedExercice.completed) {
@@ -154,11 +155,17 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
 
                             {/* Badge complété */}
                             {exercice.completed && (
-                                <span className="flex-shrink-0 bg-emerald-500 text-white text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1">
+                                <span className={`
+                                    flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1
+                                    ${exercice.completedToday 
+                                        ? 'bg-emerald-500 text-white' 
+                                        : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                                    }
+                                `}>
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    Fait
+                                    {exercice.completedToday ? 'Fait' : 'Cette semaine'}
                                 </span>
                             )}
                         </div>
@@ -317,11 +324,13 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                                 flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
                                 font-semibold text-sm transition-all duration-200 shadow-sm
                                 ${exercice.completed
-                                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                    ? exercice.completedToday
+                                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                        : 'bg-emerald-400 text-white hover:bg-emerald-500'
                                     : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400'
                                 }
                             `}
-                            title={exercice.completed ? 'Démarquer' : 'Marquer comme fait'}
+                            title={exercice.completed ? (exercice.completedToday ? 'Démarquer' : 'Fait cette semaine - Démarquer') : 'Marquer comme fait'}
                             aria-label={exercice.completed ? 'Démarquer' : 'Marquer comme fait'}
                         >
                             {isCompleting ? (
@@ -334,7 +343,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span>{exercice.completed ? 'Fait' : 'Marquer fait'}</span>
+                                    <span>{exercice.completed ? (exercice.completedToday ? 'Fait' : 'Fait cette semaine') : 'Marquer fait'}</span>
                                 </>
                             )}
                         </button>

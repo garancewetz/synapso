@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isCompletedInPeriod, isCompletedToday, getStartOfPeriod } from '@/utils/resetFrequency.utils';
+import { addDays, startOfDay } from 'date-fns';
 
 export async function PATCH(
   request: NextRequest,
@@ -50,47 +52,32 @@ export async function PATCH(
     // Récupérer les paramètres de l'utilisateur pour la réinitialisation
     const user = await prisma.user.findUnique({
       where: { id: userIdNumber },
-      select: { resetFrequency: true },
     });
     
-    const resetFrequency = user?.resetFrequency || 'DAILY';
+    // Récupérer le resetFrequency (avec cast pour contourner le problème de type Prisma)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resetFrequency = (user as any)?.resetFrequency || 'DAILY';
     
     // Vérifier si l'exercice a été complété dans la période de réinitialisation
-    let completedInPeriod = false;
-    if (exercice.completedAt) {
-      const completedDate = new Date(exercice.completedAt);
-      const now = new Date();
-      
-      if (resetFrequency === 'DAILY') {
-        // Réinitialisation quotidienne : vérifier si complété aujourd'hui
-        completedInPeriod = 
-          completedDate.getDate() === now.getDate() &&
-          completedDate.getMonth() === now.getMonth() &&
-          completedDate.getFullYear() === now.getFullYear();
-      } else if (resetFrequency === 'WEEKLY') {
-        // Réinitialisation hebdomadaire : vérifier si complété cette semaine (depuis dimanche minuit)
-        const completedTime = completedDate.getTime();
-        const nowTime = now.getTime();
-        
-        // Trouver le dernier dimanche à minuit
-        const lastSunday = new Date(now);
-        lastSunday.setDate(now.getDate() - now.getDay()); // Dimanche = 0
-        lastSunday.setHours(0, 0, 0, 0);
-        
-        completedInPeriod = completedTime >= lastSunday.getTime() && completedTime <= nowTime;
-      }
-    }
+    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+    const completedInPeriod = isCompletedInPeriod(completedDate, resetFrequency);
 
     // Si complété dans la période, on démarque. Sinon, on marque comme complété
     const isCompleting = !completedInPeriod;
     
+    const now = new Date();
     const updatedExercice = await prisma.exercice.update({
       where: { id },
       data: {
         completed: isCompleting,
-        completedAt: isCompleting ? new Date() : null,
+        completedAt: isCompleting ? now : null,
       },
     });
+    
+    // Calculer completedToday pour la réponse
+    const completedToday = isCompleting && updatedExercice.completedAt
+      ? isCompletedToday(new Date(updatedExercice.completedAt), now)
+      : false;
 
     if (isCompleting) {
       // Marquer comme complété : ajouter une entrée dans l'historique
@@ -102,25 +89,17 @@ export async function PATCH(
       });
     } else {
       // Démarquer : supprimer les entrées de la période dans l'historique
-      let startOfPeriod: Date;
-      let endOfPeriod: Date = new Date();
+      const now = new Date();
+      const startOfPeriod = getStartOfPeriod(resetFrequency, now);
       
+      // Calculer la fin de période
+      let endOfPeriod: Date;
       if (resetFrequency === 'DAILY') {
-        // Supprimer les entrées d'aujourd'hui
-        const today = new Date();
-        startOfPeriod = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        endOfPeriod = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      } else if (resetFrequency === 'WEEKLY') {
-        // Supprimer les entrées depuis le dernier dimanche
-        const now = new Date();
-        startOfPeriod = new Date(now);
-        startOfPeriod.setDate(now.getDate() - now.getDay()); // Dimanche = 0
-        startOfPeriod.setHours(0, 0, 0, 0);
+        // Pour DAILY, endOfPeriod est le lendemain minuit
+        endOfPeriod = startOfDay(addDays(now, 1));
       } else {
-        // Par défaut, quotidien
-        const today = new Date();
-        startOfPeriod = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        endOfPeriod = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        // Pour WEEKLY, endOfPeriod est le prochain dimanche minuit
+        endOfPeriod = startOfDay(addDays(startOfPeriod, 7));
       }
       
       await prisma.history.deleteMany({
@@ -134,7 +113,11 @@ export async function PATCH(
       });
     }
 
-    return NextResponse.json(updatedExercice);
+    return NextResponse.json({
+      ...updatedExercice,
+      completed: isCompleting,
+      completedToday: completedToday,
+    });
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error);
     return NextResponse.json(

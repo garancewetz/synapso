@@ -16,7 +16,8 @@ export interface Exercice {
   equipments: string[];
   bodyparts: string[];  // Parties du corps ciblées
   category: ExerciceCategory;
-  completed: boolean;
+  completed: boolean; // Complété dans la période (jour ou semaine selon resetFrequency)
+  completedToday: boolean; // Complété aujourd'hui (pour la gauge)
   completedAt: Date | null;
   pinned: boolean;
 }

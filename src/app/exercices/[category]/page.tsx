@@ -10,6 +10,7 @@ import { ExerciceCategory } from '@/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/contexts/UserContext';
 import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
+import { isCompletedToday } from '@/utils/resetFrequency.utils';
 import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 
 export default function CategoryPage() {
@@ -88,9 +89,21 @@ export default function CategoryPage() {
   // Toggle completion pour le mode mock
   const toggleMockComplete = (id: number) => {
     if (!USE_MOCK_DATA) return;
-    setExercices(prev => prev.map(ex => 
-      ex.id === id ? { ...ex, completed: !ex.completed, completedAt: ex.completed ? null : new Date() } : ex
-    ));
+    const now = new Date();
+    setExercices(prev => prev.map(ex => {
+      if (ex.id === id) {
+        const newCompleted = !ex.completed;
+        const newCompletedAt = newCompleted ? now : null;
+        const newCompletedToday = newCompleted ? isCompletedToday(newCompletedAt, now) : false;
+        return { 
+          ...ex, 
+          completed: newCompleted, 
+          completedAt: newCompletedAt,
+          completedToday: newCompletedToday,
+        };
+      }
+      return ex;
+    }));
   };
 
   // Séparer les exercices épinglés des autres
@@ -103,7 +116,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="max-sm:min-h-screen">
+    <section>
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header */}
         {!loading && (

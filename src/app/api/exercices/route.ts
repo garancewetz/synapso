@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ExerciceCategory } from '@/types/exercice';
 import { Prisma, ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
+import { isCompletedToday, isCompletedInPeriod } from '@/utils/resetFrequency.utils';
 
 // Types pour les résultats SQL bruts
 interface ExerciceRaw {
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Vérifier que l'utilisateur existe
+    // Vérifier que l'utilisateur existe et récupérer son resetFrequency
     const userExists = await prisma.user.findUnique({
       where: { id: userIdNumber },
     });
@@ -73,6 +74,10 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Récupérer le resetFrequency de l'utilisateur (avec cast pour contourner le problème de type Prisma)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userResetFrequency = (userExists as any).resetFrequency || 'DAILY';
 
     const whereClause: { userId: number; category?: ExerciceCategory } = {
       userId: userIdNumber,
@@ -187,16 +192,11 @@ export async function GET(request: NextRequest) {
     // Reformater les données
     const formattedExercices = exercices.map((exercice) => {
       try {
-        // Vérifier si l'exercice a été complété aujourd'hui
-        let completedToday = false;
-        if (exercice.completedAt) {
-          const completedDate = new Date(exercice.completedAt);
-          const today = new Date();
-          completedToday = 
-            completedDate.getDate() === today.getDate() &&
-            completedDate.getMonth() === today.getMonth() &&
-            completedDate.getFullYear() === today.getFullYear();
-        }
+        const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+        
+        // Utiliser les utilitaires pour calculer completedToday et completedInPeriod
+        const completedToday = isCompletedToday(completedDate);
+        const completedInPeriod = isCompletedInPeriod(completedDate, userResetFrequency);
 
         // Parser les équipements
         let equipmentsParsed = [];
@@ -229,7 +229,8 @@ export async function GET(request: NextRequest) {
           equipments: equipmentsParsed,
           bodyparts: bodypartsNames,
           category: exercice.category as ExerciceCategory,
-          completed: completedToday,
+          completed: completedInPeriod,
+          completedToday: completedToday,
           completedAt: exercice.completedAt,
           pinned: exercice.pinned ?? false,
         };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { startOfDay, addDays } from 'date-fns';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,8 +24,8 @@ export async function GET(request: NextRequest) {
 
     // Vérifier si l'utilisateur a complété au moins un exercice aujourd'hui
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const startOfDayDate = startOfDay(today);
+    const endOfDayDate = startOfDay(addDays(today, 1));
 
     const completedToday = await prisma.history.findFirst({
       where: {
@@ -32,8 +33,8 @@ export async function GET(request: NextRequest) {
           userId: userIdNumber,
         },
         completedAt: {
-          gte: startOfDay,
-          lt: endOfDay,
+          gte: startOfDayDate,
+          lt: endOfDayDate,
         },
       },
     });

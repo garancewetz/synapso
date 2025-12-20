@@ -1,8 +1,9 @@
 import type { Exercice } from '@/types';
+import { isCompletedToday } from '@/utils/resetFrequency.utils';
 
 // ========== TOUS LES EXERCICES DE CALYPSO ==========
 // Repris exactement de la base de données actuelle
-export const MOCK_EXERCICES: Exercice[] = [
+const MOCK_EXERCICES_RAW: Omit<Exercice, 'completedToday'>[] = [
   // ==================== BAS DU CORPS (Jambes, Bassin, Pied) ====================
   {
     id: 1,
@@ -444,6 +445,12 @@ export const MOCK_EXERCICES: Exercice[] = [
     pinned: false,
   },
 ];
+
+// Ajouter completedToday à chaque exercice
+export const MOCK_EXERCICES: Exercice[] = MOCK_EXERCICES_RAW.map(ex => ({
+  ...ex,
+  completedToday: isCompletedToday(ex.completedAt),
+}));
 
 // Mode démo - mettre à false pour utiliser la vraie base de données
 // Mettre à true pour utiliser les données fictives, false pour la base Neon

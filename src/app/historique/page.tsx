@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Tag from '@/app/components/atoms/Tag';
 import type { HistoryEntry } from '@/types';
 import { useUser } from '@/contexts/UserContext';
+import { startOfWeek, startOfMonth, isAfter, isEqual } from 'date-fns';
 
 export default function HistoriquePage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -17,11 +18,8 @@ export default function HistoriquePage() {
 
   const calculateStats = useCallback((data: HistoryEntry[]) => {
     const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeekDate = startOfWeek(now, { weekStartsOn: 0 }); // Dimanche = 0
+    const startOfMonthDate = startOfMonth(now);
 
     let thisWeek = 0;
     let thisMonth = 0;
@@ -30,11 +28,11 @@ export default function HistoriquePage() {
     data.forEach(entry => {
       const entryDate = new Date(entry.completedAt);
       
-      if (entryDate >= startOfWeek) {
+      if (isAfter(entryDate, startOfWeekDate) || isEqual(entryDate, startOfWeekDate)) {
         thisWeek++;
       }
       
-      if (entryDate >= startOfMonth) {
+      if (isAfter(entryDate, startOfMonthDate) || isEqual(entryDate, startOfMonthDate)) {
         thisMonth++;
       }
 

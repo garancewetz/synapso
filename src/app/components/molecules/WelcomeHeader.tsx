@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfettiRain from '@/app/components/atoms/ConfettiRain';
+import { isMonday } from 'date-fns';
 
 interface WelcomeHeaderProps {
   userName: string;
@@ -123,6 +124,11 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
   };
 
   const getCompletionMessage = () => {
+    // Message spécial le lundi pour les utilisateurs en mode hebdomadaire
+    if (resetFrequency === 'WEEKLY' && isMonday(new Date())) {
+      return "C'est parti pour une nouvelle semaine !";
+    }
+    
     if (bonusExercices > 0) {
       return `${bonusExercices} exercice${bonusExercices > 1 ? 's' : ''} en bonus !`;
     }

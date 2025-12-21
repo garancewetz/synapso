@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import CreateUserCard from '@/app/components/molecules/CreateUserCard';
+import CategoryCard from '@/app/components/molecules/CategoryCard';
 import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 import Link from 'next/link';
 import Loader from '@/app/components/atoms/Loader';
@@ -76,15 +77,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, userLoading]);
 
-  // Séparer les exercices épinglés des autres
-  const getPinnedAndRegularExercices = () => {
-    return {
-      pinned: exercices.filter(e => e.pinned),
-      regular: exercices.filter(e => !e.pinned),
-    };
-  };
-
-
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
   };
@@ -117,7 +109,7 @@ export default function Home() {
     }));
   };
 
-  const { pinned, regular } = getPinnedAndRegularExercices();
+  const pinned = exercices.filter(e => e.pinned);
 
   return (
     <section>
@@ -143,6 +135,22 @@ export default function Home() {
             />
           ) : (
             <div className="space-y-6">
+              {/* Cartes de catégories avec jauges */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {CATEGORY_ORDER.map(category => {
+                  const categoryExercices = exercices.filter(e => e.category === category);
+                  if (categoryExercices.length === 0) return null;
+                  
+                  return (
+                    <CategoryCard
+                      key={category}
+                      category={category}
+                      exercices={exercices}
+                    />
+                  );
+                }).filter(Boolean)}
+              </div>
+
               {/* Section des exercices épinglés */}
               {pinned.length > 0 && (
                 <div>
@@ -170,54 +178,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Vue "Tous" - toutes les catégories */}
-              {CATEGORY_ORDER.map(category => {
-                const categoryExercices = regular.filter(e => e.category === category);
-                if (categoryExercices.length === 0) return null;
-                
-                const visibleExercices = categoryExercices.slice(0, EXERCICES_LIMIT);
-                const hiddenCount = categoryExercices.length - EXERCICES_LIMIT;
-                
-                return (
-                  <div key={category}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                        {CATEGORY_LABELS[category]}
-                        <span className="text-sm font-normal text-gray-500">
-                          ({categoryExercices.filter(e => e.completed).length}/{categoryExercices.length})
-                        </span>
-                      </h2>
-                      <div className="flex items-center gap-2">
-                        <AddExerciceButton category={category} />
-                      </div>
-                    </div>
-                    <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
-                      {visibleExercices.map((exercice) => (
-                        <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
-                          <ExerciceCard
-                            exercice={exercice}
-                            onEdit={handleEditClick}
-                            onCompleted={handleCompleted}
-                            showCategory={false}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    {hiddenCount > 0 && (
-                      <Link 
-                        href={`/exercices/${category.toLowerCase()}`}
-                        className="w-full mt-3 md:mt-4 py-2.5 md:py-3 px-3 md:px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 font-medium text-xs md:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                        scroll={true}
-                      >
-                        Voir les {hiddenCount} autres exercices de {CATEGORY_LABELS[category]}
-                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    )}
-                  </div>
-                );
-              }).filter(Boolean)}
+     
             </div>
           )}
         </div>

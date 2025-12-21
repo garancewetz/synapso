@@ -14,7 +14,7 @@ export function getStartOfPeriod(
 ): Date {
   if (resetFrequency === 'WEEKLY') {
     // weekStartsOn: 0 = Dimanche
-    return startOfWeek(referenceDate, { weekStartsOn: 0 });
+    return startOfWeek(referenceDate, { weekStartsOn: 1 });
   }
   
   // DAILY par défaut
@@ -52,5 +52,36 @@ export function isCompletedToday(
 ): boolean {
   if (!date) return false;
   return isSameDay(date, referenceDate);
+}
+
+/**
+ * Retourne le libellé du jour de complétion
+ * @param completedAt - Date de complétion (Date, string ou null)
+ * @param referenceDate - Date de référence (par défaut: aujourd'hui)
+ * @returns "Aujourd'hui" si c'est aujourd'hui, sinon "Ce lundi", "Ce mardi", etc.
+ */
+export function getCompletionDayLabel(
+  completedAt: Date | string | null,
+  referenceDate: Date = new Date()
+): string {
+  if (!completedAt) return 'Cette semaine';
+  
+  // Convertir en Date si c'est une string
+  const completedDate = completedAt instanceof Date ? completedAt : new Date(completedAt);
+  
+  // Vérifier si la date est valide
+  if (isNaN(completedDate.getTime())) {
+    return 'Cette semaine';
+  }
+  
+  if (isSameDay(completedDate, referenceDate)) {
+    return 'Aujourd\'hui';
+  }
+  
+  const dayNames = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const dayIndex = completedDate.getDay();
+  const dayName = dayNames[dayIndex];
+  
+  return `Ce ${dayName}`;
 }
 

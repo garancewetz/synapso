@@ -99,6 +99,25 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
         setIsExpanded(!isExpanded);
     };
 
+    const getDayName = (date: Date | string | null): string => {
+        if (!date) return 'Cette semaine';
+        
+        // Convertir en Date si c'est une string
+        const completedDate = date instanceof Date ? date : new Date(date);
+        
+        // Vérifier si la date est valide
+        if (isNaN(completedDate.getTime())) {
+            return 'Cette semaine';
+        }
+        
+        const dayNames = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        const dayIndex = completedDate.getDay();
+        const dayName = dayNames[dayIndex];
+        
+        // Capitaliser la première lettre
+        return dayName.charAt(0).toUpperCase() + dayName.slice(1);
+    };
+
     return (
         <div 
             className={`
@@ -165,7 +184,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    {exercice.completedToday ? 'Fait' : 'Cette semaine'}
+                                    {exercice.completedToday ? 'Fait' : getDayName(exercice.completedAt)}
                                 </span>
                             )}
                         </div>

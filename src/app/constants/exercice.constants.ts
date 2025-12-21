@@ -41,13 +41,21 @@ export const CATEGORY_HREFS: Record<ExerciceCategory, string> = {
 // 🧘 Violet = Étirements (détente, souplesse)
 // 🤸 Teal = Tronc (gainage, force centrale, stabilité)
 // ✅ Vert Émeraude réservé pour validation
-export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: string; text: string; accent: string; tag: string }> = {
+export const CATEGORY_COLORS: Record<ExerciceCategory, { 
+  bg: string; 
+  border: string; 
+  text: string; 
+  accent: string; 
+  tag: string;
+  focusRing: string; // Classe pour le focus ring (accessibilité)
+}> = {
   LOWER_BODY: {
     bg: 'bg-blue-50',
     border: 'border-blue-200',
     text: 'text-blue-700',
     accent: 'bg-blue-500',
     tag: 'bg-blue-100 text-blue-600', // Couleur pâle pour les tags bodypart
+    focusRing: 'focus:ring-blue-500',
   },
   UPPER_BODY: {
     bg: 'bg-orange-50',
@@ -55,6 +63,7 @@ export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: str
     text: 'text-orange-800',
     accent: 'bg-orange-500',
     tag: 'bg-orange-100 text-orange-700', // Couleur pâle pour les tags bodypart
+    focusRing: 'focus:ring-orange-500',
   },
   STRETCHING: {
     bg: 'bg-purple-50',
@@ -62,6 +71,7 @@ export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: str
     text: 'text-purple-700',
     accent: 'bg-purple-500',
     tag: 'bg-purple-100 text-purple-600', // Couleur pâle pour les tags bodypart
+    focusRing: 'focus:ring-purple-500',
   },
   CORE: {
     bg: 'bg-teal-50',
@@ -69,6 +79,7 @@ export const CATEGORY_COLORS: Record<ExerciceCategory, { bg: string; border: str
     text: 'text-teal-700',
     accent: 'bg-teal-500',
     tag: 'bg-teal-100 text-teal-600', // Couleur pâle pour les tags bodypart
+    focusRing: 'focus:ring-teal-500',
   },
 };
 
@@ -101,20 +112,13 @@ export const CATEGORY_NAV_CONFIG: Record<ExerciceCategory, {
 };
 
 // Configuration pour la navigation mobile (avec border-top)
-export const CATEGORY_MOBILE_CONFIG: Record<ExerciceCategory | 'ALL', {
+export const CATEGORY_MOBILE_CONFIG: Record<ExerciceCategory, {
   label: string;
   icon: string;
   href: string;
   activeClasses: string;
   inactiveClasses: string;
 }> = {
-  ALL: {
-    label: 'Tout',
-    icon: '🏠',
-    href: '/',
-    activeClasses: 'bg-gray-800 text-white border-t-2 border-gray-800',
-    inactiveClasses: 'bg-white text-gray-600 border-t-2 border-gray-200',
-  },
   LOWER_BODY: {
     label: 'Bas',
     icon: '🦵',

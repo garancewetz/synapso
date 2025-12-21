@@ -17,33 +17,26 @@ interface CategoryTabsProps {
 
 export default function CategoryTabs({ counts }: CategoryTabsProps) {
   const pathname = usePathname();
-  const totalCount = CATEGORY_ORDER.reduce((sum, cat) => sum + (counts[cat] || 0), 0);
-
-  // Déterminer si on est sur la page d'accueil
   const isHomePage = pathname === '/';
 
   return (
     <div className="hidden md:block px-4 mb-6">
       {/* Container - flex sur desktop */}
       <div className="flex flex-wrap justify-center gap-2">
-        {/* Lien "Tous" */}
+        {/* Icône maison pour la page d'accueil */}
         <Link
           href="/"
+          aria-label="Page d'accueil"
           className={`
-            flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 
-            font-medium text-sm transition-all duration-200
+            flex items-center justify-center px-4 py-3 rounded-lg border-2 
+            font-medium transition-all duration-200
             ${isHomePage
               ? 'bg-gray-800 !text-white border-gray-800'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
             }
           `}
         >
-          <span>Tous</span>
-          <span className={`text-xs px-1.5 py-0.5 rounded ${
-            isHomePage ? 'bg-gray-600' : 'bg-gray-100'
-          }`}>
-            {totalCount}
-          </span>
+          <span className="text-xl">🏠</span>
         </Link>
 
         {/* Liens de catégorie */}
@@ -59,15 +52,15 @@ export default function CategoryTabs({ counts }: CategoryTabsProps) {
               key={category}
               href={href}
               className={`
-                flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 
-                font-medium text-sm transition-all duration-200 cursor-pointer
+                flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg border-2 
+                font-medium transition-all duration-200 cursor-pointer
                 ${isActive ? config.activeClasses : config.inactiveClasses}
               `}
             >
-              <span className="text-base">{icon}</span>
-              <span className={`text-xs ${isActive ? 'text-white' : ''}`}>{CATEGORY_LABELS[category]}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded ${
-                isActive ? 'bg-white/20 text-white' : 'bg-gray-100'
+              <span className="text-xl">{icon}</span>
+              <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-700'}`}>{CATEGORY_LABELS[category]}</span>
+              <span className={`text-sm font-medium px-2 py-0.5 rounded ${
+                isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'
               }`}>
                 {count}
               </span>

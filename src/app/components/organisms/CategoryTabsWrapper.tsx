@@ -16,8 +16,14 @@ export default function CategoryTabsWrapper() {
   );
 
   // Pages où on ne veut pas afficher la navigation
-  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie/add', '/aphasie/edit', '/settings'];
-  const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
+  // Sur la page d'accueil, on masque car les CategoryCard font déjà le travail de navigation
+  const shouldHide = 
+    pathname === '/' || // Page d'accueil : CategoryCard remplacent la navigation
+    pathname?.startsWith('/exercice/add') ||
+    pathname?.startsWith('/exercice/edit') ||
+    pathname?.startsWith('/aphasie/add') ||
+    pathname?.startsWith('/aphasie/edit') ||
+    pathname === '/settings';
 
   useEffect(() => {
     if (shouldHide || !currentUser) {

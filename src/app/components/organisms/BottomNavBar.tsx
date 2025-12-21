@@ -22,7 +22,7 @@ export default function BottomNavBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 pb-safe md:hidden">
-      <div className="p-1.5">
+      <div className="">
         <div className="grid grid-cols-5 gap-0.5">
           {/* Icône maison pour la page d'accueil */}
           <Link

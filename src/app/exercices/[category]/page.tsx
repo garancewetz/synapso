@@ -9,13 +9,13 @@ import type { Exercice } from '@/types';
 import { ExerciceCategory } from '@/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/contexts/UserContext';
-import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
-import { isCompletedToday } from '@/utils/resetFrequency.utils';
+import { useExercices } from '@/hooks/useExercices';
 import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
 
+type FilterType = 'all' | 'notCompleted' | 'completed';
+
 export default function CategoryPage() {
-  const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>('all');
   const router = useRouter();
   const params = useParams();
   const { currentUser } = useUser();
@@ -24,91 +24,35 @@ export default function CategoryPage() {
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
   const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
-  const fetchExercices = () => {
-    if (USE_MOCK_DATA) {
-      const filtered = MOCK_EXERCICES.filter(e => e.category === categoryParam);
-      setExercices(filtered);
-      setLoading(false);
-      return;
-    }
-
-    if (!currentUser) return;
-    
-    setLoading(true);
-    fetch(`/api/exercices?userId=${currentUser.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const filtered = data.filter((e: Exercice) => e.category === categoryParam);
-          setExercices(filtered);
-        } else {
-          setExercices([]);
-        }
-      })
-      .catch(() => {
-        setExercices([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  const { exercices, loading, updateExercice, toggleMockComplete } = useExercices({
+    userId: currentUser?.id,
+    category: isValidCategory ? categoryParam : undefined,
+  });
 
   useEffect(() => {
     if (!isValidCategory) {
       router.push('/');
-      return;
     }
-
-    if (USE_MOCK_DATA) {
-      const filtered = MOCK_EXERCICES.filter(e => e.category === categoryParam);
-      setExercices(filtered);
-      setLoading(false);
-      return;
-    }
-    
-    if (currentUser) {
-      fetchExercices();
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser, categoryParam, isValidCategory]);
+  }, [isValidCategory, router]);
 
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
   };
 
   const handleCompleted = (updatedExercice: Exercice) => {
-    if (USE_MOCK_DATA) return;
-    // Mettre à jour uniquement l'exercice concerné sans recharger toute la liste
-    setExercices(prev => prev.map(ex => 
-      ex.id === updatedExercice.id ? updatedExercice : ex
-    ));
+    updateExercice(updatedExercice);
   };
 
-  // Toggle completion pour le mode mock
-  const toggleMockComplete = (id: number) => {
-    if (!USE_MOCK_DATA) return;
-    const now = new Date();
-    setExercices(prev => prev.map(ex => {
-      if (ex.id === id) {
-        const newCompleted = !ex.completed;
-        const newCompletedAt = newCompleted ? now : null;
-        const newCompletedToday = newCompleted ? isCompletedToday(newCompletedAt, now) : false;
-        return { 
-          ...ex, 
-          completed: newCompleted, 
-          completedAt: newCompletedAt,
-          completedToday: newCompletedToday,
-        };
-      }
-      return ex;
-    }));
-  };
+  // Filtrer les exercices selon le filtre
+  const filteredExercices = filter === 'all'
+    ? exercices
+    : filter === 'notCompleted'
+    ? exercices.filter(e => !e.completed)
+    : exercices.filter(e => e.completed);
 
   // Séparer les exercices épinglés des autres
-  const pinned = exercices.filter(e => e.pinned);
-  const regular = exercices.filter(e => !e.pinned);
+  const pinned = filteredExercices.filter(e => e.pinned);
+  const regular = filteredExercices.filter(e => !e.pinned);
   const completedCount = exercices.filter(e => e.completed).length;
 
   if (!isValidCategory) {
@@ -130,6 +74,51 @@ export default function CategoryPage() {
             <p className="text-gray-500 mt-1">
               {completedCount}/{exercices.length} exercices complétés
             </p>
+            
+            {/* Switch à trois parties */}
+            <div className="mt-4">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`
+                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
+                    transition-all duration-200
+                    ${filter === 'all'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  Tous
+                </button>
+                <button
+                  onClick={() => setFilter('notCompleted')}
+                  className={`
+                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
+                    transition-all duration-200
+                    ${filter === 'notCompleted'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  À faire
+                </button>
+                <button
+                  onClick={() => setFilter('completed')}
+                  className={`
+                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
+                    transition-all duration-200
+                    ${filter === 'completed'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  Faits
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -139,12 +128,24 @@ export default function CategoryPage() {
             <div className="flex items-center justify-center min-h-[400px]">
               <Loader size="large" />
             </div>
-          ) : exercices.length === 0 ? (
+          ) : filteredExercices.length === 0 ? (
             <EmptyState
               icon="📂"
-              title={`Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`}
-              message="Cette catégorie est vide pour le moment."
-              subMessage="Ajoutez des exercices depuis le menu."
+              title={
+                filter === 'notCompleted'
+                  ? "Tous les exercices sont faits !"
+                  : filter === 'completed'
+                  ? "Aucun exercice fait"
+                  : `Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`
+              }
+              message={
+                filter === 'notCompleted'
+                  ? "Félicitations, vous avez complété tous les exercices de cette catégorie."
+                  : filter === 'completed'
+                  ? "Vous n'avez pas encore complété d'exercices dans cette catégorie."
+                  : "Cette catégorie est vide pour le moment."
+              }
+              subMessage={filter === 'all' ? "Ajoutez des exercices depuis le menu." : undefined}
             />
           ) : (
             <div className="space-y-6">

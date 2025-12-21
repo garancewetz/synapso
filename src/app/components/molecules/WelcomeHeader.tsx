@@ -43,11 +43,9 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
   const [showCelebration, setShowCelebration] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const prevCompletedRef = useRef(completedToday);
-  const prevBonusRef = useRef(0);
   const isAnimatingRef = useRef(false);
   
   // Progression basée sur l'objectif quotidien de 5 exercices
-  // Si completedToday est null, on considère qu'on est en train de charger
   const isLoading = completedToday === null;
   const count = completedToday ?? 0;
   const progress = isLoading ? 0 : Math.min(count / DAILY_GOAL, 1);
@@ -59,52 +57,35 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
     setEncouragement(ENCOURAGEMENTS[randomIndex]);
   }, []);
 
-  // Déclencher la célébration (ConfettiRain) quand :
-  // 1. On atteint 5/5 exercices pour la première fois (objectif quotidien)
-  // 2. On complète un exercice bonus (au-delà de 5)
+  // Déclencher les confettis uniquement quand on atteint exactement 5/5 (sans bonus)
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current;
-    const prevBonus = prevBonusRef.current;
-    const currentBonus = bonusExercices;
     
-    // Mettre à jour les refs
-    const updateRefs = () => {
-      prevCompletedRef.current = completedToday;
-      prevBonusRef.current = currentBonus;
-    };
-    
-    // Ignorer si on est en train de charger ou si les valeurs n'ont pas changé
+    // Ignorer si on charge ou si une animation est en cours
     if (completedToday === null || isAnimatingRef.current) {
       if (completedToday !== null) {
-        updateRefs();
+        prevCompletedRef.current = completedToday;
       }
       return;
     }
     
-    // Ignorer si les valeurs n'ont pas changé ou si on a régressé
-    if (
-      (prevCompleted === completedToday && prevBonus === currentBonus) ||
-      (prevCompleted !== null && completedToday <= prevCompleted)
-    ) {
-      updateRefs();
+    // Ignorer si pas de changement ou régression
+    if (prevCompleted === completedToday || (prevCompleted !== null && completedToday < prevCompleted)) {
+      prevCompletedRef.current = completedToday;
       return;
     }
     
-    const wasGoalReached = prevCompleted !== null && prevCompleted >= DAILY_GOAL;
-    const isNowGoalReached = completedToday >= DAILY_GOAL;
-    const justReachedGoal = !wasGoalReached && isNowGoalReached;
-    const newBonusExercise = isNowGoalReached && currentBonus > prevBonus;
+    // Déclencher uniquement quand on passe de moins de 5 à exactement 5
+    const wasBelowGoal = prevCompleted !== null && prevCompleted < DAILY_GOAL;
+    const isExactlyGoal = completedToday === DAILY_GOAL;
     
-    // Déclencher ConfettiRain si une des deux conditions est remplie
-    if (justReachedGoal || newBonusExercise) {
+    if (wasBelowGoal && isExactlyGoal) {
       isAnimatingRef.current = true;
-      updateRefs();
+      prevCompletedRef.current = completedToday;
       
-      // Déclencher ConfettiRain avec une nouvelle clé pour forcer une nouvelle instance
       setAnimationKey(prev => prev + 1);
       setShowCelebration(true);
       
-      // Célébration
       const timer = setTimeout(() => {
         setShowCelebration(false);
         isAnimatingRef.current = false;
@@ -113,8 +94,8 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
       return () => clearTimeout(timer);
     }
     
-    updateRefs();
-  }, [completedToday, bonusExercices]);
+    prevCompletedRef.current = completedToday;
+  }, [completedToday]);
 
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
@@ -174,11 +155,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
         />
       )}
 
-      {/* 🎊 Pluie de confettis et emojis 🎊 
-          Se déclenche quand :
-          - On atteint 5/5 exercices (objectif quotidien)
-          - On complète un exercice bonus (au-delà de 5)
-          Depuis la fenêtre pour un effet maximal */}
+      {/* Confettis : déclenchés uniquement quand on atteint exactement 5/5 */}
       <ConfettiRain
         key={animationKey}
         show={showCelebration}

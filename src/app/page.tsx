@@ -1,112 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ExerciceCard from '@/app/components/molecules/ExerciceCard';
 import EmptyState from '@/app/components/molecules/EmptyState';
 import CreateUserCard from '@/app/components/molecules/CreateUserCard';
 import CategoryCard from '@/app/components/molecules/CategoryCard';
 import AddExerciceButton from '@/app/components/atoms/AddExerciceButton';
-import Link from 'next/link';
 import Loader from '@/app/components/atoms/Loader';
 import type { Exercice } from '@/types';
-import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/contexts/UserContext';
-import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/datas/mockExercices';
-import { isCompletedToday } from '@/utils/resetFrequency.utils';
-
-// Nombre d'exercices visibles par défaut par catégorie
-const EXERCICES_LIMIT = 2;
+import { useExercices } from '@/hooks/useExercices';
+import WeeklyProgressGauges from '@/app/components/molecules/WeeklyProgressGauges';
 
 export default function Home() {
-  const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [loadingExercices, setLoadingExercices] = useState(false);
   const router = useRouter();
   const { currentUser, users, loading: userLoading } = useUser();
-
-  const fetchExercices = () => {
-    if (USE_MOCK_DATA) {
-      setExercices(MOCK_EXERCICES);
-      setLoadingExercices(false);
-      return;
-    }
-
-    if (!currentUser) return;
-    
-    setLoadingExercices(true);
-    fetch(`/api/exercices?userId=${currentUser.id}`)
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          setExercices([]);
-          return;
-        }
-        if (Array.isArray(data)) {
-          setExercices(data);
-        } else {
-          setExercices([]);
-        }
-      })
-      .catch(() => {
-        setExercices([]);
-      })
-      .finally(() => {
-        setLoadingExercices(false);
-      });
-  };
-
-  useEffect(() => {
-    if (USE_MOCK_DATA) {
-      setExercices(MOCK_EXERCICES);
-      setLoadingExercices(false);
-      return;
-    }
-    
-    // Attendre que le UserContext ait fini de charger
-    if (userLoading) {
-      setLoadingExercices(true);
-      return;
-    }
-    
-    if (currentUser) {
-      fetchExercices();
-    } else {
-      setLoadingExercices(false);
-      setExercices([]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser, userLoading]);
+  const { exercices, loading: loadingExercices, updateExercice, toggleMockComplete } = useExercices({
+    userId: currentUser?.id,
+  });
 
   const handleEditClick = (id: number) => {
     router.push(`/exercice/edit/${id}`);
   };
 
   const handleCompleted = (updatedExercice: Exercice) => {
-    if (USE_MOCK_DATA) return;
-    // Mettre à jour uniquement l'exercice concerné sans recharger toute la liste
-    setExercices(prev => prev.map(ex => 
-      ex.id === updatedExercice.id ? updatedExercice : ex
-    ));
-  };
-
-  // Toggle completion pour le mode mock
-  const toggleMockComplete = (id: number) => {
-    if (!USE_MOCK_DATA) return;
-    const now = new Date();
-    setExercices(prev => prev.map(ex => {
-      if (ex.id === id) {
-        const newCompleted = !ex.completed;
-        const newCompletedAt = newCompleted ? now : null;
-        const newCompletedToday = newCompleted ? isCompletedToday(newCompletedAt, now) : false;
-        return { 
-          ...ex, 
-          completed: newCompleted, 
-          completedAt: newCompletedAt,
-          completedToday: newCompletedToday,
-        };
-      }
-      return ex;
-    }));
+    updateExercice(updatedExercice);
   };
 
   const pinned = exercices.filter(e => e.pinned);
@@ -150,6 +69,11 @@ export default function Home() {
                   );
                 }).filter(Boolean)}
               </div>
+
+              {/* Section "Fait cette semaine" pour le mode WEEKLY */}
+              {currentUser?.resetFrequency === 'WEEKLY' && currentUser && (
+                <WeeklyProgressGauges userId={currentUser.id} exercices={exercices} />
+              )}
 
               {/* Section des exercices épinglés */}
               {pinned.length > 0 && (

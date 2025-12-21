@@ -234,68 +234,69 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted, showCatego
                         </div>
 
                         {/* Description - visible si étendu avec animation smooth */}
-                        <AnimatePresence>
-                            {isExpanded && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                    animate={{ 
-                                        opacity: 1, 
-                                        height: "auto",
-                                        marginTop: 16
-                                    }}
-                                    exit={{ 
-                                        opacity: 0, 
-                                        height: 0,
-                                        marginTop: 0
-                                    }}
-                                    transition={{ 
-                                        duration: 0.3,
-                                        ease: [0.4, 0, 0.2, 1]
-                                    }}
-                                    className="overflow-hidden space-y-3"
-                                >
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ 
-                                            duration: 0.3,
-                                            delay: 0.1,
-                                            ease: [0.4, 0, 0.2, 1]
-                                        }}
-                                        className="text-gray-600 leading-relaxed text-sm"
-                                    >
-                                        {exercice.description.text}
-                                    </motion.p>
-                                    {exercice.description.comment && (
+                        {exercice.description.text && (
+                            <>
+                                <AnimatePresence>
+                                    {isExpanded && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ 
-                                                duration: 0.3,
-                                                delay: 0.15,
-                                                ease: [0.4, 0, 0.2, 1]
+                                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                            animate={{ 
+                                                opacity: 1, 
+                                                height: "auto",
+                                                marginTop: 16
                                             }}
-                                            className="p-3 bg-slate-50 border-l-2 border-slate-300 text-slate-700 text-sm rounded-r"
+                                            exit={{ 
+                                                opacity: 0, 
+                                                height: 0,
+                                                marginTop: 0
+                                            }}
+                                            transition={{ 
+                                                duration: 0.15,
+                                                ease: "easeOut"
+                                            }}
+                                            className="overflow-hidden space-y-3"
                                         >
-                                            <span className="font-semibold">Conseil : </span>
-                                            {exercice.description.comment}
+                                            <motion.p
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ 
+                                                    duration: 0.1
+                                                }}
+                                                className="text-gray-600 leading-relaxed text-sm"
+                                            >
+                                                {exercice.description.text}
+                                            </motion.p>
+                                            {exercice.description.comment && (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ 
+                                                        duration: 0.1
+                                                    }}
+                                                    className="p-3 bg-slate-50 border-l-2 border-slate-300 text-slate-700 text-sm rounded-r"
+                                                >
+                                                    <span className="font-semibold">Conseil : </span>
+                                                    {exercice.description.comment}
+                                                </motion.div>
+                                            )}
                                         </motion.div>
                                     )}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                </AnimatePresence>
+                                
 
-                        {/* Indicateur d'expansion */}
-                        <div className="flex justify-center mt-2">
-                            <svg 
-                                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
+                                {/* Indicateur d'expansion */}
+                                <div className="flex justify-center mt-2">
+                                    <svg 
+                                        className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Footer avec boutons d'action */}

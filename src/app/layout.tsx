@@ -7,7 +7,6 @@ import WelcomeHeaderWrapper from "@/app/components/organisms/WelcomeHeaderWrappe
 import CategoryTabsWrapper from "@/app/components/organisms/CategoryTabsWrapper";
 import DevBanner from "@/app/components/atoms/DevBanner";
 import PWARegister from "@/app/components/atoms/PWARegister";
-import NotificationManager from "@/app/components/atoms/NotificationManager";
 import { UserProvider } from "@/contexts/UserContext";
 import { CategoryProvider } from "@/contexts/CategoryContext";
 
@@ -48,7 +47,6 @@ export default function RootLayout({
         <PWARegister />
         <UserProvider>
           <CategoryProvider>
-            <NotificationManager />
             <DevBanner />
             <SiteProtection>
                 <NavBar />

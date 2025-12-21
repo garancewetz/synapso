@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { ExerciceCategory } from '@/types/exercice';
 
 interface HistoryEntry {
   id: number;
@@ -7,6 +8,7 @@ interface HistoryEntry {
   exercice: {
     id: number;
     name: string;
+    category: ExerciceCategory;
     descriptionText: string;
     descriptionComment: string | null;
     workoutRepeat: string | null;
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest) {
       exercice: {
         id: entry.exercice.id,
         name: entry.exercice.name,
+        category: entry.exercice.category,
         description: {
           text: entry.exercice.descriptionText,
           comment: entry.exercice.descriptionComment,

@@ -92,17 +92,10 @@ export async function GET(request: NextRequest) {
     let exercicesRaw: ExerciceRaw[];
     try {
       // Construire la requête SQL avec Prisma.sql pour éviter le cache
-      let sql = Prisma.sql`
-        SELECT 
-          id, name, "descriptionText", "descriptionComment",
-          "workoutRepeat", "workoutSeries", "workoutDuration",
-          equipments, category, "userId", completed, "completedAt",
-          pinned, "createdAt", "updatedAt"
-        FROM "Exercice"
-        WHERE "userId" = ${userIdNumber}
-      `;
+      let sql: Prisma.Sql;
       
       if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
+        // Utiliser Prisma.raw pour interpoler la catégorie comme string littérale (sécurisé car validé)
         sql = Prisma.sql`
           SELECT 
             id, name, "descriptionText", "descriptionComment",
@@ -110,7 +103,7 @@ export async function GET(request: NextRequest) {
             equipments, category, "userId", completed, "completedAt",
             pinned, "createdAt", "updatedAt"
           FROM "Exercice"
-          WHERE "userId" = ${userIdNumber} AND category = ${category}
+          WHERE "userId" = ${userIdNumber} AND category = ${Prisma.raw(`'${category}'`)}
           ORDER BY pinned DESC, id DESC
         `;
       } else {

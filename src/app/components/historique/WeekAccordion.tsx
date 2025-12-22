@@ -27,7 +27,7 @@ export function WeekAccordion({ label, entries, isExpanded, onToggle }: WeekAcco
             {isExpanded ? '📂' : '📁'}
           </span>
           <div className="text-left">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
               {label}
             </h3>
             <p className="text-sm text-gray-500">
@@ -77,7 +77,7 @@ function HistoryEntryCard({ entry }: { entry: HistoryEntry }) {
         </span>
         
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 text-sm truncate">
+          <h4 className="font-medium text-gray-800 text-sm truncate">
             {entry.exercice.name}
           </h4>
           <div className="flex flex-wrap gap-1 mt-1">

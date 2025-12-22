@@ -28,7 +28,7 @@ function getHeatmapColor(count: number): string {
 export function ActivityHeatmap({ data, currentStreak }: ActivityHeatmapProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         📅 Ta régularité (30 jours)
         {currentStreak >= 3 && (
           <span className="text-sm font-normal text-amber-500 ml-2">

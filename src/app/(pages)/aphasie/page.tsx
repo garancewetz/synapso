@@ -66,7 +66,7 @@ export default function AphasiePage() {
         {items.map(item => (
           <li key={item.id} className="bg-white px-4 py-3 rounded-lg border border-gray-200">
             <div className="mb-3 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
-              <div className="text-lg md:text-xl font-bold text-gray-900 md:w-1/3">{item.quote}</div>
+              <div className="text-lg md:text-xl font-bold text-gray-800 md:w-1/3">{item.quote}</div>
               <div className="text-gray-700 italic text-sm md:text-base">{item.meaning}</div>
             </div>
             {item.comment && (

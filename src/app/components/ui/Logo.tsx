@@ -22,7 +22,7 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
         </defs>
 
         <g clipPath="url(#clipBrain)">
-          <rect x="0" y="0" width="50" height="100" fill="#000"/>
+          <rect x="0" y="0" width="50" height="100" fill="#1F2937"/>
         </g>
 
         <path d="M50 6
@@ -30,7 +30,7 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
                  C90 70 73 92 50 92
                  C27 92 10 70 10 46
                  C10 23 29 6 50 6 Z"
-              fill="none" stroke="#000" strokeWidth="1.5"/>
+              fill="none" stroke="#1F2937" strokeWidth="1.5"/>
       </svg>
     </div>
   );

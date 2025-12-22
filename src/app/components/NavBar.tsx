@@ -93,7 +93,7 @@ export default function NavBar() {
             aria-label="Retour à l'accueil Synapso"
           >
             <Logo size={36} className="md:scale-110 " />
-            <span className="text-lg font-semibold text-gray-900">Synapso</span>
+            <span className="text-lg font-semibold text-gray-800">Synapso</span>
           </Link>
 
           {/* Bouton menu à droite */}
@@ -130,7 +130,7 @@ export default function NavBar() {
       >
         {/* En-tête du drawer */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
           <button
             onClick={() => setIsMenuOpen(false)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -154,7 +154,7 @@ export default function NavBar() {
                   className={`
                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                     ${currentUser?.id === user.id
-                      ? 'bg-white shadow-sm text-gray-900 font-medium'
+                      ? 'bg-white shadow-sm text-gray-800 font-medium'
                       : 'text-gray-600 hover:bg-white/50'
                     }
                   `}

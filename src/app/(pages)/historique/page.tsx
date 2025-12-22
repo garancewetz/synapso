@@ -302,7 +302,7 @@ export default function HistoriquePage() {
       {/* En-tête */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mx-4 md:mx-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-800 flex items-center gap-2">
             <span>🏅</span> Tes progrès, {displayName}
           </h1>
           <SegmentedControl
@@ -410,7 +410,7 @@ export default function HistoriquePage() {
 
         {/* Historique détaillé */}
         <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
             📋 Ton parcours de champion
           </h2>
 

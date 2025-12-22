@@ -78,7 +78,7 @@ export default function ProgressGauges({ userId, exercices, resetFrequency = 'DA
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
         {title}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">

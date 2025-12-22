@@ -12,10 +12,10 @@
     </clipPath>
   </defs>
 
-  <!-- moitié gauche remplie en noir, découpée par la silhouette -->
+  <!-- moitié gauche remplie en gris anthracite, découpée par la silhouette -->
   <g clip-path="url(#clipBrain)">
     <!-- rectangle couvrant la moitié gauche -->
-    <rect x="0" y="0" width="50" height="100" fill="#000"/>
+    <rect x="0" y="0" width="50" height="100" fill="#1F2937"/>
   </g>
 
   <!-- contour fin autour du cerveau -->
@@ -24,6 +24,6 @@
            C90 70 73 92 50 92
            C27 92 10 70 10 46
            C10 23 29 6 50 6 Z"
-        fill="none" stroke="#000" stroke-width="1"/>
+        fill="none" stroke="#1F2937" stroke-width="1"/>
 
 </svg>

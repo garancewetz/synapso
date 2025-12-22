@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({
             ${sizeClasses[size]}
             font-medium rounded-md transition-all duration-200
             ${value === option.value
-              ? 'bg-white text-gray-900 shadow-sm'
+              ? 'bg-white text-gray-800 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
             }
           `}

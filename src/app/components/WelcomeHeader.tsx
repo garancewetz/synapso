@@ -208,7 +208,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
       <div className="mb-5 relative z-10">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
               {getTimeGreeting()}, {userName}
             </h1>
             {/* Badge de réinitialisation - affiché seulement si l'information est chargée */}

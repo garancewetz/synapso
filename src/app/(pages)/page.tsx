@@ -69,9 +69,9 @@ export default function Home() {
               {/* Section des exercices épinglés */}
               <section>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <PinIcon filled={true} className="w-4 h-4 text-red-500" />
-                    Mes priorités
+                    Mes priorités à faire
                   </h2>
                 </div>
                 {pinned.length > 0 ? (

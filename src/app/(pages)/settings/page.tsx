@@ -135,7 +135,7 @@ export default function SettingsPage() {
 
         {/* Section Réinitialisation */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <label className="block text-base font-semibold text-gray-900 mb-4">
+          <label className="block text-base font-semibold text-gray-800 mb-4">
             Réinitialisation des exercices
           </label>
           <p className="text-sm text-gray-500 mb-4">
@@ -153,7 +153,7 @@ export default function SettingsPage() {
                 className="mt-1"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">Tous les jours</div>
+                <div className="font-medium text-gray-800">Tous les jours</div>
                 <div className="text-sm text-gray-500 mt-1">
                   Les exercices complétés sont réinitialisés chaque jour à minuit
                 </div>
@@ -170,7 +170,7 @@ export default function SettingsPage() {
                 className="mt-1"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">Une fois par semaine</div>
+                <div className="font-medium text-gray-800">Une fois par semaine</div>
                 <div className="text-sm text-gray-500 mt-1">
                   Les exercices complétés sont réinitialisés chaque dimanche à minuit
                 </div>

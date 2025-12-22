@@ -21,14 +21,14 @@ export default function FormPageWrapper({ children, title }: FormPageWrapperProp
         <div className="p-4 sm:p-6">
           <button
             onClick={handleBack}
-            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
             aria-label="Retour"
           >
             <ChevronIcon className="w-5 h-5" direction="left" />
             <span className="text-sm font-medium">Retour</span>
           </button>
           {title && (
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">{title}</h1>
           )}
           {children}
         </div>

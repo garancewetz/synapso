@@ -127,7 +127,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                                         <PinIcon className="w-3.5 h-3.5 text-red-500" fill="currentColor" />
                                     </div>
                                 )}
-                                <h3 className="text-base md:text-lg font-semibold text-gray-900 leading-tight">
+                                <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight">
                                     {exercice.name}
                                 </h3>
                             </div>

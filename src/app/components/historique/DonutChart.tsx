@@ -21,7 +21,7 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartP
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           {title}
         </h2>
         <div className="text-center py-8">
@@ -34,7 +34,7 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartP
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         {title}
       </h2>
       
@@ -83,7 +83,7 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartP
               <span className="text-lg">{item.icon}</span>
               <div className="flex-1 min-w-0 flex items-center justify-between">
                 <p className="font-medium text-gray-700 truncate text-xs">{item.name}</p>
-                <span className="text-sm font-bold text-gray-900 ml-1">{item.value}</span>
+                <span className="text-sm font-bold text-gray-800 ml-1">{item.value}</span>
               </div>
             </div>
           ))}

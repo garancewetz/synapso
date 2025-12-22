@@ -61,7 +61,7 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
       <>
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Accès protégé</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Accès protégé</h1>
             <p className="text-gray-600 mb-6">Veuillez entrer le mot de passe pour accéder au site</p>
           </div>
         </div>

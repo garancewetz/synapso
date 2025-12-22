@@ -74,7 +74,7 @@ export default function CategoryPage() {
         {!loading && (
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between gap-4">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-800">
                 {CATEGORY_LABELS[categoryParam]}
               </h1>
               <AddExerciceButton category={categoryParam} />
@@ -126,7 +126,7 @@ export default function CategoryPage() {
               {/* Section des exercices épinglés */}
               {pinned.length > 0 && (
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
                     <BookmarkIcon className="w-4 h-4 text-red-500" />
                     Priorités
                   </h2>
@@ -147,7 +147,7 @@ export default function CategoryPage() {
               {regular.length > 0 && (
                 <div>
                   {pinned.length > 0 && (
-                    <h2 className="text-base font-semibold text-gray-900 mb-3">
+                    <h2 className="text-base font-semibold text-gray-800 mb-3">
                       Autres exercices
                     </h2>
                   )}

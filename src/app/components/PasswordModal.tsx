@@ -55,7 +55,7 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

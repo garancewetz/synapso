@@ -211,7 +211,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
       {/* Sélection de catégorie */}
       <div>
-        <label className="block text-base font-semibold text-gray-900 mb-3">
+        <label className="block text-base font-semibold text-gray-800 mb-3">
           Catégorie *
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -249,7 +249,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
       {/* Sélection des parties du corps */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <label className="block text-base font-semibold text-gray-900 mb-2">
+        <label className="block text-base font-semibold text-gray-800 mb-2">
           Parties du corps ciblées
         </label>
         <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps (optionnel)</p>
@@ -308,7 +308,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       />
 
       <div className="bg-gray-50 rounded-lg p-4">
-        <label className="block text-base font-semibold text-gray-900 mb-4">
+        <label className="block text-base font-semibold text-gray-800 mb-4">
           Paramètres de l&apos;exercice (optionnel)
         </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -339,7 +339,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       </div>
 
       <div className="bg-gray-50 rounded-lg p-4">
-        <label className="block text-base font-semibold text-gray-900 mb-4">
+        <label className="block text-base font-semibold text-gray-800 mb-4">
           Équipements (optionnel)
         </label>
         <div className="flex flex-wrap gap-2 mb-4">

@@ -1,0 +1,17 @@
+[
+  {
+    "label": "Exercices",
+    "href": "/"
+
+  },
+  {
+    "label": "Milieu",
+    "href": "/exercices/core"
+   
+  },
+  {
+    "label": "Journal d'aphasie",
+    "href": "/aphasie"
+   
+  }
+]

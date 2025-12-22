@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import type { ExerciceCategory } from '@/types/exercice';
+import { prisma } from '@/app/lib/prisma';
+import type { ExerciceCategory } from '@/app/types/exercice';
 
 interface HistoryEntry {
   id: number;

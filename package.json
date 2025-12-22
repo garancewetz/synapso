@@ -27,7 +27,8 @@
     "next": "15.5.7",
     "prisma": "^6.17.1",
     "react": "19.1.2",
-    "react-dom": "19.1.2"
+    "react-dom": "19.1.2",
+    "recharts": "^3.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

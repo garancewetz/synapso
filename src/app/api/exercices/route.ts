@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { ExerciceCategory } from '@/types/exercice';
+import { prisma } from '@/app/lib/prisma';
+import { ExerciceCategory } from '@/app/types/exercice';
 import { Prisma, ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
-import { isCompletedToday, isCompletedInPeriod } from '@/utils/resetFrequency.utils';
+import { isCompletedToday, isCompletedInPeriod } from '@/app/utils/resetFrequency.utils';
 
 // Types pour les résultats SQL bruts
 interface ExerciceRaw {

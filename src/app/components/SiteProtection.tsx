@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import PasswordModal from '@/app/components/PasswordModal';
+import InitialLoader from '@/app/components/InitialLoader';
 
 interface SiteProtectionProps {
   children: React.ReactNode;
@@ -52,11 +53,7 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Chargement...</div>
-      </div>
-    );
+    return <InitialLoader />;
   }
 
   if (!isAuthenticated) {

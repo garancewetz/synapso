@@ -16,7 +16,7 @@ export default function WelcomeHeaderWrapper() {
   // Charger la fréquence de réinitialisation de l'utilisateur
   useEffect(() => {
     if (currentUser?.id) {
-      fetch(`/api/users/${currentUser.id}`)
+      fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           if (data.resetFrequency) {

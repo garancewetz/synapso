@@ -1,9 +1,44 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, use } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ExerciceForm from '@/app/components/ExerciceForm';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
+import { Loader } from '@/app/components/ui';
+
+interface EditPageContentProps {
+  exerciceId: number;
+}
+
+function EditPageContent({ exerciceId }: EditPageContentProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get('from');
+
+  const navigateBack = () => {
+    if (fromParam) {
+      router.push(fromParam);
+    } else {
+      router.push('/');
+    }
+  };
+
+  const handleSuccess = () => {
+    navigateBack();
+  };
+
+  const handleCancel = () => {
+    navigateBack();
+  };
+
+  return (
+    <ExerciceForm
+      exerciceId={exerciceId}
+      onSuccess={handleSuccess}
+      onCancel={handleCancel}
+    />
+  );
+}
 
 interface AdminEditPageProps {
   params: Promise<{
@@ -12,32 +47,18 @@ interface AdminEditPageProps {
 }
 
 export default function AdminEditPage({ params }: AdminEditPageProps) {
-  const router = useRouter();
-
-  // Extraire l'ID de l'exercice depuis les paramètres
   const { id } = use(params);
   const exerciceId = id ? parseInt(id) : null;
 
   if (!exerciceId || isNaN(exerciceId)) {
-    router.push('/');
     return null;
   }
 
-  const handleSuccess = () => {
-    router.push('/');
-  };
-
-  const handleCancel = () => {
-    router.push('/');
-  };
-
   return (
     <FormPageWrapper>
-      <ExerciceForm
-        exerciceId={exerciceId}
-        onSuccess={handleSuccess}
-        onCancel={handleCancel}
-      />
+      <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+        <EditPageContent exerciceId={exerciceId} />
+      </Suspense>
     </FormPageWrapper>
   );
 }

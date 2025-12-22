@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { requireAuth } from '@/app/lib/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     // Récupérer tous les bodyparts depuis la table Bodypart
     const bodyparts = await prisma.bodypart.findMany({

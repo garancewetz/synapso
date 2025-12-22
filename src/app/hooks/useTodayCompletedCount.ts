@@ -14,8 +14,8 @@ export function useTodayCompletedCount() {
     }
 
     Promise.all([
-      fetch(`/api/exercices?userId=${currentUser.id}`).then(res => res.json()),
-      fetch(`/api/users/${currentUser.id}`).then(res => res.json())
+      fetch(`/api/exercices?userId=${currentUser.id}`, { credentials: 'include' }).then(res => res.json()),
+      fetch(`/api/users/${currentUser.id}`, { credentials: 'include' }).then(res => res.json())
     ])
       .then(([exercicesData]) => {
         if (Array.isArray(exercicesData)) {

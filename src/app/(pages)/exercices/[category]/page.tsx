@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import ExerciceCard from '@/app/components/ExerciceCard';
 import EmptyState from '@/app/components/EmptyState';
 import { Loader, SegmentedControl } from '@/app/components/ui';
@@ -24,6 +24,7 @@ export default function CategoryPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const { currentUser } = useUser();
 
   // Convertir le paramètre URL en catégorie
@@ -42,7 +43,7 @@ export default function CategoryPage() {
   }, [isValidCategory, router]);
 
   const handleEditClick = (id: number) => {
-    router.push(`/exercice/edit/${id}`);
+    router.push(`/exercice/edit/${id}?from=${encodeURIComponent(pathname)}`);
   };
 
   const handleCompleted = (updatedExercice: Exercice) => {

@@ -36,7 +36,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
   useEffect(() => {
     // Charger la liste des équipements existants
-    fetch('/api/metadata')
+    fetch('/api/metadata', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         setEquipmentsList(data.equipments || []);
@@ -45,7 +45,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
     if (exerciceId && currentUser) {
       // Charger l'exercice existant
-      fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`)
+      fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -139,6 +139,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(exerciceData),
       });
 
@@ -174,6 +175,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
     try {
       const response = await fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -222,16 +224,24 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                 type="button"
                 onClick={() => setFormData({ ...formData, category })}
                 className={`
-                  flex items-center justify-center p-4 rounded-lg border-2 
+                  flex items-center justify-center p-4 rounded-lg 
                   transition-all duration-200
+                  ${colors.bg} ${colors.text}
                   ${isSelected 
-                    ? `${colors.bg} ${colors.border} ${colors.text}` 
-                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                    ? `border-2 ${colors.border} shadow-md scale-[1.02] font-bold` 
+                    : 'border border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }
                 `}
                 aria-pressed={isSelected}
               >
-                <span className="font-medium text-sm">{CATEGORY_LABELS[category]}</span>
+                <span className={isSelected ? 'font-semibold text-sm' : 'font-medium text-sm'}>
+                  {CATEGORY_LABELS[category]}
+                </span>
+                {isSelected && (
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
               </button>
             );
           })}
@@ -255,10 +265,11 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                 type="button"
                 onClick={() => toggleBodypart(bodypart)}
                 className={`
-                  px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  px-3 py-2 rounded-lg text-sm transition-all duration-200
+                  ${colorClass}
                   ${isSelected 
-                    ? `${colorClass} ring-2 ring-offset-1 ring-gray-300` 
-                    : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                    ? 'border-2 border-gray-400 shadow-md font-semibold' 
+                    : 'border border-transparent font-medium hover:shadow-sm hover:border-gray-200'
                   }
                 `}
               >
@@ -284,9 +295,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       />
 
       <Textarea
-        label="Description"
+        label="Description (optionnel)"
         rows={4}
-        placeholder="Décrivez comment réaliser l'exercice... (optionnel)"
+        placeholder="Décrivez comment réaliser l'exercice..."
         value={formData.descriptionText}
         onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
       />
@@ -301,7 +312,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
       <div className="bg-gray-50 rounded-lg p-4">
         <label className="block text-base font-semibold text-gray-900 mb-4">
-          Paramètres de l&apos;exercice
+          Paramètres de l&apos;exercice (optionnel)
         </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input

@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { requireAuth } from '@/app/lib/auth';
 import { ExerciceCategory } from '@/app/types/exercice';
+import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+    
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid exercice id' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     
@@ -48,6 +61,14 @@ export async function GET(
       );
     }
 
+    // Parser les équipements de manière sécurisée
+    let equipmentsParsed: string[] = [];
+    try {
+      equipmentsParsed = JSON.parse(exercice.equipments || '[]');
+    } catch {
+      equipmentsParsed = [];
+    }
+
     // Reformater les données
     const formattedExercice = {
       id: exercice.id,
@@ -61,8 +82,8 @@ export async function GET(
         series: exercice.workoutSeries,
         duration: exercice.workoutDuration,
       },
-      equipments: JSON.parse(exercice.equipments || '[]'),
-      bodyparts: exercice.bodyparts?.map(eb => eb.bodypart.name) || [],
+      equipments: equipmentsParsed,
+      bodyparts: exercice.bodyparts.map(eb => eb.bodypart.name),
       category: exercice.category as ExerciceCategory,
       completed: exercice.completed,
       completedAt: exercice.completedAt,
@@ -73,7 +94,10 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching exercice:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch exercice' },
+      { 
+        error: 'Failed to fetch exercice',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -83,9 +107,20 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+    
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid exercice id' },
+        { status: 400 }
+      );
+    }
+
     const updatedData = await request.json();
 
     if (!updatedData.userId) {
@@ -134,43 +169,56 @@ export async function PUT(
       );
     }
 
-    // Mettre à jour l'exercice
-    const exercice = await prisma.exercice.update({
-      where: { id },
-      data: {
-        name: updatedData.name !== undefined ? updatedData.name.trim() : undefined,
-        descriptionText: updatedData.description?.text !== undefined ? (updatedData.description.text || '') : undefined,
-        descriptionComment: updatedData.description?.comment !== undefined ? (updatedData.description.comment || null) : undefined,
-        workoutRepeat: updatedData.workout?.repeat,
-        workoutSeries: updatedData.workout?.series,
-        workoutDuration: updatedData.workout?.duration,
-        equipments: updatedData.equipments ? JSON.stringify(updatedData.equipments) : undefined,
-        category: updatedData.category,
-      },
-    });
-
-    // Mettre à jour les bodyparts si fournis
-    if (updatedData.bodyparts && Array.isArray(updatedData.bodyparts)) {
-      // Supprimer les anciennes relations
-      await prisma.exerciceBodypart.deleteMany({
-        where: { exerciceId: id },
+    // Utiliser une transaction pour garantir l'intégrité des données
+    const exercice = await prisma.$transaction(async (tx) => {
+      // Mettre à jour l'exercice
+      const updated = await tx.exercice.update({
+        where: { id },
+        data: {
+          name: updatedData.name !== undefined ? updatedData.name.trim() : undefined,
+          descriptionText: updatedData.description?.text !== undefined ? (updatedData.description.text || '') : undefined,
+          descriptionComment: updatedData.description?.comment !== undefined ? (updatedData.description.comment || null) : undefined,
+          workoutRepeat: updatedData.workout?.repeat,
+          workoutSeries: updatedData.workout?.series,
+          workoutDuration: updatedData.workout?.duration,
+          equipments: updatedData.equipments ? JSON.stringify(updatedData.equipments) : undefined,
+          category: updatedData.category as PrismaExerciceCategory | undefined,
+        },
       });
 
-      // Créer les nouvelles relations
-      for (const bodypartName of updatedData.bodyparts) {
-        const bodypart = await prisma.bodypart.upsert({
-          where: { name: bodypartName },
-          update: {},
-          create: { name: bodypartName, color: 'gray' },
+      // Mettre à jour les bodyparts si fournis
+      if (updatedData.bodyparts && Array.isArray(updatedData.bodyparts)) {
+        // Supprimer les anciennes relations
+        await tx.exerciceBodypart.deleteMany({
+          where: { exerciceId: id },
         });
-        
-        await prisma.exerciceBodypart.create({
-          data: {
-            exerciceId: id,
-            bodypartId: bodypart.id,
-          },
-        });
+
+        // Créer les nouvelles relations en parallèle
+        await Promise.all(updatedData.bodyparts.map(async (bodypartName: string) => {
+          const bodypart = await tx.bodypart.upsert({
+            where: { name: bodypartName },
+            update: {},
+            create: { name: bodypartName, color: 'gray' },
+          });
+          
+          await tx.exerciceBodypart.create({
+            data: {
+              exerciceId: id,
+              bodypartId: bodypart.id,
+            },
+          });
+        }));
       }
+
+      return updated;
+    });
+
+    // Parser les équipements de manière sécurisée
+    let equipmentsParsed: string[] = [];
+    try {
+      equipmentsParsed = JSON.parse(exercice.equipments || '[]');
+    } catch {
+      equipmentsParsed = [];
     }
 
     // Reformater les données
@@ -186,7 +234,7 @@ export async function PUT(
         series: exercice.workoutSeries,
         duration: exercice.workoutDuration,
       },
-      equipments: JSON.parse(exercice.equipments || '[]'),
+      equipments: equipmentsParsed,
       bodyparts: updatedData.bodyparts || [],
       category: exercice.category as ExerciceCategory,
       completed: exercice.completed,
@@ -198,7 +246,10 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating exercice:', error);
     return NextResponse.json(
-      { error: 'Failed to update exercice' },
+      { 
+        error: 'Failed to update exercice',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -208,9 +259,20 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+    
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid exercice id' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     
@@ -252,7 +314,10 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting exercice:', error);
     return NextResponse.json(
-      { error: 'Failed to delete exercice' },
+      { 
+        error: 'Failed to delete exercice',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

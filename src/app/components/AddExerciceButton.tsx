@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ExerciceCategory } from '@/app/types/exercice';
 
 interface AddExerciceButtonProps {
@@ -10,10 +11,13 @@ interface AddExerciceButtonProps {
 }
 
 export default function AddExerciceButton({ className = '', category }: AddExerciceButtonProps) {
+  const pathname = usePathname();
   
-  const href = category 
-    ? `/exercice/add?category=${category.toLowerCase()}`
-    : '/exercice/add';
+  const params = new URLSearchParams();
+  if (category) params.set('category', category.toLowerCase());
+  params.set('from', pathname);
+  
+  const href = `/exercice/add?${params.toString()}`;
 
   return (
     <Link

@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
+import { requireAuth } from '@/app/lib/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const bodyparts = await prisma.bodypart.findMany({
       orderBy: {
@@ -13,13 +17,19 @@ export async function GET() {
   } catch (error) {
     console.error('Erreur lors de la récupération des bodyparts:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération des bodyparts' },
+      { 
+        error: 'Erreur lors de la récupération des bodyparts',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     const { name, color } = body;
@@ -42,7 +52,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Erreur lors de la création du bodypart:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création du bodypart' },
+      { 
+        error: 'Erreur lors de la création du bodypart',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

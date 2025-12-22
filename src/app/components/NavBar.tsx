@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { ErrorMessage, MenuLink, Loader, Logo, Input, Button } from '@/app/components';
 
@@ -12,6 +13,7 @@ export default function NavBar() {
   const [creatingUser, setCreatingUser] = useState(false);
   const [createUserError, setCreateUserError] = useState('');
   const { currentUser, setCurrentUser, users, changingUser, refreshUsers } = useUser();
+  const pathname = usePathname();
 
   const handleUserChange = (userId: number) => {
     const selectedUser = users.find(u => u.id === userId);
@@ -37,6 +39,7 @@ export default function NavBar() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ name: newUserName.trim() }),
       });
 
@@ -236,7 +239,7 @@ export default function NavBar() {
 
           {/* Ajouter un exercice */}
           <MenuLink
-            href="/exercice/add"
+            href={`/exercice/add?from=${encodeURIComponent(pathname)}`}
             onClick={() => setIsMenuOpen(false)}
             icon={
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

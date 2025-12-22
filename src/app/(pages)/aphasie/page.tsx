@@ -15,7 +15,7 @@ export default function AphasiePage() {
   const { isCalypso } = useCalypsoCheck();
 
   const fetchItems = () => {
-    fetch('/api/aphasie')
+    fetch('/api/aphasie', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

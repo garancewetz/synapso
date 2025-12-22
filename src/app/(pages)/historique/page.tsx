@@ -118,7 +118,7 @@ export default function HistoriquePage() {
   const fetchHistory = useCallback(() => {
     if (!currentUser) return;
 
-    fetch(`/api/history?userId=${currentUser.id}`)
+    fetch(`/api/history?userId=${currentUser.id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

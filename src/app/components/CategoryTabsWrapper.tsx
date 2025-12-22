@@ -33,7 +33,7 @@ export default function CategoryTabsWrapper() {
     }
 
     // Charger les exercices pour calculer les counts
-    fetch(`/api/exercices?userId=${currentUser.id}`)
+    fetch(`/api/exercices?userId=${currentUser.id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

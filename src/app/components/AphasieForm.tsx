@@ -22,7 +22,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
 
   useEffect(() => {
     if (itemId) {
-      fetch(`/api/aphasie/${itemId}`)
+      fetch(`/api/aphasie/${itemId}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -60,6 +60,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(itemData),
       });
 
@@ -90,6 +91,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
     try {
       const response = await fetch(`/api/aphasie/${itemId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

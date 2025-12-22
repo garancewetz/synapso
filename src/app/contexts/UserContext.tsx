@@ -31,7 +31,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // Fonction pour charger les utilisateurs
   const loadUsers = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users', { credentials: 'include' });
       const data: User[] = await res.json();
       
       if (Array.isArray(data)) {

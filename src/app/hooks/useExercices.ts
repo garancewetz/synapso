@@ -37,7 +37,7 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
       ? `/api/exercices?userId=${userId}&category=${category}`
       : `/api/exercices?userId=${userId}`;
     
-    fetch(url)
+    fetch(url, { credentials: 'include' })
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) {

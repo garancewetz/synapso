@@ -130,30 +130,63 @@ L'application est protégée par un mot de passe global. Le mot de passe est sto
 synapso/
 ├── prisma/
 │   ├── schema.prisma          # Schéma de base de données
-│   ├── seed.ts                 # Script d'initialisation des données
-│   ├── backup.ts               # Script de backup des données
-│   ├── import-backup.ts        # Script d'import des données depuis backup
-│   └── migrations/             # Migrations de base de données
+│   ├── seed.ts                # Script d'initialisation des données
+│   ├── backup.ts              # Script de backup des données
+│   ├── import-backup.ts       # Script d'import des données depuis backup
+│   └── migrations/            # Migrations de base de données
 ├── src/
-│   ├── app/
-│   │   ├── api/                # Routes API (Next.js API Routes)
-│   │   ├── components/         # Composants React (atoms, molecules, organisms)
-│   │   ├── aphasie/            # Pages pour la gestion d'aphasie
-│   │   ├── exercice/           # Pages pour la gestion d'exercices
-│   │   ├── historique/         # Page d'historique
-│   │   └── page.tsx            # Page d'accueil
-│   ├── datas/                  # Fichiers JSON de données initiales et backups
-│   ├── lib/                    # Utilitaires (Prisma client)
-│   └── utils/                  # Fonctions utilitaires
-└── public/                     # Fichiers statiques
+│   └── app/
+│       ├── (pages)/           # Pages de l'application (App Router)
+│       │   ├── page.tsx       # Page d'accueil
+│       │   ├── aphasie/       # Pages aphasie (liste, ajout, édition)
+│       │   ├── exercice/      # Pages exercice (ajout, édition)
+│       │   ├── exercices/     # Pages exercices par catégorie
+│       │   ├── historique/    # Page historique et statistiques
+│       │   └── settings/      # Page paramètres utilisateur
+│       ├── api/               # Routes API (Next.js API Routes)
+│       ├── components/        # Composants React
+│       │   ├── ui/            # Composants UI réutilisables
+│       │   │   ├── icons/     # Icônes SVG (Pin, Check, Chevron, etc.)
+│       │   │   ├── Button.tsx
+│       │   │   ├── Input.tsx
+│       │   │   ├── Loader.tsx
+│       │   │   ├── Logo.tsx
+│       │   │   └── ...
+│       │   ├── historique/    # Composants pour la page historique
+│       │   │   ├── ActivityHeatmap.tsx
+│       │   │   ├── DonutChart.tsx
+│       │   │   ├── StatCard.tsx
+│       │   │   └── WeekAccordion.tsx
+│       │   └── ...            # Autres composants (Cards, Forms, Nav...)
+│       ├── constants/         # Constantes (catégories, icônes, couleurs)
+│       ├── contexts/          # Contextes React (User, Category)
+│       ├── datas/             # Fichiers JSON de configuration
+│       ├── hooks/             # Hooks personnalisés
+│       ├── lib/               # Utilitaires (Prisma client, auth)
+│       ├── types/             # Types TypeScript
+│       └── utils/             # Fonctions utilitaires
+└── public/                    # Fichiers statiques (icons, manifest PWA)
 ```
 
 ## 🎨 Architecture des composants
 
-L'application suit une architecture atomique :
-- **Atoms** : Composants de base (Button, Tag, Alert, etc.)
-- **Molecules** : Composants composites (ExerciceCard, BodyPartsNav)
-- **Organisms** : Composants complexes (Sidebar, FiltersExercices, Forms)
+L'application utilise une structure modulaire :
+
+- **`components/ui/`** : Composants UI primitifs et réutilisables
+  - `Button`, `Input`, `Textarea`, `Loader`, `Logo`
+  - `Badge`, `IconButton`, `SegmentedControl`
+  - `icons/` : Icônes SVG en composants React
+
+- **`components/historique/`** : Composants spécifiques à la page historique
+  - `StatCard` : Cartes de statistiques
+  - `DonutChart` : Graphiques circulaires (Recharts)
+  - `ActivityHeatmap` : Calendrier d'activité
+  - `WeekAccordion` : Accordéons par semaine
+
+- **`components/`** : Composants métier
+  - `ExerciceCard`, `CategoryCard`, `ExerciceForm`
+  - `NavBar`, `BottomNavBar`, `CategoryTabs`
+  - `ProgressGauges`, `WelcomeHeader`, etc.
 
 ## 📝 Notes de développement
 

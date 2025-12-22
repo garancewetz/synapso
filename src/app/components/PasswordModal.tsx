@@ -23,6 +23,7 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ password }),
       });
 

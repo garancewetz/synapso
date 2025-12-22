@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, PinIcon, SparklesIcon } from '@/app/components';
 import type { Exercice } from '@/app/types';
@@ -10,13 +10,14 @@ import { useExercices } from '@/app/hooks/useExercices';
 
 export default function Home() {
   const router = useRouter();
+  const pathname = usePathname();
   const { currentUser, users, loading: userLoading } = useUser();
   const { exercices, loading: loadingExercices, updateExercice } = useExercices({
     userId: currentUser?.id,
   });
 
   const handleEditClick = (id: number) => {
-    router.push(`/exercice/edit/${id}`);
+    router.push(`/exercice/edit/${id}?from=${encodeURIComponent(pathname)}`);
   };
 
   const handleCompleted = (updatedExercice: Exercice) => {
@@ -44,7 +45,7 @@ export default function Home() {
               title="Aucun exercice"
               message="Commencez par ajouter votre premier exercice."
               subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
-              actionHref="/exercice/add"
+              actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
               actionLabel="Créer mon premier exercice"
             />
           ) : (

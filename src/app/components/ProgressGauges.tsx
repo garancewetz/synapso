@@ -27,7 +27,7 @@ export default function ProgressGauges({ userId, exercices, resetFrequency = 'DA
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`/api/history?userId=${userId}`);
+        const response = await fetch(`/api/history?userId=${userId}`, { credentials: 'include' });
         const data = await response.json();
         
         if (Array.isArray(data)) {

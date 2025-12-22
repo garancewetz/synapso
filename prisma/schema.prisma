@@ -43,13 +43,18 @@ model Exercice {
   category           ExerciceCategory   @default(UPPER_BODY)
   userId             Int
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bodyparts          ExerciceBodypart[] // Gardé pour compatibilité, sera supprimé après migration
+  bodyparts          ExerciceBodypart[]
   history            History[]
   completed          Boolean            @default(false)
   completedAt        DateTime?
   pinned             Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([completed])
+  @@index([pinned])
 }
 
 model Bodypart {
@@ -76,6 +81,9 @@ model History {
   exercice    Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
   createdAt   DateTime @default(now())
+
+  @@index([exerciceId])
+  @@index([completedAt])
 }
 
 model AphasieItem {

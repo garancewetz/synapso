@@ -23,7 +23,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (currentUser) {
       // Charger les paramètres de l'utilisateur
-      fetch(`/api/users/${currentUser.id}`)
+      fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           if (data.resetFrequency) {
@@ -55,6 +55,7 @@ export default function SettingsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ resetFrequency }),
       });
 

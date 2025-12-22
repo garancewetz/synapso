@@ -38,6 +38,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
         try {
             const response = await fetch(`/api/exercices/${exercice.id}/complete?userId=${currentUser.id}`, {
                 method: 'PATCH',
+                credentials: 'include',
             });
 
             if (response.ok) {
@@ -75,6 +76,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
         try {
             const response = await fetch(`/api/exercices/${exercice.id}/pin?userId=${currentUser.id}`, {
                 method: 'PATCH',
+                credentials: 'include',
             });
 
             if (response.ok) {

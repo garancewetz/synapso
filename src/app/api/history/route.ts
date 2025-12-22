@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { requireAuth } from '@/app/lib/auth';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 interface HistoryEntry {
@@ -29,6 +30,9 @@ interface HistoryEntry {
 }
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');

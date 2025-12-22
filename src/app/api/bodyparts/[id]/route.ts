@@ -1,10 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
+import { requireAuth } from '@/app/lib/auth';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const bodypart = await prisma.bodypart.findUnique({
@@ -22,16 +26,22 @@ export async function GET(
   } catch (error) {
     console.error('Erreur lors de la récupération du bodypart:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération du bodypart' },
+      { 
+        error: 'Erreur lors de la récupération du bodypart',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -49,16 +59,22 @@ export async function PUT(
   } catch (error) {
     console.error('Erreur lors de la mise à jour du bodypart:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour du bodypart' },
+      { 
+        error: 'Erreur lors de la mise à jour du bodypart',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     await prisma.bodypart.delete({
@@ -69,7 +85,10 @@ export async function DELETE(
   } catch (error) {
     console.error('Erreur lors de la suppression du bodypart:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la suppression du bodypart' },
+      { 
+        error: 'Erreur lors de la suppression du bodypart',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

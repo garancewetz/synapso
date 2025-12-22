@@ -7,6 +7,7 @@ interface DonutChartItem {
   value: number;
   icon: string;
   color: string;
+  [key: string]: string | number;
 }
 
 interface DonutChartProps {

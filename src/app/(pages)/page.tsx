@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, AddExerciceButton, Loader, ProgressGauges, PinIcon, SparklesIcon } from '@/app/components';
+import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, PinIcon, SparklesIcon } from '@/app/components';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';

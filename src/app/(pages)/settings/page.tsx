@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 
-import Button from '@/app/components/Button';
+import Button from '@/app/components/ui/Button';
 import ErrorMessage from '@/app/components/ErrorMessage';
-import Loader from '@/app/components/Loader';
+import Loader from '@/app/components/ui/Loader';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Button from '@/app/components/Button';
+import Button from '@/app/components/ui/Button';
 import type { AphasieItem } from '@/app/types';
 import { useCalypsoCheck } from '@/app/hooks/useCalypsoCheck';
 

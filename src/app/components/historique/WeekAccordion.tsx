@@ -14,7 +14,7 @@ interface WeekAccordionProps {
   onToggle: () => void;
 }
 
-export function WeekAccordion({ weekKey, label, entries, isExpanded, onToggle }: WeekAccordionProps) {
+export function WeekAccordion({ label, entries, isExpanded, onToggle }: WeekAccordionProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* En-tête cliquable */}

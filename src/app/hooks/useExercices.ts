@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
-import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/app/datas/mockExercices';
-import { isCompletedToday } from '@/app/utils/resetFrequency.utils';
 
 interface UseExercicesOptions {
   userId?: number;
@@ -15,7 +13,6 @@ interface UseExercicesReturn {
   error: Error | null;
   refetch: () => void;
   updateExercice: (updatedExercice: Exercice) => void;
-  toggleMockComplete: (id: number) => void;
 }
 
 /**
@@ -28,17 +25,6 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
   const [error, setError] = useState<Error | null>(null);
 
   const fetchExercices = () => {
-    if (USE_MOCK_DATA) {
-      let filtered = MOCK_EXERCICES;
-      if (category) {
-        filtered = MOCK_EXERCICES.filter(e => e.category === category);
-      }
-      setExercices(filtered);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
     if (!userId) {
       setLoading(false);
       return;
@@ -78,29 +64,9 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
   }, [userId, category]);
 
   const updateExercice = (updatedExercice: Exercice) => {
-    if (USE_MOCK_DATA) return;
     setExercices(prev => prev.map(ex => 
       ex.id === updatedExercice.id ? updatedExercice : ex
     ));
-  };
-
-  const toggleMockComplete = (id: number) => {
-    if (!USE_MOCK_DATA) return;
-    const now = new Date();
-    setExercices(prev => prev.map(ex => {
-      if (ex.id === id) {
-        const newCompleted = !ex.completed;
-        const newCompletedAt = newCompleted ? now : null;
-        const newCompletedToday = newCompleted ? isCompletedToday(newCompletedAt, now) : false;
-        return { 
-          ...ex, 
-          completed: newCompleted, 
-          completedAt: newCompletedAt,
-          completedToday: newCompletedToday,
-        };
-      }
-      return ex;
-    }));
   };
 
   return {
@@ -109,7 +75,5 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
     error,
     refetch: fetchExercices,
     updateExercice,
-    toggleMockComplete,
   };
 }
-

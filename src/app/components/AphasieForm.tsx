@@ -1,10 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Input from '@/app/components/Input';
-import Textarea from '@/app/components/Textarea';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import FormActions from '@/app/components/FormActions';
+import { Input, Textarea, ErrorMessage, FormActions } from '@/app/components';
 
 interface AphasieFormProps {
   itemId?: number;

@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/app/contexts/UserContext';
-import Loader from '@/app/components/Loader';
-import Logo from '@/app/components/Logo';
-import Input from '@/app/components/Input';
-import Button from '@/app/components/Button';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import MenuLink from '@/app/components/MenuLink';
+import { ErrorMessage, MenuLink, Loader, Logo, Input, Button } from '@/app/components';
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,9 +83,13 @@ export default function NavBar() {
       <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6">
         <div className="flex items-center justify-between py-3 md:py-4">
           {/* Logo et nom à gauche */}
-          <Link href="/" className="flex items-center gap-2">
-            <Logo size={24} className="md:scale-110" />
-            <span className="text-base md:text-lg font-semibold text-gray-900">Synapso</span>
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 -ml-2 px-2 rounded-xl hover:bg-gray-50 transition-colors"
+            aria-label="Retour à l'accueil Synapso"
+          >
+            <Logo size={36} className="md:scale-110 " />
+            <span className="text-lg font-semibold text-gray-900">Synapso</span>
           </Link>
 
           {/* Bouton menu à droite */}

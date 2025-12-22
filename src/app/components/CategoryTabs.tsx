@@ -20,7 +20,7 @@ export default function CategoryTabs({ counts }: CategoryTabsProps) {
   const isHomePage = pathname === '/';
 
   return (
-    <div className="hidden md:block px-4 mb-6">
+    <div className="px-4 mb-6">
       {/* Container - flex sur desktop */}
       <div className="flex flex-wrap justify-center gap-2">
         {/* Icône maison pour la page d'accueil */}

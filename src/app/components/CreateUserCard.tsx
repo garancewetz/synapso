@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Input from '@/app/components/Input';
-import Button from '@/app/components/Button';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import Loader from '@/app/components/Loader';
+import { Input, Button, Loader, ErrorMessage } from '@/app/components';
 import { useUser } from '@/app/contexts/UserContext';
 
 interface CreateUserCardProps {

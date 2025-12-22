@@ -5,18 +5,17 @@ import { usePathname } from 'next/navigation';
 import WelcomeHeader from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
-import { USE_MOCK_DATA } from '@/app/datas/mockExercices';
 
 export default function WelcomeHeaderWrapper() {
   const pathname = usePathname();
   const { currentUser } = useUser();
   const completedToday = useTodayCompletedCount();
   const [resetFrequency, setResetFrequency] = useState<'DAILY' | 'WEEKLY' | null>(null);
-  const displayName = USE_MOCK_DATA ? "Calypso" : (currentUser?.name || "");
+  const displayName = currentUser?.name || "";
 
   // Charger la fréquence de réinitialisation de l'utilisateur
   useEffect(() => {
-    if (currentUser?.id && !USE_MOCK_DATA) {
+    if (currentUser?.id) {
       fetch(`/api/users/${currentUser.id}`)
         .then((res) => res.json())
         .then((data) => {
@@ -30,8 +29,8 @@ export default function WelcomeHeaderWrapper() {
     }
   }, [currentUser]);
 
-  // Ne pas afficher sur les pages d'ajout/édition d'exercice
-  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie/add', '/aphasie/edit'];
+  // Ne pas afficher sur les pages d'ajout/édition d'exercice et sur l'historique
+  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie/add', '/aphasie/edit', '/historique'];
   const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
 
   if (shouldHide) {
@@ -48,4 +47,3 @@ export default function WelcomeHeaderWrapper() {
     </div>
   );
 }
-

@@ -1,22 +1,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import ExerciceCard from '@/app/components/ExerciceCard';
-import EmptyState from '@/app/components/EmptyState';
-import CreateUserCard from '@/app/components/CreateUserCard';
-import CategoryCard from '@/app/components/CategoryCard';
-import AddExerciceButton from '@/app/components/AddExerciceButton';
-import Loader from '@/app/components/Loader';
+import Link from 'next/link';
+import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, AddExerciceButton, Loader, ProgressGauges, PinIcon, SparklesIcon } from '@/app/components';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import ProgressGauges from '@/app/components/ProgressGauges';
 
 export default function Home() {
   const router = useRouter();
   const { currentUser, users, loading: userLoading } = useUser();
-  const { exercices, loading: loadingExercices, updateExercice, toggleMockComplete } = useExercices({
+  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
     userId: currentUser?.id,
   });
 
@@ -28,7 +23,7 @@ export default function Home() {
     updateExercice(updatedExercice);
   };
 
-  const pinned = exercices.filter(e => e.pinned);
+  const pinned = exercices.filter(e => e.pinned && !e.completed);
 
   return (
     <section>
@@ -59,7 +54,7 @@ export default function Home() {
                 {CATEGORY_ORDER.map(category => {
                   const categoryExercices = exercices.filter(e => e.category === category);
                   if (categoryExercices.length === 0) return null;
-                  
+
                   return (
                     <CategoryCard
                       key={category}
@@ -70,43 +65,58 @@ export default function Home() {
                 }).filter(Boolean)}
               </div>
 
+              {/* Section des exercices épinglés */}
+              <section>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <PinIcon filled={true} className="w-4 h-4 text-red-500" />
+                    Mes priorités à faire
+                  </h2>
+                </div>
+                {pinned.length > 0 ? (
+                  <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
+                    {pinned.map((exercice) => (
+                      <ExerciceCard
+                        key={exercice.id}
+                        exercice={exercice}
+                        onEdit={handleEditClick}
+                        onCompleted={handleCompleted}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm italic">
+                    Pas d&apos;exercice épinglé non fait
+                  </p>
+                )}
+              </section>
+
               {/* Section progression par catégorie */}
               {currentUser && (
-                <ProgressGauges 
-                  userId={currentUser.id} 
-                  exercices={exercices} 
+                <ProgressGauges
+                  userId={currentUser.id}
+                  exercices={exercices}
                   resetFrequency={currentUser.resetFrequency || 'DAILY'}
                 />
               )}
 
-              {/* Section des exercices épinglés */}
-              {pinned.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                      </svg>
-                      Mes priorités
-                    </h2>
-                    <AddExerciceButton />
-                  </div>
-                  <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
-                    {pinned.map((exercice) => (
-                      <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
-                        <ExerciceCard
-                          exercice={exercice}
-                          onEdit={handleEditClick}
-                          onCompleted={handleCompleted}
-                          showCategory={false}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-     
+
+              {/* Golden Button vers l'historique */}
+              <div className="flex justify-center mt-8 pt-4 pb-6">
+                <Link
+                  href="/historique"
+                  className="w-full max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
+                             bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
+                             shadow-[0_4px_10px_rgba(217,119,6,0.3)] 
+                             hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
+                             transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl"><SparklesIcon className="w-4 h-4" /></span>
+                  Voir mes réussites
+                </Link>
+              </div>
+
             </div>
           )}
         </div>

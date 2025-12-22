@@ -24,24 +24,24 @@ export default function CategoryCard({ category, exercices }: CategoryCardProps)
       href={href}
       aria-label={`${label} - ${total} ${total === 1 ? 'exercice' : 'exercices'}`}
       className={`
-        block p-5 md:p-6 rounded-xl border-2 transition-all duration-200
+        block p-3 md:p-6 rounded-xl border-2 transition-all duration-200
         ${categoryStyle.bg} ${categoryStyle.border} 
         hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${categoryStyle.focusRing}
       `}
     >
-      <div className="flex flex-col items-center text-center gap-3">
+      <div className="flex flex-col items-center text-center gap-1.5 md:gap-3">
         <span 
-          className="text-5xl md:text-6xl" 
+          className="text-3xl md:text-6xl" 
           role="img" 
           aria-hidden="true"
         >
           {icon}
         </span>
-        <div className="space-y-1">
-          <h3 className={`text-lg md:text-xl font-bold ${categoryStyle.text}`}>
+        <div className="space-y-0.5 md:space-y-1">
+          <h3 className={`text-sm md:text-xl font-bold ${categoryStyle.text}`}>
             {label}
           </h3>
-          <p className="text-sm md:text-base text-gray-700 font-medium">
+          <p className="text-xs md:text-base text-gray-700 font-medium">
             {total} {total === 1 ? 'exercice' : 'exercices'}
           </p>
         </div>

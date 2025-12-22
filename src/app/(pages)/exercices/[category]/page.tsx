@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ExerciceCard from '@/app/components/ExerciceCard';
 import EmptyState from '@/app/components/EmptyState';
-import Loader from '@/app/components/Loader';
+import { Loader, SegmentedControl } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -13,6 +13,12 @@ import { useExercices } from '@/app/hooks/useExercices';
 import AddExerciceButton from '@/app/components/AddExerciceButton';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
+
+const FILTER_OPTIONS: { value: FilterType; label: string }[] = [
+  { value: 'all', label: 'Tous' },
+  { value: 'notCompleted', label: 'À faire' },
+  { value: 'completed', label: 'Faits' },
+];
 
 export default function CategoryPage() {
   const [filter, setFilter] = useState<FilterType>('all');
@@ -24,7 +30,7 @@ export default function CategoryPage() {
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
   const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
-  const { exercices, loading, updateExercice, toggleMockComplete } = useExercices({
+  const { exercices, loading, updateExercice } = useExercices({
     userId: currentUser?.id,
     category: isValidCategory ? categoryParam : undefined,
   });
@@ -77,47 +83,13 @@ export default function CategoryPage() {
             
             {/* Switch à trois parties */}
             <div className="mt-4">
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setFilter('all')}
-                  className={`
-                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
-                    transition-all duration-200
-                    ${filter === 'all'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }
-                  `}
-                >
-                  Tous
-                </button>
-                <button
-                  onClick={() => setFilter('notCompleted')}
-                  className={`
-                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
-                    transition-all duration-200
-                    ${filter === 'notCompleted'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }
-                  `}
-                >
-                  À faire
-                </button>
-                <button
-                  onClick={() => setFilter('completed')}
-                  className={`
-                    flex-1 py-2.5 px-3 rounded-md font-medium text-sm
-                    transition-all duration-200
-                    ${filter === 'completed'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                    }
-                  `}
-                >
-                  Faits
-                </button>
-              </div>
+              <SegmentedControl
+                options={FILTER_OPTIONS}
+                value={filter}
+                onChange={setFilter}
+                fullWidth
+                size="md"
+              />
             </div>
           </div>
         )}
@@ -160,14 +132,12 @@ export default function CategoryPage() {
                   </h2>
                   <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                     {pinned.map((exercice) => (
-                      <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
-                        <ExerciceCard
-                          exercice={exercice}
-                          onEdit={handleEditClick}
-                          onCompleted={handleCompleted}
-                          showCategory={false}
-                        />
-                      </div>
+                      <ExerciceCard
+                        key={exercice.id}
+                        exercice={exercice}
+                        onEdit={handleEditClick}
+                        onCompleted={handleCompleted}
+                      />
                     ))}
                   </div>
                 </div>
@@ -183,14 +153,12 @@ export default function CategoryPage() {
                   )}
                   <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                     {regular.map((exercice) => (
-                      <div key={exercice.id} onClick={() => toggleMockComplete(exercice.id)}>
-                        <ExerciceCard
-                          exercice={exercice}
-                          onEdit={handleEditClick}
-                          onCompleted={handleCompleted}
-                          showCategory={false}
-                        />
-                      </div>
+                      <ExerciceCard
+                        key={exercice.id}
+                        exercice={exercice}
+                        onEdit={handleEditClick}
+                        onCompleted={handleCompleted}
+                      />
                     ))}
                   </div>
                 </div>

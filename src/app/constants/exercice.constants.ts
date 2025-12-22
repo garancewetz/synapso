@@ -8,7 +8,7 @@ export const CATEGORY_LABELS: Record<ExerciceCategory, string> = {
   UPPER_BODY: 'Haut du corps',
   LOWER_BODY: 'Bas du corps',
   STRETCHING: 'Étirement',
-  CORE: 'Tronc',
+  CORE: 'Milieu du corps',
 };
 
 // Labels courts pour la navigation
@@ -16,7 +16,7 @@ export const CATEGORY_LABELS_SHORT: Record<ExerciceCategory, string> = {
   UPPER_BODY: 'Haut',
   LOWER_BODY: 'Bas',
   STRETCHING: 'Étirer',
-  CORE: 'Tronc',
+  CORE: 'Milieu',
 };
 
 // Icônes/Emojis pour chaque catégorie
@@ -39,7 +39,7 @@ export const CATEGORY_HREFS: Record<ExerciceCategory, string> = {
 // 🦵 Bleu = Bas du corps (ancrage, stabilité)
 // 💪 Orange = Haut du corps (énergie, action)
 // 🧘 Violet = Étirements (détente, souplesse)
-// 🤸 Teal = Tronc (gainage, force centrale, stabilité)
+// 🤸 Teal = Milieu (gainage, force centrale, stabilité)
 // ✅ Vert Émeraude réservé pour validation
 export const CATEGORY_COLORS: Record<ExerciceCategory, { 
   bg: string; 
@@ -141,7 +141,7 @@ export const CATEGORY_MOBILE_CONFIG: Record<ExerciceCategory, {
     inactiveClasses: 'bg-white text-gray-600 border-t-2 border-purple-300',
   },
   CORE: {
-    label: 'Tronc',
+    label: 'Milieu',
     icon: '🤸',
     href: '/exercices/core',
     activeClasses: 'bg-teal-600 text-white border-t-2 border-teal-600',
@@ -149,32 +149,91 @@ export const CATEGORY_MOBILE_CONFIG: Record<ExerciceCategory, {
   },
 };
 
-// Liste des bodyparts disponibles
+// Liste des bodyparts disponibles - organisée par catégorie mère
 export const AVAILABLE_BODYPARTS = [
-  'Jambes',
-  'Bassin',
+  // 💪 HAUT DU CORPS (Orange)
   'Bras',
   'Mains',
   'Épaules',
+  'Cou & Nuque',
+  // 🤸 MILIEU DU CORPS (Teal)
   'Dos',
-  'Nuque / Cervicales',
-  'Pied',
-  'Fessier',
   'Corps',
+  'Bassin',
+  // 🦵 BAS DU CORPS (Bleu)
+  'Jambes',
+  'Fessier',
+  'Pied',
 ] as const;
 
-// Couleurs pour les bodyparts (tons sobres et professionnels)
-export const BODYPART_COLORS: Record<string, string> = {
-  'Jambes': 'bg-slate-100 text-slate-700',
-  'Bassin': 'bg-stone-100 text-stone-700',
-  'Bras': 'bg-zinc-100 text-zinc-700',
-  'Mains': 'bg-neutral-100 text-neutral-700',
-  'Épaules': 'bg-gray-100 text-gray-700',
-  'Epaules': 'bg-gray-100 text-gray-700',
-  'Dos': 'bg-slate-100 text-slate-700',
-  'Nuque / Cervicales': 'bg-stone-100 text-stone-700',
-  'Pied': 'bg-zinc-100 text-zinc-700',
-  'Fessier': 'bg-neutral-100 text-neutral-700',
-  'Corps': 'bg-gray-100 text-gray-700',
+// Association bodypart → catégorie mère (pour les statistiques et le code couleur)
+export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
+  // 💪 HAUT DU CORPS
+  'Bras': 'UPPER_BODY',
+  'Mains': 'UPPER_BODY',
+  'Épaules': 'UPPER_BODY',
+  'Cou & Nuque': 'UPPER_BODY',
+  // 🤸 MILIEU DU CORPS
+  'Dos': 'CORE',
+  'Corps': 'CORE',
+  'Bassin': 'CORE',
+  // 🦵 BAS DU CORPS
+  'Jambes': 'LOWER_BODY',
+  'Fessier': 'LOWER_BODY',
+  'Pied': 'LOWER_BODY',
+  // Rétrocompatibilité (anciennes valeurs en base de données)
+  'Epaules': 'UPPER_BODY',
+  'Nuque / Cervicales': 'UPPER_BODY',
 };
 
+// Couleurs pour les bodyparts - teintées selon la catégorie mère
+// Crée un lien visuel direct entre l'exercice et sa catégorie
+export const BODYPART_COLORS: Record<string, string> = {
+  // 💪 Famille HAUT (Orange)
+  'Bras': 'bg-orange-50 text-orange-700',
+  'Mains': 'bg-orange-50 text-orange-700',
+  'Épaules': 'bg-orange-50 text-orange-700',
+  'Cou & Nuque': 'bg-orange-50 text-orange-700',
+  
+  // 🤸 Famille MILIEU (Teal)
+  'Dos': 'bg-teal-50 text-teal-700',
+  'Corps': 'bg-teal-50 text-teal-700',
+  'Bassin': 'bg-teal-50 text-teal-700',
+  
+  // 🦵 Famille BAS (Bleu)
+  'Jambes': 'bg-blue-50 text-blue-700',
+  'Fessier': 'bg-blue-50 text-blue-700',
+  'Pied': 'bg-blue-50 text-blue-700',
+  
+  // Rétrocompatibilité (anciennes valeurs en base de données)
+  'Epaules': 'bg-orange-50 text-orange-700',
+  'Nuque / Cervicales': 'bg-orange-50 text-orange-700',
+};
+
+// Couleurs HEX pour les graphiques (charts) - alignées sur les catégories
+export const CATEGORY_CHART_COLORS: Record<ExerciceCategory, string> = {
+  LOWER_BODY: '#3B82F6',   // bleu
+  UPPER_BODY: '#F97316',   // orange
+  STRETCHING: '#8B5CF6',   // violet
+  CORE: '#14B8A6',         // teal
+};
+
+// Icônes pour les bodyparts - organisées par catégorie mère
+export const BODYPART_ICONS: Record<string, string> = {
+  // 💪 HAUT DU CORPS
+  'Bras': '💪',
+  'Mains': '🖐️',
+  'Épaules': '🏋️',
+  'Cou & Nuque': '🦒',
+  // 🤸 MILIEU DU CORPS
+  'Dos': '🔙',
+  'Corps': '🧍',
+  'Bassin': '🦴',
+  // 🦵 BAS DU CORPS
+  'Jambes': '🦵',
+  'Fessier': '🍑',
+  'Pied': '🦶',
+  // Rétrocompatibilité
+  'Epaules': '🏋️',
+  'Nuque / Cervicales': '🦒',
+};

@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { MOCK_EXERCICES, USE_MOCK_DATA } from '@/app/datas/mockExercices';
-import { isCompletedToday } from '@/app/utils/resetFrequency.utils';
 
 const REFRESH_EVENT = 'exercice-completed-refresh';
 
@@ -10,15 +8,6 @@ export function useTodayCompletedCount() {
   const { currentUser } = useUser();
 
   const fetchCompletedCount = useCallback(() => {
-    if (USE_MOCK_DATA) {
-      const count = MOCK_EXERCICES.filter(ex => {
-        if (!ex.completed || !ex.completedAt) return false;
-        return isCompletedToday(new Date(ex.completedAt));
-      }).length;
-      setCompletedToday(count);
-      return;
-    }
-
     if (!currentUser) {
       setCompletedToday(null);
       return;
@@ -66,4 +55,3 @@ export function useTodayCompletedCount() {
 export function triggerCompletedCountRefresh() {
   window.dispatchEvent(new CustomEvent(REFRESH_EVENT));
 }
-

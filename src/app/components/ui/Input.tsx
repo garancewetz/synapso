@@ -23,3 +23,4 @@ export default function Input({ label, required, className = '', ...props }: Inp
     </div>
   );
 }
+

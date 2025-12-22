@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
+import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { isMonday } from 'date-fns';
 
 interface WelcomeHeaderProps {
@@ -221,16 +222,12 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
               `}>
                 {resetFrequency === 'DAILY' ? (
                   <>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                   Rythme quotidien
+                    <ClockIcon className="w-3 h-3" />
+                    Rythme quotidien
                   </>
                 ) : (
                   <>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <CalendarIcon className="w-3 h-3" />
                     Rythme hebdomadaire
                   </>
                 )}
@@ -293,21 +290,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
             />
           )}
         </div>
-        {/* Indicateurs discrets */}
-        <div className="flex justify-between mt-1.5 px-0.5">
-          {[1, 2, 3, 4, 5].map((step) => (
-            <motion.div 
-              key={step}
-              className={`w-1.5 h-1.5 rounded-full ${
-                !isLoading && count >= step ? 'bg-emerald-400' : 'bg-gray-200'
-              }`}
-            animate={!isLoading && count >= step ? {
-              scale: [1, 1.3, 1],
-            } : {}}
-              transition={{ duration: 0.3, delay: step * 0.1 }}
-            />
-          ))}
-        </div>
+
       </div>
 
       {/* Encouragement discret */}

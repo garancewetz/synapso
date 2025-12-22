@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import CategoryTabs from '@/app/components/CategoryTabs';
 import { useUser } from '@/app/contexts/UserContext';
 import { ExerciceCategory } from '@/app/types/exercice';
-import { USE_MOCK_DATA, MOCK_EXERCICES } from '@/app/datas/mockExercices';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
 export default function CategoryTabsWrapper() {
@@ -33,15 +32,6 @@ export default function CategoryTabsWrapper() {
       return;
     }
 
-    if (USE_MOCK_DATA) {
-      const mockCounts = CATEGORY_ORDER.reduce((acc, cat) => ({
-        ...acc,
-        [cat]: MOCK_EXERCICES.filter(e => e.category === cat).length,
-      }), {} as Record<ExerciceCategory, number>);
-      setCounts(mockCounts);
-      return;
-    }
-
     // Charger les exercices pour calculer les counts
     fetch(`/api/exercices?userId=${currentUser.id}`)
       .then(res => res.json())
@@ -64,9 +54,8 @@ export default function CategoryTabsWrapper() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+    <div className="hidden md:block max-w-5xl mx-auto pt-4">
       <CategoryTabs counts={counts} />
     </div>
   );
 }
-

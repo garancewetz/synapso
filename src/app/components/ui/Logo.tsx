@@ -8,7 +8,8 @@ interface LogoProps {
 export default function Logo({ size = 20, className = "" }: LogoProps) {
   return (
     <div className={className}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" className="w-5 h-5 md:w-8 md:h-8">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" 
+      >
         <title id="title">Logo Synapso</title>
         <defs>
           <clipPath id="clipBrain">
@@ -29,8 +30,9 @@ export default function Logo({ size = 20, className = "" }: LogoProps) {
                  C90 70 73 92 50 92
                  C27 92 10 70 10 46
                  C10 23 29 6 50 6 Z"
-              fill="none" stroke="#000" strokeWidth="1"/>
+              fill="none" stroke="#000" strokeWidth="1.5"/>
       </svg>
     </div>
   );
 }
+

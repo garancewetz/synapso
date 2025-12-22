@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import Input from '@/app/components/Input';
-import Textarea from '@/app/components/Textarea';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import FormActions from '@/app/components/FormActions';
-import Loader from '@/app/components/Loader';
+import { Input, Textarea } from '@/app/components/ui';
+import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 

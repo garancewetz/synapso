@@ -23,7 +23,6 @@ interface HistoryEntry {
       bodypart: {
         id: number;
         name: string;
-        color: string;
       };
     }>;
   };
@@ -85,7 +84,6 @@ export async function GET(request: NextRequest) {
         bodyparts: entry.exercice.bodyparts.map((eb) => ({
           id: eb.bodypart.id,
           name: eb.bodypart.name,
-          color: eb.bodypart.color,
         })),
       },
     }));

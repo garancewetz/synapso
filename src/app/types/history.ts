@@ -7,7 +7,7 @@ export interface HistoryEntry {
     id: number;
     name: string;
     category?: ExerciceCategory;
-    bodyparts: Array<{ id: number; name: string; color: string }>;
+    bodyparts: Array<{ id: number; name: string }>;
     equipments: string[];
   };
 }

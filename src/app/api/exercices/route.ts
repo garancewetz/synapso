@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
           const bodypart = await tx.bodypart.upsert({
             where: { name: bodypartName },
             update: {},
-            create: { name: bodypartName, color: 'gray' },
+            create: { name: bodypartName },
           });
           
           // Créer la relation

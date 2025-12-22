@@ -1,8 +1,15 @@
+export { BookIcon } from './BookIcon';
+export { BookmarkIcon } from './BookmarkIcon';
 export { CalendarIcon } from './CalendarIcon';
 export { CheckIcon } from './CheckIcon';
 export { ChevronIcon } from './ChevronIcon';
 export { ClockIcon } from './ClockIcon';
+export { CloseIcon } from './CloseIcon';
 export { EditIcon } from './EditIcon';
+export { MenuIcon } from './MenuIcon';
 export { PinIcon } from './PinIcon';
+export { PlusIcon } from './PlusIcon';
+export { SettingsIcon } from './SettingsIcon';
 export { SparklesIcon } from './SparklesIcon';
-
+export { UserIcon } from './UserIcon';
+export { WarningIcon } from './WarningIcon';

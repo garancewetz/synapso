@@ -48,12 +48,10 @@ async function migrateToPostgres() {
         where: { id: bodypart.id },
         update: {
           name: bodypart.name,
-          color: bodypart.color,
         },
         create: {
           id: bodypart.id,
           name: bodypart.name,
-          color: bodypart.color,
         },
       });
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Button from '@/app/components/ui/Button';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -87,13 +88,9 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
           </div>
           
           <div className="flex gap-3 justify-end">
-          
-            <button
-              type="submit"
-              className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-            >
+            <Button type="submit" variant="action" className="text-sm">
               Valider
-            </button>
+            </Button>
           </div>
         </form>
       </div>

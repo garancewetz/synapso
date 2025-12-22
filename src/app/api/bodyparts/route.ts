@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, color } = body;
+    const { name } = body;
 
-    if (!name || !color) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Le nom et la couleur sont requis' },
+        { error: 'Le nom est requis' },
         { status: 400 }
       );
     }
@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
     const bodypart = await prisma.bodypart.create({
       data: {
         name,
-        color,
       },
     });
 

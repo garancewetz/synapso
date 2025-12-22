@@ -6,6 +6,7 @@ import { Input, Textarea } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { CheckIcon } from '@/app/components/ui/icons';
 
 interface ExerciceFormProps {
   exerciceId?: number;
@@ -238,9 +239,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                   {CATEGORY_LABELS[category]}
                 </span>
                 {isSelected && (
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="w-4 h-4 ml-2" strokeWidth={2.5} />
                 )}
               </button>
             );
@@ -275,9 +274,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
               >
                 {bodypart}
                 {isSelected && (
-                  <svg className="inline-block w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="inline-block w-3.5 h-3.5 ml-1" strokeWidth={2.5} />
                 )}
               </button>
             );

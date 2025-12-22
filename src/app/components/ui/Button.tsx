@@ -1,7 +1,7 @@
 interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'action' | 'danger-outline';
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
   className?: string;
@@ -21,6 +21,8 @@ export default function Button({
     primary: 'bg-slate-800 text-white hover:bg-slate-900',
     secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300',
     danger: 'bg-red-600 text-white hover:bg-red-700',
+    action: 'bg-blue-600 text-white hover:bg-blue-700',
+    'danger-outline': 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-300',
   };
 
   return (

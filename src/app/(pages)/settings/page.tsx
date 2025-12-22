@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 
 import Button from '@/app/components/ui/Button';
+import Input from '@/app/components/ui/Input';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Loader from '@/app/components/ui/Loader';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
@@ -13,7 +14,8 @@ type ResetFrequency = 'DAILY' | 'WEEKLY';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { currentUser, refreshUsers } = useUser();
+  const { currentUser, setCurrentUser, refreshUsers } = useUser();
+  const [name, setName] = useState('');
   const [resetFrequency, setResetFrequency] = useState<ResetFrequency>('DAILY');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -26,6 +28,9 @@ export default function SettingsPage() {
       fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
+          if (data.name) {
+            setName(data.name);
+          }
           if (data.resetFrequency) {
             setResetFrequency(data.resetFrequency);
           }
@@ -56,7 +61,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ resetFrequency }),
+        body: JSON.stringify({ name, resetFrequency }),
       });
 
       if (!response.ok) {
@@ -64,7 +69,12 @@ export default function SettingsPage() {
         throw new Error(errorData.error || 'Erreur lors de la mise à jour');
       }
 
+      const updatedUser = await response.json();
+      
+      // Mettre à jour l'utilisateur courant avec le nouveau nom
+      setCurrentUser(updatedUser);
       await refreshUsers();
+      
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -110,6 +120,20 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* Section Nom */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <Input
+            label="Nom de l'utilisateur"
+            type="text"
+            required
+            placeholder="Ex: Calypso"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Section Réinitialisation */}
         <div className="bg-gray-50 rounded-lg p-4">
           <label className="block text-base font-semibold text-gray-900 mb-4">
             Réinitialisation des exercices
@@ -170,14 +194,14 @@ export default function SettingsPage() {
               'Enregistrer les paramètres'
             )}
           </Button>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.back()}
-            className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
             disabled={loading}
           >
             Annuler
-          </button>
+          </Button>
         </div>
       </form>
     </FormPageWrapper>

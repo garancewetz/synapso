@@ -45,13 +45,12 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, color } = body;
+    const { name } = body;
 
     const bodypart = await prisma.bodypart.update({
       where: { id: parseInt(id) },
       data: {
         name,
-        color,
       },
     });
 

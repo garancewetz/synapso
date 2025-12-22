@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ExerciceCategory } from '@/app/types/exercice';
+import { PlusIcon } from '@/app/components/ui/icons';
 
 interface AddExerciceButtonProps {
   className?: string;
@@ -25,14 +26,7 @@ export default function AddExerciceButton({ className = '', category }: AddExerc
       className={`w-8 h-8 flex items-center justify-center rounded-lg border-2 border-gray-800 bg-transparent hover:bg-gray-50 transition-colors ${className}`}
       aria-label="Ajouter un exercice"
     >
-      <svg 
-        className="w-5 h-5 text-gray-800"
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-      </svg>
+      <PlusIcon className="w-5 h-5 text-gray-800" strokeWidth={2.5} />
     </Link>
   );
 }

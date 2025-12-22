@@ -198,7 +198,7 @@ export async function PUT(
           const bodypart = await tx.bodypart.upsert({
             where: { name: bodypartName },
             update: {},
-            create: { name: bodypartName, color: 'gray' },
+            create: { name: bodypartName },
           });
           
           await tx.exerciceBodypart.create({

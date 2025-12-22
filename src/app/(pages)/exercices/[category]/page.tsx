@@ -8,6 +8,7 @@ import { Loader, SegmentedControl } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { BookmarkIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import AddExerciceButton from '@/app/components/AddExerciceButton';
@@ -126,9 +127,7 @@ export default function CategoryPage() {
               {pinned.length > 0 && (
                 <div>
                   <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
+                    <BookmarkIcon className="w-4 h-4 text-red-500" />
                     Priorités
                   </h2>
                   <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">

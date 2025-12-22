@@ -112,12 +112,12 @@ a:focus-visible {
 }
 
 /* Touch-friendly button sizes */
-/* @media (pointer: coarse) {
+ @media (pointer: coarse) {
   button, a {
     min-height: 48px;
     min-width: 48px;
   }
-} */
+} 
 
 /* Cartes avec effet de hover doux */
 .exercise-card {

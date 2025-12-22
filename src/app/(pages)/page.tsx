@@ -71,7 +71,7 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <PinIcon filled={true} className="w-4 h-4 text-red-500" />
-                    Mes priorités à faire
+                    Mes priorités
                   </h2>
                 </div>
                 {pinned.length > 0 ? (
@@ -87,7 +87,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <p className="text-gray-500 text-sm italic">
-                    Pas d&apos;exercice épinglé non fait
+                    Pas d&apos;exercice épinglé en attente
                   </p>
                 )}
               </section>

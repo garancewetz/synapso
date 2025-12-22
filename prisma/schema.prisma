@@ -60,7 +60,6 @@ model Exercice {
 model Bodypart {
   id        Int                @id @default(autoincrement())
   name      String             @unique
-  color     String
   exercices ExerciceBodypart[]
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt

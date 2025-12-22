@@ -22,11 +22,9 @@ export interface Exercice {
   pinned: boolean;
 }
 
-// Gardé pour compatibilité temporaire
 export interface Bodypart {
   id: number;
   name: string;
-  color: string;
 }
 
 export interface BodypartWithCount extends Bodypart {
@@ -40,7 +38,6 @@ export interface BodypartWithExercices extends BodypartWithCount {
 export interface BodypartSection {
   id: number;
   name: string;
-  color: string;
   count: number;
 }
 

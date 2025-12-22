@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Input, Button, Loader, ErrorMessage } from '@/app/components';
+import { UserIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 
 interface CreateUserCardProps {
@@ -64,9 +65,7 @@ export default function CreateUserCard({ onUserCreated }: CreateUserCardProps) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
+          <UserIcon className="w-6 h-6 text-blue-600" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Créer un utilisateur</h2>

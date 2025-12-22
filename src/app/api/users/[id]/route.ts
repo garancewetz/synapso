@@ -76,9 +76,34 @@ export async function PATCH(
       );
     }
 
+    // Vérifier que le nom n'est pas vide s'il est fourni
+    if (data.name !== undefined && !data.name.trim()) {
+      return NextResponse.json(
+        { error: 'Le nom ne peut pas être vide' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que le nom n'est pas déjà pris par un autre utilisateur
+    if (data.name) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          name: data.name.trim(),
+          id: { not: userId },
+        },
+      });
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Ce nom est déjà utilisé par un autre utilisateur' },
+          { status: 400 }
+        );
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
+        ...(data.name && { name: data.name.trim() }),
         ...(data.resetFrequency && { resetFrequency: data.resetFrequency }),
       },
       select: {

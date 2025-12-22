@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { isCompletedInPeriod, isCompletedToday, getStartOfPeriod } from '@/utils/resetFrequency.utils';
+import { prisma } from '@/app/lib/prisma';
+import { isCompletedInPeriod, isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
 export async function PATCH(

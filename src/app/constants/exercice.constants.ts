@@ -1,4 +1,4 @@
-import type { ExerciceCategory } from '@/types/exercice';
+import type { ExerciceCategory } from '@/app/types/exercice';
 
 // Ordre standardisé des catégories (utilisé partout dans l'application)
 export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];

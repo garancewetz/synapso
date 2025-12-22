@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 
 // Mapping direct des noms d'exercices vers les catégories
 // Basé sur le fichier mockExercices.ts

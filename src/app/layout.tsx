@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import NavBar from "@/app/components/organisms/NavBar";
-import BottomNavBar from "@/app/components/organisms/BottomNavBar";
-import SiteProtection from "@/app/components/organisms/SiteProtection";
-import WelcomeHeaderWrapper from "@/app/components/organisms/WelcomeHeaderWrapper";
-import CategoryTabsWrapper from "@/app/components/organisms/CategoryTabsWrapper";
-import DevBanner from "@/app/components/atoms/DevBanner";
-import PWARegister from "@/app/components/atoms/PWARegister";
-import { UserProvider } from "@/contexts/UserContext";
-import { CategoryProvider } from "@/contexts/CategoryContext";
+import NavBar from "@/app/components/NavBar";
+import BottomNavBar from "@/app/components/BottomNavBar";
+import SiteProtection from "@/app/components/SiteProtection";
+import WelcomeHeaderWrapper from "@/app/components/WelcomeHeaderWrapper";
+import CategoryTabsWrapper from "@/app/components/CategoryTabsWrapper";
+import DevBanner from "@/app/components/DevBanner";
+import PWARegister from "@/app/components/PWARegister";
+import { UserProvider } from "@/app/contexts/UserContext";
+import { CategoryProvider } from "@/app/contexts/CategoryContext";
 
 export const metadata: Metadata = {
   title: "Synapso - Caly",

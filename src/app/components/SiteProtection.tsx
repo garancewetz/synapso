@@ -6,9 +6,10 @@ import InitialLoader from '@/app/components/InitialLoader';
 
 interface SiteProtectionProps {
   children: React.ReactNode;
+  onAuthSuccess?: () => void;
 }
 
-export default function SiteProtection({ children }: SiteProtectionProps) {
+export default function SiteProtection({ children, onAuthSuccess }: SiteProtectionProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +18,7 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/check', {
-          credentials: 'include', // Important pour envoyer les cookies
+          credentials: 'include',
         });
         
         if (response.ok) {
@@ -37,19 +38,33 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
     checkAuth();
   }, []);
 
-  const handlePasswordSuccess = () => {
-    // Après succès, le cookie est déjà défini par le serveur
-    // On vérifie à nouveau l'authentification
-    fetch('/api/auth/check', {
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(data => {
-        setIsAuthenticated(data.authenticated);
-      })
-      .catch(() => {
-        setIsAuthenticated(false);
+  const handlePasswordSuccess = async () => {
+    // Le cookie est défini par le serveur dans la réponse POST précédente
+    // Il est immédiatement disponible pour les requêtes suivantes
+    // On vérifie simplement que l'auth fonctionne maintenant
+    try {
+      const response = await fetch('/api/auth/check', {
+        credentials: 'include',
       });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          // Notifier le parent que l'auth a réussi (callback sécurisé)
+          onAuthSuccess?.();
+        } else {
+          console.error('Authentification échouée après connexion');
+          setIsAuthenticated(false);
+        }
+      } else {
+        console.error('Erreur lors de la vérification de l\'authentification');
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'authentification:', error);
+      setIsAuthenticated(false);
+    }
   };
 
   if (isLoading) {

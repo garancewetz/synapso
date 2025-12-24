@@ -26,16 +26,19 @@ export default function CategoryPage() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const { currentUser } = useUser();
+  const { currentUser, loading: userLoading } = useUser();
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
   const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
-  const { exercices, loading, updateExercice } = useExercices({
-    userId: currentUser?.id,
+  // Ne charger les exercices que si le user est chargé et disponible
+  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
+    userId: userLoading ? undefined : currentUser?.id,
     category: isValidCategory ? categoryParam : undefined,
   });
+  
+  const loading = userLoading || loadingExercices;
 
   useEffect(() => {
     if (!isValidCategory) {
@@ -71,7 +74,7 @@ export default function CategoryPage() {
     <section>
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header */}
-        {!loading && (
+        {!userLoading && !loadingExercices && (
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between gap-4">
               <h1 className="text-2xl font-bold text-gray-800">

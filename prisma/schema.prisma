@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,25 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ExerciceCategory {
-  UPPER_BODY // Haut du corps
-  LOWER_BODY // Bas du corps
-  STRETCHING // Étirement
-  CORE // Tronc
-}
-
-enum ResetFrequency {
-  DAILY  // Tous les jours à minuit
-  WEEKLY // Une fois par semaine, le dimanche à minuit
-}
-
 model User {
-  id             Int             @id @default(autoincrement())
-  name           String          @unique
-  resetFrequency ResetFrequency  @default(DAILY)
+  id             Int            @id @default(autoincrement())
+  name           String         @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  resetFrequency ResetFrequency @default(DAILY)
   exercices      Exercice[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
 }
 
 model Exercice {
@@ -39,17 +24,17 @@ model Exercice {
   workoutRepeat      String?
   workoutSeries      String?
   workoutDuration    String?
-  equipments         String // Stocké en JSON string
-  category           ExerciceCategory   @default(UPPER_BODY)
+  equipments         String
+  completed          Boolean            @default(false)
+  completedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   userId             Int
+  pinned             Boolean            @default(false)
+  category           ExerciceCategory   @default(UPPER_BODY)
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bodyparts          ExerciceBodypart[]
   history            History[]
-  completed          Boolean            @default(false)
-  completedAt        DateTime?
-  pinned             Boolean            @default(false)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
 
   @@index([userId])
   @@index([category])
@@ -60,16 +45,16 @@ model Exercice {
 model Bodypart {
   id        Int                @id @default(autoincrement())
   name      String             @unique
-  exercices ExerciceBodypart[]
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+  exercices ExerciceBodypart[]
 }
 
 model ExerciceBodypart {
   exerciceId Int
   bodypartId Int
-  exercice   Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
   bodypart   Bodypart @relation(fields: [bodypartId], references: [id], onDelete: Cascade)
+  exercice   Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
 
   @@id([exerciceId, bodypartId])
 }
@@ -77,9 +62,9 @@ model ExerciceBodypart {
 model History {
   id          Int      @id @default(autoincrement())
   exerciceId  Int
-  exercice    Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
   createdAt   DateTime @default(now())
+  exercice    Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
 
   @@index([exerciceId])
   @@index([completedAt])
@@ -93,4 +78,16 @@ model AphasieItem {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum ExerciceCategory {
+  UPPER_BODY
+  LOWER_BODY
+  STRETCHING
+  CORE
+}
+
+enum ResetFrequency {
+  DAILY
+  WEEKLY
 }

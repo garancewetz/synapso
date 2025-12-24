@@ -1,4 +1,7 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { Button } from '@/app/components/ui';
 
 interface EmptyStateProps {
   icon?: string;
@@ -10,40 +13,41 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({ icon = '🔍', title, message, subMessage, actionHref, actionLabel }: EmptyStateProps) {
-  const content = (
-    <div className="text-center">
-      <div className="text-6xl mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold text-gray-800 mb-2">
-        {title}
-      </h3>
-      <p className="text-gray-600">
-        {message}
-      </p>
-      {subMessage && (
-        <p className="text-sm text-gray-500 mt-2">
-          {subMessage}
-        </p>
-      )}
-      {actionHref && actionLabel && (
-        <Link
-          href={actionHref}
-          className="mt-6 inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
-        >
-          {actionLabel}
-        </Link>
-      )}
-    </div>
-  );
+  const router = useRouter();
+
+  const handleActionClick = () => {
+    if (actionHref) {
+      router.push(actionHref);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center py-12">
-      {actionHref ? (
-        <Link href={actionHref} className="block w-full">
-          {content}
-        </Link>
-      ) : (
-        content
-      )}
+      <div className="text-center">
+        <div className="text-6xl mb-4">{icon}</div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          {title}
+        </h3>
+        <p className="text-gray-600">
+          {message}
+        </p>
+        {subMessage && (
+          <p className="text-sm text-gray-500 mt-2">
+            {subMessage}
+          </p>
+        )}
+        {actionHref && actionLabel && (
+          <div className="mt-6">
+            <Button
+              onClick={handleActionClick}
+              variant="action"
+              className="px-6 py-3"
+            >
+              {actionLabel}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

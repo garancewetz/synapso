@@ -15,9 +15,11 @@ interface DonutChartProps {
   data: DonutChartItem[];
   emptyIcon: string;
   emptyMessage: string;
+  fullWidth?: boolean;
+  legendPosition?: 'bottom' | 'right';
 }
 
-export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartProps) {
+export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: DonutChartProps) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
@@ -32,15 +34,17 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartP
     );
   }
 
+  const isHorizontalLayout = legendPosition === 'right';
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 ${fullWidth ? 'w-full' : ''}`}>
       <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         {title}
       </h2>
       
-      <div className="flex flex-col items-center gap-4">
+      <div className={`flex ${isHorizontalLayout ? 'flex-row items-center gap-6' : 'flex-col items-center gap-4'}`}>
         {/* Graphique Donut */}
-        <div className="w-full h-48 xl:h-56">
+        <div className={`${isHorizontalLayout ? 'flex-1' : 'w-full'} h-48 xl:h-56`}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -70,7 +74,7 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage }: DonutChartP
         </div>
 
         {/* Légende */}
-        <div className="w-full grid grid-cols-2 gap-2">
+        <div className={`${isHorizontalLayout ? 'flex-1' : 'w-full'} ${isHorizontalLayout ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}`}>
           {data.map((item) => (
             <div
               key={item.name}

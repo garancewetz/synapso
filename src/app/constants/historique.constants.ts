@@ -42,8 +42,14 @@ export const REWARD_EMOJIS = [
   { threshold: 10, emoji: '🎯' },
 ] as const;
 
-// Nombre de jours à afficher dans la heatmap
-export const HEATMAP_DAYS = 30;
+// Nombre de jours pour les statistiques de régularité
+export const STATS_DAYS = 30;
+
+// Nombre de jours à afficher dans la roadmap (aperçu)
+export const ROADMAP_PREVIEW_DAYS = 7;
+
+// Nombre de jours à afficher dans la roadmap complète
+export const ROADMAP_FULL_DAYS = 40;
 
 // Nombre maximum de bodyparts à afficher dans le donut chart
 export const MAX_BODYPARTS_IN_CHART = 6;

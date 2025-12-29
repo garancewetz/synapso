@@ -19,7 +19,7 @@ import {
   BODYPART_ICONS,
 } from '@/app/constants/exercice.constants';
 import {
-  HEATMAP_DAYS,
+  ROADMAP_PREVIEW_DAYS,
   MAX_BODYPARTS_IN_CHART,
   REWARD_EMOJIS,
 } from '@/app/constants/historique.constants';
@@ -42,6 +42,7 @@ export interface HeatmapDay {
   count: number;
   dominantCategory: ExerciceCategory | null;
   secondaryCategory: ExerciceCategory | null; // Deuxième catégorie si à égalité ou très proche
+  allCategories: ExerciceCategory[]; // Toutes les catégories travaillées ce jour
   isToday: boolean;
   isEmpty: boolean;
 }
@@ -193,10 +194,10 @@ function getDominantCategories(
   return { dominant, secondary: null };
 }
 
-export function getHeatmapData(history: HistoryEntry[]): HeatmapDay[] {
+export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_PREVIEW_DAYS): HeatmapDay[] {
   const today = new Date();
-  const startDate = subDays(today, HEATMAP_DAYS - 1);
-  const days = eachDayOfInterval({ start: startDate, end: today });
+  const startDate = subDays(today, days - 1);
+  const allDays = eachDayOfInterval({ start: startDate, end: today });
   
   // Compter les exercices par jour et par catégorie
   const exercisesByDay: Record<string, {
@@ -233,11 +234,12 @@ export function getHeatmapData(history: HistoryEntry[]): HeatmapDay[] {
     count: 0,
     dominantCategory: null as ExerciceCategory | null,
     secondaryCategory: null as ExerciceCategory | null,
+    allCategories: [] as ExerciceCategory[],
     isToday: false,
     isEmpty: true,
   }));
 
-  const realDays = days.map(day => {
+  const realDays = allDays.map(day => {
     const dateKey = format(day, 'yyyy-MM-dd');
     const dayData = exercisesByDay[dateKey];
     const count = dayData?.count || 0;
@@ -245,12 +247,21 @@ export function getHeatmapData(history: HistoryEntry[]): HeatmapDay[] {
       ? getDominantCategories(dayData.byCategory)
       : { dominant: null, secondary: null };
     
+    // Extraire toutes les catégories travaillées ce jour (triées par nombre décroissant)
+    const allCategories = dayData 
+      ? (Object.entries(dayData.byCategory) as [ExerciceCategory, number][])
+          .filter(([, cnt]) => cnt > 0)
+          .sort((a, b) => b[1] - a[1])
+          .map(([cat]) => cat)
+      : [];
+    
     return {
       date: day as Date | null,
       dateKey,
       count,
       dominantCategory: dominant,
       secondaryCategory: secondary,
+      allCategories,
       isToday: isSameDay(day, today),
       isEmpty: false,
     };

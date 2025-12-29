@@ -1,156 +1,240 @@
 'use client';
 
-import { format } from 'date-fns';
+import Link from 'next/link';
+import { format, isToday, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
+import { CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { ChevronIcon } from '@/app/components/ui/icons';
 
 interface ActivityHeatmapProps {
   data: HeatmapDay[];
   currentStreak: number;
+  showFullLink?: boolean;
+  userName?: string;
 }
 
-const WEEKDAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-
-// Couleurs pour les backgrounds et borders de la heatmap
-const HEATMAP_CATEGORY_STYLES: Record<ExerciceCategory, { bg: string; border: string }> = {
-  UPPER_BODY: { bg: 'bg-orange-50', border: 'border-orange-500' },
-  CORE: { bg: 'bg-teal-50', border: 'border-teal-500' },
-  LOWER_BODY: { bg: 'bg-blue-50', border: 'border-blue-500' },
-  STRETCHING: { bg: 'bg-purple-50', border: 'border-purple-500' },
+// Couleurs vives pour les cases
+const CATEGORY_STYLES: Record<ExerciceCategory, { bg: string; border: string }> = {
+  UPPER_BODY: { bg: 'bg-orange-400', border: 'border-orange-500' },
+  CORE: { bg: 'bg-teal-400', border: 'border-teal-500' },
+  LOWER_BODY: { bg: 'bg-blue-400', border: 'border-blue-500' },
+  STRETCHING: { bg: 'bg-purple-400', border: 'border-purple-500' },
 };
 
-function getHeatmapStyle(
-  count: number,
-  dominantCategory: ExerciceCategory | null,
-  _secondaryCategory: ExerciceCategory | null
-): { bg: string; border: string } {
-  if (count === 0) return { bg: 'bg-gray-50', border: 'border-gray-200' };
-  if (!dominantCategory) return { bg: 'bg-gray-100', border: 'border-gray-300' };
-  
-  // Si on a deux catégories, on utilise le style de la dominante pour la bordure principale
-  const style = HEATMAP_CATEGORY_STYLES[dominantCategory];
-  return { bg: style.bg, border: style.border };
-}
+// Noms des jours de la semaine (lundi = début)
+const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-export function ActivityHeatmap({ data, currentStreak }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName }: ActivityHeatmapProps) {
+  // Filtrer les jours vides et ne garder que les vrais jours
+  const realDays = data.filter(day => !day.isEmpty);
+  
+  // Mode semaine (roadmap complète) avec alignement sur les jours de la semaine
+  const isWeekMode = !showFullLink;
+  
+  // Compter les jours avec exercices
+  const daysWithExercises = realDays.filter(day => day.count > 0).length;
+  const totalDays = realDays.length;
+  const progressPercent = totalDays > 0 ? Math.round((daysWithExercises / totalDays) * 100) : 0;
+
+  // Pour le mode semaine, organiser les jours par semaines avec les jours vides pour aligner
+  const getWeekAlignedDays = () => {
+    if (realDays.length === 0) return [];
+    
+    const result: (HeatmapDay | null)[] = [];
+    
+    // Trouver le premier jour et calculer son décalage depuis lundi
+    const firstDay = realDays[0];
+    if (firstDay.date) {
+      const dayOfWeek = getDay(firstDay.date);
+      // getDay retourne 0 pour dimanche, on veut lundi = 0
+      const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      
+      // Ajouter des cases vides pour aligner au lundi
+      for (let i = 0; i < adjustedDay; i++) {
+        result.push(null);
+      }
+    }
+    
+    // Ajouter tous les vrais jours
+    realDays.forEach(day => result.push(day));
+    
+    return result;
+  };
+
+  const displayDays = isWeekMode ? getWeekAlignedDays() : realDays;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        📊 Tendances par jour (30 jours)
-        {currentStreak >= 3 && (
-          <span className="text-sm font-normal text-amber-500 ml-2">
+      {/* Header avec titre et streak */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+          ✨ {userName ? `Ton parcours, ${userName}` : 'Mon parcours'}
+        </h2>
+        {currentStreak >= 2 && (
+          <span className="text-sm font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
             🔥 {currentStreak}j
           </span>
         )}
-      </h2>
-      
-      <div className="flex flex-col gap-1">
-        {/* Légende des jours */}
-        <div className="grid grid-cols-7 gap-1 text-xs text-gray-400 mb-1">
-          {WEEKDAY_LABELS.map((day, i) => (
-            <span key={i} className="w-full mx-auto text-center">{day}</span>
+      </div>
+
+      {/* Barre de progression */}
+      <div className="mb-5">
+        <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <span>{daysWithExercises} jours actifs sur {totalDays}</span>
+          <span className="font-semibold text-emerald-600">{progressPercent}%</span>
+        </div>
+        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* En-têtes des jours de la semaine (mode semaine uniquement) */}
+      {isWeekMode && (
+        <div className="grid grid-cols-7 gap-2 mb-2">
+          {WEEKDAY_NAMES.map((name, index) => (
+            <div 
+              key={index} 
+              className={`
+                text-center text-xs font-semibold
+                ${index >= 5 ? 'text-emerald-600' : 'text-gray-500'}
+              `}
+            >
+              {name}
+            </div>
           ))}
         </div>
-        
-        {/* Grille heatmap */}
-        <div className="grid grid-cols-7 gap-1">
-          {data.map((day) => (
-            day.isEmpty ? (
-              <div key={day.dateKey} className="w-full h-8 sm:h-10" />
-            ) : (
-              <div
-                key={day.dateKey}
+      )}
+
+      {/* Grille des jours - style calendrier compact avec emojis */}
+      <div className="grid grid-cols-7 gap-2">
+        {displayDays.map((day, index) => {
+          // Case vide pour l'alignement
+          if (!day) {
+            return <div key={`empty-${index}`} className="aspect-square" />;
+          }
+
+          const isCurrentDay = day.date && isToday(day.date);
+          const hasExercise = day.count > 0;
+          const category = day.dominantCategory;
+          const categoryStyle = category ? CATEGORY_STYLES[category] : null;
+          const otherCategories = day.allCategories.filter(cat => cat !== category);
+          
+          return (
+            <div 
+              key={day.dateKey}
+              className="flex flex-col items-center"
+              title={day.date ? `${format(day.date, 'd MMMM', { locale: fr })}: ${day.count} exercice${day.count > 1 ? 's' : ''}` : ''}
+            >
+              {/* Case du jour */}
+              <div 
                 className={`
-                  w-full h-8 sm:h-10 rounded-lg relative
-                  ${(() => {
-                    const style = getHeatmapStyle(day.count, day.dominantCategory, day.secondaryCategory);
-                    if (day.secondaryCategory) {
-                      // Deux catégories : pas de bordure globale, chaque moitié aura la sienne
-                      return `${style.bg} border-0`;
-                    }
-                    return `${style.bg} ${style.border} border-2`;
-                  })()}
-                  ${day.isToday ? 'ring-2 ring-gray-400 ring-offset-1' : ''}
-                  transition-all hover:scale-110 cursor-default
+                  relative w-full aspect-square rounded-xl flex items-center justify-center
+                  transition-transform hover:scale-105 cursor-default
+                  ${isCurrentDay 
+                    ? hasExercise && categoryStyle
+                      ? `${categoryStyle.bg} ring-2 ring-emerald-400 ring-offset-2 shadow-lg`
+                      : 'bg-emerald-500 ring-2 ring-emerald-300 ring-offset-1 shadow-lg'
+                    : hasExercise && categoryStyle
+                      ? `${categoryStyle.bg} shadow-md`
+                      : 'bg-gray-100'
+                  }
                 `}
-                title={
-                  day.date 
-                    ? `${format(day.date, 'd MMMM', { locale: fr })}: ${day.count} exercice${day.count > 1 ? 's' : ''}${day.dominantCategory ? ` - ${CATEGORY_LABELS[day.dominantCategory]}` : ''}${day.secondaryCategory ? ` / ${CATEGORY_LABELS[day.secondaryCategory]}` : ''}`
-                    : ''
-                }
               >
-                {day.count > 0 && day.dominantCategory && (
-                  <div className="flex items-center justify-center h-full">
-                    {day.secondaryCategory ? (
-                      // Deux catégories : diviser la case en deux avec bordures distinctes sur chaque moitié
-                      <div className="w-full h-full flex">
-                        <div 
-                          className={`flex-1 flex items-center justify-center rounded-l-lg border-2 ${HEATMAP_CATEGORY_STYLES[day.dominantCategory].bg} ${HEATMAP_CATEGORY_STYLES[day.dominantCategory].border} border-r-0`}
-                        >
-                          <span className="text-base sm:text-lg">
-                            {CATEGORY_ICONS[day.dominantCategory]}
-                          </span>
-                        </div>
-                        <div 
-                          className={`flex-1 flex items-center justify-center rounded-r-lg border-2 ${HEATMAP_CATEGORY_STYLES[day.secondaryCategory].bg} ${HEATMAP_CATEGORY_STYLES[day.secondaryCategory].border} border-l-0 `}
-                        >
-                          <span className="text-base sm:text-lg">
-                            {CATEGORY_ICONS[day.secondaryCategory]}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      // Une seule catégorie : centrer l'emoji
-                      <span className="text-base sm:text-lg">
-                        {CATEGORY_ICONS[day.dominantCategory]}
-                      </span>
-                    )}
+                {/* Emoji ou indicateur */}
+                {isCurrentDay ? (
+                  hasExercise && category ? (
+                    <span className="text-xl sm:text-2xl md:text-3xl">{CATEGORY_ICONS[category]}</span>
+                  ) : (
+                    <span className="text-xl sm:text-2xl md:text-3xl">📍</span>
+                  )
+                ) : hasExercise && category ? (
+                  <span className="text-xl sm:text-2xl md:text-3xl">{CATEGORY_ICONS[category]}</span>
+                ) : (
+                  <span className="text-gray-300 text-sm md:text-base">·</span>
+                )}
+                
+                {/* Badge nombre d'exercices */}
+                {hasExercise && day.count > 1 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-white rounded-full text-[10px] md:text-xs font-bold text-gray-700 flex items-center justify-center shadow border border-gray-200">
+                    {day.count}
+                  </span>
+                )}
+                
+                {/* Indicateur catégories multiples */}
+                {hasExercise && otherCategories.length > 0 && (
+                  <div className="absolute -bottom-1 md:-bottom-1.5 left-1/2 -translate-x-1/2 flex gap-0.5 md:gap-1">
+                    {otherCategories.slice(0, 3).map((cat) => (
+                      <span 
+                        key={cat}
+                        className={`w-3 h-3 md:w-4 md:h-4 rounded-full ${CATEGORY_STYLES[cat].bg} border border-white`}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
-            )
-          ))}
-        </div>
+              
+              {/* Date sous la case */}
+              <span className={`
+                text-[10px] sm:text-xs mt-1 font-medium
+                ${isCurrentDay 
+                  ? 'text-emerald-600' 
+                  : hasExercise 
+                    ? 'text-gray-700' 
+                    : 'text-gray-400'
+                }
+              `}>
+                {isCurrentDay ? 'Auj.' : day.date && format(day.date, 'd', { locale: fr })}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Légende des couleurs */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-xs font-medium text-gray-500 mb-3 text-center">Légende</p>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
-              <div className="w-5 h-5 rounded bg-gray-50 border-2 border-gray-200 flex items-center justify-center">
-                <span className="text-xs">—</span>
-              </div>
-              <span className="text-gray-600 font-medium">Aucun</span>
+      {/* Légende compacte */}
+      <div className="mt-5 pt-4 border-t border-gray-200">
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-lg bg-orange-400 flex items-center justify-center">
+              <span className="text-sm">{CATEGORY_ICONS.UPPER_BODY}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 border border-orange-200">
-              <div className="w-5 h-5 rounded bg-orange-50 border-2 border-orange-500 flex items-center justify-center">
-                <span className="text-xs">{CATEGORY_ICONS.UPPER_BODY}</span>
-              </div>
-              <span className="text-gray-700 font-medium">{CATEGORY_LABELS.UPPER_BODY}</span>
+            <span>Haut</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-lg bg-teal-400 flex items-center justify-center">
+              <span className="text-sm">{CATEGORY_ICONS.CORE}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-200">
-              <div className="w-5 h-5 rounded bg-teal-50 border-2 border-teal-500 flex items-center justify-center">
-                <span className="text-xs">{CATEGORY_ICONS.CORE}</span>
-              </div>
-              <span className="text-gray-700 font-medium">{CATEGORY_LABELS.CORE}</span>
+            <span>Milieu</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-lg bg-blue-400 flex items-center justify-center">
+              <span className="text-sm">{CATEGORY_ICONS.LOWER_BODY}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
-              <div className="w-5 h-5 rounded bg-blue-50 border-2 border-blue-500 flex items-center justify-center">
-                <span className="text-xs">{CATEGORY_ICONS.LOWER_BODY}</span>
-              </div>
-              <span className="text-gray-700 font-medium">{CATEGORY_LABELS.LOWER_BODY}</span>
+            <span>Bas</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-lg bg-purple-400 flex items-center justify-center">
+              <span className="text-sm">{CATEGORY_ICONS.STRETCHING}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200">
-              <div className="w-5 h-5 rounded bg-purple-50 border-2 border-purple-500 flex items-center justify-center">
-                <span className="text-xs">{CATEGORY_ICONS.STRETCHING}</span>
-              </div>
-              <span className="text-gray-700 font-medium">{CATEGORY_LABELS.STRETCHING}</span>
-            </div>
+            <span>Étirement</span>
           </div>
         </div>
       </div>
+
+      {/* Bouton voir tout le parcours */}
+      {showFullLink && (
+        <Link 
+          href="/historique/roadmap"
+          className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-700 font-medium transition-colors"
+        >
+          <span>📜 Voir tout le chemin parcouru</span>
+          <ChevronIcon direction="right" className="w-4 h-4" />
+        </Link>
+      )}
     </div>
   );
 }

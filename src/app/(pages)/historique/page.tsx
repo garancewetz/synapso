@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
-import { SegmentedControl } from '@/app/components/ui';
 import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion } from '@/app/components/historique';
 import {
-  PERIOD_OPTIONS,
-  type PeriodFilter,
+  STATS_DAYS,
+  ROADMAP_PREVIEW_DAYS,
 } from '@/app/constants/historique.constants';
 import {
   calculateStats,
@@ -15,9 +14,6 @@ import {
   getHeatmapData,
   groupHistoryByWeek,
   calculateCurrentStreak,
-  getFilteredStatsCount,
-  getPeriodLabel,
-  getRewardEmoji,
 } from '@/app/utils/historique.utils';
 
 export default function HistoriquePage() {
@@ -30,7 +26,6 @@ export default function HistoriquePage() {
     byCategory: {} as Record<string, number>,
   });
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set(['current']));
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('week');
   const { currentUser } = useUser();
   const displayName = currentUser?.name || "";
 
@@ -73,9 +68,14 @@ export default function HistoriquePage() {
     return getDonutDataBodyparts(stats.byBodypart);
   }, [stats.byBodypart]);
 
-  // Données pour la heatmap avec catégorie dominante
-  const heatmapData = useMemo(() => {
-    return getHeatmapData(history);
+  // Données pour le parcours (7 jours)
+  const roadmapData = useMemo(() => {
+    return getHeatmapData(history, ROADMAP_PREVIEW_DAYS);
+  }, [history]);
+
+  // Données pour la régularité (30 jours)
+  const barChartData = useMemo(() => {
+    return getHeatmapData(history, STATS_DAYS);
   }, [history]);
 
   // Grouper l'historique par semaine
@@ -95,63 +95,22 @@ export default function HistoriquePage() {
     });
   };
 
-  // Série de jours consécutifs
+  // Série de jours consécutifs (basé sur les 30 jours)
   const currentStreak = useMemo(() => {
-    return calculateCurrentStreak(heatmapData);
-  }, [heatmapData]);
-
-  // Stats filtrées selon la période
-  const filteredStats = useMemo(() => {
-    return getFilteredStatsCount(stats, periodFilter);
-  }, [periodFilter, stats]);
-
-  // Emoji de récompense
-  const rewardEmoji = useMemo(() => {
-    return getRewardEmoji(filteredStats);
-  }, [filteredStats]);
+    return calculateCurrentStreak(barChartData);
+  }, [barChartData]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
 
-      {/* En-tête */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mx-4 md:mx-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-800 flex items-center gap-2">
-            <span>🏅</span> Tes progrès, {displayName}
-          </h1>
-          <SegmentedControl
-            options={PERIOD_OPTIONS}
-            value={periodFilter}
-            onChange={setPeriodFilter}
-            size="sm"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-3xl font-bold text-emerald-600">{filteredStats}</span>
-          <span className="text-gray-500 text-sm">
-            exercice{filteredStats > 1 ? 's' : ''} complété{filteredStats > 1 ? 's' : ''}
-            {getPeriodLabel(periodFilter)}
-          </span>
-          {rewardEmoji && <span className="text-xl">{rewardEmoji}</span>}
-        </div>
-
-     
-      </div>
-
       <div className="p-3 sm:p-6">
 
-        {/* Graphiques de régularité côte à côte */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
-          {/* Graphique en barres */}
-          <BarChart data={heatmapData} currentStreak={currentStreak} />
-          {/* Heatmap des tendances */}
-          <ActivityHeatmap data={heatmapData} currentStreak={currentStreak} />
-        </div>
-
-        {/* Graphiques */}
-        <div className="mb-6">
-     
+        {/* Parcours, zones et régularité - full width */}
+        <div className="space-y-6 mb-6">
+          {/* Parcours (7 jours) */}
+          <ActivityHeatmap data={roadmapData} currentStreak={currentStreak} userName={displayName} />
+          
+          {/* Zones travaillées */}
           <DonutChart
             title="🦴 Zones travaillées"
             data={donutDataBodyparts}
@@ -160,6 +119,9 @@ export default function HistoriquePage() {
             fullWidth={true}
             legendPosition="right"
           />
+          
+          {/* Graphique en barres (30 jours) */}
+          <BarChart data={barChartData} currentStreak={currentStreak} />
         </div>
 
         {/* Historique détaillé */}

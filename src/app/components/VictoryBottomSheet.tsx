@@ -5,15 +5,17 @@ import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/con
 import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS } from '@/app/constants/victory.constants';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import type { ExerciceCategory } from '@/app/types/exercice';
+import type { Victory } from '@/app/types';
 
 interface VictoryBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   userId: number;
+  victoryToEdit?: Victory | null;
 }
 
-export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId }: VictoryBottomSheetProps) {
+export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit }: VictoryBottomSheetProps) {
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciceCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +24,9 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
   const [speechSupported, setSpeechSupported] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null); 
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  
+  const isEditMode = !!victoryToEdit; 
 
   // Bloquer le scroll du body quand la modale est ouverte
   useBodyScrollLock(isOpen);
@@ -36,6 +40,22 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
       setIsVisible(false);
     }
   }, [isOpen]);
+
+  // Pré-remplir les champs en mode édition
+  useEffect(() => {
+    if (isOpen && victoryToEdit) {
+      setContent(victoryToEdit.content);
+      // Trouver la catégorie correspondant à l'emoji
+      const categoryFromEmoji = CATEGORY_ORDER.find(
+        cat => CATEGORY_ICONS[cat] === victoryToEdit.emoji
+      );
+      setSelectedCategory(categoryFromEmoji || null);
+    } else if (!isOpen) {
+      // Réinitialiser quand on ferme
+      setContent('');
+      setSelectedCategory(null);
+    }
+  }, [isOpen, victoryToEdit]);
 
   // Vérifier si la reconnaissance vocale est supportée
   useEffect(() => {
@@ -100,8 +120,12 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
     const categoryEmoji = selectedCategory ? CATEGORY_ICONS[selectedCategory] : null;
 
     try {
-      const response = await fetch('/api/victories', {
-        method: 'POST',
+      const url = isEditMode 
+        ? `/api/victories/${victoryToEdit!.id}` 
+        : '/api/victories';
+      
+      const response = await fetch(url, {
+        method: isEditMode ? 'PATCH' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -109,7 +133,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
         body: JSON.stringify({
           content: content.trim(),
           emoji: categoryEmoji,
-          userId,
+          ...(isEditMode ? {} : { userId }),
         }),
       });
 
@@ -180,7 +204,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
         {/* Titre */}
         <div className="text-center pb-3">
           <h2 className="text-xl font-bold text-gray-900">
-            Ta victoire ! 🌟
+            {isEditMode ? 'Modifier ta victoire ✏️' : 'Ta victoire ! 🌟'}
           </h2>
         </div>
 
@@ -309,6 +333,11 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId 
             >
               {isSubmitting ? (
                 <span className="animate-spin">⏳</span>
+              ) : isEditMode ? (
+                <>
+                  <span>✅</span>
+                  Modifier
+                </>
               ) : (
                 <>
                   <span>🎉</span>

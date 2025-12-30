@@ -2,19 +2,24 @@
 
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { HistoryEntry } from '@/app/types';
+import type { HistoryEntry, Victory } from '@/app/types';
 import { CATEGORY_ICONS, BODYPART_ICONS, CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import { VictoryCard } from './VictoryCard';
 
 interface WeekAccordionProps {
   weekKey: string;
   label: string;
   entries: HistoryEntry[];
+  victories?: Victory[];
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-export function WeekAccordion({ label, entries, isExpanded, onToggle }: WeekAccordionProps) {
+export function WeekAccordion({ label, entries, victories = [], isExpanded, onToggle }: WeekAccordionProps) {
+  const hasVictories = victories.length > 0;
+  const hasEntries = entries.length > 0;
+  
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* En-tête cliquable */}
@@ -27,11 +32,17 @@ export function WeekAccordion({ label, entries, isExpanded, onToggle }: WeekAcco
             {isExpanded ? '📂' : '📁'}
           </span>
           <div className="text-left">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
               {label}
+              {hasVictories && <span className="text-lg">⭐</span>}
             </h3>
             <p className="text-sm text-gray-500">
               {entries.length} exercice{entries.length > 1 ? 's' : ''}
+              {hasVictories && (
+                <span className="text-amber-600 ml-1">
+                  · {victories.length} victoire{victories.length > 1 ? 's' : ''}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -43,12 +54,36 @@ export function WeekAccordion({ label, entries, isExpanded, onToggle }: WeekAcco
 
       {/* Contenu */}
       {isExpanded && (
-        <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {entries.map((entry) => (
-              <HistoryEntryCard key={entry.id} entry={entry} />
-            ))}
-          </div>
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5 space-y-4">
+          {/* Section Victoires */}
+          {hasVictories && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-amber-700 flex items-center gap-1.5">
+                <span>⭐</span> Victoires de la semaine
+              </h4>
+              <div className="space-y-2">
+                {victories.map((victory) => (
+                  <VictoryCard key={victory.id} victory={victory} />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Section Exercices */}
+          {hasEntries && (
+            <div className="space-y-2">
+              {hasVictories && (
+                <h4 className="text-sm font-semibold text-gray-600 flex items-center gap-1.5">
+                  <span>💪</span> Exercices réalisés
+                </h4>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {entries.map((entry) => (
+                  <HistoryEntryCard key={entry.id} entry={entry} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

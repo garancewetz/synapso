@@ -5,15 +5,14 @@ import { VictoryCard } from './VictoryCard';
 
 interface VictoryTimelineProps {
   victories: Victory[];
-  onDelete?: (id: number) => void;
-  showDelete?: boolean;
+  onEdit?: (victory: Victory) => void;
 }
 
 /**
  * Liste chronologique des victoires
  * Utilise VictoryCard pour afficher chaque victoire
  */
-export function VictoryTimeline({ victories, onDelete, showDelete = false }: VictoryTimelineProps) {
+export function VictoryTimeline({ victories, onEdit }: VictoryTimelineProps) {
   if (victories.length === 0) {
     return (
       <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border border-amber-200 shadow-sm p-8 text-center">
@@ -32,8 +31,7 @@ export function VictoryTimeline({ victories, onDelete, showDelete = false }: Vic
         <VictoryCard
           key={victory.id}
           victory={victory}
-          onDelete={onDelete}
-          showDelete={showDelete}
+          onEdit={onEdit}
         />
       ))}
     </div>

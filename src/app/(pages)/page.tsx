@@ -1,32 +1,49 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, PinIcon, SparklesIcon, VictoryFAB } from '@/app/components';
-import type { Exercice } from '@/app/types';
+import { EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, SparklesIcon, VictoryFAB, VictoryBottomSheet } from '@/app/components';
+import { VictoryCard } from '@/app/components/historique';
+import type { Victory } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
+import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 
 export default function Home() {
-  const router = useRouter();
   const pathname = usePathname();
   const { currentUser, users, loading: userLoading } = useUser();
+  const [lastVictory, setLastVictory] = useState<Victory | null>(null);
+  const victoryModal = useVictoryModal();
   
-  // Ne charger les exercices que si le user est chargé et disponible
-  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
+  const { exercices, loading: loadingExercices } = useExercices({
     userId: userLoading ? undefined : currentUser?.id,
   });
 
-  const handleEditClick = (id: number) => {
-    router.push(`/exercice/edit/${id}?from=${encodeURIComponent(pathname)}`);
-  };
+  const fetchLastVictory = useCallback(() => {
+    if (!currentUser) return;
 
-  const handleCompleted = (updatedExercice: Exercice) => {
-    updateExercice(updatedExercice);
-  };
+    fetch(`/api/victories?userId=${currentUser.id}&limit=1`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLastVictory(data[0]);
+        } else {
+          setLastVictory(null);
+        }
+      })
+      .catch(error => {
+        console.error('Fetch victory error:', error);
+        setLastVictory(null);
+      });
+  }, [currentUser]);
 
-  const pinned = exercices.filter(e => e.pinned && !e.completed);
+  useEffect(() => {
+    if (currentUser) {
+      fetchLastVictory();
+    }
+  }, [currentUser, fetchLastVictory]);
 
   return (
     <section>
@@ -68,31 +85,20 @@ export default function Home() {
                 }).filter(Boolean)}
               </div>
 
-              {/* Section des exercices épinglés */}
-              <section>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <PinIcon filled={true} className="w-4 h-4 text-red-500" />
-                    Mes priorités à faire
-                  </h2>
-                </div>
-                {pinned.length > 0 ? (
-                  <div className="grid gap-2.5 md:gap-3 grid-cols-1 lg:grid-cols-2">
-                    {pinned.map((exercice) => (
-                      <ExerciceCard
-                        key={exercice.id}
-                        exercice={exercice}
-                        onEdit={handleEditClick}
-                        onCompleted={handleCompleted}
-                      />
-                    ))}
+              {/* Section dernière victoire */}
+              {lastVictory && (
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                      🌟 Ma dernière réussite
+                    </h2>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-sm italic">
-                    Pas d&apos;exercice épinglé en attente
-                  </p>
-                )}
-              </section>
+                  <VictoryCard 
+                    victory={lastVictory} 
+                    onEdit={victoryModal.openForEdit}
+                  />
+                </section>
+              )}
 
               {/* Section progression par catégorie */}
               {currentUser && (
@@ -103,13 +109,11 @@ export default function Home() {
                 />
               )}
 
-
-
               {/* Bouton "Voir mes réussites" */}
               <div className="flex justify-center mt-8 pt-4">
                 <Link
                   href="/historique"
-                  className=" max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
+                  className="max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
                              bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
                              shadow-[0_4px_10px_rgba(217,119,6,0.3)] 
                              hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
@@ -127,6 +131,17 @@ export default function Home() {
 
       {/* Bouton flottant "Noter une victoire" - visible sur toutes les pages */}
       {currentUser && exercices.length > 0 && <VictoryFAB />}
+
+      {/* Modal d'édition de victoire */}
+      {currentUser && (
+        <VictoryBottomSheet
+          isOpen={victoryModal.isOpen}
+          onClose={victoryModal.close}
+          onSuccess={fetchLastVictory}
+          userId={currentUser.id}
+          victoryToEdit={victoryModal.victoryToEdit}
+        />
+      )}
     </section>
   );
 }

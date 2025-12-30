@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 
-export async function DELETE(
+export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -20,15 +20,41 @@ export async function DELETE(
       );
     }
 
-    await prisma.victory.delete({
+    // Vérifier que la victoire existe
+    const existingVictory = await prisma.victory.findUnique({
       where: { id: victoryId },
     });
 
-    return NextResponse.json({ success: true });
+    if (!existingVictory) {
+      return NextResponse.json(
+        { error: 'Victory not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json();
+    const { content, emoji } = body;
+
+    if (!content || !content.trim()) {
+      return NextResponse.json(
+        { error: 'Content is required' },
+        { status: 400 }
+      );
+    }
+
+    const updatedVictory = await prisma.victory.update({
+      where: { id: victoryId },
+      data: {
+        content: content.trim(),
+        emoji: emoji || null,
+      },
+    });
+
+    return NextResponse.json(updatedVictory);
   } catch (error) {
-    console.error('Error deleting victory:', error);
+    console.error('Error updating victory:', error);
     return NextResponse.json(
-      { error: 'Failed to delete victory' },
+      { error: 'Failed to update victory' },
       { status: 500 }
     );
   }

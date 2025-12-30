@@ -1,4 +1,4 @@
-import type { HistoryEntry } from '@/app/types';
+import type { HistoryEntry, Victory } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import {
   startOfWeek,
@@ -59,6 +59,7 @@ export interface WeekGroup {
   weekKey: string;
   label: string;
   entries: HistoryEntry[];
+  victories: Victory[];
 }
 
 // ============================================================================
@@ -274,31 +275,45 @@ export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_P
 // GROUPEMENT PAR SEMAINE
 // ============================================================================
 
-export function groupHistoryByWeek(history: HistoryEntry[]): WeekGroup[] {
-  const grouped: Record<string, { label: string; entries: HistoryEntry[] }> = {};
+export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[] = []): WeekGroup[] {
+  const grouped: Record<string, { label: string; entries: HistoryEntry[]; victories: Victory[] }> = {};
   const now = new Date();
   const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
   
+  // Helper pour obtenir la clé et le label de la semaine
+  const getWeekInfo = (date: Date): { weekKey: string; weekLabel: string } => {
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+    
+    if (!isBefore(date, thisWeekStart)) {
+      return { weekKey: 'current', weekLabel: 'Cette semaine' };
+    }
+    return {
+      weekKey: format(weekStart, 'yyyy-MM-dd'),
+      weekLabel: `Semaine du ${format(weekStart, 'd MMMM', { locale: fr })}`,
+    };
+  };
+
+  // Initialiser un groupe si nécessaire
+  const ensureGroup = (weekKey: string, weekLabel: string) => {
+    if (!grouped[weekKey]) {
+      grouped[weekKey] = { label: weekLabel, entries: [], victories: [] };
+    }
+  };
+
+  // Grouper les exercices
   history.forEach(entry => {
     const entryDate = new Date(entry.completedAt);
-    const weekStart = startOfWeek(entryDate, { weekStartsOn: 1 });
-    
-    let weekKey: string;
-    let weekLabel: string;
-    
-    // Inclure le jour de début : !isBefore signifie >=
-    if (!isBefore(entryDate, thisWeekStart)) {
-      weekKey = 'current';
-      weekLabel = 'Cette semaine';
-    } else {
-      weekKey = format(weekStart, 'yyyy-MM-dd');
-      weekLabel = `Semaine du ${format(weekStart, 'd MMMM', { locale: fr })}`;
-    }
-    
-    if (!grouped[weekKey]) {
-      grouped[weekKey] = { label: weekLabel, entries: [] };
-    }
+    const { weekKey, weekLabel } = getWeekInfo(entryDate);
+    ensureGroup(weekKey, weekLabel);
     grouped[weekKey].entries.push(entry);
+  });
+
+  // Grouper les victoires
+  victories.forEach(victory => {
+    const victoryDate = new Date(victory.createdAt);
+    const { weekKey, weekLabel } = getWeekInfo(victoryDate);
+    ensureGroup(weekKey, weekLabel);
+    grouped[weekKey].victories.push(victory);
   });
 
   return Object.entries(grouped)
@@ -307,10 +322,11 @@ export function groupHistoryByWeek(history: HistoryEntry[]): WeekGroup[] {
       if (keyB === 'current') return 1;
       return keyB.localeCompare(keyA);
     })
-    .map(([weekKey, { label, entries }]) => ({
+    .map(([weekKey, { label, entries, victories: weekVictories }]) => ({
       weekKey,
       label,
       entries,
+      victories: weekVictories,
     }));
 }
 

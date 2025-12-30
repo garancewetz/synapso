@@ -3,6 +3,8 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
+type ConfettiVariant = 'default' | 'golden';
+
 interface ConfettiRainProps {
   show?: boolean;
   fromWindow?: boolean;
@@ -10,7 +12,31 @@ interface ConfettiRainProps {
   confettiCount?: number;
   emojis?: string[];
   colors?: string[];
+  variant?: ConfettiVariant;
 }
+
+// Presets de variantes
+const VARIANT_PRESETS: Record<ConfettiVariant, { emojis: string[]; colors: string[] }> = {
+  default: {
+    emojis: ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'],
+    colors: ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6', '#ef4444', '#06b6d4'],
+  },
+  golden: {
+    emojis: ['🏆', '⭐', '🌟', '✨', '💫', '👑', '🥇', '💛'],
+    colors: [
+      '#FFD700', // Or classique
+      '#FFC125', // Or foncé
+      '#FFDF00', // Or jaune
+      '#F5C542', // Or doux
+      '#E6BE8A', // Or rosé
+      '#DAA520', // Goldenrod
+      '#FFE55C', // Or brillant
+      '#C5A35D', // Or antique
+      '#F4D03F', // Or soleil
+      '#FADA5E', // Or champagne
+    ],
+  },
+};
 
 interface PopEmojiProps {
   delay: number;
@@ -119,17 +145,19 @@ function Confetti({ delay, startX, color, size, fromWindow = false, randomRotati
   );
 }
 
-const DEFAULT_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'];
-const DEFAULT_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6', '#ef4444', '#06b6d4'];
-
 export default function ConfettiRain({
   show = false,
   fromWindow = false,
   emojiCount = 5,
   confettiCount = 20,
-  emojis = DEFAULT_EMOJIS,
-  colors = DEFAULT_COLORS,
+  emojis,
+  colors,
+  variant = 'default',
 }: ConfettiRainProps) {
+  // Utiliser les presets de la variante, avec possibilité de surcharger
+  const preset = VARIANT_PRESETS[variant];
+  const finalEmojis = emojis ?? preset.emojis;
+  const finalColors = colors ?? preset.colors;
   // Mémoriser les emojis et confettis pour éviter qu'ils changent pendant l'animation
   // On régénère uniquement quand show passe à true (nouvelle animation)
   const popEmojis = useMemo(() => {
@@ -141,7 +169,7 @@ export default function ConfettiRain({
         id: `emoji-${i}`,
         x: fromWindow ? 5 + Math.random() * 90 : 10 + Math.random() * 80,
         delay: 0.1 + i * 0.15 + Math.random() * 0.2,
-        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        emoji: finalEmojis[Math.floor(Math.random() * finalEmojis.length)],
         swayAmount,
         swayDirection,
       };
@@ -160,7 +188,7 @@ export default function ConfettiRain({
         id: `confetti-${i}`,
         startX: fromWindow ? 2 + Math.random() * 96 : 5 + Math.random() * 90,
         delay: (i * 0.04) + Math.random() * 0.3,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        color: finalColors[Math.floor(Math.random() * finalColors.length)],
         size: fromWindow ? 5 + Math.random() * 5 : 4 + Math.random() * 4,
         randomRotation,
         swayAmount,

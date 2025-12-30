@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { HistoryEntry, Victory } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
+import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryTimeline, DayDetailModal } from '@/app/components/historique';
-import { VictoryBottomSheet, VictoryButton } from '@/app/components';
+import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import {
@@ -23,7 +24,7 @@ import {
 export default function HistoriquePage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [victories, setVictories] = useState<Victory[]>([]);
-  const [showVictoryModal, setShowVictoryModal] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const [stats, setStats] = useState({
     total: 0,
@@ -34,6 +35,7 @@ export default function HistoriquePage() {
   });
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set(['current']));
   const { currentUser } = useUser();
+  const victoryModal = useVictoryModal();
   const displayName = currentUser?.name || "";
 
   // Calcul des statistiques
@@ -83,21 +85,6 @@ export default function HistoriquePage() {
       });
   }, [currentUser]);
 
-  // Supprimer une victoire
-  const handleDeleteVictory = async (victoryId: number) => {
-    try {
-      const response = await fetch(`/api/victories/${victoryId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (response.ok) {
-        setVictories(prev => prev.filter(v => v.id !== victoryId));
-      }
-    } catch (error) {
-      console.error('Error deleting victory:', error);
-    }
-  };
-
   useEffect(() => {
     if (currentUser) {
       fetchHistory();
@@ -105,11 +92,24 @@ export default function HistoriquePage() {
     }
   }, [fetchHistory, fetchVictories, currentUser]);
 
+  // Réinitialiser les confettis après l'animation
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => setShowConfetti(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
+
+  // Handler pour le succès d'une victoire avec confettis dorés
+  const handleVictorySuccess = useCallback(() => {
+    setShowConfetti(true);
+    fetchVictories();
+  }, [fetchVictories]);
+
   // Dates des victoires pour le calendrier
   const victoryDates = useMemo(() => {
     return new Set(victories.map(v => v.createdAt.split('T')[0]));
   }, [victories]);
-
 
   // Données pour le graphique donut par partie du corps
   const donutDataBodyparts = useMemo(() => {
@@ -126,10 +126,10 @@ export default function HistoriquePage() {
     return getHeatmapData(history, STATS_DAYS);
   }, [history]);
 
-  // Grouper l'historique par semaine
+  // Grouper l'historique et les victoires par semaine
   const groupedByWeek = useMemo(() => {
-    return groupHistoryByWeek(history);
-  }, [history]);
+    return groupHistoryByWeek(history, victories);
+  }, [history, victories]);
 
   const toggleWeek = (weekKey: string) => {
     setExpandedWeeks(prev => {
@@ -206,7 +206,7 @@ export default function HistoriquePage() {
               </h2>
               {currentUser && (
                 <VictoryButton 
-                  onClick={() => setShowVictoryModal(true)}
+                  onClick={victoryModal.openForCreate}
                   variant="inline"
                   label="Ajouter"
                 />
@@ -214,13 +214,12 @@ export default function HistoriquePage() {
             </div>
             <VictoryTimeline 
               victories={victories} 
-              onDelete={handleDeleteVictory}
-              showDelete={true}
+              onEdit={victoryModal.openForEdit}
             />
           </div>
           
           {/* 3. Ta régularité (30 jours) - Indicateur de persévérance */}
-          <BarChart data={barChartData} currentStreak={currentStreak} />
+          <BarChart data={barChartData} currentStreak={currentStreak} victoryDates={victoryDates} />
           
           {/* 4. Zones travaillées - Information plus abstraite, moins cruciale pour le moral */}
           <DonutChart
@@ -248,12 +247,13 @@ export default function HistoriquePage() {
               </p>
             </div>
           ) : (
-            groupedByWeek.map(({ weekKey, label, entries }) => (
+            groupedByWeek.map(({ weekKey, label, entries, victories: weekVictories }) => (
               <WeekAccordion
                 key={weekKey}
                 weekKey={weekKey}
                 label={label}
                 entries={entries}
+                victories={weekVictories}
                 isExpanded={expandedWeeks.has(weekKey)}
                 onToggle={() => toggleWeek(weekKey)}
               />
@@ -262,13 +262,23 @@ export default function HistoriquePage() {
         </div>
       </div>
 
+      {/* Pluie de confettis dorés pour célébrer la victoire */}
+      <ConfettiRain 
+        show={showConfetti} 
+        fromWindow 
+        variant="golden"
+        emojiCount={8}
+        confettiCount={35}
+      />
+
       {/* Modal de victoire */}
       {currentUser && (
         <VictoryBottomSheet
-          isOpen={showVictoryModal}
-          onClose={() => setShowVictoryModal(false)}
-          onSuccess={fetchVictories}
+          isOpen={victoryModal.isOpen}
+          onClose={victoryModal.close}
+          onSuccess={handleVictorySuccess}
           userId={currentUser.id}
+          victoryToEdit={victoryModal.victoryToEdit}
         />
       )}
 

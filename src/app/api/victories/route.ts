@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const limitParam = searchParams.get('limit');
 
     if (!userId) {
       return NextResponse.json(
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
         userId: parseInt(userId),
       },
       orderBy: { createdAt: 'desc' },
+      ...(limitParam && { take: parseInt(limitParam) }),
     });
 
     return NextResponse.json(victories);

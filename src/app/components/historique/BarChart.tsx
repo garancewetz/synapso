@@ -8,6 +8,7 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 interface BarChartProps {
   data: HeatmapDay[];
   currentStreak: number;
+  victoryDates?: Set<string>;
 }
 
 function getBarColor(count: number, isToday: boolean): string {
@@ -18,7 +19,7 @@ function getBarColor(count: number, isToday: boolean): string {
   return '#10B981';
 }
 
-export function BarChart({ data, currentStreak }: BarChartProps) {
+export function BarChart({ data, currentStreak, victoryDates }: BarChartProps) {
   // Filtrer les jours vides et formater pour le graphique
   const chartData = data
     .filter(day => !day.isEmpty)
@@ -29,7 +30,21 @@ export function BarChart({ data, currentStreak }: BarChartProps) {
       isToday: day.isToday,
       label: day.date ? format(day.date, 'd MMM', { locale: fr }) : '',
       dayLabel: day.date ? format(day.date, 'EEE', { locale: fr }) : '',
+      hasVictory: victoryDates && day.dateKey ? victoryDates.has(day.dateKey) : false,
     }));
+
+  // Calculer les positions des étoiles (en pourcentage)
+  // On laisse ~10% pour l'axe Y à gauche
+  const yAxisWidth = 10; // pourcentage approximatif
+  const chartWidth = 100 - yAxisWidth;
+  const barWidth = chartWidth / chartData.length;
+  
+  // Calculer le max pour positionner les étoiles au-dessus des barres
+  const maxCount = Math.max(...chartData.map(d => d.count), 1);
+  // Pourcentages approximatifs pour le graphique Recharts
+  const axisXHeight = 10; // % du conteneur pour l'axe X en bas
+  const marginTop = 8; // % du conteneur pour la marge en haut
+  const availableHeight = 100 - axisXHeight - marginTop; // zone des barres
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
@@ -42,11 +57,39 @@ export function BarChart({ data, currentStreak }: BarChartProps) {
         )}
       </h2>
       
-      <div className="w-full h-64 sm:h-80">
+      <div className="w-full h-64 sm:h-80 relative">
+        {/* Overlay pour les étoiles de victoire */}
+        <div className="absolute inset-0 pointer-events-none z-10" style={{ left: `${yAxisWidth}%`, right: '10px' }}>
+          <div className="relative w-full h-full">
+            {chartData.map((entry, index) => {
+              if (!entry.hasVictory) return null;
+              
+              const leftPercent = (index / chartData.length) * 100 + (barWidth / 2);
+              // Positionner l'étoile juste au-dessus de la barre
+              const barHeightPercent = (entry.count / maxCount) * availableHeight;
+              const bottomPercent = axisXHeight + barHeightPercent + 2; // +2 pour un petit décalage au-dessus
+              
+              return (
+                <span
+                  key={`star-${entry.dateKey}`}
+                  className="absolute text-sm drop-shadow-md"
+                  style={{
+                    left: `${leftPercent}%`,
+                    bottom: `${bottomPercent}%`,
+                    transform: 'translateX(-50%)',
+                  }}
+                >
+                  ⭐
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        
         <ResponsiveContainer width="100%" height="100%">
           <RechartsBarChart
             data={chartData}
-            margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
           >
             <XAxis
               dataKey="dayLabel"
@@ -70,26 +113,30 @@ export function BarChart({ data, currentStreak }: BarChartProps) {
       </div>
 
       {/* Légende */}
-      <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-4 text-xs text-gray-500">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-gray-100" />
           <span>Aucun</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-emerald-200" />
           <span>1</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-emerald-400" />
           <span>2-3</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-emerald-600" />
           <span>4+</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-blue-500" />
           <span>Aujourd&apos;hui</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">⭐</span>
+          <span>Victoire</span>
         </div>
       </div>
     </div>

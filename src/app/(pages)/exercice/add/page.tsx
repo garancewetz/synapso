@@ -8,11 +8,9 @@ import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { Loader } from '@/app/components/ui';
 
-function AddPageContent() {
-  const router = useRouter();
+function AddPageContent({ onNavigateBack }: { onNavigateBack: () => void }) {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
-  const fromParam = searchParams.get('from');
 
   // Convertir le paramètre de catégorie en ExerciceCategory
   const getCategoryFromParam = (param: string | null): ExerciceCategory | undefined => {
@@ -27,38 +25,38 @@ function AddPageContent() {
 
   const initialCategory = getCategoryFromParam(categoryParam);
 
-  const navigateBack = () => {
-    if (fromParam) {
-      router.push(fromParam);
-    } else {
-      router.push('/');
-    }
-  };
-
-  const handleSuccess = () => {
-    navigateBack();
-  };
-
-  const handleCancel = () => {
-    navigateBack();
-  };
-
   return (
     <ExerciceForm
-      onSuccess={handleSuccess}
-      onCancel={handleCancel}
+      onSuccess={onNavigateBack}
+      onCancel={onNavigateBack}
       initialCategory={initialCategory}
     />
   );
 }
 
+function AddPageWrapper() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get('from');
+  
+  const backHref = fromParam || '/';
+
+  const navigateBack = () => {
+    router.push(backHref);
+  };
+
+  return (
+    <FormPageWrapper backHref={backHref}>
+      <AddPageContent onNavigateBack={navigateBack} />
+    </FormPageWrapper>
+  );
+}
+
 export default function AdminAddPage() {
   return (
-    <FormPageWrapper>
-      <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
-        <AddPageContent />
-      </Suspense>
-    </FormPageWrapper>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+      <AddPageWrapper />
+    </Suspense>
   );
 }
 

@@ -8,35 +8,38 @@ import { Loader } from '@/app/components/ui';
 
 interface EditPageContentProps {
   exerciceId: number;
+  onNavigateBack: () => void;
 }
 
-function EditPageContent({ exerciceId }: EditPageContentProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const fromParam = searchParams.get('from');
-
-  const navigateBack = () => {
-    if (fromParam) {
-      router.push(fromParam);
-    } else {
-      router.push('/');
-    }
-  };
-
-  const handleSuccess = () => {
-    navigateBack();
-  };
-
-  const handleCancel = () => {
-    navigateBack();
-  };
-
+function EditPageContent({ exerciceId, onNavigateBack }: EditPageContentProps) {
   return (
     <ExerciceForm
       exerciceId={exerciceId}
-      onSuccess={handleSuccess}
-      onCancel={handleCancel}
+      onSuccess={onNavigateBack}
+      onCancel={onNavigateBack}
     />
+  );
+}
+
+interface EditPageWrapperProps {
+  exerciceId: number;
+}
+
+function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get('from');
+  
+  const backHref = fromParam || '/';
+
+  const navigateBack = () => {
+    router.push(backHref);
+  };
+
+  return (
+    <FormPageWrapper backHref={backHref}>
+      <EditPageContent exerciceId={exerciceId} onNavigateBack={navigateBack} />
+    </FormPageWrapper>
   );
 }
 
@@ -55,11 +58,9 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   }
 
   return (
-    <FormPageWrapper>
-      <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
-        <EditPageContent exerciceId={exerciceId} />
-      </Suspense>
-    </FormPageWrapper>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+      <EditPageWrapper exerciceId={exerciceId} />
+    </Suspense>
   );
 }
 

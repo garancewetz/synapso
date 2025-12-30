@@ -26,6 +26,7 @@ export async function GET(
         id: true,
         name: true,
         resetFrequency: true,
+        dominantHand: true,
       },
     });
 
@@ -76,6 +77,14 @@ export async function PATCH(
       );
     }
 
+    // Vérifier que dominantHand est valide
+    if (data.dominantHand && !['LEFT', 'RIGHT'].includes(data.dominantHand)) {
+      return NextResponse.json(
+        { error: 'dominantHand doit être LEFT ou RIGHT' },
+        { status: 400 }
+      );
+    }
+
     // Vérifier que le nom n'est pas vide s'il est fourni
     if (data.name !== undefined && !data.name.trim()) {
       return NextResponse.json(
@@ -105,11 +114,13 @@ export async function PATCH(
       data: {
         ...(data.name && { name: data.name.trim() }),
         ...(data.resetFrequency && { resetFrequency: data.resetFrequency }),
+        ...(data.dominantHand && { dominantHand: data.dominantHand }),
       },
       select: {
         id: true,
         name: true,
         resetFrequency: true,
+        dominantHand: true,
       },
     });
 

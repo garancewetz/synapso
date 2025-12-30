@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, PinIcon, SparklesIcon } from '@/app/components';
+import { ExerciceCard, EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, PinIcon, SparklesIcon, VictoryFAB } from '@/app/components';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
@@ -105,18 +105,18 @@ export default function Home() {
 
 
 
-              {/* Golden Button vers l'historique */}
-              <div className="flex justify-center mt-8 pt-4 pb-6">
+              {/* Bouton "Voir mes réussites" */}
+              <div className="flex justify-center mt-8 pt-4">
                 <Link
                   href="/historique"
-                  className="w-full max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
+                  className=" max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
                              bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
                              shadow-[0_4px_10px_rgba(217,119,6,0.3)] 
                              hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
                              transition-all flex items-center justify-center gap-2"
                 >
-                  <span className="text-xl"><SparklesIcon className="w-4 h-4" /></span>
-                  Voir mes réussites
+                  <SparklesIcon className="w-5 h-5" />
+                  Mes réussites
                 </Link>
               </div>
 
@@ -124,6 +124,9 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Bouton flottant "Noter une victoire" - visible sur toutes les pages */}
+      {currentUser && exercices.length > 0 && <VictoryFAB />}
     </section>
   );
 }

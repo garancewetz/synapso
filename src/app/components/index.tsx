@@ -19,6 +19,9 @@ import PasswordModal from './PasswordModal';
 import ProgressGauges from './ProgressGauges';
 import PWARegister from './PWARegister';
 import SiteProtection from './SiteProtection';
+import VictoryBottomSheet from './VictoryBottomSheet';
+import VictoryButton from './VictoryButton';
+import VictoryFAB from './VictoryFAB';
 import WelcomeHeader from './WelcomeHeader';
 import WelcomeHeaderWrapper from './WelcomeHeaderWrapper';
 
@@ -56,6 +59,9 @@ export {
   PWARegister,
   SiteProtection,
   Textarea,
+  VictoryBottomSheet,
+  VictoryButton,
+  VictoryFAB,
   WelcomeHeader,
   WelcomeHeaderWrapper,
 };

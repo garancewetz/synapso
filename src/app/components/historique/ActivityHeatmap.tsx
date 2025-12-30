@@ -13,6 +13,8 @@ interface ActivityHeatmapProps {
   currentStreak: number;
   showFullLink?: boolean;
   userName?: string;
+  victoryDates?: Set<string>;
+  onDayClick?: (day: HeatmapDay) => void;
 }
 
 // Couleurs vives pour les cases
@@ -26,7 +28,7 @@ const CATEGORY_STYLES: Record<ExerciceCategory, { bg: string; border: string }> 
 // Noms des jours de la semaine (lundi = début)
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, victoryDates, onDayClick }: ActivityHeatmapProps) {
   // Filtrer les jours vides et ne garder que les vrais jours
   const realDays = data.filter(day => !day.isEmpty);
   
@@ -123,6 +125,9 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           const category = day.dominantCategory;
           const categoryStyle = category ? CATEGORY_STYLES[category] : null;
           const otherCategories = day.allCategories.filter(cat => cat !== category);
+          const hasVictory = victoryDates && day.dateKey && victoryDates.has(day.dateKey);
+          
+          const isClickable = onDayClick && (hasExercise || hasVictory);
           
           return (
             <div 
@@ -132,9 +137,11 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
             >
               {/* Case du jour */}
               <div 
+                onClick={isClickable ? () => onDayClick(day) : undefined}
                 className={`
                   relative w-full aspect-square rounded-xl flex items-center justify-center
-                  transition-transform hover:scale-105 cursor-default
+                  transition-transform hover:scale-105
+                  ${isClickable ? 'cursor-pointer active:scale-95' : 'cursor-default'}
                   ${isCurrentDay 
                     ? hasExercise && categoryStyle
                       ? `${categoryStyle.bg} ring-2 ring-emerald-400 ring-offset-2 shadow-lg`
@@ -162,6 +169,16 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                 {hasExercise && day.count > 1 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-white rounded-full text-[10px] md:text-xs font-bold text-gray-700 flex items-center justify-center shadow border border-gray-200">
                     {day.count}
+                  </span>
+                )}
+                
+                {/* Indicateur de victoire (étoile dorée) */}
+                {hasVictory && (
+                  <span 
+                    className="absolute -top-2 -left-2 text-xl md:text-2xl drop-shadow-md"
+                    title="Une victoire notée ce jour !"
+                  >
+                    ⭐
                   </span>
                 )}
                 

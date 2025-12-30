@@ -11,12 +11,19 @@ import Loader from '@/app/components/ui/Loader';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
+type DominantHand = 'LEFT' | 'RIGHT';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { currentUser, setCurrentUser, refreshUsers } = useUser();
-  const [name, setName] = useState('');
-  const [resetFrequency, setResetFrequency] = useState<ResetFrequency>('DAILY');
+  // Pré-remplir avec le nom de l'utilisateur courant immédiatement
+  const [name, setName] = useState(currentUser?.name || '');
+  const [resetFrequency, setResetFrequency] = useState<ResetFrequency>(
+    (currentUser?.resetFrequency as ResetFrequency) || 'DAILY'
+  );
+  const [dominantHand, setDominantHand] = useState<DominantHand>(
+    (currentUser?.dominantHand as DominantHand) || 'RIGHT'
+  );
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,7 +31,16 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (currentUser) {
-      // Charger les paramètres de l'utilisateur
+      // Pré-remplir avec les données du contexte immédiatement
+      setName(currentUser.name || '');
+      if (currentUser.resetFrequency) {
+        setResetFrequency(currentUser.resetFrequency as ResetFrequency);
+      }
+      if (currentUser.dominantHand) {
+        setDominantHand(currentUser.dominantHand as DominantHand);
+      }
+      
+      // Charger les paramètres complets depuis l'API (pour être sûr d'avoir les dernières valeurs)
       fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
@@ -33,6 +49,9 @@ export default function SettingsPage() {
           }
           if (data.resetFrequency) {
             setResetFrequency(data.resetFrequency);
+          }
+          if (data.dominantHand) {
+            setDominantHand(data.dominantHand);
           }
           setInitialLoading(false);
         })
@@ -61,7 +80,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, resetFrequency }),
+        body: JSON.stringify({ name, resetFrequency, dominantHand }),
       });
 
       if (!response.ok) {
@@ -131,6 +150,43 @@ export default function SettingsPage() {
             onChange={(e) => setName(e.target.value)}
             disabled={loading}
           />
+        </div>
+
+        {/* Section Main dominante */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <label className="block text-base font-semibold text-gray-800 mb-2">
+            Main dominante
+          </label>
+          <p className="text-sm text-gray-500 mb-4">
+            Choisissez votre main dominante pour positionner le bouton &quot;Victoire&quot; du bon côté
+          </p>
+          
+          <div className="flex bg-white rounded-xl p-1 border-2 border-gray-200">
+            <button
+              type="button"
+              onClick={() => setDominantHand('LEFT')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                dominantHand === 'LEFT'
+                  ? 'bg-amber-400 text-amber-950 shadow-md'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <span className="text-xl">🤚</span>
+              <span>Gauche</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDominantHand('RIGHT')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                dominantHand === 'RIGHT'
+                  ? 'bg-amber-400 text-amber-950 shadow-md'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <span>Droite</span>
+              <span className="text-xl">✋</span>
+            </button>
+          </div>
         </div>
 
         {/* Section Réinitialisation */}

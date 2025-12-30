@@ -42,9 +42,10 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = f
         {title}
       </h2>
       
-      <div className={`flex ${isHorizontalLayout ? 'flex-row items-center gap-6' : 'flex-col items-center gap-4'}`}>
+      {/* Sur mobile: toujours en colonne (légende en bas), sur desktop: selon legendPosition */}
+      <div className={`flex flex-col items-center gap-4 ${isHorizontalLayout ? 'md:flex-row md:items-center md:gap-6' : ''}`}>
         {/* Graphique Donut */}
-        <div className={`${isHorizontalLayout ? 'flex-1' : 'w-full'} h-48 xl:h-56`}>
+        <div className={`w-full h-48 xl:h-56 ${isHorizontalLayout ? 'md:flex-1' : ''}`}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -73,8 +74,8 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = f
           </ResponsiveContainer>
         </div>
 
-        {/* Légende */}
-        <div className={`${isHorizontalLayout ? 'flex-1' : 'w-full'} ${isHorizontalLayout ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}`}>
+        {/* Légende - toujours en grille sur mobile, colonne sur desktop si legendPosition="right" */}
+        <div className={`w-full grid grid-cols-2 gap-2 ${isHorizontalLayout ? 'md:flex-1 md:flex md:flex-col' : ''}`}>
           {data.map((item) => (
             <div
               key={item.name}

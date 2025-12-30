@@ -12,6 +12,7 @@ import { BookmarkIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import AddExerciceButton from '@/app/components/AddExerciceButton';
+import { VictoryFAB } from '@/app/components';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
 
@@ -168,8 +169,17 @@ export default function CategoryPage() {
               )}
             </div>
           )}
+          
+          {/* Zone réservée pour le bouton victoire flottant */}
+          <div 
+            className="h-16 md:h-6 mt-4 rounded-xl bg-gradient-to-t from-gray-100 to-transparent" 
+            aria-hidden="true" 
+          />
         </div>
       </div>
+
+      {/* Bouton flottant "Noter une victoire" */}
+      <VictoryFAB />
     </section>
   );
 }

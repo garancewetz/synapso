@@ -15,7 +15,7 @@ type DominantHand = 'LEFT' | 'RIGHT';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { currentUser, setCurrentUser, refreshUsers } = useUser();
+  const { currentUser, updateCurrentUser } = useUser();
   // Pré-remplir avec le nom de l'utilisateur courant immédiatement
   const [name, setName] = useState(currentUser?.name || '');
   const [resetFrequency, setResetFrequency] = useState<ResetFrequency>(
@@ -90,9 +90,8 @@ export default function SettingsPage() {
 
       const updatedUser = await response.json();
       
-      // Mettre à jour l'utilisateur courant avec le nouveau nom
-      setCurrentUser(updatedUser);
-      await refreshUsers();
+      // Optimistic update : met à jour immédiatement le contexte et la liste
+      updateCurrentUser(updatedUser);
       
       setSuccess(true);
       setTimeout(() => {

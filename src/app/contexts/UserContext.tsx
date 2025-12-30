@@ -12,6 +12,8 @@ type User = {
 type UserContextType = {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
+  /** Met à jour l'utilisateur courant ET la liste des utilisateurs (optimistic update) */
+  updateCurrentUser: (updatedUser: User) => void;
   users: User[];
   loading: boolean;
   changingUser: boolean;
@@ -30,9 +32,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [changingUser, setChangingUser] = useState(false);
 
   // Fonction pour traiter les données utilisateurs (extrait pour éviter la duplication)
-  const processUsersData = useCallback((data: User[]) => {
+  const processUsersData = useCallback((data: User[], skipCurrentUserUpdate = false) => {
     if (Array.isArray(data)) {
       setUsers(data);
+      
+      // Si on ne doit pas mettre à jour currentUser (ex: après un updateCurrentUser)
+      if (skipCurrentUserUpdate) return;
       
       // Charger l'utilisateur depuis localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -71,15 +76,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fonction pour charger les utilisateurs
-  // Le cookie HTTP-only est géré automatiquement par le navigateur
-  // Si l'auth échoue, c'est une vraie erreur à gérer, pas à contourner
-  const loadUsers = useCallback(async () => {
+  const loadUsers = useCallback(async (skipCurrentUserUpdate = false) => {
     try {
       const res = await fetch('/api/users', { credentials: 'include' });
       
       if (!res.ok) {
         if (res.status === 401) {
-          // Non authentifié : erreur légitime, pas de retry
           console.error('Authentification requise pour charger les utilisateurs');
           setUsers([]);
           setCurrentUserState(null);
@@ -90,7 +92,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       const data: User[] = await res.json();
-      processUsersData(data);
+      processUsersData(data, skipCurrentUserUpdate);
       setLoading(false);
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error);
@@ -109,6 +111,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await loadUsers();
   };
 
+  // Changer l'utilisateur courant (pour switcher entre utilisateurs)
   const setCurrentUser = (user: User | null) => {
     setChangingUser(true);
     setCurrentUserState(user);
@@ -117,14 +120,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
-    // Réinitialiser l'état de chargement après un délai pour permettre le rechargement des données
     setTimeout(() => {
       setChangingUser(false);
     }, 500);
   };
 
+  // Mettre à jour l'utilisateur courant (après modification de ses settings)
+  // Optimistic update : met à jour immédiatement le state local et la liste
+  const updateCurrentUser = useCallback((updatedUser: User) => {
+    // 1. Mettre à jour currentUser immédiatement
+    setCurrentUserState(updatedUser);
+    
+    // 2. Mettre à jour le localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
+    
+    // 3. Mettre à jour la liste des utilisateurs (optimistic update)
+    setUsers(prevUsers => 
+      prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u)
+    );
+  }, []);
+
   return (
-    <UserContext.Provider value={{ currentUser, setCurrentUser, users, loading, changingUser, refreshUsers }}>
+    <UserContext.Provider value={{ 
+      currentUser, 
+      setCurrentUser, 
+      updateCurrentUser,
+      users, 
+      loading, 
+      changingUser, 
+      refreshUsers 
+    }}>
       {children}
     </UserContext.Provider>
   );

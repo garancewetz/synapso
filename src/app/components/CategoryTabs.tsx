@@ -57,7 +57,7 @@ export default function CategoryTabs({ counts }: CategoryTabsProps) {
                 ${isActive ? config.activeClasses : config.inactiveClasses}
               `}
             >
-              <span className="text-xl">{icon}</span>
+              <span className="text-xl w-5 h-5 flex items-center justify-center">{icon}</span>
               <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-700'}`}>{CATEGORY_LABELS[category]}</span>
               <span className={`text-sm font-medium px-2 py-0.5 rounded ${
                 isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'

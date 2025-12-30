@@ -21,28 +21,28 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     color: 'orange',
     label: 'Haut du corps',
     labelShort: 'Haut',
-    icon: '💪',
+    icon: '🦺',
     href: '/exercices/upper_body',
   },
   CORE: {
     color: 'teal',
     label: 'Milieu du corps',
     labelShort: 'Milieu',
-    icon: '🤸',
+    icon: '💚',
     href: '/exercices/core',
   },
   LOWER_BODY: {
     color: 'blue',
     label: 'Bas du corps',
     labelShort: 'Bas',
-    icon: '🦵',
+    icon: '👖',
     href: '/exercices/lower_body',
   },
   STRETCHING: {
     color: 'purple',
     label: 'Étirement',
     labelShort: 'Étirer',
-    icon: '🧘',
+    icon: '🧘‍♀️',
     href: '/exercices/stretching',
   },
 };
@@ -192,6 +192,18 @@ export const CATEGORY_MOBILE_CONFIG = Object.fromEntries(
 export const CATEGORY_CHART_COLORS = Object.fromEntries(
   Object.entries(CATEGORY_CONFIG).map(([key, config]) => [key, TAILWIND_COLOR_MAP[config.color].hex])
 ) as Record<ExerciceCategory, string>;
+
+// Couleurs pour le heatmap d'activité (version plus vive -400)
+const HEATMAP_COLOR_MAP: Record<keyof typeof TAILWIND_COLOR_MAP, { bg: string; border: string }> = {
+  orange: { bg: 'bg-orange-400', border: 'border-orange-500' },
+  teal: { bg: 'bg-teal-400', border: 'border-teal-500' },
+  blue: { bg: 'bg-blue-400', border: 'border-blue-500' },
+  purple: { bg: 'bg-purple-400', border: 'border-purple-500' },
+};
+
+export const CATEGORY_HEATMAP_COLORS = Object.fromEntries(
+  Object.entries(CATEGORY_CONFIG).map(([key, config]) => [key, HEATMAP_COLOR_MAP[config.color]])
+) as Record<ExerciceCategory, { bg: string; border: string }>;
 
 // ============================================================================
 // BODYPARTS - Configuration des parties du corps

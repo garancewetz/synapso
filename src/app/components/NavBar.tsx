@@ -238,8 +238,8 @@ export default function NavBar() {
             icon={<PlusIcon />}
             title="Ajouter un exercice"
             description="Créer un nouvel exercice"
-            iconBgColor="bg-emerald-100"
-            iconTextColor="text-emerald-600"
+            iconBgColor="bg-gray-700"
+            iconTextColor="text-white"
           />
 
      
@@ -263,8 +263,8 @@ export default function NavBar() {
             icon={<ClockIcon className="w-5 h-5" />}
             title="Historique"
             description="Voir les séances passées"
-            iconBgColor="bg-blue-100"
-            iconTextColor="text-blue-600"
+            iconBgColor="bg-amber-100"
+            iconTextColor="text-amber-600"
           />
 
           {/* Paramètres utilisateur */}

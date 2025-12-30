@@ -8,13 +8,14 @@
   --primary-light: #EEF2FF;
   --success: #10B981;
   --success-light: #D1FAE5;
-  --upper-body: #3B82F6;
-  --upper-body-light: #DBEAFE;
-  --lower-body: #F59E0B;
-  --lower-body-light: #FEF3C7;
-  --stretching: #10B981;
-  --stretching-light: #D1FAE5;
-  --core: #14B8A6;
+  /* Couleurs des catégories - synchronisées avec exercice.constants.ts */
+  --upper-body: #F97316;      /* Orange */
+  --upper-body-light: #FFF7ED;
+  --lower-body: #3B82F6;      /* Bleu */
+  --lower-body-light: #DBEAFE;
+  --stretching: #8B5CF6;      /* Violet */
+  --stretching-light: #F3E8FF;
+  --core: #14B8A6;            /* Teal */
   --core-light: #CCFBF1;
 }
 

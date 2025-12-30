@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { EmptyState, CreateUserCard, CategoryCard, Loader, ProgressGauges, SparklesIcon, VictoryFAB, VictoryBottomSheet } from '@/app/components';
+import { EmptyState, CreateUserCard, Loader, SparklesIcon, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress } from '@/app/components';
 import { VictoryCard } from '@/app/components/historique';
 import type { Victory } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 
 export default function Home() {
   const pathname = usePathname();
@@ -19,6 +20,12 @@ export default function Home() {
   
   const { exercices, loading: loadingExercices } = useExercices({
     userId: userLoading ? undefined : currentUser?.id,
+  });
+
+  // Charger les stats de progression par catégorie
+  const { stats: categoryStats, loading: loadingStats } = useCategoryStats({
+    userId: currentUser?.id ?? null,
+    resetFrequency: currentUser?.resetFrequency || 'DAILY',
   });
 
   const fetchLastVictory = useCallback(() => {
@@ -45,12 +52,15 @@ export default function Home() {
     }
   }, [currentUser, fetchLastVictory]);
 
+  // Période affichée
+  const periodLabel = currentUser?.resetFrequency === 'WEEKLY' ? 'cette semaine' : "aujourd'hui";
+
   return (
     <section>
       <div className="max-w-5xl mx-auto">
         {/* Contenu principal */}
         <div className="px-3 md:px-4">
-          {userLoading || (currentUser && loadingExercices) ? (
+          {userLoading || (currentUser && (loadingExercices || loadingStats)) ? (
             <div className="flex items-center justify-center py-12">
               <Loader size="large" />
             </div>
@@ -69,17 +79,25 @@ export default function Home() {
             />
           ) : (
             <div className="space-y-6">
-              {/* Cartes de catégories avec jauges */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {/* Titre de la section */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Ma progression {periodLabel}
+                </h2>
+              </div>
+
+              {/* Cartes de catégories avec progression intégrée */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 {CATEGORY_ORDER.map(category => {
                   const categoryExercices = exercices.filter(e => e.category === category);
                   if (categoryExercices.length === 0) return null;
 
                   return (
-                    <CategoryCard
+                    <CategoryCardWithProgress
                       key={category}
                       category={category}
                       exercices={exercices}
+                      completedCount={categoryStats[category]}
                     />
                   );
                 }).filter(Boolean)}
@@ -98,15 +116,6 @@ export default function Home() {
                     onEdit={victoryModal.openForEdit}
                   />
                 </section>
-              )}
-
-              {/* Section progression par catégorie */}
-              {currentUser && (
-                <ProgressGauges
-                  userId={currentUser.id}
-                  exercices={exercices}
-                  resetFrequency={currentUser.resetFrequency || 'DAILY'}
-                />
               )}
 
               {/* Bouton "Voir mes réussites" */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { Input, Textarea } from '@/app/components/ui';
+import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -282,29 +282,27 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         </div>
       </div>
 
-      <Input
+      <InputWithSpeech
         label="Nom de l'exercice"
-        type="text"
         required
         placeholder="Ex: Montée de genoux"
         value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        onValueChange={(value) => setFormData({ ...formData, name: value })}
       />
 
-      <Textarea
+      <TextareaWithSpeech
         label="Description (optionnel)"
         rows={4}
         placeholder="Décrivez comment réaliser l'exercice..."
         value={formData.descriptionText}
-        onChange={(e) => setFormData({ ...formData, descriptionText: e.target.value })}
+        onValueChange={(value) => setFormData({ ...formData, descriptionText: value })}
       />
 
-      <Input
+      <InputWithSpeech
         label="Conseil ou note (optionnel)"
-        type="text"
         placeholder="Ajoutez un conseil ou une remarque..."
         value={formData.descriptionComment}
-        onChange={(e) => setFormData({ ...formData, descriptionComment: e.target.value })}
+        onValueChange={(value) => setFormData({ ...formData, descriptionComment: value })}
       />
 
       <div className="bg-gray-50 rounded-lg p-4">
@@ -312,28 +310,25 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
           Paramètres de l&apos;exercice (optionnel)
         </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
+          <InputWithSpeech
             label="Répétitions"
-            type="text"
             placeholder="Ex: 10"
             value={formData.workoutRepeat}
-            onChange={(e) => setFormData({ ...formData, workoutRepeat: e.target.value })}
+            onValueChange={(value) => setFormData({ ...formData, workoutRepeat: value })}
           />
 
-          <Input
+          <InputWithSpeech
             label="Séries"
-            type="text"
             placeholder="Ex: 3"
             value={formData.workoutSeries}
-            onChange={(e) => setFormData({ ...formData, workoutSeries: e.target.value })}
+            onValueChange={(value) => setFormData({ ...formData, workoutSeries: value })}
           />
 
-          <Input
+          <InputWithSpeech
             label="Durée"
-            type="text"
             placeholder="Ex: 30 secondes"
             value={formData.workoutDuration}
-            onChange={(e) => setFormData({ ...formData, workoutDuration: e.target.value })}
+            onValueChange={(value) => setFormData({ ...formData, workoutDuration: value })}
           />
         </div>
       </div>

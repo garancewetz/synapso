@@ -2,6 +2,7 @@ import AddExerciceButton from './AddExerciceButton';
 import AphasieForm from './AphasieForm';
 import BottomNavBar from './BottomNavBar';
 import CategoryCard from './CategoryCard';
+import CategoryCardWithProgress from './CategoryCardWithProgress';
 import CategoryTabs from './CategoryTabs';
 import CategoryTabsWrapper from './CategoryTabsWrapper';
 import ConfettiRain from './ConfettiRain';
@@ -36,6 +37,7 @@ export {
   Button,
   CalendarIcon,
   CategoryCard,
+  CategoryCardWithProgress,
   CategoryTabs,
   CategoryTabsWrapper,
   ConfettiRain,

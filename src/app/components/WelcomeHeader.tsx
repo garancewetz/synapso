@@ -17,7 +17,7 @@ const DAILY_GOAL = 5;
 const CELEBRATION_DURATION_MS = 4800;
 
 const ENCOURAGEMENTS = [
-  "Tu avances bien, continue !",
+  "Continue comme ça !",
   "Chaque effort compte.",
   "Belle progression !",
   "Tu es sur la bonne voie.",

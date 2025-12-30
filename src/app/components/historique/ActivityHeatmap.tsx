@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { format, isToday, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_ICONS } from '@/app/constants/exercice.constants';
+import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { ChevronIcon } from '@/app/components/ui/icons';
 
@@ -16,14 +15,6 @@ interface ActivityHeatmapProps {
   victoryDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
 }
-
-// Couleurs vives pour les cases
-const CATEGORY_STYLES: Record<ExerciceCategory, { bg: string; border: string }> = {
-  UPPER_BODY: { bg: 'bg-orange-400', border: 'border-orange-500' },
-  CORE: { bg: 'bg-teal-400', border: 'border-teal-500' },
-  LOWER_BODY: { bg: 'bg-blue-400', border: 'border-blue-500' },
-  STRETCHING: { bg: 'bg-purple-400', border: 'border-purple-500' },
-};
 
 // Noms des jours de la semaine (lundi = début)
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -123,7 +114,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           const isCurrentDay = day.date && isToday(day.date);
           const hasExercise = day.count > 0;
           const category = day.dominantCategory;
-          const categoryStyle = category ? CATEGORY_STYLES[category] : null;
+          const categoryStyle = category ? CATEGORY_HEATMAP_COLORS[category] : null;
           const otherCategories = day.allCategories.filter(cat => cat !== category);
           const hasVictory = victoryDates && day.dateKey && victoryDates.has(day.dateKey);
           
@@ -155,12 +146,12 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                 {/* Emoji ou indicateur */}
                 {isCurrentDay ? (
                   hasExercise && category ? (
-                    <span className="text-xl sm:text-2xl md:text-3xl">{CATEGORY_ICONS[category]}</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 flex items-center justify-center">{CATEGORY_ICONS[category]}</span>
                   ) : (
                     <span className="text-xl sm:text-2xl md:text-3xl">📍</span>
                   )
                 ) : hasExercise && category ? (
-                  <span className="text-xl sm:text-2xl md:text-3xl">{CATEGORY_ICONS[category]}</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 flex items-center justify-center">{CATEGORY_ICONS[category]}</span>
                 ) : (
                   <span className="text-gray-300 text-sm md:text-base">·</span>
                 )}
@@ -188,7 +179,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                     {otherCategories.slice(0, 3).map((cat) => (
                       <span 
                         key={cat}
-                        className={`w-3 h-3 md:w-4 md:h-4 rounded-full ${CATEGORY_STYLES[cat].bg} border border-white`}
+                        className={`w-3 h-3 md:w-4 md:h-4 rounded-full ${CATEGORY_HEATMAP_COLORS[cat].bg} border border-white`}
                       />
                     ))}
                   </div>
@@ -215,30 +206,14 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
       {/* Légende compacte */}
       <div className="mt-5 pt-4 border-t border-gray-200">
         <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg bg-orange-400 flex items-center justify-center">
-              <span className="text-sm">{CATEGORY_ICONS.UPPER_BODY}</span>
+          {CATEGORY_ORDER.map((category) => (
+            <div key={category} className="flex items-center gap-1.5">
+              <div className={`w-6 h-6 rounded-lg ${CATEGORY_HEATMAP_COLORS[category].bg} flex items-center justify-center`}>
+                <span className="text-sm">{CATEGORY_ICONS[category]}</span>
+              </div>
+              <span>{CATEGORY_LABELS_SHORT[category]}</span>
             </div>
-            <span>Haut</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg bg-teal-400 flex items-center justify-center">
-              <span className="text-sm">{CATEGORY_ICONS.CORE}</span>
-            </div>
-            <span>Milieu</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg bg-blue-400 flex items-center justify-center">
-              <span className="text-sm">{CATEGORY_ICONS.LOWER_BODY}</span>
-            </div>
-            <span>Bas</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-lg bg-purple-400 flex items-center justify-center">
-              <span className="text-sm">{CATEGORY_ICONS.STRETCHING}</span>
-            </div>
-            <span>Étirement</span>
-          </div>
+          ))}
         </div>
       </div>
 

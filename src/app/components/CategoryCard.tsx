@@ -31,7 +31,7 @@ export default function CategoryCard({ category, exercices }: CategoryCardProps)
     >
       <div className="flex flex-col items-center text-center gap-1.5 md:gap-3">
         <span 
-          className="text-3xl md:text-6xl" 
+          className="text-3xl md:text-6xl w-8 h-8 md:w-14 md:h-14 flex items-center justify-center" 
           role="img" 
           aria-hidden="true"
         >

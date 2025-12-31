@@ -25,6 +25,9 @@ export default function SettingsPage() {
   const [dominantHand, setDominantHand] = useState<DominantHand>(
     (currentUser?.dominantHand as DominantHand) || 'RIGHT'
   );
+  const [isAphasic, setIsAphasic] = useState<boolean>(
+    currentUser?.isAphasic ?? false
+  );
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,6 +38,7 @@ export default function SettingsPage() {
     name: string;
     resetFrequency: ResetFrequency;
     dominantHand: DominantHand;
+    isAphasic: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -47,6 +51,9 @@ export default function SettingsPage() {
       if (currentUser.dominantHand) {
         setDominantHand(currentUser.dominantHand as DominantHand);
       }
+      if (currentUser.isAphasic !== undefined) {
+        setIsAphasic(currentUser.isAphasic);
+      }
       
       // Charger les paramètres complets depuis l'API (pour être sûr d'avoir les dernières valeurs)
       fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
@@ -55,16 +62,19 @@ export default function SettingsPage() {
           const loadedName = data.name || '';
           const loadedResetFrequency = (data.resetFrequency as ResetFrequency) || 'DAILY';
           const loadedDominantHand = (data.dominantHand as DominantHand) || 'RIGHT';
+          const loadedIsAphasic = data.isAphasic ?? false;
           
           setName(loadedName);
           setResetFrequency(loadedResetFrequency);
           setDominantHand(loadedDominantHand);
+          setIsAphasic(loadedIsAphasic);
           
           // Sauvegarder les valeurs initiales
           setInitialValues({
             name: loadedName,
             resetFrequency: loadedResetFrequency,
             dominantHand: loadedDominantHand,
+            isAphasic: loadedIsAphasic,
           });
           
           setInitialLoading(false);
@@ -80,7 +90,8 @@ export default function SettingsPage() {
   const hasUnsavedChanges = initialValues && (
     name !== initialValues.name ||
     resetFrequency !== initialValues.resetFrequency ||
-    dominantHand !== initialValues.dominantHand
+    dominantHand !== initialValues.dominantHand ||
+    isAphasic !== initialValues.isAphasic
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +112,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, resetFrequency, dominantHand }),
+        body: JSON.stringify({ name, resetFrequency, dominantHand, isAphasic }),
       });
 
       if (!response.ok) {
@@ -119,6 +130,7 @@ export default function SettingsPage() {
         name: updatedUser.name || '',
         resetFrequency: (updatedUser.resetFrequency as ResetFrequency) || 'DAILY',
         dominantHand: (updatedUser.dominantHand as DominantHand) || 'RIGHT',
+        isAphasic: updatedUser.isAphasic ?? false,
       });
       
       setSuccess(true);
@@ -160,8 +172,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="px-3 md:px-4">
-        {/* Bouton retour - caché sur mobile */}
-        <div className="mb-4 hidden md:block">
+        {/* Bouton retour */}
+        <div className="mb-4">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -242,6 +254,31 @@ export default function SettingsPage() {
               <span className="text-xl">✋</span>
             </button>
           </div>
+        </div>
+
+        {/* Section Aphasie */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <label className="block text-base font-semibold text-gray-800 mb-2">
+            Journal d'aphasie
+          </label>
+          <p className="text-sm text-gray-500 mb-4">
+            Activez cette option si vous souhaitez accéder au journal d'aphasie pour suivre vos citations et challenges
+          </p>
+          
+          <label className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 cursor-pointer transition-all hover:border-purple-300">
+            <input
+              type="checkbox"
+              checked={isAphasic}
+              onChange={(e) => setIsAphasic(e.target.checked)}
+              className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+            />
+            <div className="flex-1">
+              <div className="font-medium text-gray-800">Je suis aphasique</div>
+              <div className="text-sm text-gray-500 mt-1">
+                Accéder au journal d'aphasie avec les citations et les challenges
+              </div>
+            </div>
+          </label>
         </div>
 
         {/* Section Réinitialisation */}

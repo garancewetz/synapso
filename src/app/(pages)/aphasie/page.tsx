@@ -1,92 +1,68 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Button from '@/app/components/ui/Button';
-import type { AphasieItem } from '@/app/types';
-import { useCalypsoCheck } from '@/app/hooks/useCalypsoCheck';
+import ViewAllLink from '@/app/components/ui/ViewAllLink';
+import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
+import AphasieItemCard from '@/app/components/AphasieItemCard';
+import AphasieChallengesList from '@/app/components/AphasieChallengesList';
+import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
+import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 
 export const dynamic = 'force-dynamic';
 
 export default function AphasiePage() {
-  const [items, setItems] = useState<AphasieItem[]>([]);
-  const router = useRouter();
-  const { isCalypso } = useCalypsoCheck();
+  const { hasAccess } = useAphasieCheck();
+  const { items } = useAphasieItems();
 
-  const fetchItems = () => {
-    fetch('/api/aphasie', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          // Trier par date (plus récente d'abord), utiliser createdAt si date n'est pas renseignée
-          const sortedItems = data.sort((a, b) => {
-            const dateA = a.date || a.createdAt;
-            const dateB = b.date || b.createdAt;
-            // Comparer les dates (plus récente d'abord = décroissant)
-            return new Date(dateB).getTime() - new Date(dateA).getTime();
-          });
-          setItems(sortedItems);
-        } else {
-          console.error('API error:', data);
-          setItems([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setItems([]);
-      });
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const handleEditClick = (id: number) => {
-    router.push(`/aphasie/edit/${id}`);
-  };
-
-  // Ne rien afficher si l'utilisateur n'est pas Calypso
-  if (!isCalypso) {
+  if (!hasAccess) {
     return null;
   }
 
   return (
-    <div className="mt-4 md:mt-10 px-4 md:px-6">
-      <div className='flex justify-center mb-6'>
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+      <div className="p-3 sm:p-6">
+        <div className="space-y-6">
+          {/* Section Challenges */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <AphasieSectionHeader
+              title="Challenges"
+              emoji="🎯"
+              addHref="/aphasie/challenges/add"
+              addLabel="Ajouter un challenge"
+            />
+            <AphasieChallengesList limit={3} />
+          </div>
 
-      <Link href="/aphasie/add">
-        <Button>
-          Ajouter une citation
-          </Button>
-          
-        </Link>
-      </div>
-      <ul className="space-y-4 mt-6">
-        {items.map(item => (
-          <li key={item.id} className="bg-white px-4 py-3 rounded-lg border border-gray-200">
-            <div className="mb-3 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
-              <div className="text-lg md:text-xl font-bold text-gray-800 md:w-1/3">{item.quote}</div>
-              <div className="text-gray-700 italic text-sm md:text-base">{item.meaning}</div>
-            </div>
-            {item.comment && (
-              <div className="mb-2 text-xs text-gray-400 italic">{item.comment}</div>
+          {/* Section Citations */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <AphasieSectionHeader
+              title="Citations"
+              emoji="💬"
+              addHref="/aphasie/add"
+              addLabel="Ajouter une citation"
+            />
+            {items.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                Aucune citation pour le moment
+              </div>
+            ) : (
+              <>
+                <ul className="space-y-4">
+                  {items.slice(0, 3).map(item => (
+                    <AphasieItemCard key={item.id} item={item} />
+                  ))}
+                </ul>
+                {items.length > 3 && (
+                  <ViewAllLink 
+                    href="/aphasie/citations"
+                    label="Voir toutes les citations"
+                    emoji="💬"
+                  />
+                )}
+              </>
             )}
-            <div className="flex items-center">
-              {item.date && (
-                <div className="text-sm text-gray-600 font-medium">{item.date}</div>
-              )}
-              <button
-                onClick={() => handleEditClick(item.id)}
-                className="ml-auto cursor-pointer text-xs text-gray-400 hover:text-gray-600"
-              >
-                Modifier
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

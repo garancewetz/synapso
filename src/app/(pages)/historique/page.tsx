@@ -175,8 +175,8 @@ export default function HistoriquePage() {
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
-      {/* Bouton retour accueil - uniquement en desktop (mobile a la navigation en bas) */}
-      <div className="hidden md:block px-3 sm:px-6 mb-2">
+      {/* Bouton retour accueil */}
+      <div className="px-3 sm:px-6 mb-2">
         <Link 
           href="/"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"

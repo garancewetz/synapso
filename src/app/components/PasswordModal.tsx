@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
+import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -46,6 +47,25 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
       onClose();
     }
   };
+
+  // Gérer la touche Escape pour fermer la modale
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === KEYBOARD_KEYS.ESCAPE) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

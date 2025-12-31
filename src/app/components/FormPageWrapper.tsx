@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import { usePageFocus } from '@/app/hooks/usePageFocus';
 
 interface FormPageWrapperProps {
   children: React.ReactNode;
@@ -20,6 +21,13 @@ export default function FormPageWrapper({ children, title, backHref, backLabel }
 
   const isHomeLink = backHref === '/';
   const label = backLabel || (isHomeLink ? '🏠 Accueil' : 'Retour');
+
+  // Placer le focus sur le premier élément focusable de la page (excluant le menu fermé)
+  // Priorité aux inputs et textareas pour les pages de formulaire
+  usePageFocus({
+    selector: 'input:not([disabled]):not([type="hidden"]), textarea:not([disabled])',
+    excludeMenu: true,
+  });
 
   return (
     <div className="max-w-5xl mx-auto p-3 sm:p-6 bg-gray-50">

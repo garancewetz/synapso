@@ -17,6 +17,9 @@
     "db:import": "tsx prisma/import-backup.ts",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:apply-reset-frequency": "tsx prisma/apply-reset-frequency-migration.ts",
+    "db:check-aphasie": "tsx prisma/check-aphasie-data.ts",
+    "db:fix-aphasie": "tsx prisma/apply-aphasie-fix.ts",
+    "db:add-is-aphasic": "tsx prisma/add-is-aphasic.ts",
     "postinstall": "prisma generate",
     "pwa:icons": "tsx scripts/generate-icons.ts"
   },

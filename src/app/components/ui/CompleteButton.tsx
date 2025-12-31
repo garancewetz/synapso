@@ -5,18 +5,24 @@ import { CheckIcon } from '@/app/components/ui/icons';
 
 interface CompleteButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   isCompleted: boolean;
-  isCompletedToday: boolean;
+  isCompletedToday?: boolean;
   isLoading?: boolean;
+  variant?: 'exercice' | 'challenge';
 }
 
 export function CompleteButton({ 
   isCompleted, 
-  isCompletedToday,
+  isCompletedToday = false,
   isLoading = false,
+  variant = 'exercice',
   className = '',
   ...props 
 }: CompleteButtonProps) {
   const getLabel = () => {
+    if (variant === 'challenge') {
+      return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
+    }
+    
     if (isCompleted) {
       return isCompletedToday ? 'Fait' : 'Fait cette semaine';
     }
@@ -24,6 +30,10 @@ export function CompleteButton({
   };
 
   const getTitle = () => {
+    if (variant === 'challenge') {
+      return isCompleted ? 'Annuler maîtrise' : 'Marquer comme maîtrisé';
+    }
+    
     if (isCompleted) {
       return isCompletedToday ? 'Démarquer' : 'Fait cette semaine - Démarquer';
     }
@@ -31,6 +41,13 @@ export function CompleteButton({
   };
 
   const getStyles = () => {
+    if (variant === 'challenge') {
+      if (isCompleted) {
+        return 'bg-emerald-500 text-white hover:bg-emerald-600';
+      }
+      return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
+    }
+    
     if (isCompleted) {
       return isCompletedToday
         ? 'bg-emerald-500 text-white hover:bg-emerald-600'
@@ -48,7 +65,7 @@ export function CompleteButton({
         ${className}
       `}
       title={getTitle()}
-      aria-label={isCompleted ? 'Démarquer' : 'Marquer comme fait'}
+      aria-label={isCompleted ? (variant === 'challenge' ? 'Annuler maîtrise' : 'Démarquer') : (variant === 'challenge' ? 'Marquer comme maîtrisé' : 'Marquer comme fait')}
       disabled={isLoading}
       {...props}
     >

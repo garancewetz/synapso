@@ -121,7 +121,7 @@ export default function RoadmapPage() {
         </Link>
 
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-          📜 Mon chemin parcouru
+          🗺️ Mon chemin parcouru
         </h1>
         <p className="text-gray-500 mt-2">
           Les {ROADMAP_FULL_DAYS} derniers jours de ton parcours

@@ -17,25 +17,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const items = await prisma.aphasieItem.findMany({
+    const challenges = await prisma.aphasieChallenge.findMany({
       where: {
         userId: parseInt(userId),
       },
-      orderBy: { id: 'asc' },
+      orderBy: [
+        { mastered: 'asc' },
+        { createdAt: 'desc' },
+      ],
     });
 
-    return NextResponse.json(items);
+    return NextResponse.json(challenges);
   } catch (error) {
-    console.error('Error fetching aphasie items:', error);
+    console.error('Error fetching aphasie challenges:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch aphasie items' },
+      { error: 'Failed to fetch aphasie challenges' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
-  // Vérifier l'authentification
   const authError = await requireAuth(request);
   if (authError) {
     return authError;
@@ -43,30 +45,28 @@ export async function POST(request: NextRequest) {
 
   try {
     const data = await request.json();
-    const { quote, meaning, date, comment, userId } = data;
+    const { text, mastered, userId } = data;
 
-    if (!quote || !meaning || !userId) {
+    if (!text || !userId) {
       return NextResponse.json(
-        { error: 'quote, meaning and userId are required' },
+        { error: 'text and userId are required' },
         { status: 400 }
       );
     }
 
-    const item = await prisma.aphasieItem.create({
+    const challenge = await prisma.aphasieChallenge.create({
       data: {
-        quote,
-        meaning,
-        date: date || null,
-        comment: comment || null,
+        text,
+        mastered: mastered || false,
         userId: parseInt(userId),
       },
     });
 
-    return NextResponse.json(item, { status: 201 });
+    return NextResponse.json(challenge, { status: 201 });
   } catch (error) {
-    console.error('Error creating aphasie item:', error);
+    console.error('Error creating aphasie challenge:', error);
     return NextResponse.json(
-      { error: 'Failed to create aphasie item' },
+      { error: 'Failed to create aphasie challenge' },
       { status: 500 }
     );
   }

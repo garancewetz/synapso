@@ -2,18 +2,20 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 
-export function useCalypsoCheck() {
+export function useAphasieCheck() {
   const router = useRouter();
   const { currentUser } = useUser();
 
+  const hasAccess = currentUser?.isAphasic ?? false;
+
   useEffect(() => {
-    if (currentUser && currentUser.name !== 'Calypso') {
+    if (currentUser && !hasAccess) {
       router.push('/');
     }
-  }, [currentUser, router]);
+  }, [currentUser, hasAccess, router]);
 
   return {
-    isCalypso: currentUser?.name === 'Calypso',
+    hasAccess,
     isLoading: !currentUser,
   };
 }

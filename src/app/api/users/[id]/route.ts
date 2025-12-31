@@ -27,6 +27,7 @@ export async function GET(
         name: true,
         resetFrequency: true,
         dominantHand: true,
+        isAphasic: true,
       },
     });
 
@@ -115,12 +116,14 @@ export async function PATCH(
         ...(data.name && { name: data.name.trim() }),
         ...(data.resetFrequency && { resetFrequency: data.resetFrequency }),
         ...(data.dominantHand && { dominantHand: data.dominantHand }),
+        ...(data.isAphasic !== undefined && { isAphasic: data.isAphasic }),
       },
       select: {
         id: true,
         name: true,
         resetFrequency: true,
         dominantHand: true,
+        isAphasic: true,
       },
     });
 

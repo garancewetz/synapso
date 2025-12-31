@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { isCompletedInPeriod } from '@/app/utils/resetFrequency.utils';
+import { isCompletedToday } from '@/app/utils/resetFrequency.utils';
 
 const REFRESH_EVENT = 'exercice-completed-refresh';
 
@@ -14,18 +14,16 @@ export function useTodayCompletedCount() {
       return;
     }
 
-    const resetFrequency = currentUser.resetFrequency || 'DAILY';
-
     Promise.all([
       fetch(`/api/exercices?userId=${currentUser.id}`, { credentials: 'include' }).then(res => res.json()),
     ])
       .then(([exercicesData]) => {
         if (Array.isArray(exercicesData)) {
-          // Compter les exercices complétés dans la période actuelle (jour ou semaine selon resetFrequency)
+          // Compter uniquement les exercices complétés aujourd'hui (toujours, indépendamment du resetFrequency)
           const count = exercicesData.filter((ex: { completedAt?: string | Date | null }) => {
             if (!ex.completedAt) return false;
             const completedDate = ex.completedAt instanceof Date ? ex.completedAt : new Date(ex.completedAt);
-            return isCompletedInPeriod(completedDate, resetFrequency);
+            return isCompletedToday(completedDate);
           }).length;
           setCompletedToday(count);
         } else {

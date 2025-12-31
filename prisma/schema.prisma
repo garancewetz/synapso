@@ -8,14 +8,17 @@ datasource db {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  name           String         @unique
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  resetFrequency ResetFrequency @default(DAILY)
-  dominantHand   DominantHand   @default(RIGHT)
+  id             Int                @id @default(autoincrement())
+  name           String             @unique
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  resetFrequency ResetFrequency     @default(DAILY)
+  dominantHand   DominantHand       @default(RIGHT)
+  isAphasic      Boolean            @default(false)
   exercices      Exercice[]
   victories      Victory[]
+  aphasieItems   AphasieItem[]
+  aphasieChallenges AphasieChallenge[]
 }
 
 model Exercice {
@@ -78,8 +81,25 @@ model AphasieItem {
   meaning   String
   date      String?
   comment   String?
+  userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AphasieChallenge {
+  id        Int      @id @default(autoincrement())
+  text      String
+  mastered  Boolean  @default(false)
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([mastered])
+  @@index([userId])
 }
 
 model Victory {

@@ -9,9 +9,9 @@ import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { BookmarkIcon } from '@/app/components/ui/icons';
+import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import AddExerciceButton from '@/app/components/AddExerciceButton';
 import { VictoryFAB, ViewVictoriesButton } from '@/app/components';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
@@ -80,7 +80,13 @@ export default function CategoryPage() {
             <div className={`flex items-start gap-4 ${currentUser?.dominantHand === 'LEFT' ? 'justify-start md:justify-between' : 'justify-between'} md:justify-between`}>
               {currentUser?.dominantHand === 'LEFT' ? (
                 <>
-                  <AddExerciceButton category={categoryParam} className="md:order-last" />
+                  <AddButton 
+                    href="/exercice/add" 
+                    label="Ajouter un exercice"
+                    queryParams={{ category: categoryParam.toLowerCase() }}
+                    addFromParam
+                    className="md:order-last"
+                  />
                   <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                       {CATEGORY_LABELS[categoryParam]}
@@ -100,7 +106,12 @@ export default function CategoryPage() {
                       {completedCount}/{exercices.length} exercices complétés
                     </p>
                   </div>
-                  <AddExerciceButton category={categoryParam} />
+                  <AddButton 
+                    href="/exercice/add" 
+                    label="Ajouter un exercice"
+                    queryParams={{ category: categoryParam.toLowerCase() }}
+                    addFromParam
+                  />
                 </>
               )}
             </div>

@@ -2,45 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import { ErrorMessage, FormActions } from '@/app/components';
-import { InputWithSpeech, TextareaWithSpeech } from '@/app/components/ui';
+import { InputWithSpeech } from '@/app/components/ui';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface AphasieFormProps {
-  itemId?: number;
+interface AphasieChallengeFormProps {
+  challengeId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieFormProps) {
+export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: AphasieChallengeFormProps) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
-    quote: '',
-    meaning: '',
-    date: '',
-    comment: '',
+    text: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    if (itemId) {
-      fetch(`/api/aphasie/${itemId}`, { credentials: 'include' })
+    if (challengeId) {
+      fetch(`/api/aphasie-challenges/${challengeId}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           setFormData({
-            quote: data.quote || '',
-            meaning: data.meaning || '',
-            date: data.date || '',
-            comment: data.comment || '',
+            text: data.text || '',
           });
         })
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
-          setError('Erreur lors du chargement de l\'item');
+          setError('Erreur lors du chargement du challenge');
         });
     }
-  }, [itemId]);
+  }, [challengeId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,17 +47,14 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
       return;
     }
 
-    const itemData = {
-      quote: formData.quote,
-      meaning: formData.meaning,
-      date: formData.date || null,
-      comment: formData.comment || null,
+    const challengeData = {
+      text: formData.text,
       userId: currentUser.id,
     };
 
     try {
-      const url = itemId ? `/api/aphasie/${itemId}` : '/api/aphasie';
-      const method = itemId ? 'PUT' : 'POST';
+      const url = challengeId ? `/api/aphasie-challenges/${challengeId}` : '/api/aphasie-challenges';
+      const method = challengeId ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -71,7 +62,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(itemData),
+        body: JSON.stringify(challengeData),
       });
 
       if (!response.ok) {
@@ -83,7 +74,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de l\'enregistrement de l\'item');
+      setError('Erreur lors de l\'enregistrement du challenge');
     } finally {
       setLoading(false);
     }
@@ -99,7 +90,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
     setError('');
 
     try {
-      const response = await fetch(`/api/aphasie/${itemId}`, {
+      const response = await fetch(`/api/aphasie-challenges/${challengeId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -113,7 +104,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de la suppression de l\'item');
+      setError('Erreur lors de la suppression du challenge');
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
@@ -125,44 +116,21 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieForm
       <ErrorMessage message={error} />
 
       <InputWithSpeech
-        label="Citation"
+        label="Bout de phrase ou mot difficile"
         type="text"
         required
-        value={formData.quote}
-        onValueChange={(value) => setFormData({ ...formData, quote: value })}
-      />
-
-      <InputWithSpeech
-        label="Signification"
-        type="text"
-        required
-        value={formData.meaning}
-        onValueChange={(value) => setFormData({ ...formData, meaning: value })}
-      />
-
-      <InputWithSpeech
-        label="Date"
-        type="text"
-        value={formData.date}
-        onValueChange={(value) => setFormData({ ...formData, date: value })}
-        placeholder="ex: Octobre 2025"
-      />
-
-      <TextareaWithSpeech
-        label="Commentaire"
-        rows={3}
-        value={formData.comment}
-        onValueChange={(value) => setFormData({ ...formData, comment: value })}
+        value={formData.text}
+        onValueChange={(value) => setFormData({ ...formData, text: value })}
       />
 
       <FormActions
         loading={loading}
-        onSubmitLabel={itemId ? 'Modifier' : 'Créer'}
+        onSubmitLabel={challengeId ? 'Modifier' : 'Créer'}
         onCancel={onCancel}
-        showDelete={!!itemId}
+        showDelete={!!challengeId}
         onDelete={handleDelete}
         deleteConfirm={showDeleteConfirm}
-        deleteLabel="Supprimer l'item"
+        deleteLabel="Supprimer le challenge"
         deleteConfirmLabel="⚠️ Confirmer la suppression"
       />
     </form>

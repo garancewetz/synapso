@@ -1,4 +1,3 @@
-import AddExerciceButton from './AddExerciceButton';
 import AphasieForm from './AphasieForm';
 import BottomNavBar from './BottomNavBar';
 import CategoryCardWithProgress from './CategoryCardWithProgress';
@@ -29,7 +28,6 @@ import WelcomeHeaderWrapper from './WelcomeHeaderWrapper';
 import { Badge, Button, CalendarIcon, Input, Loader, Logo, Textarea, PinIcon, SparklesIcon } from './ui';
 
 export {
-  AddExerciceButton,
   AphasieForm,
   Badge,
   BottomNavBar,

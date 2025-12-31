@@ -1,10 +1,8 @@
-interface ButtonProps {
+import React from 'react';
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  onClick?: () => void;
   variant?: 'primary' | 'secondary' | 'danger' | 'action' | 'danger-outline';
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-  className?: string;
 }
 
 export default function Button({
@@ -14,6 +12,7 @@ export default function Button({
   type = 'button',
   disabled = false,
   className = '',
+  ...props
 }: ButtonProps) {
   const baseStyles = 'cursor-pointer px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
@@ -31,6 +30,7 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      {...props}
     >
       {children}
     </button>

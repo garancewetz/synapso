@@ -13,7 +13,7 @@ export default function WelcomeHeaderWrapper() {
   const resetFrequency = currentUser?.resetFrequency || null;
 
   // Ne pas afficher sur les pages d'ajout/édition d'exercice et sur l'historique
-  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie/add', '/aphasie/edit', '/historique'];
+  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie/add', '/aphasie/edit', '/aphasie/challenges', '/aphasie/citations', '/historique'];
   const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
 
   if (shouldHide) {

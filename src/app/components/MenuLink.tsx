@@ -11,6 +11,7 @@ interface MenuLinkProps {
   description?: string;
   iconBgColor?: string;
   iconTextColor?: string;
+  tabIndex?: number;
 }
 
 export default function MenuLink({
@@ -21,11 +22,13 @@ export default function MenuLink({
   description,
   iconBgColor = 'bg-gradient-to-br from-gray-100 to-gray-200',
   iconTextColor = 'text-gray-700',
+  tabIndex,
 }: MenuLinkProps) {
   return (
     <Link
       href={href}
       onClick={onClick}
+      tabIndex={tabIndex}
       className="group flex items-center gap-3 px-4 py-3.5 text-gray-800 
                  bg-white border-2 border-gray-100 rounded-xl
                  hover:border-gray-300 hover:shadow-lg hover:scale-[1.02]

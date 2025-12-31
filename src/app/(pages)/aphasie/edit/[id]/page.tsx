@@ -4,7 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import AphasieForm from '@/app/components/AphasieForm';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
-import { useCalypsoCheck } from '@/app/hooks/useCalypsoCheck';
+import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 interface AphasieEditPageProps {
   params: Promise<{
@@ -14,7 +14,7 @@ interface AphasieEditPageProps {
 
 export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   const router = useRouter();
-  const { isCalypso } = useCalypsoCheck();
+  const { hasAccess } = useAphasieCheck();
   const { id } = use(params);
   const itemId = id ? parseInt(id) : null;
 
@@ -23,8 +23,8 @@ export default function AphasieEditPage({ params }: AphasieEditPageProps) {
     return null;
   }
 
-  // Ne rien afficher si l'utilisateur n'est pas Calypso
-  if (!isCalypso) {
+  // Ne rien afficher si l'utilisateur n'a pas accès à la page aphasie
+  if (!hasAccess) {
     return null;
   }
 

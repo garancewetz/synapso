@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
+import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
 
 interface BottomSheetModalProps {
   isOpen: boolean;
@@ -33,6 +34,25 @@ export default function BottomSheetModal({
 }: BottomSheetModalProps) {
   // Bloquer le scroll du body quand la modale est ouverte
   useBodyScrollLock(isOpen);
+
+  // Gérer la touche Escape pour fermer la modale
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === KEYBOARD_KEYS.ESCAPE) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true);
+    };
+  }, [isOpen, onClose]);
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.y > DRAG_CLOSE_THRESHOLD || info.velocity.y > 500) {

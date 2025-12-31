@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
         name: true,
         resetFrequency: true,
         dominantHand: true,
+        isAphasic: true,
       },
     });
 
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
         name: true,
         resetFrequency: true,
         dominantHand: true,
+        isAphasic: true,
       },
     });
 

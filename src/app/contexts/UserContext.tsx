@@ -7,6 +7,7 @@ type User = {
   name: string;
   resetFrequency?: 'DAILY' | 'WEEKLY';
   dominantHand?: 'LEFT' | 'RIGHT';
+  isAphasic?: boolean;
 };
 
 type UserContextType = {

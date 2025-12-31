@@ -1,11 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import AphasieForm from '@/app/components/AphasieForm';
+import AphasieChallengeForm from '@/app/components/AphasieChallengeForm';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
-export default function AphasieAddPage() {
+export default function AphasieChallengeAddPage() {
   const router = useRouter();
   const { hasAccess } = useAphasieCheck();
 
@@ -23,11 +23,8 @@ export default function AphasieAddPage() {
   }
 
   return (
-    <FormPageWrapper>
-      <AphasieForm
-        onSuccess={handleSuccess}
-        onCancel={handleCancel}
-      />
+    <FormPageWrapper title="Ajouter un challenge">
+      <AphasieChallengeForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );
 }

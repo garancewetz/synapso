@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
@@ -141,7 +142,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
   return (
     <div 
-      className={`relative bg-white rounded-2xl shadow-sm border px-3 py-5 md:px-4 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
+      className={`relative bg-white rounded-2xl shadow-sm border py-5 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
         isGoalReached ? 'border-emerald-300 shadow-emerald-100' : 'border-gray-200'
       }`}
     >
@@ -208,7 +209,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
       )}
 
       {/* Greeting */}
-      <div className="mb-5 relative z-10">
+      <div className="mb-5 relative z-10 px-3 md:px-4">
         <div className={cn('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
@@ -240,7 +241,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
               {getCompletionMessage()}
             </p>
           </div>
-          <a
+          <Link
             href="/settings"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex-shrink-0"
             aria-label="Paramètres"
@@ -249,12 +250,12 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="mb-3 relative z-10">
+      <div className="mb-3 relative z-10 px-3 md:px-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Objectif du jour
@@ -305,7 +306,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
       {/* Encouragement discret */}
       {!isLoading && count > 0 && !isGoalReached && (
-        <p className="text-sm text-gray-500 mt-3 relative z-10">
+        <p className="text-sm text-gray-500 mt-3 relative z-10 px-3 md:px-4">
           {encouragement}
         </p>
       )}
@@ -314,7 +315,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
       <AnimatePresence>
         {isGoalReached && (
           <motion.div 
-            className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg relative z-10 backdrop-blur-sm"
+            className="mt-4 mx-3 md:mx-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg relative z-10 backdrop-blur-sm"
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.4, ease: "easeOut" }}

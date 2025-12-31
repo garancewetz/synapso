@@ -21,7 +21,7 @@ export default function WelcomeHeaderWrapper() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 px-3 md:px-4">
       <WelcomeHeader
         userName={displayName}
         completedToday={completedToday}

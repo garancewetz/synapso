@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useUser } from '@/app/contexts/UserContext';
 
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Loader from '@/app/components/ui/Loader';
-import FormPageWrapper from '@/app/components/FormPageWrapper';
+import { ChevronIcon } from '@/app/components/ui/icons';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
@@ -134,27 +135,46 @@ export default function SettingsPage() {
 
   if (initialLoading) {
     return (
-      <FormPageWrapper title="Paramètres">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader size="large" />
+      <div className="max-w-5xl mx-auto">
+        <div className="px-3 md:px-4">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader size="large" />
+          </div>
         </div>
-      </FormPageWrapper>
+      </div>
     );
   }
 
   if (!currentUser) {
     return (
-      <FormPageWrapper title="Paramètres">
-        <div className="text-center py-8">
-          <p className="text-gray-500">Veuillez sélectionner un utilisateur</p>
+      <div className="max-w-5xl mx-auto">
+        <div className="px-3 md:px-4">
+          <div className="text-center py-8">
+            <p className="text-gray-500">Veuillez sélectionner un utilisateur</p>
+          </div>
         </div>
-      </FormPageWrapper>
+      </div>
     );
   }
 
   return (
-    <FormPageWrapper title="Paramètres utilisateur">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="max-w-5xl mx-auto">
+      <div className="px-3 md:px-4">
+        {/* Bouton retour - caché sur mobile */}
+        <div className="mb-4 hidden md:block">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+            aria-label="Retour"
+          >
+            <ChevronIcon className="w-5 h-5" direction="left" />
+            <span className="text-sm font-medium">🏠 Accueil</span>
+          </Link>
+        </div>
+
+        {/* Titre */}
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Paramètres utilisateur</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <ErrorMessage message={error} />
         
         {success && (
@@ -193,7 +213,7 @@ export default function SettingsPage() {
             Préférence de main
           </label>
           <p className="text-sm text-gray-500 mb-4">
-            Choisissez votre préférence de main pour positionner le bouton &quot;Victoire&quot; du bon côté
+            Choisissez votre préférence de main pour positionner les boutons principaux (menu, victoire, etc.) du bon côté
           </p>
           
           <div className="flex bg-white rounded-xl p-1 border-2 border-gray-200">
@@ -291,10 +311,10 @@ export default function SettingsPage() {
             onClick={() => {
               if (hasUnsavedChanges) {
                 if (confirm('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?')) {
-                  router.back();
+                  router.push('/');
                 }
               } else {
-                router.back();
+                router.push('/');
               }
             }}
             disabled={loading}
@@ -303,7 +323,8 @@ export default function SettingsPage() {
           </Button>
         </div>
       </form>
-    </FormPageWrapper>
+      </div>
+    </div>
   );
 }
 

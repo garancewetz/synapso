@@ -9,6 +9,7 @@ import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { BookmarkIcon } from '@/app/components/ui/icons';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
 import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
@@ -74,6 +75,9 @@ export default function CategoryPage() {
   return (
     <section>
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+        {/* Bouton retour accueil */}
+        <BackToHomeButton />
+
         {/* Header */}
         {!userLoading && !loadingExercices && (
           <div className="px-4 mb-6">

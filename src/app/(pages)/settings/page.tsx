@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useUser } from '@/app/contexts/UserContext';
 
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Loader from '@/app/components/ui/Loader';
-import { ChevronIcon } from '@/app/components/ui/icons';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
@@ -57,7 +56,12 @@ export default function SettingsPage() {
       
       // Charger les paramètres complets depuis l'API (pour être sûr d'avoir les dernières valeurs)
       fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Erreur HTTP: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
           const loadedName = data.name || '';
           const loadedResetFrequency = (data.resetFrequency as ResetFrequency) || 'DAILY';
@@ -81,6 +85,7 @@ export default function SettingsPage() {
         })
         .catch((err) => {
           console.error('Erreur lors du chargement des paramètres:', err);
+          setError('Erreur lors du chargement des paramètres');
           setInitialLoading(false);
         });
     }
@@ -170,196 +175,209 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="px-3 md:px-4">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+      <div className="px-3 sm:px-6">
         {/* Bouton retour */}
-        <div className="mb-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-            aria-label="Retour"
-          >
-            <ChevronIcon className="w-5 h-5" direction="left" />
-            <span className="text-sm font-medium">🏠 Accueil</span>
-          </Link>
-        </div>
+        <BackToHomeButton />
 
         {/* Titre */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Paramètres utilisateur</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <ErrorMessage message={error} />
         
-        {success && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-            <p className="text-emerald-700 text-sm font-medium">
-              ✓ Paramètres enregistrés avec succès
-            </p>
-          </div>
-        )}
-        
-        {hasUnsavedChanges && !success && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
-              <span>⚠️</span>
-              <span>N&apos;oubliez pas d&apos;enregistrer vos changements</span>
-            </p>
-          </div>
-        )}
-
-        {/* Section Nom */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <Input
-            label="Nom de l'utilisateur"
-            type="text"
-            required
-            placeholder="Ex: Calypso"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        {/* Section Préférence de main */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <label className="block text-base font-semibold text-gray-800 mb-2">
-            Préférence de main
-          </label>
-          <p className="text-sm text-gray-500 mb-4">
-            Choisissez votre préférence de main pour positionner les boutons principaux (menu, victoire, etc.) du bon côté
-          </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <ErrorMessage message={error} />
           
-          <div className="flex bg-white rounded-xl p-1 border-2 border-gray-200">
-            <button
-              type="button"
-              onClick={() => setDominantHand('LEFT')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
-                dominantHand === 'LEFT'
-                  ? 'bg-amber-400 text-amber-950 shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <span className="text-xl">🤚</span>
-              <span>Gauche</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setDominantHand('RIGHT')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
-                dominantHand === 'RIGHT'
-                  ? 'bg-amber-400 text-amber-950 shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <span>Droite</span>
-              <span className="text-xl">✋</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Section Aphasie */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <label className="block text-base font-semibold text-gray-800 mb-2">
-            Journal d&apos;aphasie
-          </label>
-          <p className="text-sm text-gray-500 mb-4">
-            Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et challenges
-          </p>
-          
-          <label className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 cursor-pointer transition-all hover:border-purple-300">
-            <input
-              type="checkbox"
-              checked={isAphasic}
-              onChange={(e) => setIsAphasic(e.target.checked)}
-              className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-            />
-            <div className="flex-1">
-              <div className="font-medium text-gray-800">Je suis aphasique</div>
-              <div className="text-sm text-gray-500 mt-1">
-                Accéder au journal d&apos;aphasie avec les citations et les challenges
-              </div>
+          {success && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-emerald-700 text-sm font-medium">
+                ✓ Paramètres enregistrés avec succès
+              </p>
             </div>
-          </label>
-        </div>
-
-        {/* Section Réinitialisation */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <label className="block text-base font-semibold text-gray-800 mb-4">
-            Réinitialisation des exercices
-          </label>
-          <p className="text-sm text-gray-500 mb-4">
-            Choisissez la fréquence de réinitialisation des exercices complétés
-          </p>
+          )}
           
-          <div className="space-y-3">
-            <label className="flex items-start gap-3 p-4 bg-white rounded-lg border-2 cursor-pointer transition-all hover:border-purple-300">
-              <input
-                type="radio"
-                name="resetFrequency"
-                value="DAILY"
-                checked={resetFrequency === 'DAILY'}
-                onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">Tous les jours</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Les exercices complétés sont réinitialisés chaque jour à minuit
-                </div>
-              </div>
-            </label>
+          {hasUnsavedChanges && !success && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
+                <span>⚠️</span>
+                <span>N&apos;oubliez pas d&apos;enregistrer vos changements</span>
+              </p>
+            </div>
+          )}
 
-            <label className="flex items-start gap-3 p-4 bg-white rounded-lg border-2 cursor-pointer transition-all hover:border-purple-300">
-              <input
-                type="radio"
-                name="resetFrequency"
-                value="WEEKLY"
-                checked={resetFrequency === 'WEEKLY'}
-                onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">Une fois par semaine</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Les exercices complétés sont réinitialisés chaque dimanche à minuit
-                </div>
-              </div>
-            </label>
+          {/* Section Nom */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <Input
+              label="Nom de l'utilisateur"
+              type="text"
+              required
+              placeholder="Ex: Calypso"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+            />
           </div>
-        </div>
 
-        <div className="flex gap-3">
-          <Button
-            type="submit"
-            disabled={loading}
-            className={`flex-1 ${hasUnsavedChanges ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
-          >
-            {loading ? (
-              <>
-                <Loader size="small" />
-                <span>Enregistrement...</span>
-              </>
-            ) : (
-              'Enregistrer les paramètres'
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              if (hasUnsavedChanges) {
-                if (confirm('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?')) {
+          {/* Section Préférence de main */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Préférence de main
+            </label>
+            <p className="text-sm text-gray-500 mb-4">
+              Choisissez votre préférence de main pour positionner les boutons principaux (menu, victoire, etc.) du bon côté
+            </p>
+            
+            <div className="flex bg-gray-50 rounded-xl p-1 border-2 border-gray-200">
+              <button
+                type="button"
+                onClick={() => setDominantHand('LEFT')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                  dominantHand === 'LEFT'
+                    ? 'bg-amber-400 text-amber-950 shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <span className="text-xl">🤚</span>
+                <span>Gauche</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDominantHand('RIGHT')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                  dominantHand === 'RIGHT'
+                    ? 'bg-amber-400 text-amber-950 shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <span>Droite</span>
+                <span className="text-xl">✋</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section Aphasie */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Journal d&apos;aphasie
+            </label>
+            <p className="text-sm text-gray-500 mb-4">
+              Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et challenges
+            </p>
+            
+            <div className="flex bg-gray-50 rounded-xl p-1 border-2 border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsAphasic(true)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                  isAphasic
+                    ? 'bg-purple-500 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <span className="text-lg">✓</span>
+                <span>Oui</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAphasic(false)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                  !isAphasic
+                    ? 'bg-purple-500 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <span className="text-lg">✗</span>
+                <span>Non</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section Réinitialisation */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Réinitialisation des exercices
+            </label>
+            <p className="text-sm text-gray-500 mb-4">
+              Choisissez la fréquence de réinitialisation des exercices complétés
+            </p>
+            
+            <div className="space-y-3">
+              <label className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all ${
+                resetFrequency === 'DAILY' 
+                  ? 'border-amber-400 bg-amber-50' 
+                  : 'border-gray-200 hover:border-amber-300'
+              }`}>
+                <input
+                  type="radio"
+                  name="resetFrequency"
+                  value="DAILY"
+                  checked={resetFrequency === 'DAILY'}
+                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
+                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
+                />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800">Tous les jours</div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Les exercices complétés sont réinitialisés chaque jour à minuit
+                  </div>
+                </div>
+              </label>
+
+              <label className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all ${
+                resetFrequency === 'WEEKLY' 
+                  ? 'border-amber-400 bg-amber-50' 
+                  : 'border-gray-200 hover:border-amber-300'
+              }`}>
+                <input
+                  type="radio"
+                  name="resetFrequency"
+                  value="WEEKLY"
+                  checked={resetFrequency === 'WEEKLY'}
+                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
+                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
+                />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800">Une fois par semaine</div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Les exercices complétés sont réinitialisés chaque dimanche à minuit
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              type="submit"
+              disabled={loading}
+              className={`flex-1 ${hasUnsavedChanges ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+            >
+              {loading ? (
+                <>
+                  <Loader size="small" />
+                  <span>Enregistrement...</span>
+                </>
+              ) : (
+                'Enregistrer les paramètres'
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                if (hasUnsavedChanges) {
+                  const shouldLeave = window.confirm('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?');
+                  if (shouldLeave) {
+                    router.push('/');
+                  }
+                } else {
                   router.push('/');
                 }
-              } else {
-                router.push('/');
-              }
-            }}
-            disabled={loading}
-          >
-            {hasUnsavedChanges ? 'Quitter' : 'Annuler'}
-          </Button>
-        </div>
-      </form>
+              }}
+              disabled={loading}
+            >
+              {hasUnsavedChanges ? 'Quitter' : 'Annuler'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

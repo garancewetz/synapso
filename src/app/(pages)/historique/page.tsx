@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import Link from 'next/link';
 import type { HistoryEntry, Victory } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryTimeline, DayDetailModal } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
-import { ChevronIcon } from '@/app/components/ui/icons';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { cn } from '@/app/utils/cn';
@@ -51,7 +50,12 @@ export default function HistoriquePage() {
     if (!currentUser) return;
 
     fetch(`/api/history?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data)) {
           setHistory(data);
@@ -72,7 +76,12 @@ export default function HistoriquePage() {
     if (!currentUser) return;
 
     fetch(`/api/victories?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data)) {
           setVictories(data);
@@ -176,15 +185,7 @@ export default function HistoriquePage() {
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
       {/* Bouton retour accueil */}
-      <div className="px-3 sm:px-6 mb-2">
-        <Link 
-          href="/"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>🏠 Accueil</span>
-        </Link>
-      </div>
+      <BackToHomeButton />
 
       <div className="p-3 sm:p-6">
 

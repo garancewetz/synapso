@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 
@@ -18,9 +18,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     const victories = await prisma.victory.findMany({
       where: {
-        userId: parseInt(userId),
+        userId: userIdNumber,
       },
       orderBy: { createdAt: 'desc' },
       ...(limitParam && { take: parseInt(limitParam) }),
@@ -51,11 +59,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     const victory = await prisma.victory.create({
       data: {
-        content,
-        emoji: emoji || null,
-        userId: parseInt(userId),
+        content: content.trim(),
+        emoji: emoji ? emoji.trim() : null,
+        userId: userIdNumber,
       },
     });
 

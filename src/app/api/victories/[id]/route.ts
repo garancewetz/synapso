@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 
@@ -20,9 +20,30 @@ export async function PATCH(
       );
     }
 
-    // Vérifier que la victoire existe
-    const existingVictory = await prisma.victory.findUnique({
-      where: { id: victoryId },
+    const body = await request.json();
+    const { content, emoji, userId } = body;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que la victoire appartient à l'utilisateur
+    const existingVictory = await prisma.victory.findFirst({
+      where: {
+        id: victoryId,
+        userId: userIdNumber,
+      },
     });
 
     if (!existingVictory) {
@@ -31,9 +52,6 @@ export async function PATCH(
         { status: 404 }
       );
     }
-
-    const body = await request.json();
-    const { content, emoji } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json(
@@ -46,7 +64,7 @@ export async function PATCH(
       where: { id: victoryId },
       data: {
         content: content.trim(),
-        emoji: emoji || null,
+        emoji: emoji ? emoji.trim() : null,
       },
     });
 
@@ -78,9 +96,30 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que la victoire existe
-    const existingVictory = await prisma.victory.findUnique({
-      where: { id: victoryId },
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que la victoire appartient à l'utilisateur
+    const existingVictory = await prisma.victory.findFirst({
+      where: {
+        id: victoryId,
+        userId: userIdNumber,
+      },
     });
 
     if (!existingVictory) {

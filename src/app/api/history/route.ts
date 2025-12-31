@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 import type { ExerciceCategory } from '@/app/types/exercice';
@@ -43,10 +43,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     const history = await prisma.history.findMany({
       where: {
         exercice: {
-          userId: parseInt(userId),
+          userId: userIdNumber,
         },
       },
       include: {
@@ -80,7 +88,14 @@ export async function GET(request: NextRequest) {
           series: entry.exercice.workoutSeries,
           duration: entry.exercice.workoutDuration,
         },
-        equipments: JSON.parse(entry.exercice.equipments),
+        equipments: (() => {
+          try {
+            const parsed = JSON.parse(entry.exercice.equipments || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })(),
         bodyparts: entry.exercice.bodyparts.map((eb) => ({
           id: eb.bodypart.id,
           name: eb.bodypart.name,

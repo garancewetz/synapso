@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
 
@@ -14,13 +14,15 @@ interface FormPageWrapperProps {
 
 export default function FormPageWrapper({ children, title, backHref, backLabel }: FormPageWrapperProps) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleBack = () => {
     router.back();
   };
 
-  const isHomeLink = backHref === '/';
-  const label = backLabel || (isHomeLink ? '🏠 Accueil' : 'Retour');
+  // Afficher "🏠 Retour" si on retourne vers l'accueil ou si on est sur la page de création d'exercice
+  const isHomeLink = backHref === '/' || pathname === '/exercice/add';
+  const label = backLabel || (isHomeLink ? '🏠 Retour' : 'Retour');
 
   // Placer le focus sur le premier élément focusable de la page (excluant le menu fermé)
   // Priorité aux inputs et textareas pour les pages de formulaire
@@ -30,32 +32,38 @@ export default function FormPageWrapper({ children, title, backHref, backLabel }
   });
 
   return (
-    <div className="max-w-5xl mx-auto p-3 sm:p-6 bg-gray-50">
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 sm:p-6">
-          {backHref ? (
-            <Link
-              href={backHref}
-              className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              aria-label="Retour"
-            >
-              <ChevronIcon className="w-5 h-5" direction="left" />
-              <span className="text-sm font-medium">{label}</span>
-            </Link>
-          ) : (
-            <button
-              onClick={handleBack}
-              className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              aria-label="Retour"
-            >
-              <ChevronIcon className="w-5 h-5" direction="left" />
-              <span className="text-sm font-medium">Retour</span>
-            </button>
-          )}
-          {title && (
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">{title}</h1>
-          )}
-          {children}
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+      {/* Bouton retour */}
+      <div className="px-3 sm:px-6 mb-2">
+        {backHref ? (
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+            aria-label="Retour"
+          >
+            <ChevronIcon className="w-5 h-5" direction="left" />
+            <span>{label}</span>
+          </Link>
+        ) : (
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+            aria-label="Retour"
+          >
+            <ChevronIcon className="w-5 h-5" direction="left" />
+            <span>Retour</span>
+          </button>
+        )}
+      </div>
+
+      <div className="p-3 sm:p-6 bg-gray-50">
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="p-4 sm:p-6">
+            {title && (
+              <h1 className="text-2xl font-bold text-gray-800 mb-6">{title}</h1>
+            )}
+            {children}
+          </div>
         </div>
       </div>
     </div>

@@ -17,9 +17,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
     const items = await prisma.aphasieItem.findMany({
       where: {
-        userId: parseInt(userId),
+        userId: userIdNumber,
       },
       orderBy: { id: 'asc' },
     });
@@ -52,13 +60,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid userId' },
+        { status: 400 }
+      );
+    }
+
+    if (!quote.trim() || !meaning.trim()) {
+      return NextResponse.json(
+        { error: 'quote and meaning cannot be empty' },
+        { status: 400 }
+      );
+    }
+
     const item = await prisma.aphasieItem.create({
       data: {
-        quote,
-        meaning,
+        quote: quote.trim(),
+        meaning: meaning.trim(),
         date: date || null,
-        comment: comment || null,
-        userId: parseInt(userId),
+        comment: comment ? comment.trim() : null,
+        userId: userIdNumber,
       },
     });
 

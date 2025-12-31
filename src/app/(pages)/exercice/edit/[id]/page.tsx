@@ -3,7 +3,8 @@
 import { Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ExerciceForm from '@/app/components/ExerciceForm';
-import FormPageWrapper from '@/app/components/FormPageWrapper';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
+import { usePageFocus } from '@/app/hooks/usePageFocus';
 import { Loader } from '@/app/components/ui';
 
 interface EditPageContentProps {
@@ -36,10 +37,24 @@ function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
     router.push(backHref);
   };
 
+  // Placer le focus sur le premier élément focusable de la page (excluant le menu fermé)
+  usePageFocus({
+    selector: 'input:not([disabled]):not([type="hidden"]), textarea:not([disabled])',
+    excludeMenu: true,
+  });
+
   return (
-    <FormPageWrapper backHref={backHref}>
-      <EditPageContent exerciceId={exerciceId} onNavigateBack={navigateBack} />
-    </FormPageWrapper>
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+      <BackToHomeButton />
+      <div className="p-3 sm:p-6 bg-gray-50">
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="p-4 sm:p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier l&apos;exercice</h1>
+            <EditPageContent exerciceId={exerciceId} onNavigateBack={navigateBack} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

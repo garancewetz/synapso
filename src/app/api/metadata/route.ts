@@ -22,8 +22,18 @@ export async function GET(request: NextRequest) {
 
     const equipmentsSet = new Set<string>();
     exercices.forEach((exercice) => {
-      const equipments = JSON.parse(exercice.equipments) as string[];
-      equipments.forEach((eq: string) => equipmentsSet.add(eq));
+      try {
+        const equipments = JSON.parse(exercice.equipments || '[]') as string[];
+        if (Array.isArray(equipments)) {
+          equipments.forEach((eq: string) => {
+            if (typeof eq === 'string' && eq.trim()) {
+              equipmentsSet.add(eq.trim());
+            }
+          });
+        }
+      } catch {
+        // Ignorer les erreurs de parsing, continuer avec les autres exercices
+      }
     });
 
     return NextResponse.json({

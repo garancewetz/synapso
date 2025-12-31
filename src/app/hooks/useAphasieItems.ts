@@ -21,7 +21,12 @@ export function useAphasieItems() {
     setError(null);
     
     fetch(`/api/aphasie?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data)) {
           // Trier par date (plus récente d'abord), utiliser createdAt si date n'est pas renseignée

@@ -94,10 +94,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching exercice:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch exercice',
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: 'Failed to fetch exercice' },
       { status: 500 }
     );
   }
@@ -246,10 +243,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating exercice:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to update exercice',
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: 'Failed to update exercice' },
       { status: 500 }
     );
   }
@@ -314,10 +308,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting exercice:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to delete exercice',
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: 'Failed to delete exercice' },
       { status: 500 }
     );
   }

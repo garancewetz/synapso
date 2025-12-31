@@ -4,6 +4,7 @@ import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 
@@ -19,6 +20,9 @@ export default function AphasiePage() {
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+      {/* Bouton retour accueil */}
+      <BackToHomeButton />
+
       <div className="p-3 sm:p-6">
         <div className="space-y-6">
           {/* Section Challenges */}

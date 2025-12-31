@@ -46,7 +46,7 @@ function AddPageWrapper() {
   };
 
   return (
-    <FormPageWrapper backHref={backHref}>
+    <FormPageWrapper backHref={backHref} title="Ajouter un exercice">
       <AddPageContent onNavigateBack={navigateBack} />
     </FormPageWrapper>
   );

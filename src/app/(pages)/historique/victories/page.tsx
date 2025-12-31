@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Victory } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
-import { VictoryTimeline, VictoryCard } from '@/app/components/historique';
+import { VictoryTimeline } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { cn } from '@/app/utils/cn';

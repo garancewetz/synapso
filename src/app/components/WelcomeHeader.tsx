@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { isMonday } from 'date-fns';
-import { useUser } from '@/app/contexts/UserContext';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { cn } from '@/app/utils/cn';
 
@@ -43,7 +42,6 @@ const CELEBRATION_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆'
 
 
 export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: WelcomeHeaderProps) {
-  const { currentUser } = useUser();
   const { isLeftHanded } = useHandPreference();
   const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);

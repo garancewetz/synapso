@@ -26,6 +26,7 @@ export default function VictoryFAB({ onSuccess }: VictoryFABProps) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();
+  const { isLeftHanded } = useHandPreference();
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -38,7 +39,6 @@ export default function VictoryFAB({ onSuccess }: VictoryFABProps) {
   // Ne pas afficher si pas d'utilisateur connecté
   if (!currentUser) return null;
 
-  const { isLeftHanded } = useHandPreference();
   const position = isLeftHanded ? 'left' : 'right';
 
   const handleSuccess = () => {

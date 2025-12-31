@@ -17,7 +17,7 @@ interface VictoryCardProps {
  * Style doré avec étoile et emoji de catégorie
  */
 export function VictoryCard({ victory, onEdit }: VictoryCardProps) {
-  const { isLeftHanded, getJustifyClasses } = useHandPreference();
+  const { getJustifyClasses } = useHandPreference();
   return (
     <div 
       className="bg-gradient-to-br from-amber-50/50 via-white to-yellow-50/50 rounded-2xl border-2 border-amber-200 shadow-sm overflow-hidden"

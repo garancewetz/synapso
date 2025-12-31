@@ -3,15 +3,15 @@
  * Gère les erreurs, les credentials, et la sérialisation JSON
  */
 
-interface ApiError {
+class ApiError extends Error {
   error: string;
   status?: number;
-}
 
-class ApiError extends Error {
-  constructor(message: string, public status?: number) {
+  constructor(message: string, status?: number) {
     super(message);
     this.name = 'ApiError';
+    this.error = message;
+    this.status = status;
   }
 }
 

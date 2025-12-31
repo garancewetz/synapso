@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, ViewVictoriesButton } from '@/app/components';
 import { VictoryCard } from '@/app/components/historique';
 import type { Victory } from '@/app/types';

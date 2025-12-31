@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ErrorMessage, Loader, Input, Button } from '@/app/components';
 import { PlusIcon, CheckIcon } from '@/app/components/ui/icons';
 import type { User } from '@/app/types';

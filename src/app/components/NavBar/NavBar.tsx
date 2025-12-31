@@ -99,9 +99,10 @@ export default function NavBar() {
             {currentUser && (
               <Link
                 href="/"
-                className="text-sm font-medium text-gray-600 px-2 hover:text-gray-800 transition-colors cursor-pointer"
+                className="text-sm font-medium text-gray-600 px-2 hover:text-gray-800 transition-colors cursor-pointer flex items-center gap-1.5"
                 aria-label="Retour à l'accueil"
               >
+                <span className="text-base">🏠</span>
                 {currentUser.name}
               </Link>
             )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { AphasieItem } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 
@@ -11,7 +11,7 @@ export function useAphasieItems() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchItems = () => {
+  const fetchItems = useCallback(() => {
     if (!currentUser) {
       setLoading(false);
       return;
@@ -45,11 +45,11 @@ export function useAphasieItems() {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     fetchItems();
-  }, [currentUser]);
+  }, [fetchItems]);
 
   return { items, loading, error, refetch: fetchItems };
 }

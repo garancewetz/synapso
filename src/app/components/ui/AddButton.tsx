@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PlusIcon } from './icons';
 import { cn } from '@/app/utils/cn';
-import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 interface AddButtonProps {
   href: string;
@@ -23,17 +22,10 @@ export default function AddButton({
   href, 
   label, 
   className = '',
-  position = 'auto',
   queryParams,
   addFromParam = false
 }: AddButtonProps) {
-  const { isLeftHanded } = useHandPreference();
   const pathname = usePathname();
-  
-  // Déterminer la position selon la préférence si 'auto'
-  const actualPosition = position === 'auto' 
-    ? (isLeftHanded ? 'left' : 'right')
-    : position;
 
   // Construire l'URL avec les paramètres de requête
   let finalHref = href;

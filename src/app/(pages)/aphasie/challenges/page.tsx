@@ -24,7 +24,7 @@ export default function AphasieChallengesPage() {
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>💬 Journal d'aphasie</span>
+          <span>💬 Journal d&apos;aphasie</span>
         </Link>
       </div>
 

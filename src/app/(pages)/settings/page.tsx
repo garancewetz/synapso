@@ -259,10 +259,10 @@ export default function SettingsPage() {
         {/* Section Aphasie */}
         <div className="bg-gray-50 rounded-lg p-4">
           <label className="block text-base font-semibold text-gray-800 mb-2">
-            Journal d'aphasie
+            Journal d&apos;aphasie
           </label>
           <p className="text-sm text-gray-500 mb-4">
-            Activez cette option si vous souhaitez accéder au journal d'aphasie pour suivre vos citations et challenges
+            Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et challenges
           </p>
           
           <label className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 cursor-pointer transition-all hover:border-purple-300">
@@ -275,7 +275,7 @@ export default function SettingsPage() {
             <div className="flex-1">
               <div className="font-medium text-gray-800">Je suis aphasique</div>
               <div className="text-sm text-gray-500 mt-1">
-                Accéder au journal d'aphasie avec les citations et les challenges
+                Accéder au journal d&apos;aphasie avec les citations et les challenges
               </div>
             </div>
           </label>

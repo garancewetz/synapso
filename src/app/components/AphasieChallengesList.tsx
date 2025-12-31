@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { CompleteButton } from '@/app/components/ui';
+import { useState, useEffect, useCallback } from 'react';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import AphasieChallengeCard from '@/app/components/AphasieChallengeCard';
@@ -14,13 +13,13 @@ interface AphasieChallengesListProps {
   showViewAll?: boolean;
 }
 
-export default function AphasieChallengesList({ onMasteredChange, limit, showViewAll = false }: AphasieChallengesListProps) {
+export default function AphasieChallengesList({ onMasteredChange, limit }: AphasieChallengesListProps) {
   const [challenges, setChallenges] = useState<AphasieChallenge[]>([]);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();
 
-  const fetchChallenges = () => {
+  const fetchChallenges = useCallback(() => {
     if (!currentUser) return;
     
     fetch(`/api/aphasie-challenges?userId=${currentUser.id}`, { credentials: 'include' })
@@ -37,11 +36,11 @@ export default function AphasieChallengesList({ onMasteredChange, limit, showVie
         console.error('Fetch error:', error);
         setChallenges([]);
       });
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     fetchChallenges();
-  }, [currentUser]);
+  }, [fetchChallenges]);
 
   const handleMasteredToggle = async (id: number, currentMastered: boolean) => {
     const wasNotMastered = !currentMastered;
@@ -81,8 +80,6 @@ export default function AphasieChallengesList({ onMasteredChange, limit, showVie
   const activeChallenges = challenges.filter(c => !c.mastered);
   const displayedActiveChallenges = limit ? activeChallenges.slice(0, limit) : activeChallenges;
   const displayedMasteredChallenges = limit ? masteredChallenges.slice(0, limit) : masteredChallenges;
-  const hasMoreActive = limit && activeChallenges.length > limit;
-  const hasMoreMastered = limit && masteredChallenges.length > limit;
   const hasMoreTotal = limit && challenges.length > limit;
 
   return (

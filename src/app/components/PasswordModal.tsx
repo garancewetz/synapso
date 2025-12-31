@@ -41,20 +41,20 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
     }
   };
 
-  if (!isOpen) return null;
-
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div 
       className="fixed inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
+        <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
         <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
         
         <form onSubmit={handleSubmit}>
@@ -93,7 +93,7 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Pas
             </Button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
   );
 }

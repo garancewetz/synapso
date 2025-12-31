@@ -16,3 +16,5 @@ export { default as Textarea } from './Textarea';
 export { default as TextareaWithSpeech } from './TextareaWithSpeech';
 export { default as InputWithSpeech } from './InputWithSpeech';
 export { default as BottomSheetModal } from './BottomSheetModal';
+export { default as ViewAllLink } from './ViewAllLink';
+export { Card } from './Card';

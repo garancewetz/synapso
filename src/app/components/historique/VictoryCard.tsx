@@ -4,6 +4,8 @@ import type { Victory } from '@/app/types';
 import { EditIcon } from '@/app/components/ui/icons';
 import { IconButton } from '@/app/components/ui';
 import { formatVictoryDate } from '@/app/utils/date.utils';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { cn } from '@/app/utils/cn';
 
 interface VictoryCardProps {
   victory: Victory;
@@ -15,6 +17,7 @@ interface VictoryCardProps {
  * Style doré avec étoile et emoji de catégorie
  */
 export function VictoryCard({ victory, onEdit }: VictoryCardProps) {
+  const { isLeftHanded, getJustifyClasses } = useHandPreference();
   return (
     <div 
       className="bg-gradient-to-br from-amber-50/50 via-white to-yellow-50/50 rounded-2xl border-2 border-amber-200 shadow-sm overflow-hidden"
@@ -49,7 +52,7 @@ export function VictoryCard({ victory, onEdit }: VictoryCardProps) {
 
           {/* Footer avec bouton modifier */}
           {onEdit && (
-            <div className="border-t border-amber-200 bg-amber-100/50 px-4 py-2 flex items-center gap-2">
+            <div className={cn('border-t border-amber-200 bg-amber-100/50 px-4 py-2 flex items-center gap-2', getJustifyClasses())}>
               <IconButton
                 onClick={() => onEdit(victory)}
                 title="Modifier"

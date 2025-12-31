@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { format, isToday, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { ChevronIcon } from '@/app/components/ui/icons';
+import ViewAllLink from '@/app/components/ui/ViewAllLink';
 
 interface ActivityHeatmapProps {
   data: HeatmapDay[];
@@ -115,7 +114,6 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           const hasExercise = day.count > 0;
           const category = day.dominantCategory;
           const categoryStyle = category ? CATEGORY_HEATMAP_COLORS[category] : null;
-          const otherCategories = day.allCategories.filter(cat => cat !== category);
           const hasVictory = victoryDates && day.dateKey && victoryDates.has(day.dateKey);
           
           const isClickable = onDayClick && (hasExercise || hasVictory);
@@ -156,13 +154,6 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                   <span className="text-gray-300 text-sm md:text-base">·</span>
                 )}
                 
-                {/* Badge nombre d'exercices */}
-                {hasExercise && day.count > 1 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-white rounded-full text-[10px] md:text-xs font-bold text-gray-700 flex items-center justify-center shadow border border-gray-200">
-                    {day.count}
-                  </span>
-                )}
-                
                 {/* Indicateur de victoire (étoile dorée) */}
                 {hasVictory && (
                   <span 
@@ -171,18 +162,6 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                   >
                     ⭐
                   </span>
-                )}
-                
-                {/* Indicateur catégories multiples */}
-                {hasExercise && otherCategories.length > 0 && (
-                  <div className="absolute -bottom-1 md:-bottom-1.5 left-1/2 -translate-x-1/2 flex gap-0.5 md:gap-1">
-                    {otherCategories.slice(0, 3).map((cat) => (
-                      <span 
-                        key={cat}
-                        className={`w-3 h-3 md:w-4 md:h-4 rounded-full ${CATEGORY_HEATMAP_COLORS[cat].bg} border border-white`}
-                      />
-                    ))}
-                  </div>
                 )}
               </div>
               
@@ -219,13 +198,11 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
 
       {/* Bouton voir tout le parcours */}
       {showFullLink && (
-        <Link 
+        <ViewAllLink 
           href="/historique/roadmap"
-          className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-700 font-medium transition-colors"
-        >
-          <span>📜 Voir tout le chemin parcouru</span>
-          <ChevronIcon direction="right" className="w-4 h-4" />
-        </Link>
+          label="Voir tout le chemin parcouru"
+          emoji="🗺️"
+        />
       )}
     </div>
   );

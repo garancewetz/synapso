@@ -1,7 +1,6 @@
 import AddExerciceButton from './AddExerciceButton';
 import AphasieForm from './AphasieForm';
 import BottomNavBar from './BottomNavBar';
-import CategoryCard from './CategoryCard';
 import CategoryCardWithProgress from './CategoryCardWithProgress';
 import CategoryTabs from './CategoryTabs';
 import CategoryTabsWrapper from './CategoryTabsWrapper';
@@ -17,12 +16,12 @@ import FormPageWrapper from './FormPageWrapper';
 import MenuLink from './MenuLink';
 import NavBar from './NavBar';
 import PasswordModal from './PasswordModal';
-import ProgressGauges from './ProgressGauges';
 import PWARegister from './PWARegister';
 import SiteProtection from './SiteProtection';
 import VictoryBottomSheet from './VictoryBottomSheet';
 import VictoryButton from './VictoryButton';
 import VictoryFAB from './VictoryFAB';
+import ViewVictoriesButton from './ViewVictoriesButton';
 import WelcomeHeader from './WelcomeHeader';
 import WelcomeHeaderWrapper from './WelcomeHeaderWrapper';
 
@@ -36,7 +35,6 @@ export {
   BottomNavBar,
   Button,
   CalendarIcon,
-  CategoryCard,
   CategoryCardWithProgress,
   CategoryTabs,
   CategoryTabsWrapper,
@@ -56,7 +54,6 @@ export {
   NavBar,
   PasswordModal,
   PinIcon,
-  ProgressGauges,
   SparklesIcon,
   PWARegister,
   SiteProtection,
@@ -64,6 +61,7 @@ export {
   VictoryBottomSheet,
   VictoryButton,
   VictoryFAB,
+  ViewVictoriesButton,
   WelcomeHeader,
   WelcomeHeaderWrapper,
 };

@@ -8,7 +8,9 @@ import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryTimeline, DayDetailModal } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { cn } from '@/app/utils/cn';
 import {
   STATS_DAYS,
   ROADMAP_PREVIEW_DAYS,
@@ -200,7 +202,7 @@ export default function HistoriquePage() {
           
           {/* 2. Mes réussites personnelles - L'humain et le moral au premier plan */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className={cn('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
               <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                 🌟 Mes réussites personnelles
               </h2>
@@ -213,9 +215,16 @@ export default function HistoriquePage() {
               )}
             </div>
             <VictoryTimeline 
-              victories={victories} 
+              victories={victories.slice(0, 2)} 
               onEdit={victoryModal.openForEdit}
             />
+            {victories.length > 0 && (
+              <ViewAllLink 
+                href="/historique/victories"
+                label="Voir toutes les réussites"
+                emoji="🌟"
+              />
+            )}
           </div>
           
           {/* 3. Ta régularité (30 jours) - Indicateur de persévérance */}

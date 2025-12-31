@@ -28,6 +28,13 @@ export default function SettingsPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  
+  // Valeurs initiales pour détecter les changements
+  const [initialValues, setInitialValues] = useState<{
+    name: string;
+    resetFrequency: ResetFrequency;
+    dominantHand: DominantHand;
+  } | null>(null);
 
   useEffect(() => {
     if (currentUser) {
@@ -44,15 +51,21 @@ export default function SettingsPage() {
       fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
-          if (data.name) {
-            setName(data.name);
-          }
-          if (data.resetFrequency) {
-            setResetFrequency(data.resetFrequency);
-          }
-          if (data.dominantHand) {
-            setDominantHand(data.dominantHand);
-          }
+          const loadedName = data.name || '';
+          const loadedResetFrequency = (data.resetFrequency as ResetFrequency) || 'DAILY';
+          const loadedDominantHand = (data.dominantHand as DominantHand) || 'RIGHT';
+          
+          setName(loadedName);
+          setResetFrequency(loadedResetFrequency);
+          setDominantHand(loadedDominantHand);
+          
+          // Sauvegarder les valeurs initiales
+          setInitialValues({
+            name: loadedName,
+            resetFrequency: loadedResetFrequency,
+            dominantHand: loadedDominantHand,
+          });
+          
           setInitialLoading(false);
         })
         .catch((err) => {
@@ -61,6 +74,13 @@ export default function SettingsPage() {
         });
     }
   }, [currentUser]);
+  
+  // Détecter si des changements ont été faits
+  const hasUnsavedChanges = initialValues && (
+    name !== initialValues.name ||
+    resetFrequency !== initialValues.resetFrequency ||
+    dominantHand !== initialValues.dominantHand
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +112,13 @@ export default function SettingsPage() {
       
       // Optimistic update : met à jour immédiatement le contexte et la liste
       updateCurrentUser(updatedUser);
+      
+      // Mettre à jour les valeurs initiales après sauvegarde
+      setInitialValues({
+        name: updatedUser.name || '',
+        resetFrequency: (updatedUser.resetFrequency as ResetFrequency) || 'DAILY',
+        dominantHand: (updatedUser.dominantHand as DominantHand) || 'RIGHT',
+      });
       
       setSuccess(true);
       setTimeout(() => {
@@ -137,6 +164,15 @@ export default function SettingsPage() {
             </p>
           </div>
         )}
+        
+        {hasUnsavedChanges && !success && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <span>N&apos;oubliez pas d&apos;enregistrer vos changements</span>
+            </p>
+          </div>
+        )}
 
         {/* Section Nom */}
         <div className="bg-gray-50 rounded-lg p-4">
@@ -151,13 +187,13 @@ export default function SettingsPage() {
           />
         </div>
 
-        {/* Section Main dominante */}
+        {/* Section Préférence de main */}
         <div className="bg-gray-50 rounded-lg p-4">
           <label className="block text-base font-semibold text-gray-800 mb-2">
-            Main dominante
+            Préférence de main
           </label>
           <p className="text-sm text-gray-500 mb-4">
-            Choisissez votre main dominante pour positionner le bouton &quot;Victoire&quot; du bon côté
+            Choisissez votre préférence de main pour positionner le bouton &quot;Victoire&quot; du bon côté
           </p>
           
           <div className="flex bg-white rounded-xl p-1 border-2 border-gray-200">
@@ -238,7 +274,7 @@ export default function SettingsPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="flex-1"
+            className={`flex-1 ${hasUnsavedChanges ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
           >
             {loading ? (
               <>
@@ -252,10 +288,18 @@ export default function SettingsPage() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => router.back()}
+            onClick={() => {
+              if (hasUnsavedChanges) {
+                if (confirm('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?')) {
+                  router.back();
+                }
+              } else {
+                router.back();
+              }
+            }}
             disabled={loading}
           >
-            Annuler
+            {hasUnsavedChanges ? 'Quitter' : 'Annuler'}
           </Button>
         </div>
       </form>

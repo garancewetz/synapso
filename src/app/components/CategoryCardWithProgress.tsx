@@ -38,7 +38,8 @@ export default function CategoryCardWithProgress({
   return (
     <Link 
       href={href}
-      aria-label={`${label} - ${completedCount}/${total} exercices complétés`}
+      aria-label={`${label} - ${completedCount} sur ${total} exercices complétés`}
+      aria-describedby={`progress-${category}`}
       className={`
         block rounded-2xl border-2 transition-all duration-200 overflow-hidden
         ${categoryStyle.bg} ${categoryStyle.border} 
@@ -51,7 +52,7 @@ export default function CategoryCardWithProgress({
         <div className="flex items-center gap-3 md:gap-4">
           {/* Icône */}
           <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-white/60">
-            <span className="text-3xl md:text-4xl w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" role="img" aria-hidden="true">
+            <span className="text-3xl md:text-4xl w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" role="img" aria-label={`Icône ${label}`}>
               {icon}
             </span>
           </div>
@@ -81,7 +82,7 @@ export default function CategoryCardWithProgress({
 
       {/* Jauge de progression arrondie en bas */}
       <div className="px-4 pb-4">
-        <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+        <div className="h-2 bg-white/60 rounded-full overflow-hidden" role="progressbar" aria-valuenow={completedCount} aria-valuemin={0} aria-valuemax={total} aria-label={`Progression : ${completedCount} sur ${total} exercices complétés`} id={`progress-${category}`}>
           <div
             className={`h-full rounded-full transition-all duration-500 ease-out ${categoryStyle.accent}`}
             style={{ width: `${percentage}%` }}

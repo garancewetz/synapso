@@ -46,7 +46,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Da
       closeLabel="Fermer"
     >
       {/* Header simplifié - Grande date lisible */}
-      <div className="px-6 py-4 md:pt-5 border-b border-gray-100">
+        <div className="px-6 py-4 md:pt-5 border-b border-gray-100">
         <h2 className="text-xl font-bold text-gray-900">{formattedDate}</h2>
         <div className="flex items-center gap-3 mt-2">
           {exercises.length > 0 && (
@@ -136,7 +136,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Da
             <p className="text-gray-400 text-sm mt-1">C&apos;est ok, chaque jour est différent !</p>
           </div>
         )}
-      </div>
+        </div>
     </BottomSheetModal>
   );
 }

@@ -5,6 +5,7 @@ import { useUser } from '@/app/contexts/UserContext';
 import VictoryBottomSheet from './VictoryBottomSheet';
 import VictoryButton from './VictoryButton';
 import ConfettiRain from './ConfettiRain';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 interface VictoryFABProps {
   onSuccess?: () => void;
@@ -13,10 +14,11 @@ interface VictoryFABProps {
 /**
  * Bouton flottant "Noter une victoire" - présent sur toutes les pages principales
  * 
- * Se positionne automatiquement selon la main dominante de l'utilisateur :
+ * Se positionne automatiquement selon la préférence de main de l'utilisateur :
  * - Main droite → bouton à droite (zone de confort du pouce)
  * - Main gauche → bouton à gauche
  * 
+ * Fonctionne sur mobile ET desktop.
  * Ouvre le VictoryBottomSheet pour noter une petite victoire.
  * Déclenche une pluie de confettis dorés lors d'une victoire ajoutée.
  */
@@ -36,7 +38,8 @@ export default function VictoryFAB({ onSuccess }: VictoryFABProps) {
   // Ne pas afficher si pas d'utilisateur connecté
   if (!currentUser) return null;
 
-  const isLeftHanded = currentUser.dominantHand === 'LEFT';
+  const { isLeftHanded } = useHandPreference();
+  const position = isLeftHanded ? 'left' : 'right';
 
   const handleSuccess = () => {
     // Déclencher la pluie de confettis dorés
@@ -55,11 +58,11 @@ export default function VictoryFAB({ onSuccess }: VictoryFABProps) {
         confettiCount={35}
       />
 
-      {/* Bouton flottant - position adaptée à la main dominante */}
+      {/* Bouton flottant - position adaptée à la préférence de main */}
       <VictoryButton 
         onClick={() => setShowBottomSheet(true)}
         variant="fixed"
-        position={isLeftHanded ? 'left' : 'right'}
+        position={position}
       />
 
       {/* Bottom Sheet */}

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { ErrorMessage, MenuLink, Loader, Logo, Input, Button } from '@/app/components';
 import { MenuIcon, CloseIcon, PlusIcon, BookIcon, ClockIcon, SettingsIcon, CheckIcon } from '@/app/components/ui/icons';
+import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { cn } from '@/app/utils/cn';
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,6 +18,7 @@ export default function NavBar() {
   const [createUserError, setCreateUserError] = useState('');
   const { currentUser, setCurrentUser, users, changingUser, refreshUsers } = useUser();
   const pathname = usePathname();
+  const { isLeftHanded, getMenuPositionClasses } = useHandPreference();
 
   const handleUserChange = (userId: number) => {
     const selectedUser = users.find(u => u.id === userId);
@@ -69,44 +73,37 @@ export default function NavBar() {
     }
   };
 
-  // Fermer le menu quand on clique en dehors
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
+  // Bloquer le scroll du body quand le menu est ouvert
+  useBodyScrollLock(isMenuOpen);
 
   return (
     <>
       {/* Header minimaliste */}
       <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6">
-        <div className="flex items-center justify-between py-3 md:py-4">
-          {/* Logo et nom à gauche */}
+        <div className={cn('flex items-center py-3 md:py-4 justify-between', isLeftHanded && 'flex-row-reverse')}>
+          {/* Logo et nom */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 -ml-2 px-2 rounded-xl hover:bg-gray-50 transition-colors"
+            className={cn('flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors', !isLeftHanded && '-ml-2')}
             aria-label="Retour à l'accueil Synapso"
           >
             <Logo size={36} className="md:scale-110 " />
             <span className="text-lg font-semibold text-gray-800">Synapso</span>
           </Link>
 
-          {/* Bouton menu à droite */}
+          {/* Bouton menu - position adaptée à la préférence de main */}
           <button
             onClick={() => setIsMenuOpen(true)}
             disabled={changingUser}
-            className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+            className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center"
             aria-label="Ouvrir le menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="main-menu"
           >
             {changingUser ? (
               <Loader size="small" />
             ) : (
-              <MenuIcon className="w-6 h-6" />
+              <MenuIcon className="w-6 h-6 flex items-center justify-center" />
             )}
           </button>
         </div>
@@ -120,51 +117,68 @@ export default function NavBar() {
         />
       )}
 
-      {/* Menu latéral (Drawer) */}
+      {/* Menu latéral (Drawer) - position adaptée à la préférence de main */}
       <div
-        className={`
-          fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-xl
-          transform transition-transform duration-300 ease-out
-          ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-        `}
+        id="main-menu"
+        className={cn(
+          'fixed top-0 h-full w-72 bg-white z-50 shadow-xl flex flex-col',
+          'transform transition-transform duration-300 ease-out',
+          getMenuPositionClasses(isMenuOpen)
+        )}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="menu-title"
       >
         {/* En-tête du drawer */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+        <div className="flex items-center justify-between p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-3">
+            <Logo size={32} />
+            <h2 id="menu-title" className="text-xl font-bold text-gray-900">Menu</h2>
+          </div>
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all active:scale-95"
+            aria-label="Fermer le menu"
           >
             <CloseIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Contenu du menu */}
-        <div className="p-4 flex flex-col gap-2">
+        <div className="p-5 flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
           {/* Section Profil */}
-          <div className="mb-4">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
+          <div className="mb-2">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1">
               Profil
             </h3>
-            <div className="bg-gray-50 rounded-xl p-2 space-y-2">
+            <div className="bg-gray-50 rounded-xl p-2.5 space-y-2 max-h-60 overflow-y-auto border-2 border-gray-200">
               {users.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => handleUserChange(user.id)}
                   className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                    w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-all duration-200
+                    min-h-[56px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400
                     ${currentUser?.id === user.id
-                      ? 'bg-white shadow-sm text-gray-800 font-medium'
-                      : 'text-gray-600 hover:bg-white/50'
+                      ? 'bg-white shadow-md text-gray-900 font-semibold border-2 border-emerald-200'
+                      : 'text-gray-700 hover:bg-white/70 border-2 border-transparent hover:border-gray-200'
                     }
                   `}
                 >
-                  <span className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm">
+                  <span className={`
+                    w-12 h-12 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0
+                    ${currentUser?.id === user.id
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'bg-gray-300 text-gray-700'
+                    }
+                  `}>
                     {user.name.charAt(0).toUpperCase()}
                   </span>
-                  <span>{user.name}</span>
+                  <span className="flex-1 text-left text-base font-medium">{user.name}</span>
                   {currentUser?.id === user.id && (
-                    <CheckIcon className="w-4 h-4 ml-auto text-emerald-500" />
+                    <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <CheckIcon className="w-4 h-4 text-white" />
+                    </div>
                   )}
                 </button>
               ))}
@@ -172,12 +186,13 @@ export default function NavBar() {
               {!showCreateUser ? (
                 <button
                   onClick={() => setShowCreateUser(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-blue-600 hover:bg-blue-50 border border-blue-200"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all duration-200
+                             bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium text-sm
+                             hover:from-blue-600 hover:to-blue-700 hover:shadow-md hover:scale-[1.01]
+                             active:scale-[0.99] border border-blue-400 shadow-sm"
                 >
-                  <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm">
-                    <PlusIcon className="w-4 h-4 text-blue-600" />
-                  </span>
-                  <span className="font-medium">Créer un utilisateur</span>
+                  <PlusIcon className="w-4 h-4 text-white" />
+                  <span>Nouvel utilisateur</span>
                 </button>
               ) : (
                 <form onSubmit={handleCreateUser} className="bg-white rounded-lg p-3 space-y-3 border border-gray-200">
@@ -227,7 +242,7 @@ export default function NavBar() {
           </div>
 
           {/* Liens de navigation */}
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1 mt-2">
             Actions
           </h3>
 
@@ -237,24 +252,9 @@ export default function NavBar() {
             onClick={() => setIsMenuOpen(false)}
             icon={<PlusIcon />}
             title="Ajouter un exercice"
-            description="Créer un nouvel exercice"
-            iconBgColor="bg-gray-700"
+            iconBgColor="bg-gradient-to-br from-emerald-400 to-emerald-600"
             iconTextColor="text-white"
           />
-
-     
-          {/* Journal d'aphasie - seulement pour Calypso */}
-          {currentUser?.name === 'Calypso' && (
-            <MenuLink
-              href="/aphasie"
-              onClick={() => setIsMenuOpen(false)}
-              icon={<BookIcon />}
-              title="Journal d'aphasie"
-              description="Notes et observations"
-              iconBgColor="bg-purple-100"
-              iconTextColor="text-purple-600"
-            />
-          )}
 
           {/* Historique */}
           <MenuLink
@@ -262,23 +262,33 @@ export default function NavBar() {
             onClick={() => setIsMenuOpen(false)}
             icon={<ClockIcon className="w-5 h-5" />}
             title="Historique"
-            description="Voir les séances passées"
-            iconBgColor="bg-amber-100"
-            iconTextColor="text-amber-600"
+            iconBgColor="bg-gradient-to-br from-amber-400 to-amber-600"
+            iconTextColor="text-white"
           />
+
+          {/* Journal d'aphasie - seulement pour Calypso */}
+          {currentUser?.name === 'Calypso' && (
+            <MenuLink
+              href="/aphasie"
+              onClick={() => setIsMenuOpen(false)}
+              icon={<BookIcon />}
+              title="Journal d'aphasie"
+              iconBgColor="bg-gradient-to-br from-purple-400 to-purple-600"
+              iconTextColor="text-white"
+            />
+          )}
 
           {/* Paramètres utilisateur */}
           <MenuLink
             href="/settings"
             onClick={() => setIsMenuOpen(false)}
             icon={<SettingsIcon />}
-            title="Settings user"
-            description="Paramètres utilisateur"
-            iconBgColor="bg-gray-100"
-            iconTextColor="text-gray-600"
+            title="Paramètres"
+            iconBgColor="bg-gradient-to-br from-blue-400 to-blue-600"
+            iconTextColor="text-white"
           />
         </div>
-      </div>
+        </div>
     </>
   );
 }

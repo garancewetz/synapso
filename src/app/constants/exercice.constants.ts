@@ -28,7 +28,7 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     color: 'teal',
     label: 'Milieu du corps',
     labelShort: 'Milieu',
-    icon: '💚',
+    icon: '👉',
     href: '/exercices/core',
   },
   LOWER_BODY: {

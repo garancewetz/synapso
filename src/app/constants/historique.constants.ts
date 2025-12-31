@@ -14,26 +14,6 @@ export const PERIOD_OPTIONS: { value: PeriodFilter; label: string }[] = [
   { value: 'total', label: 'Total' },
 ];
 
-// Configuration des badges pour les StatCards
-export const STAT_BADGES = {
-  total: [
-    { threshold: 100, text: 'Légende ! 👑' },
-    { threshold: 50, text: 'Expert ! ⭐' },
-    { threshold: 20, text: 'En progression ! 📈' },
-  ],
-  week: [
-    { threshold: 15, text: 'Semaine parfaite ! 🌟' },
-    { threshold: 7, text: 'Super semaine ! 💫' },
-  ],
-  month: [
-    { threshold: 30, text: 'Mois record ! 🎖️' },
-    { threshold: 15, text: 'Très bien ! 👏' },
-  ],
-  streak: [
-    { threshold: 7, text: 'Inarrêtable ! 🚀' },
-    { threshold: 3, text: 'Continue ! 💪' },
-  ],
-} as const;
 
 // Seuils pour les emojis de récompense
 export const REWARD_EMOJIS = [

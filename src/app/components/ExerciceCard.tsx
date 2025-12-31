@@ -110,7 +110,16 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                 ${showSuccess ? 'success-animation' : ''}
             `}
             onClick={toggleExpand}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleExpand();
+                }
+            }}
+            role="button"
+            tabIndex={0}
             aria-expanded={isExpanded}
+            aria-label={`${exercice.name} - ${exercice.completed ? 'Complété' : 'À faire'}`}
         >
             {/* Indicateur de catégorie - barre latérale */}
             <div className={`flex`}>

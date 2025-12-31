@@ -73,6 +73,24 @@ async function backup() {
     );
     console.log(`✅ ${aphasieItems.length} items d'aphasie sauvegardés`);
 
+    // Backup User
+    const users = await prisma.user.findMany();
+    writeFileSync(
+      join(process.cwd(), 'src/datas/users_backup.json'),
+      JSON.stringify(users, null, 2),
+      'utf-8'
+    );
+    console.log(`✅ ${users.length} utilisateurs sauvegardés`);
+
+    // Backup Victory
+    const victories = await prisma.victory.findMany();
+    writeFileSync(
+      join(process.cwd(), 'src/datas/victories_backup.json'),
+      JSON.stringify(victories, null, 2),
+      'utf-8'
+    );
+    console.log(`✅ ${victories.length} victoires sauvegardées`);
+
     console.log('✨ Backup terminé avec succès!');
   } catch (error) {
     console.error('❌ Erreur lors du backup:', error);

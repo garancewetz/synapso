@@ -27,8 +27,9 @@ export default function BottomNavBar() {
           {/* Icône maison pour la page d'accueil */}
           <Link
             href="/"
+            aria-label="Accueil"
             className={`
-              flex flex-col items-center justify-center gap-0.5 px-2 py-2
+              flex flex-col items-center justify-center gap-0.5 px-2 py-3
               font-medium text-xs transition-all duration-200 active:scale-95
               ${isHomeActive 
                 ? 'bg-gray-800 text-white border-t-2 border-gray-800' 
@@ -36,7 +37,7 @@ export default function BottomNavBar() {
               }
             `}
           >
-            <span className="text-lg">🏠</span>
+            <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">🏠</span>
           </Link>
 
           {/* Catégories */}
@@ -48,13 +49,15 @@ export default function BottomNavBar() {
               <Link
                 key={category}
                 href={config.href}
+                aria-label={config.label}
+                aria-current={active ? 'page' : undefined}
                 className={`
-                  flex flex-col items-center justify-center gap-0.5 px-2 py-2
+                  flex flex-col items-center justify-center gap-0.5 px-2 py-3
                   font-medium text-xs transition-all duration-200 active:scale-95
                   ${active ? config.activeClasses : config.inactiveClasses}
                 `}
               >
-                <span className="text-lg">{config.icon}</span>
+                <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">{config.icon}</span>
                 <span className={active ? 'text-white' : ''}>{config.label}</span>
               </Link>
             );

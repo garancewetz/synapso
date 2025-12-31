@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/app/utils/cn';
+
 interface VictoryButtonProps {
   onClick: () => void;
   variant?: 'fixed' | 'inline';
@@ -41,7 +43,7 @@ export default function VictoryButton({
   return (
     <button
       onClick={onClick}
-      className={`${baseClasses} ${variantClasses[variant]} ${positionClass}`}
+      className={cn(baseClasses, variantClasses[variant], positionClass)}
       aria-label="Noter une victoire"
     >
       <span className={isFixed ? 'text-xl' : 'text-lg'}>🌟</span>

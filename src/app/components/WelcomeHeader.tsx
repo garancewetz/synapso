@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { isMonday } from 'date-fns';
+import { useUser } from '@/app/contexts/UserContext';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { cn } from '@/app/utils/cn';
 
 interface WelcomeHeaderProps {
   userName: string;
@@ -40,6 +43,8 @@ const CELEBRATION_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆'
 
 
 export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: WelcomeHeaderProps) {
+  const { currentUser } = useUser();
+  const { isLeftHanded } = useHandPreference();
   const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
@@ -138,7 +143,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
   return (
     <div 
-      className={`relative bg-white rounded-2xl shadow-sm border p-5 mx-4 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
+      className={`relative bg-white rounded-2xl shadow-sm border px-3 py-5 md:px-4 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
         isGoalReached ? 'border-emerald-300 shadow-emerald-100' : 'border-gray-200'
       }`}
     >
@@ -206,7 +211,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
       {/* Greeting */}
       <div className="mb-5 relative z-10">
-        <div className="flex items-start justify-between gap-2">
+        <div className={cn('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
               {getTimeGreeting()}, {userName}
@@ -256,14 +261,21 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Objectif du jour
           </span>
-          <span className="text-sm font-semibold text-gray-700">
+          <span className="text-sm font-semibold text-gray-700" aria-live="polite" aria-atomic="true">
             {isLoading ? '...' : `${count} / ${DAILY_GOAL}`}
             {!isLoading && bonusExercices > 0 && (
-              <span className="text-emerald-600 ml-1">+{bonusExercices}</span>
+              <span className="text-emerald-600 ml-1" aria-label={`${bonusExercices} exercices bonus`}>+{bonusExercices}</span>
             )}
           </span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden relative">
+        <div 
+          className="h-2 bg-gray-100 rounded-full overflow-hidden relative"
+          role="progressbar"
+          aria-valuenow={isLoading ? 0 : count}
+          aria-valuemin={0}
+          aria-valuemax={DAILY_GOAL}
+          aria-label={`Progression : ${isLoading ? 'chargement' : `${count} sur ${DAILY_GOAL} exercices complétés`}`}
+        >
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 relative overflow-hidden"
             initial={{ width: '0%' }}

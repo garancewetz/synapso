@@ -133,13 +133,13 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
   return (
     <BottomSheetModal isOpen={isOpen} onClose={handleClose}>
       {/* Titre */}
-      <div className="text-center pb-3 md:pt-4">
-        <h2 className="text-xl font-bold text-gray-900">
-          {isEditMode ? 'Modifier ta victoire ✏️' : 'Ta victoire ! 🌟'}
-        </h2>
-      </div>
+        <div className="text-center pb-3 md:pt-4">
+          <h2 className="text-xl font-bold text-gray-900">
+            {isEditMode ? 'Modifier ta victoire ✏️' : 'Ta victoire ! 🌟'}
+          </h2>
+        </div>
 
-      <form onSubmit={handleSubmit} className="px-5 pb-8">
+        <form onSubmit={handleSubmit} className="px-5 pb-8">
         {/* Tags de victoire */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           {VICTORY_TAGS.map(({ label, emoji }) => {
@@ -282,7 +282,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
             className="mt-3"
           />
         )}
-      </form>
+        </form>
     </BottomSheetModal>
   );
 }

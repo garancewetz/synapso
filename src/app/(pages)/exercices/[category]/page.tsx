@@ -12,7 +12,7 @@ import { BookmarkIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import AddExerciceButton from '@/app/components/AddExerciceButton';
-import { VictoryFAB } from '@/app/components';
+import { VictoryFAB, ViewVictoriesButton } from '@/app/components';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
 
@@ -77,15 +77,33 @@ export default function CategoryPage() {
         {/* Header */}
         {!userLoading && !loadingExercices && (
           <div className="px-4 mb-6">
-            <div className="flex items-center justify-between gap-4">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {CATEGORY_LABELS[categoryParam]}
-              </h1>
-              <AddExerciceButton category={categoryParam} />
+            <div className={`flex items-start gap-4 ${currentUser?.dominantHand === 'LEFT' ? 'justify-start md:justify-between' : 'justify-between'} md:justify-between`}>
+              {currentUser?.dominantHand === 'LEFT' ? (
+                <>
+                  <AddExerciceButton category={categoryParam} className="md:order-last" />
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      {CATEGORY_LABELS[categoryParam]}
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                      {completedCount}/{exercices.length} exercices complétés
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      {CATEGORY_LABELS[categoryParam]}
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                      {completedCount}/{exercices.length} exercices complétés
+                    </p>
+                  </div>
+                  <AddExerciceButton category={categoryParam} />
+                </>
+              )}
             </div>
-            <p className="text-gray-500 mt-1">
-              {completedCount}/{exercices.length} exercices complétés
-            </p>
             
             {/* Switch à trois parties */}
             <div className="mt-4">
@@ -169,12 +187,13 @@ export default function CategoryPage() {
               )}
             </div>
           )}
+
+          {/* Bouton "Voir mes réussites" */}
+          {!loading && filteredExercices.length > 0 && (
+            <ViewVictoriesButton />
+          )}
           
-          {/* Zone réservée pour le bouton victoire flottant */}
-          <div 
-            className="h-16 md:h-6 mt-4 rounded-xl bg-gradient-to-t from-gray-100 to-transparent" 
-            aria-hidden="true" 
-          />
+      
         </div>
       </div>
 

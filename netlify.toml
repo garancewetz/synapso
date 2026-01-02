@@ -8,6 +8,7 @@
 # Plugin Next.js pour Netlify
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  inputs = {}
 
 # Variables d'environnement (à configurer dans le dashboard Netlify)
 # DATABASE_URL - Connection string PostgreSQL

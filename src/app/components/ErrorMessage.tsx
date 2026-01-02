@@ -1,10 +1,10 @@
-interface ErrorMessageProps {
+type Props = {
   message: string;
   className?: string;
   id?: string;
-}
+};
 
-export default function ErrorMessage({ message, className = '', id }: ErrorMessageProps) {
+export default function ErrorMessage({ message, className = '', id }: Props) {
   if (!message) return null;
   
   return (

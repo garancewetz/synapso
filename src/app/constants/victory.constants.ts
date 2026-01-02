@@ -14,6 +14,9 @@ export const VICTORY_TAGS = [
 
 export type VictoryTag = typeof VICTORY_TAGS[number];
 
+// Tags qui utilisent le format emoji+label+emoji (Force, Souplesse, Équilibre)
+export const VICTORY_TAGS_WITH_EMOJI = ['Force', 'Souplesse', 'Équilibre', 'Confort'] as const;
+
 // ============================================================================
 // COULEURS DES CATÉGORIES POUR LES VICTOIRES
 // ============================================================================

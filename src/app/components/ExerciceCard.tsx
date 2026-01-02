@@ -1,36 +1,42 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/app/hooks/useTodayCompletedCount';
 import { ChevronIcon, EditIcon, PinIcon } from '@/app/components/ui/icons';
-import { Badge, IconButton, CompleteButton, CompletedBadge } from '@/app/components/ui';
-interface ExerciceCardProps {
+import { Badge, IconButton, CompleteButton, CompletedBadge, BaseCard } from '@/app/components/ui';
+
+type Props = {
     exercice: Exercice;
     onEdit?: (id: number) => void;
     onCompleted?: (updatedExercice: Exercice) => void;
-}
+};
 
-export default function ExerciceCard({ exercice, onEdit, onCompleted }: ExerciceCardProps) {
+export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
     const [isCompleting, setIsCompleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const { currentUser } = useUser();
 
-    const categoryStyle = CATEGORY_COLORS[exercice.category];
+    // Mémoriser le style de catégorie
+    const categoryStyle = useMemo(
+        () => CATEGORY_COLORS[exercice.category],
+        [exercice.category]
+    );
 
-    const handleEdit = (e: React.MouseEvent) => {
+    const handleEdit = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
         if (onEdit) {
             onEdit(exercice.id);
         }
-    };
+    }, [onEdit, exercice.id]);
 
-    const handleComplete = async (e: React.MouseEvent) => {
+    const handleComplete = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!currentUser) return;
 
@@ -66,9 +72,9 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
         } finally {
             setIsCompleting(false);
         }
-    };
+    }, [currentUser, exercice, onCompleted]);
 
-    const handlePin = async (e: React.MouseEvent) => {
+    const handlePin = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!currentUser) return;
 
@@ -95,39 +101,36 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
         } finally {
             setIsPinning(false);
         }
-    };
+    }, [currentUser, exercice, onCompleted]);
 
-    const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
-    };
+    const toggleExpand = useCallback(() => {
+        setIsExpanded(prev => !prev);
+    }, []);
+
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleExpand();
+        }
+    }, [toggleExpand]);
 
     return (
-        <div 
-            className={`
-                exercise-card bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer
-                transition-all duration-200
-                border-gray-200 hover:shadow-md hover:border-gray-300
-                ${showSuccess ? 'success-animation' : ''}
-            `}
+        <BaseCard
+            className={clsx(
+                'exercise-card',
+                showSuccess && 'success-animation'
+            )}
             onClick={toggleExpand}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleExpand();
-                }
-            }}
+            onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
-            aria-expanded={isExpanded}
-            aria-label={`${exercice.name} - ${exercice.completed ? 'Complété' : 'À faire'}`}
+            ariaExpanded={isExpanded}
+            ariaLabel={`${exercice.name} - ${exercice.completed ? 'Complété' : 'À faire'}`}
         >
-            {/* Indicateur de catégorie - barre latérale */}
-            <div className={`flex`}>
-                <div className={`w-1.5 ${categoryStyle.accent}`} />
-                
-                <div className="flex-1">
-                    {/* Header avec titre */}
-                    <div className="p-4 md:p-5">
+            <BaseCard.Accent color={categoryStyle.accent} />
+            <BaseCard.Content>
+                {/* Header avec titre */}
+                <div className="p-4 md:p-5">
                         <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="flex-1 min-w-0">
                                 {/* Icône épinglé */}
@@ -154,8 +157,8 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                         <div className="flex flex-wrap gap-1.5 mb-3">
                             {/* Bodyparts - couleur pâle de la catégorie */}
                             {exercice.bodyparts && exercice.bodyparts.length > 0 &&
-                                exercice.bodyparts.map((bodypart, index) => (
-                                    <Badge key={`bp-${index}`} className={categoryStyle.tag}>
+                                exercice.bodyparts.map((bodypart) => (
+                                    <Badge key={bodypart} className={categoryStyle.tag}>
                                         {bodypart}
                                     </Badge>
                                 ))
@@ -180,8 +183,8 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                             )}
                             {/* Équipements */}
                             {exercice.equipments && exercice.equipments.length > 0 &&
-                                exercice.equipments.map((equipment: string, index: number) => (
-                                    <Badge key={`eq-${index}`} variant="equipment" icon="🏋️">
+                                exercice.equipments.map((equipment: string) => (
+                                    <Badge key={equipment} variant="equipment" icon="🏋️">
                                         {equipment}
                                     </Badge>
                                 ))
@@ -249,42 +252,36 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Exercice
                             </>
                         )}
                     </div>
-
-                    {/* Footer avec boutons d'action */}
-                    <div 
-                        className="border-t border-gray-100 bg-gray-50/70 px-4 py-3 flex items-center gap-2"
-                        onClick={(e) => e.stopPropagation()}
+                <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
+                    {/* Bouton Épingler */}
+                    <IconButton
+                        onClick={handlePin}
+                        disabled={isPinning}
+                        isActive={exercice.pinned}
+                        title={exercice.pinned ? 'Désépingler' : 'Épingler'}
+                        aria-label={exercice.pinned ? 'Désépingler' : 'Épingler'}
                     >
-                        {/* Bouton Épingler */}
-                        <IconButton
-                            onClick={handlePin}
-                            disabled={isPinning}
-                            isActive={exercice.pinned}
-                            title={exercice.pinned ? 'Désépingler' : 'Épingler'}
-                            aria-label={exercice.pinned ? 'Désépingler' : 'Épingler'}
-                        >
-                            <PinIcon className="w-4 h-4" fill={exercice.pinned ? "currentColor" : "none"} />
-                        </IconButton>
+                        <PinIcon className="w-4 h-4" fill={exercice.pinned ? "currentColor" : "none"} />
+                    </IconButton>
 
-                        {/* Bouton Modifier */}
-                        <IconButton
-                            onClick={handleEdit}
-                            title="Modifier"
-                            aria-label="Modifier l'exercice"
-                        >
-                            <EditIcon className="w-4 h-4" />
-                        </IconButton>
+                    {/* Bouton Modifier */}
+                    <IconButton
+                        onClick={handleEdit}
+                        title="Modifier"
+                        aria-label="Modifier l'exercice"
+                    >
+                        <EditIcon className="w-4 h-4" />
+                    </IconButton>
 
-                        {/* Bouton Fait - principal */}
-                        <CompleteButton
-                            onClick={handleComplete}
-                            isCompleted={exercice.completed}
-                            isCompletedToday={exercice.completedToday}
-                            isLoading={isCompleting}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
+                    {/* Bouton Fait - principal */}
+                    <CompleteButton
+                        onClick={handleComplete}
+                        isCompleted={exercice.completed}
+                        isCompletedToday={exercice.completedToday}
+                        isLoading={isCompleting}
+                    />
+                </BaseCard.Footer>
+            </BaseCard.Content>
+        </BaseCard>
     );
 }

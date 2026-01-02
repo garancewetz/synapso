@@ -1,10 +1,10 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface CloseIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
 }
 
-export function CloseIcon({ className = 'w-5 h-5', ...props }: CloseIconProps) {
+export function CloseIcon({ className = 'w-5 h-5', ...props }: Props) {
   return (
     <svg 
       className={className}

@@ -1,14 +1,15 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import clsx from 'clsx';
 
 type BadgeVariant = 'default' | 'workout' | 'equipment';
 
-interface BadgeProps {
+type Props = {
   children: ReactNode;
   variant?: BadgeVariant;
   color?: string;
   icon?: string;
   className?: string;
-}
+};
 
 // Classes de base communes à tous les badges
 const baseClasses = 'text-xs px-2.5 py-1 rounded-md font-medium';
@@ -20,13 +21,13 @@ export function Badge({
   children, 
   icon,
   className = '' 
-}: BadgeProps) {
+}: Props) {
   // Si un className est fourni avec des classes de couleur, on n'applique pas les couleurs par défaut
   const hasCustomColors = className.includes('bg-') || className.includes('text-');
   const colorClasses = hasCustomColors ? '' : defaultColorClasses;
   
   return (
-    <span className={`${baseClasses} ${colorClasses} ${className}`}>
+    <span className={clsx(baseClasses, colorClasses, className)}>
       {icon && <span>{icon} </span>}
       {children}
     </span>

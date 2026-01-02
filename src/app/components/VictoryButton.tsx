@@ -1,13 +1,13 @@
 'use client';
 
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 
-interface VictoryButtonProps {
+type Props = {
   onClick: () => void;
   variant?: 'fixed' | 'inline';
   position?: 'left' | 'right';
   label?: string;
-}
+};
 
 const baseClasses = `
   bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500
@@ -34,7 +34,7 @@ export default function VictoryButton({
   variant = 'inline',
   position = 'right',
   label = 'Ajouter'
-}: VictoryButtonProps) {
+}: Props) {
   const isFixed = variant === 'fixed';
   const positionClass = isFixed 
     ? (position === 'left' ? 'left-4 md:left-8 right-auto' : 'right-4 md:right-8 left-auto')
@@ -43,7 +43,7 @@ export default function VictoryButton({
   return (
     <button
       onClick={onClick}
-      className={cn(baseClasses, variantClasses[variant], positionClass)}
+      className={clsx(baseClasses, variantClasses[variant], positionClass)}
       aria-label="Noter une victoire"
     >
       <span className={isFixed ? 'text-xl' : 'text-lg'}>🌟</span>

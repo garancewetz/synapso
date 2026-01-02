@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
 import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
 
-interface PasswordModalProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   title: string;
-}
+};
 
-export default function PasswordModal({ isOpen, onClose, onSuccess, title }: PasswordModalProps) {
+export default function PasswordModal({ isOpen, onClose, onSuccess, title }: Props) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');

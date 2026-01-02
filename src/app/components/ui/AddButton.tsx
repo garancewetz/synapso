@@ -3,16 +3,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PlusIcon } from './icons';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 
-interface AddButtonProps {
+type Props = {
   href: string;
   label?: string;
   className?: string;
   position?: 'left' | 'right' | 'auto';
   queryParams?: Record<string, string>;
   addFromParam?: boolean;
-}
+};
 
 /**
  * Bouton rond avec plus pour ajouter des éléments
@@ -24,7 +24,7 @@ export default function AddButton({
   className = '',
   queryParams,
   addFromParam = false
-}: AddButtonProps) {
+}: Props) {
   const pathname = usePathname();
 
   // Construire l'URL avec les paramètres de requête
@@ -50,7 +50,7 @@ export default function AddButton({
   return (
     <Link 
       href={finalHref}
-      className={cn(
+      className={clsx(
         'inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14',
         'bg-gray-800 hover:bg-gray-700',
         'rounded-full shadow-md',

@@ -1,11 +1,11 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface PinIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   filled?: boolean;
 }
 
-export function PinIcon({ className = 'w-4 h-4', filled = false, ...props }: PinIconProps) {
+export function PinIcon({ className = 'w-4 h-4', filled = false, ...props }: Props) {
   return (
     <svg 
       className={className} 

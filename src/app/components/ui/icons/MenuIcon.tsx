@@ -1,10 +1,10 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface MenuIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
 }
 
-export function MenuIcon({ className = 'w-6 h-6', ...props }: MenuIconProps) {
+export function MenuIcon({ className = 'w-6 h-6', ...props }: Props) {
   return (
     <svg 
       className={className}

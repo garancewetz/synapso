@@ -1,5 +1,5 @@
 import { useUser } from '@/app/contexts/UserContext';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 
 /**
  * Hook pour gérer la préférence de main de l'utilisateur
@@ -16,7 +16,7 @@ export function useHandPreference() {
    * Adapté sur mobile ET desktop
    */
   const getFlexClasses = (baseClasses: string = 'flex items-center') => {
-    return cn(
+    return clsx(
       baseClasses,
       isLeftHanded 
         ? 'flex-row-reverse justify-start'
@@ -30,12 +30,12 @@ export function useHandPreference() {
    */
   const getMenuPositionClasses = (isOpen: boolean) => {
     if (isLeftHanded) {
-      return cn(
+      return clsx(
         'left-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       );
     }
-    return cn(
+    return clsx(
       'right-0',
       isOpen ? 'translate-x-0' : 'translate-x-full'
     );

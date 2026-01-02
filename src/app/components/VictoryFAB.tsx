@@ -7,9 +7,9 @@ import VictoryButton from './VictoryButton';
 import ConfettiRain from './ConfettiRain';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
-interface VictoryFABProps {
+type Props = {
   onSuccess?: () => void;
-}
+};
 
 /**
  * Bouton flottant "Noter une victoire" - présent sur toutes les pages principales
@@ -22,7 +22,7 @@ interface VictoryFABProps {
  * Ouvre le VictoryBottomSheet pour noter une petite victoire.
  * Déclenche une pluie de confettis dorés lors d'une victoire ajoutée.
  */
-export default function VictoryFAB({ onSuccess }: VictoryFABProps) {
+export default function VictoryFAB({ onSuccess }: Props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();

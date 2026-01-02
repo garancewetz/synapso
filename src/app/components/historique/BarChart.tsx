@@ -5,11 +5,11 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
-interface BarChartProps {
+type Props = {
   data: HeatmapDay[];
   currentStreak: number;
   victoryDates?: Set<string>;
-}
+};
 
 function getBarColor(count: number, isToday: boolean): string {
   if (isToday) return '#3B82F6';
@@ -19,7 +19,7 @@ function getBarColor(count: number, isToday: boolean): string {
   return '#10B981';
 }
 
-export function BarChart({ data, currentStreak, victoryDates }: BarChartProps) {
+export function BarChart({ data, currentStreak, victoryDates }: Props) {
   // Filtrer les jours vides et formater pour le graphique
   const chartData = data
     .filter(day => !day.isEmpty)

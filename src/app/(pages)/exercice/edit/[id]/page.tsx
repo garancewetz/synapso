@@ -44,9 +44,9 @@ function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
   });
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       <BackToHomeButton />
-      <div className="p-3 sm:p-6 bg-gray-50">
+      <div className="px-3 sm:p-6 bg-gray-50">
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 sm:p-6">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier l&apos;exercice</h1>

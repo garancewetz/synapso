@@ -8,7 +8,7 @@ import { MenuIcon } from '@/app/components/ui/icons';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 
 /**
@@ -73,7 +73,7 @@ export default function NavBar() {
       {/* Header minimaliste */}
       <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6">
         <div
-          className={cn(
+          className={clsx(
             'flex items-center py-3 md:py-4 justify-between',
             isLeftHanded && 'flex-row-reverse'
           )}
@@ -81,7 +81,7 @@ export default function NavBar() {
           {/* Logo et nom */}
           <Link
             href="/"
-            className={cn(
+            className={clsx(
               'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors',
               !isLeftHanded && '-ml-2'
             )}
@@ -92,7 +92,7 @@ export default function NavBar() {
           </Link>
 
           {/* Nom utilisateur et bouton menu */}
-          <div className={cn(
+          <div className={clsx(
             'flex items-center gap-3',
             isLeftHanded && 'flex-row-reverse'
           )}>

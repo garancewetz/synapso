@@ -1,22 +1,14 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { AphasieItem } from '@/app/types';
 
-interface AphasieItemCardProps {
+type Props = {
   item: AphasieItem;
-}
+};
 
 /**
  * Composant pour afficher une citation aphasie
  */
-export default function AphasieItemCard({ item }: AphasieItemCardProps) {
-  const router = useRouter();
-
-  const handleEditClick = () => {
-    router.push(`/aphasie/edit/${item.id}`);
-  };
-
+export default function AphasieItemCard({ item }: Props) {
   return (
     <li className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
       <div className="mb-3 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
@@ -30,13 +22,13 @@ export default function AphasieItemCard({ item }: AphasieItemCardProps) {
         {item.date && (
           <div className="text-sm text-gray-600 font-medium">{item.date}</div>
         )}
-        <button
-          onClick={handleEditClick}
+        <Link
+          href={`/aphasie/edit/${item.id}`}
           className="ml-auto cursor-pointer text-xs text-gray-400 hover:text-gray-600"
           aria-label="Modifier la citation"
         >
           Modifier
-        </button>
+        </Link>
       </div>
     </li>
   );

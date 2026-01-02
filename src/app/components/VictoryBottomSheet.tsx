@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS } from '@/app/constants/victory.constants';
+import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS, VICTORY_TAGS_WITH_EMOJI } from '@/app/constants/victory.constants';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
 import { BottomSheetModal, DeleteButton } from '@/app/components/ui';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Victory } from '@/app/types';
 
-interface VictoryBottomSheetProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   userId: number;
   victoryToEdit?: Victory | null;
-}
+};
 
-export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit }: VictoryBottomSheetProps) {
+export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit }: Props) {
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciceCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,12 +121,18 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
     onClose();
   };
 
-  const handleTagClick = (label: string) => {
-    const isActive = content.includes(label);
+  const handleTagClick = (label: string, emoji: string) => {
+    // Pour Force, Souplesse, Équilibre : format "emoji+label+emoji"
+    // Pour Confort : juste le label sans emoji
+    const shouldUseEmojiFormat = VICTORY_TAGS_WITH_EMOJI.includes(label as typeof VICTORY_TAGS_WITH_EMOJI[number]);
+    
+    const textToAdd = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
+    const isActive = content.includes(textToAdd);
+    
     if (isActive) {
-      setContent(prev => prev.replace(label, '').replace(/\s+/g, ' ').trim());
+      setContent(prev => prev.replace(textToAdd, '').replace(/\s+/g, ' ').trim());
     } else {
-      setContent(prev => prev ? `${prev} ${label}` : label);
+      setContent(prev => prev ? `${prev} ${textToAdd}` : textToAdd);
     }
   };
 
@@ -143,12 +149,17 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
         {/* Tags de victoire */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           {VICTORY_TAGS.map(({ label, emoji }) => {
-            const isActive = content.includes(label);
+            // Pour Force, Souplesse, Équilibre : vérifier avec format emoji+label+emoji
+            // Pour Confort : vérifier juste le label
+            const shouldUseEmojiFormat = VICTORY_TAGS_WITH_EMOJI.includes(label as typeof VICTORY_TAGS_WITH_EMOJI[number]);
+            const textToCheck = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
+            const isActive = content.includes(textToCheck);
+            
             return (
               <button
                 key={label}
                 type="button"
-                onClick={() => handleTagClick(label)}
+                onClick={() => handleTagClick(label, emoji)}
                 className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl
                            transition-all duration-150 active:scale-95
                            ${isActive 
@@ -210,11 +221,16 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
               const colors = VICTORY_CATEGORY_COLORS[category];
               const isSelected = selectedCategory === category;
               
+              const handleCategoryClick = () => {
+                // Toggle la sélection de la catégorie (ne modifie pas le textarea)
+                setSelectedCategory(isSelected ? null : category);
+              };
+              
               return (
                 <button
                   key={category}
                   type="button"
-                  onClick={() => setSelectedCategory(isSelected ? null : category)}
+                  onClick={handleCategoryClick}
                   className="flex flex-col items-center gap-1 transition-all duration-150"
                 >
                   <div className={`

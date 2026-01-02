@@ -1,11 +1,11 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface PlusIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   strokeWidth?: number;
 }
 
-export function PlusIcon({ className = 'w-5 h-5', strokeWidth = 2, ...props }: PlusIconProps) {
+export function PlusIcon({ className = 'w-5 h-5', strokeWidth = 2, ...props }: Props) {
   return (
     <svg 
       className={className}

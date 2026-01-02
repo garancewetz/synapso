@@ -7,13 +7,13 @@ import ConfettiRain from '@/app/components/ConfettiRain';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { isMonday } from 'date-fns';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 
-interface WelcomeHeaderProps {
+type Props = {
   userName: string;
   completedToday: number | null;
   resetFrequency?: 'DAILY' | 'WEEKLY' | null;
-}
+};
 
 // Objectif quotidien : 5 exercices par jour
 const DAILY_GOAL = 5;
@@ -42,7 +42,7 @@ const CONFETTI_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', 
 const CELEBRATION_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'];
 
 
-export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: WelcomeHeaderProps) {
+export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: Props) {
   const { isLeftHanded } = useHandPreference();
   const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
@@ -210,7 +210,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
       {/* Greeting */}
       <div className="mb-5 relative z-10 px-3 md:px-4">
-        <div className={cn('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
+        <div className={clsx('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
               {getTimeGreeting()}, {userName}

@@ -1,13 +1,12 @@
-'use client';
+import clsx from 'clsx';
+import type { ReactNode } from 'react';
 
-import { cn } from '@/app/utils/cn';
-
-interface CardProps {
-  children: React.ReactNode;
+type Props = {
+  children: ReactNode;
   variant?: 'default' | 'elevated' | 'outlined' | 'subtle';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   className?: string;
-}
+};
 
 const variantStyles = {
   default: 'bg-white border border-gray-100 shadow-sm',
@@ -32,9 +31,9 @@ export function Card({
   variant = 'default', 
   padding = 'md',
   className 
-}: CardProps) {
+}: Props) {
   return (
-    <div className={cn(
+    <div className={clsx(
       'rounded-2xl',
       variantStyles[variant],
       paddingStyles[padding],

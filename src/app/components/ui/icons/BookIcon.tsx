@@ -1,10 +1,10 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface BookIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
 }
 
-export function BookIcon({ className = 'w-5 h-5', ...props }: BookIconProps) {
+export function BookIcon({ className = 'w-5 h-5', ...props }: Props) {
   return (
     <svg 
       className={className}

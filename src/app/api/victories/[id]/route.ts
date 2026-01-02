@@ -21,28 +21,12 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { content, emoji, userId } = body;
+    const { content, emoji } = body;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que la victoire appartient à l'utilisateur
+    // Vérifier que la victoire existe
     const existingVictory = await prisma.victory.findFirst({
       where: {
         id: victoryId,
-        userId: userIdNumber,
       },
     });
 

@@ -1,26 +1,16 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/app/components/ui';
 
-interface EmptyStateProps {
+type Props = {
   icon?: string;
   title: string;
   message: string;
   subMessage?: string;
   actionHref?: string;
   actionLabel?: string;
-}
+};
 
-export default function EmptyState({ icon = '🔍', title, message, subMessage, actionHref, actionLabel }: EmptyStateProps) {
-  const router = useRouter();
-
-  const handleActionClick = () => {
-    if (actionHref) {
-      router.push(actionHref);
-    }
-  };
-
+export default function EmptyState({ icon = '🔍', title, message, subMessage, actionHref, actionLabel }: Props) {
   return (
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
@@ -38,13 +28,14 @@ export default function EmptyState({ icon = '🔍', title, message, subMessage, 
         )}
         {actionHref && actionLabel && (
           <div className="mt-6">
-            <Button
-              onClick={handleActionClick}
-              variant="action"
-              className="px-6 py-3"
-            >
-              {actionLabel}
-            </Button>
+            <Link href={actionHref}>
+              <Button
+                variant="action"
+                className="px-6 py-3"
+              >
+                {actionLabel}
+              </Button>
+            </Link>
           </div>
         )}
       </div>

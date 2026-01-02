@@ -7,16 +7,16 @@ import { CATEGORY_ICONS, BODYPART_ICONS, CATEGORY_CHART_COLORS } from '@/app/con
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { VictoryCard } from './VictoryCard';
 
-interface WeekAccordionProps {
+type Props = {
   weekKey: string;
   label: string;
   entries: HistoryEntry[];
   victories?: Victory[];
   isExpanded: boolean;
   onToggle: () => void;
-}
+};
 
-export function WeekAccordion({ label, entries, victories = [], isExpanded, onToggle }: WeekAccordionProps) {
+export function WeekAccordion({ label, entries, victories = [], isExpanded, onToggle }: Props) {
   const hasVictories = victories.length > 0;
   const hasEntries = entries.length > 0;
   

@@ -5,14 +5,15 @@ import Link from 'next/link';
 import { ErrorMessage, Loader, Input, Button } from '@/app/components';
 import { PlusIcon, CheckIcon } from '@/app/components/ui/icons';
 import type { User } from '@/app/types';
+import type { ReactNode } from 'react';
 
-interface UserSectionProps {
+type Props = {
   users: User[];
   currentUser: User | null;
   onUserChange: (userId: number) => void;
   onCreateUser: (name: string) => Promise<void>;
   isMenuOpen: boolean;
-}
+};
 
 export function UserSection({
   users,
@@ -20,7 +21,7 @@ export function UserSection({
   onUserChange,
   onCreateUser,
   isMenuOpen,
-}: UserSectionProps) {
+}: Props) {
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [creatingUser, setCreatingUser] = useState(false);

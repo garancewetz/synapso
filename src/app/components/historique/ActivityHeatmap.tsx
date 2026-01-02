@@ -2,23 +2,24 @@
 
 import { format, isToday, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 
-interface ActivityHeatmapProps {
+type Props = {
   data: HeatmapDay[];
   currentStreak: number;
   showFullLink?: boolean;
   userName?: string;
   victoryDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
-}
+};
 
 // Noms des jours de la semaine (lundi = début)
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, victoryDates, onDayClick }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, victoryDates, onDayClick }: Props) {
   // Filtrer les jours vides et ne garder que les vrais jours
   const realDays = data.filter(day => !day.isEmpty);
   
@@ -90,11 +91,11 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
         <div className="grid grid-cols-7 gap-2 mb-2">
           {WEEKDAY_NAMES.map((name, index) => (
             <div 
-              key={index} 
-              className={`
-                text-center text-xs font-semibold
-                ${index >= 5 ? 'text-emerald-600' : 'text-gray-500'}
-              `}
+              key={name} 
+              className={clsx(
+                'text-center text-xs font-semibold',
+                index >= 5 ? 'text-emerald-600' : 'text-gray-500'
+              )}
             >
               {name}
             </div>

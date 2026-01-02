@@ -1,10 +1,10 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface WarningIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
 }
 
-export function WarningIcon({ className = 'w-4 h-4', ...props }: WarningIconProps) {
+export function WarningIcon({ className = 'w-4 h-4', ...props }: Props) {
   return (
     <svg 
       className={className}

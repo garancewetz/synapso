@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 type ConfettiVariant = 'default' | 'golden';
 
-interface ConfettiRainProps {
+type Props = {
   show?: boolean;
   fromWindow?: boolean;
   emojiCount?: number;
@@ -13,7 +13,7 @@ interface ConfettiRainProps {
   emojis?: string[];
   colors?: string[];
   variant?: ConfettiVariant;
-}
+};
 
 // Presets de variantes
 const VARIANT_PRESETS: Record<ConfettiVariant, { emojis: string[]; colors: string[] }> = {
@@ -38,16 +38,16 @@ const VARIANT_PRESETS: Record<ConfettiVariant, { emojis: string[]; colors: strin
   },
 };
 
-interface PopEmojiProps {
+type PopEmojiProps = {
   delay: number;
   x: number;
   emoji: string;
   fromWindow?: boolean;
   swayAmount: number;
   swayDirection: number;
-}
+};
 
-interface ConfettiProps {
+type ConfettiProps = {
   delay: number;
   startX: number;
   color: string;
@@ -56,7 +56,7 @@ interface ConfettiProps {
   randomRotation: number;
   swayAmount: number;
   swayDirection: number;
-}
+};
 
 const ANIMATION_DURATION = 3.2;
 const ANIMATION_TIMES = [0, 0.15, 0.3, 0.45, 0.6, 0.8, 1];
@@ -153,7 +153,7 @@ export default function ConfettiRain({
   emojis,
   colors,
   variant = 'default',
-}: ConfettiRainProps) {
+}: Props) {
   // Utiliser les presets de la variante, avec possibilité de surcharger
   const preset = VARIANT_PRESETS[variant];
   const finalEmojis = emojis ?? preset.emojis;

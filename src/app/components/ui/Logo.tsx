@@ -1,11 +1,9 @@
-'use client';
-
-interface LogoProps {
+type Props = {
   size?: number;
   className?: string;
-}
+};
 
-export default function Logo({ size = 20, className = "" }: LogoProps) {
+export default function Logo({ size = 20, className = "" }: Props) {
   return (
     <div className={className}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={size} height={size} role="img" aria-labelledby="title-desc" 

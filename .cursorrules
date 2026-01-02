@@ -1,0 +1,296 @@
+# .cursorrules
+
+## Contexte de l'application
+
+Cette application est conçue pour la rééducation de personnes ayant subi un AVC (Accident Vasculaire Cérébral). Par conséquent, l'interface doit être :
+- **Simple** : Navigation claire, actions évidentes, pas de complexité inutile
+- **Intuitive** : Flux logiques, feedback immédiat, pas de confusion possible
+- **Accessible** : Respect des standards WCAG, navigation au clavier, contrastes élevés, textes lisibles, support des lecteurs d'écran
+- **Encourageante** : Feedback positif, célébration des réussites, progression visible, messages motivants
+
+Chaque décision de design et d'implémentation doit être évaluée selon ces critères prioritaires.
+
+## Next.js App Router
+
+- Use App Router structure: `app/` directory with `page.tsx`, `layout.tsx`, `route.ts` files
+- Server Components by default: Only add `'use client'` when needed (interactivity, hooks, browser APIs)
+- Route components: Use `export default function PageName()` for page components
+- API Routes: Use `app/api/` directory with `route.ts` files, export named functions (`GET`, `POST`, etc.)
+- Metadata: Export `metadata` object for static metadata, use `generateMetadata` function for dynamic metadata
+- Layouts: Use `layout.tsx` for shared layouts, can be nested
+- Loading states: Use `loading.tsx` for loading UI
+- Error handling: Use `error.tsx` for error boundaries
+- Navigation: Use `Link` from `next/link` for client-side navigation, `useRouter` from `next/navigation` for programmatic navigation, `usePathname` for current path
+
+```typescript
+// ✅ GOOD - Server Component (default)
+export default function Page() {
+  return <div>Content</div>;
+}
+
+// ✅ GOOD - Client Component (when needed)
+'use client';
+export default function InteractivePage() {
+  const [state, setState] = useState();
+  return <div>Interactive content</div>;
+}
+
+// ✅ GOOD - API Route
+export async function GET(request: Request) {
+  return Response.json({ data: 'value' });
+}
+
+// ✅ GOOD - Metadata
+export const metadata: Metadata = {
+  title: 'Page Title',
+};
+
+// ❌ BAD - Unnecessary client component
+'use client';
+export default function StaticPage() {
+  return <div>Static content</div>;
+}
+```
+
+## TypeScript React - Props Declaration
+
+- ALWAYS use `type Props = { ... }` (NEVER `interface`)
+- Props are local and non-exported by default
+- Direct destructuring in function signature
+- For children: `PropsWithChildren<{ ... }>`
+- Extension by intersection: `type Props = BaseType & { ... }`
+- Import types: `import { type ReactNode } from 'react'`
+
+❌ Forbidden:
+- Never `interface` for props
+- Never inline props
+- Never systematic export of props
+
+## Keys in map loops
+
+- Priority 1: Use unique ID if available: `key={item.id}`
+- Priority 2: Use unique property if no ID: `key={item.value}`, `key={item.loinc}`, etc.
+- Priority 3: Use composite key only if needed: `key={`${date}-${kind}`}`
+- Avoid: Using index alone (only in very specific cases)
+
+```typescript
+// ✅ GOOD - Using ID
+{items.map(item => <div key={item.id}>...</div>)}
+
+// ✅ GOOD - Using unique property
+{items.map(item => <div key={item.value}>...</div>)}
+
+// ✅ GOOD - Composite key when needed
+{items.map(item => <div key={`${item.date}-${item.kind}`}>...</div>)}
+
+// ❌ BAD - Index alone (avoid)
+{items.map((item, index) => <div key={index}>...</div>)}
+```
+
+## Tailwind conditional styles
+
+- Always use clsx for conditional classes
+- Import: `import clsx from 'clsx'`
+
+## Component naming and exports
+
+- Use PascalCase for component names: `export function ComponentName`
+- Prefer named exports over default exports for components
+- Use default exports for Next.js route components (`page.tsx`, `layout.tsx`) and API route handlers (`route.ts`)
+- Components are functions, not arrow functions: `export function MyComponent() {}`
+
+```typescript
+// ✅ GOOD
+export function MyComponent({ prop1, prop2 }: Props) {
+  return <div>...</div>;
+}
+
+// ❌ BAD - Arrow function
+export const MyComponent = ({ prop1, prop2 }: Props) => {
+  return <div>...</div>;
+}
+```
+
+## Custom hooks
+
+- Always start with `use` prefix: `usePatientData`, `useUpdateDocument`
+- Return objects, not tuples: `return { data, loading, error }`
+- Organize hooks in folders: `hooks/api/`, `hooks/query-state/`
+- Use `useCallback` for functions returned from hooks that are used as dependencies
+
+```typescript
+// ✅ GOOD
+export function useUpdateDocument() {
+  const update = useCallback((id: string) => {
+    // ...
+  }, []);
+  
+  return { update };
+}
+
+// ❌ BAD - Tuple return
+export function useUpdateDocument() {
+  return [update, loading];
+}
+```
+
+## React imports
+
+- Use `import type` for type-only imports: `import type { ReactNode } from 'react'`
+- Import hooks directly: `import { useState, useCallback } from 'react'`
+- Use `PropsWithChildren` from React for components with children
+
+```typescript
+// ✅ GOOD
+import { useState, useCallback, type ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
+
+// ❌ BAD - No type import
+import { useState, ReactNode } from 'react';
+```
+
+## Error handling
+
+- **Always prefer `throw new Error('context')` over simple `return`** for validations and checks
+- Throw errors for expected error cases with descriptive context: `throw new Error('Missing documentId param')`
+- Use Next.js `error.tsx` files for error boundaries at route level
+- Use `notFound()` from `next/navigation` for 404 cases
+- Don't catch errors to silently fail - let them bubble up
+- Error messages should provide clear context about what went wrong
+
+```typescript
+// ✅ GOOD - Throw with context
+if (!params.documentId) {
+  throw new Error('Missing documentId param');
+}
+
+if (!patient) {
+  throw new Error('Patient not found');
+}
+
+if (!response.ok) {
+  throw new Error(`Failed to fetch data: ${response.status}`);
+}
+
+// ❌ BAD - Silent failure with return
+if (!params.documentId) {
+  return null;
+}
+
+if (!patient) {
+  return;
+}
+
+// ❌ BAD - Return without error context
+if (!response.ok) {
+  return undefined;
+}
+```
+
+## Performance optimizations
+
+- Use `useCallback` for functions passed as props or in dependency arrays
+- Use `useMemo` for expensive computations
+- Use `use` hook for React Context (React 19): `const value = use(MyContext)`
+
+```typescript
+// ✅ GOOD
+const handleClick = useCallback(() => {
+  // ...
+}, [dependency]);
+
+const expensiveValue = useMemo(() => {
+  return computeExpensiveValue(data);
+}, [data]);
+```
+
+## Context providers
+
+- Export Context and Provider separately
+- Use `PropsWithChildren` for Provider props
+- Pattern: `MyContext` + `MyProvider` + `useMyContext` hook
+
+```typescript
+// ✅ GOOD
+export const MyContext = createContext<MyValue>(defaultValue);
+
+export function MyProvider({ children }: PropsWithChildren) {
+  const value = useMyValue();
+  return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
+}
+```
+
+
+## Dependencies - Version Management
+
+- When adding a new dependency, you must **always pin** its version in `package.json` (e.g., `"my-lib": "1.2.3"` and **never** `"my-lib": "^1.2.3"` or `"my-lib": "~1.2.3"`).
+- Also pin all internal monorepo dependencies when they are changed or added.
+
+```json
+// ✅ GOOD - strictly pinned version
+"my-lib": "1.2.3"
+
+// ❌ BAD - version with caret (^) or tilde (~)
+"my-lib": "^1.2.3"
+"my-lib": "~1.2.3"
+```
+
+
+## Commit conventions
+
+- Always follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#specification) specification
+- Format: `<type>(<scope>): <description>`
+- Each commit message should consist of a header, optional body, and optional footer
+
+### Commit structure
+
+1. **Type:** Must be one of the following:
+   - **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+   - **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+   - **docs**: Documentation only changes
+   - **feat**: A new feature
+   - **fix**: A bug fix
+   - **perf**: A code change that improves performance
+   - **refactor**: A code change that neither fixes a bug nor adds a feature
+   - **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+   - **test**: Adding missing tests or correcting existing tests
+
+2. **Scope:** Optional, refers to the scope of the commit. Should be specific to the feature/module being changed (e.g., `clinical-data`, `forms`, `modals`, `api`, `domain`). Avoid using the app name (e.g., `okeiro`) as it's too broad - use the specific module/feature name instead.
+
+3. **Subject:** Brief description of the change in imperative mood, lowercase, no period at the end
+
+4. **Body and Footer:** Optional, used to provide more detailed descriptions about the change and any breaking changes or issues closed by the commit
+
+5. **BREAKING CHANGE:** A commit that has a footer `BREAKING CHANGE:`, or appends a `!` after the type/scope, introduces a breaking API change (correlating with **`MAJOR`** in Semantic Versioning). A BREAKING CHANGE can be part of commits of any *type*.
+
+```bash
+# ✅ GOOD
+feat(TECH-123): add new login button
+feat(ui): add chat message preview component
+fix(api): resolve authentication token expiration
+docs: update README with setup instructions
+refactor(domain): simplify patient data model
+build(npm): update dependencies
+
+# ✅ GOOD - With specific scope
+feat(clinical-data): implement messaging conversation view
+fix(forms): handle database connection timeout
+fix(api): resolve authentication token expiration
+
+# ❌ BAD - Scope too broad (app name)
+feat(okeiro): implement messaging conversation view
+fix(okeiro): handle database connection timeout
+
+# ✅ GOOD - Breaking change
+feat(api)!: change authentication endpoint
+feat(api): change authentication endpoint
+
+BREAKING CHANGE: The /auth endpoint now requires a different payload structure
+
+# ❌ BAD - Not following conventions
+Added new feature
+fix bug
+Update README.md
+```
+
+- After making changes, always propose a commit message following these conventions 

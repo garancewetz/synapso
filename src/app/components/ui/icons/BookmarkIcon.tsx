@@ -1,11 +1,11 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface BookmarkIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   filled?: boolean;
 }
 
-export function BookmarkIcon({ className = 'w-4 h-4', filled = true, ...props }: BookmarkIconProps) {
+export function BookmarkIcon({ className = 'w-4 h-4', filled = true, ...props }: Props) {
   return (
     <svg 
       className={className}

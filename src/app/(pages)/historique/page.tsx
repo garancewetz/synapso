@@ -9,7 +9,7 @@ import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/component
 import BackToHomeButton from '@/app/components/BackToHomeButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 import {
   STATS_DAYS,
   ROADMAP_PREVIEW_DAYS,
@@ -183,11 +183,11 @@ export default function HistoriquePage() {
   }, [selectedDay, victories]);
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour accueil */}
       <BackToHomeButton />
 
-      <div className="p-3 sm:p-6">
+      <div className="px-3 sm:p-6">
 
         {/* Sections réorganisées pour maximiser la motivation */}
         <div className="space-y-6 mb-6">
@@ -203,7 +203,7 @@ export default function HistoriquePage() {
           
           {/* 2. Mes réussites personnelles - L'humain et le moral au premier plan */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-            <div className={cn('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+            <div className={clsx('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
               <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                 🌟 Mes réussites personnelles
               </h2>

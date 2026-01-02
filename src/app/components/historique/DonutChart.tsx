@@ -2,24 +2,24 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-interface DonutChartItem {
+type DonutChartItem = {
   name: string;
   value: number;
   icon: string;
   color: string;
   [key: string]: string | number;
-}
+};
 
-interface DonutChartProps {
+type Props = {
   title: string;
   data: DonutChartItem[];
   emptyIcon: string;
   emptyMessage: string;
   fullWidth?: boolean;
   legendPosition?: 'bottom' | 'right';
-}
+};
 
-export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: DonutChartProps) {
+export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: Props) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">

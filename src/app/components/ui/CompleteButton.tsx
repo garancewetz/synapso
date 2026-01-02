@@ -1,14 +1,15 @@
 'use client';
 
-import { ButtonHTMLAttributes } from 'react';
-import { CheckIcon } from '@/app/components/ui/icons';
+import type { ButtonHTMLAttributes } from 'react';
+import clsx from 'clsx';
+import { CheckIcon, SparklesIcon } from '@/app/components/ui/icons';
 
-interface CompleteButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isCompleted: boolean;
   isCompletedToday?: boolean;
   isLoading?: boolean;
   variant?: 'exercice' | 'challenge';
-}
+};
 
 export function CompleteButton({ 
   isCompleted, 
@@ -17,7 +18,7 @@ export function CompleteButton({
   variant = 'exercice',
   className = '',
   ...props 
-}: CompleteButtonProps) {
+}: Props) {
   const getLabel = () => {
     if (variant === 'challenge') {
       return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
@@ -43,7 +44,7 @@ export function CompleteButton({
   const getStyles = () => {
     if (variant === 'challenge') {
       if (isCompleted) {
-        return 'bg-emerald-500 text-white hover:bg-emerald-600';
+        return 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-[0_2px_8px_rgba(217,119,6,0.3)]';
       }
       return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
     }
@@ -56,14 +57,23 @@ export function CompleteButton({
     return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
   };
 
+  const getIcon = () => {
+    if (variant === 'challenge') {
+      return (
+        <SparklesIcon className={clsx('w-4 h-4', isCompleted && 'animate-pulse')} />
+      );
+    }
+    return <CheckIcon className="w-4 h-4" />;
+  };
+
   return (
     <button
-      className={`
-        flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-        font-semibold text-sm transition-all duration-200 shadow-sm
-        ${getStyles()}
-        ${className}
-      `}
+      className={clsx(
+        'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg',
+        'font-semibold text-sm transition-all duration-200 shadow-sm',
+        getStyles(),
+        className
+      )}
       title={getTitle()}
       aria-label={isCompleted ? (variant === 'challenge' ? 'Annuler maîtrise' : 'Démarquer') : (variant === 'challenge' ? 'Marquer comme maîtrisé' : 'Marquer comme fait')}
       disabled={isLoading}
@@ -76,7 +86,7 @@ export function CompleteButton({
         </svg>
       ) : (
         <>
-          <CheckIcon className="w-4 h-4" />
+          {getIcon()}
           <span>{getLabel()}</span>
         </>
       )}

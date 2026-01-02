@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import clsx from 'clsx';
 
-interface DeleteButtonProps {
+type Props = {
   onDelete: () => Promise<void>;
   label?: string;
   confirmLabel?: string;
@@ -10,7 +11,7 @@ interface DeleteButtonProps {
   className?: string;
   /** Délai en ms avant de reset la confirmation (0 = pas de reset auto) */
   resetDelay?: number;
-}
+};
 
 /**
  * Bouton de suppression avec sécurité double-clic
@@ -25,7 +26,7 @@ export function DeleteButton({
   disabled = false,
   className = '',
   resetDelay = 3000,
-}: DeleteButtonProps) {
+}: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -59,16 +60,15 @@ export function DeleteButton({
       type="button"
       onClick={handleClick}
       disabled={disabled || isDeleting}
-      className={`
-        w-full py-3 px-4 rounded-2xl font-semibold 
-        transition-all active:scale-[0.98] cursor-pointer
-        disabled:opacity-50 disabled:cursor-not-allowed
-        ${showConfirm 
+      className={clsx(
+        'w-full py-3 px-4 rounded-2xl font-semibold',
+        'transition-all active:scale-[0.98] cursor-pointer',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
+        showConfirm 
           ? 'bg-red-500 text-white hover:bg-red-600' 
-          : 'bg-red-50 text-red-600 hover:bg-red-100'
-        }
-        ${className}
-      `}
+          : 'bg-red-50 text-red-600 hover:bg-red-100',
+        className
+      )}
     >
       {isDeleting ? (
         <span className="animate-spin">⏳</span>

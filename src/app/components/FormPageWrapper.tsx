@@ -4,15 +4,16 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
+import type { ReactNode } from 'react';
 
-interface FormPageWrapperProps {
-  children: React.ReactNode;
+type Props = {
+  children: ReactNode;
   title?: string;
   backHref?: string;
   backLabel?: string;
-}
+};
 
-export default function FormPageWrapper({ children, title, backHref, backLabel }: FormPageWrapperProps) {
+export default function FormPageWrapper({ children, title, backHref, backLabel }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -32,7 +33,7 @@ export default function FormPageWrapper({ children, title, backHref, backLabel }
   });
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour */}
       <div className="px-3 sm:px-6 mb-2">
         {backHref ? (
@@ -56,7 +57,7 @@ export default function FormPageWrapper({ children, title, backHref, backLabel }
         )}
       </div>
 
-      <div className="p-3 sm:p-6 bg-gray-50">
+      <div className="px-3 sm:p-6 bg-gray-50">
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 sm:p-6">
             {title && (

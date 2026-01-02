@@ -1,6 +1,6 @@
 import Button from '@/app/components/ui/Button';
 
-interface FormActionsProps {
+type Props = {
   loading?: boolean;
   onSubmitLabel?: string;
   onCancel?: () => void;
@@ -10,7 +10,7 @@ interface FormActionsProps {
   deleteConfirm?: boolean;
   deleteLabel?: string;
   deleteConfirmLabel?: string;
-}
+};
 
 export default function FormActions({
   loading = false,
@@ -22,7 +22,7 @@ export default function FormActions({
   deleteConfirm = false,
   deleteLabel = 'Supprimer',
   deleteConfirmLabel = '⚠️ Confirmer la suppression',
-}: FormActionsProps) {
+}: Props) {
   return (
     <div className="space-y-3 pt-4">
       <div className="flex flex-col sm:flex-row gap-3">

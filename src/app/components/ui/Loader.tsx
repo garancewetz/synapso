@@ -1,9 +1,11 @@
-interface LoaderProps {
+import clsx from 'clsx';
+
+type Props = {
   size?: 'small' | 'medium' | 'large';
   className?: string;
-}
+};
 
-export default function Loader({ size = 'medium', className = '' }: LoaderProps) {
+export default function Loader({ size = 'medium', className = '' }: Props) {
   const sizeClasses = {
     small: 'w-4 h-4',
     medium: 'w-8 h-8',
@@ -11,9 +13,9 @@ export default function Loader({ size = 'medium', className = '' }: LoaderProps)
   };
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div className={clsx('flex items-center justify-center', className)}>
       <div
-        className={`${sizeClasses[size]} border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin`}
+        className={clsx(sizeClasses[size], 'border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin')}
         role="status"
         aria-label="Chargement en cours"
       >

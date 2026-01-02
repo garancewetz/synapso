@@ -1,11 +1,12 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
 
-interface BottomSheetModalProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
@@ -15,7 +16,7 @@ interface BottomSheetModalProps {
   showFooterClose?: boolean;
   /** Label du bouton fermer */
   closeLabel?: string;
-}
+};
 
 // Seuil de drag pour fermer (en pixels)
 const DRAG_CLOSE_THRESHOLD = 100;
@@ -31,7 +32,7 @@ export default function BottomSheetModal({
   className = '',
   showFooterClose = false,
   closeLabel = 'Fermer',
-}: BottomSheetModalProps) {
+}: Props) {
   // Bloquer le scroll du body quand la modale est ouverte
   useBodyScrollLock(isOpen);
 

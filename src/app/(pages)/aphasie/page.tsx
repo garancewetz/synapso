@@ -5,6 +5,7 @@ import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
 import BackToHomeButton from '@/app/components/BackToHomeButton';
+import ViewVictoriesButton from '@/app/components/ViewVictoriesButton';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 
@@ -19,19 +20,19 @@ export default function AphasiePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour accueil */}
       <BackToHomeButton />
 
-      <div className="p-3 sm:p-6">
+      <div className="px-3 sm:p-6">
         <div className="space-y-6">
-          {/* Section Challenges */}
+          {/* Section Exercices */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
             <AphasieSectionHeader
-              title="Challenges"
+              title="Exercices"
               emoji="🎯"
               addHref="/aphasie/challenges/add"
-              addLabel="Ajouter un challenge"
+              addLabel="Ajouter un exercice"
             />
             <AphasieChallengesList limit={3} />
           </div>
@@ -64,6 +65,11 @@ export default function AphasiePage() {
                 )}
               </>
             )}
+          </div>
+
+          {/* Bouton "Mes réussites" */}
+          <div>
+            <ViewVictoriesButton />
           </div>
         </div>
       </div>

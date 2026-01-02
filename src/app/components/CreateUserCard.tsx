@@ -5,11 +5,11 @@ import { Input, Button, Loader, ErrorMessage } from '@/app/components';
 import { UserIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface CreateUserCardProps {
+type Props = {
   onUserCreated?: () => void;
-}
+};
 
-export default function CreateUserCard({ onUserCreated }: CreateUserCardProps) {
+export default function CreateUserCard({ onUserCreated }: Props) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

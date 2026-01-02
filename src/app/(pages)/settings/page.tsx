@@ -175,7 +175,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       <div className="px-3 sm:px-6">
         {/* Bouton retour */}
         <BackToHomeButton />
@@ -259,7 +259,7 @@ export default function SettingsPage() {
               Journal d&apos;aphasie
             </label>
             <p className="text-sm text-gray-500 mb-4">
-              Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et challenges
+              Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et exercices
             </p>
             
             <div className="flex bg-gray-50 rounded-xl p-1 border-2 border-gray-200">

@@ -5,19 +5,20 @@ import { Logo } from '@/app/components';
 import { CloseIcon } from '@/app/components/ui/icons';
 import { useFocusTrap } from '@/app/hooks/useFocusTrap';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { cn } from '@/app/utils/cn';
+import clsx from 'clsx';
 import { UserSection } from './UserSection';
 import { MenuActions } from './MenuActions';
 import type { User } from '@/app/types';
+import type { RefObject } from 'react';
 
-interface MenuDrawerProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   users: User[];
   currentUser: User | null;
   onUserChange: (userId: number) => void;
   onCreateUser: (name: string) => Promise<void>;
-  menuButtonRef: React.RefObject<HTMLButtonElement | null>;
+  menuButtonRef: RefObject<HTMLButtonElement | null>;
 }
 
 export function MenuDrawer({
@@ -28,7 +29,7 @@ export function MenuDrawer({
   onUserChange,
   onCreateUser,
   menuButtonRef,
-}: MenuDrawerProps) {
+}: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const { getMenuPositionClasses } = useHandPreference();
 
@@ -59,7 +60,7 @@ export function MenuDrawer({
         ref={menuRef}
         id="main-menu"
         data-menu="true"
-        className={cn(
+        className={clsx(
           'fixed top-0 h-full w-72 bg-white z-50 shadow-xl flex flex-col',
           'transform transition-transform duration-300 ease-out',
           getMenuPositionClasses(isOpen)

@@ -19,3 +19,4 @@ export { default as BottomSheetModal } from './BottomSheetModal';
 export { default as ViewAllLink } from './ViewAllLink';
 export { default as AddButton } from './AddButton';
 export { Card } from './Card';
+export { BaseCard } from './BaseCard';

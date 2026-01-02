@@ -109,7 +109,7 @@ export default function RoadmapPage() {
   }, [selectedDay, victories]);
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Header avec bouton retour */}
       <div className="px-4 md:px-6 mb-6">
         <Link 

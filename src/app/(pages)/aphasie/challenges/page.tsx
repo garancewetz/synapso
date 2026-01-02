@@ -16,7 +16,7 @@ export default function AphasieChallengesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-20">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour page aphasie */}
       <div className="px-3 sm:px-6 mb-2">
         <Link 
@@ -28,13 +28,13 @@ export default function AphasieChallengesPage() {
         </Link>
       </div>
 
-      <div className="p-3 sm:p-6">
+      <div className="px-3 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">🎯 Tous les challenges</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">🎯 Tous les exercices</h1>
             <AphasieSectionHeader
               addHref="/aphasie/challenges/add"
-              addLabel="Ajouter un challenge"
+              addLabel="Ajouter un exercice"
             />
           </div>
           <AphasieChallengesList showViewAll={true} />

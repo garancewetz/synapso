@@ -1,16 +1,15 @@
-'use client';
-
 import Link from 'next/link';
+import clsx from 'clsx';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import type { Exercice } from '@/app/types';
 import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 
-interface CategoryCardWithProgressProps {
+type Props = {
   category: ExerciceCategory;
-  exercices: Exercice[];
+  /** Nombre total d'exercices dans cette catégorie */
+  total: number;
   /** Nombre d'exercices complétés dans la période */
   completedCount: number;
-}
+};
 
 /**
  * Carte de catégorie avec jauge de progression intégrée
@@ -21,12 +20,9 @@ interface CategoryCardWithProgressProps {
  */
 export default function CategoryCardWithProgress({ 
   category, 
-  exercices, 
+  total, 
   completedCount 
-}: CategoryCardWithProgressProps) {
-  const categoryExercices = exercices.filter(e => e.category === category);
-  const total = categoryExercices.length;
-  
+}: Props) {
   const categoryStyle = CATEGORY_COLORS[category];
   const icon = CATEGORY_ICONS[category];
   const label = CATEGORY_LABELS[category];
@@ -40,12 +36,14 @@ export default function CategoryCardWithProgress({
       href={href}
       aria-label={`${label} - ${completedCount} sur ${total} exercices complétés`}
       aria-describedby={`progress-${category}`}
-      className={`
-        block rounded-2xl border-2 transition-all duration-200 overflow-hidden
-        ${categoryStyle.bg} ${categoryStyle.border} 
-        hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]
-        focus:outline-none focus:ring-2 focus:ring-offset-2 ${categoryStyle.focusRing}
-      `}
+      className={clsx(
+        'block rounded-2xl border-2 transition-all duration-200 overflow-hidden',
+        categoryStyle.bg,
+        categoryStyle.border,
+        'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
+        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        categoryStyle.focusRing
+      )}
     >
       {/* Contenu principal */}
       <div className="p-4 md:p-5">
@@ -68,13 +66,12 @@ export default function CategoryCardWithProgress({
           </div>
 
           {/* Badge de progression */}
-          <div className={`
-            flex-shrink-0 px-3 py-1.5 rounded-full font-bold text-sm
-            ${completedCount > 0 
+          <div className={clsx(
+            'flex-shrink-0 px-3 py-1.5 rounded-full font-bold text-sm',
+            completedCount > 0 
               ? `${categoryStyle.accent} text-white`
               : 'bg-gray-200 text-gray-500'
-            }
-          `}>
+          )}>
             {completedCount} / {total}
           </div>
         </div>

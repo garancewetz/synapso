@@ -8,25 +8,25 @@ import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
 import { VictoryCard } from './VictoryCard';
 
-interface DayExercise {
+type DayExercise = {
   name: string;
   category: ExerciceCategory;
   completedAt: string;
-}
+};
 
-interface DayDetailModalProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   date: Date | null;
   exercises: DayExercise[];
   victory: Victory | null;
-}
+};
 
 /**
  * Modale affichant le détail d'une journée du parcours
  * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
  */
-export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: DayDetailModalProps) {
+export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
 
   // Grouper les exercices par catégorie

@@ -1,19 +1,17 @@
-'use client';
-
 import Link from 'next/link';
 import { ChevronIcon } from './icons';
 
-interface ViewAllLinkProps {
+type Props = {
   href: string;
   label: string;
   emoji?: string;
-}
+};
 
 /**
  * Bouton de navigation réutilisable pour "Voir tout"
  * Style cohérent avec les autres boutons de navigation
  */
-export default function ViewAllLink({ href, label, emoji = '📜' }: ViewAllLinkProps) {
+export default function ViewAllLink({ href, label, emoji = '📜' }: Props) {
   return (
     <Link 
       href={href}

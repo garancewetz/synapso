@@ -7,13 +7,13 @@ import AphasieChallengeCard from '@/app/components/AphasieChallengeCard';
 import type { AphasieChallenge } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface AphasieChallengesListProps {
+type Props = {
   onMasteredChange?: () => void;
   limit?: number;
   showViewAll?: boolean;
-}
+};
 
-export default function AphasieChallengesList({ onMasteredChange, limit }: AphasieChallengesListProps) {
+export default function AphasieChallengesList({ onMasteredChange, limit }: Props) {
   const [challenges, setChallenges] = useState<AphasieChallenge[]>([]);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -76,10 +76,8 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Aphas
     }
   };
 
-  const masteredChallenges = challenges.filter(c => c.mastered);
-  const activeChallenges = challenges.filter(c => !c.mastered);
-  const displayedActiveChallenges = limit ? activeChallenges.slice(0, limit) : activeChallenges;
-  const displayedMasteredChallenges = limit ? masteredChallenges.slice(0, limit) : masteredChallenges;
+  // Garder l'ordre original des challenges (pas de tri)
+  const displayedChallenges = limit ? challenges.slice(0, limit) : challenges;
   const hasMoreTotal = limit && challenges.length > limit;
 
   return (
@@ -89,11 +87,10 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Aphas
         fromWindow={true}
       />
       <div>
-        {displayedActiveChallenges.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold mb-4 text-gray-600 uppercase tracking-wider">En cours</h3>
+        {displayedChallenges.length > 0 ? (
+          <>
             <ul className="space-y-3">
-              {displayedActiveChallenges.map(challenge => (
+              {displayedChallenges.map(challenge => (
                 <AphasieChallengeCard
                   key={challenge.id}
                   challenge={challenge}
@@ -102,37 +99,20 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Aphas
                 />
               ))}
             </ul>
-          </div>
-        )}
-
-        {displayedMasteredChallenges.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold mb-4 text-gray-600 uppercase tracking-wider">Maîtrisés</h3>
-            <ul className="space-y-3">
-              {displayedMasteredChallenges.map(challenge => (
-                <AphasieChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  onMasteredToggle={handleMasteredToggle}
-                  isUpdating={isUpdating === challenge.id}
+            {limit && hasMoreTotal && (
+              <div className="mt-4">
+                <ViewAllLink 
+                  href="/aphasie/challenges"
+                  label="Voir tous les exercices"
+                  emoji="🎯"
                 />
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {challenges.length === 0 && (
+              </div>
+            )}
+          </>
+        ) : (
           <div className="text-center text-gray-500 py-8">
-            Aucun challenge pour le moment
+            Aucun exercice pour le moment
           </div>
-        )}
-
-        {limit && hasMoreTotal && (
-          <ViewAllLink 
-            href="/aphasie/challenges"
-            label="Voir tous les challenges"
-            emoji="🎯"
-          />
         )}
       </div>
     </>

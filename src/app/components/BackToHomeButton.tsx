@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { ChevronIcon } from '@/app/components/ui/icons';
 

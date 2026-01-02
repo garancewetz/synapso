@@ -1,9 +1,10 @@
-import React from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import clsx from 'clsx';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: ReactNode;
   variant?: 'primary' | 'secondary' | 'danger' | 'action' | 'danger-outline';
-}
+};
 
 export default function Button({
   children,
@@ -13,7 +14,7 @@ export default function Button({
   disabled = false,
   className = '',
   ...props
-}: ButtonProps) {
+}: Props) {
   const baseStyles = 'cursor-pointer px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantStyles = {
@@ -29,7 +30,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      className={clsx(baseStyles, variantStyles[variant], className)}
       {...props}
     >
       {children}

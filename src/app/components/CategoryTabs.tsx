@@ -11,11 +11,11 @@ import {
   CATEGORY_ICONS
 } from '@/app/constants/exercice.constants';
 
-interface CategoryTabsProps {
+type Props = {
   counts: Record<ExerciceCategory, number>;
-}
+};
 
-export default function CategoryTabs({ counts }: CategoryTabsProps) {
+export default function CategoryTabs({ counts }: Props) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 

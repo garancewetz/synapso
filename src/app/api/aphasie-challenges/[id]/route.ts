@@ -77,12 +77,48 @@ export async function PATCH(
     const id = parseInt(idParam);
     const { mastered } = await request.json();
 
+    // Récupérer le challenge avant la mise à jour pour vérifier s'il était déjà maîtrisé
+    const existingChallenge = await prisma.aphasieChallenge.findUnique({
+      where: { id },
+    });
+
+    if (!existingChallenge) {
+      return NextResponse.json(
+        { error: 'Aphasie challenge not found' },
+        { status: 404 }
+      );
+    }
+
     const challenge = await prisma.aphasieChallenge.update({
       where: { id },
       data: {
         mastered: mastered,
       },
     });
+
+    // Créer automatiquement une victoire si le challenge vient d'être maîtrisé
+    // (passage de false à true)
+    if (mastered && !existingChallenge.mastered) {
+      await prisma.victory.create({
+        data: {
+          content: challenge.text,
+          emoji: '🎯', // Emoji pour identifier les victoires liées à l'orthophonie
+          userId: challenge.userId,
+        },
+      });
+    }
+
+    // Supprimer la victoire correspondante si le challenge n'est plus maîtrisé
+    // (passage de true à false)
+    if (!mastered && existingChallenge.mastered) {
+      await prisma.victory.deleteMany({
+        where: {
+          content: challenge.text,
+          emoji: '🎯',
+          userId: challenge.userId,
+        },
+      });
+    }
 
     return NextResponse.json(challenge);
   } catch (error) {

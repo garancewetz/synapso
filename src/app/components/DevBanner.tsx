@@ -1,5 +1,3 @@
-'use client';
-
 import { WarningIcon } from '@/app/components/ui/icons';
 
 export default function DevBanner() {

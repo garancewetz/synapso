@@ -5,13 +5,13 @@ import { ErrorMessage, FormActions } from '@/app/components';
 import { InputWithSpeech } from '@/app/components/ui';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface AphasieChallengeFormProps {
+type Props = {
   challengeId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
-}
+};
 
-export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: AphasieChallengeFormProps) {
+export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: Props) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     text: '',
@@ -31,7 +31,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
         })
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
-          setError('Erreur lors du chargement du challenge');
+          setError('Erreur lors du chargement de l\'exercice');
         });
     }
   }, [challengeId]);
@@ -74,7 +74,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de l\'enregistrement du challenge');
+      setError('Erreur lors de l\'enregistrement de l\'exercice');
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de la suppression du challenge');
+      setError('Erreur lors de la suppression de l\'exercice');
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
@@ -130,7 +130,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
         showDelete={!!challengeId}
         onDelete={handleDelete}
         deleteConfirm={showDeleteConfirm}
-        deleteLabel="Supprimer le challenge"
+        deleteLabel="Supprimer l'exercice"
         deleteConfirmLabel="⚠️ Confirmer la suppression"
       />
     </form>

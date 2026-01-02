@@ -23,7 +23,7 @@ export default function AphasieChallengeAddPage() {
   }
 
   return (
-    <FormPageWrapper title="Ajouter un challenge">
+    <FormPageWrapper title="Ajouter un exercice">
       <AphasieChallengeForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );

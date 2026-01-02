@@ -1,11 +1,9 @@
-'use client';
-
 import Link from 'next/link';
-import { SparklesIcon } from '@/app/components/ui';
+import { MapIcon } from '@/app/components/ui/icons';
 
 /**
- * Bouton "Mes réussites" - Composant réutilisable
- * Style doré avec dégradé ambre pour encourager la consultation des victoires
+ * Bouton "Mon parcours" - Composant réutilisable
+ * Style doré avec dégradé ambre pour encourager la consultation du parcours
  */
 export default function ViewVictoriesButton() {
   return (
@@ -18,8 +16,8 @@ export default function ViewVictoriesButton() {
                    hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
                    transition-all flex items-center justify-center gap-2"
       >
-        <SparklesIcon className="w-5 h-5" />
-        Mes réussites
+        <MapIcon className="w-5 h-5" />
+        Mon parcours
       </Link>
     </div>
   );

@@ -8,14 +8,14 @@ import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
 
-interface ExerciceFormProps {
+type Props = {
   exerciceId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
   initialCategory?: ExerciceCategory;
-}
+};
 
-export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: ExerciceFormProps) {
+export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     name: '',

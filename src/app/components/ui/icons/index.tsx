@@ -1,11 +1,13 @@
 export { BookIcon } from './BookIcon';
 export { BookmarkIcon } from './BookmarkIcon';
 export { CalendarIcon } from './CalendarIcon';
+export { ChatIcon } from './ChatIcon';
 export { CheckIcon } from './CheckIcon';
 export { ChevronIcon } from './ChevronIcon';
 export { ClockIcon } from './ClockIcon';
 export { CloseIcon } from './CloseIcon';
 export { EditIcon } from './EditIcon';
+export { MapIcon } from './MapIcon';
 export { MenuIcon } from './MenuIcon';
 export { PinIcon } from './PinIcon';
 export { PlusIcon } from './PlusIcon';

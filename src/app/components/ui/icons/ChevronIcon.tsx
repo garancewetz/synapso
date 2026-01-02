@@ -1,9 +1,10 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
+import clsx from 'clsx';
 
-interface ChevronIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   direction?: 'up' | 'down' | 'left' | 'right';
-}
+};
 
 const rotations = {
   up: 'rotate-180',
@@ -16,10 +17,10 @@ export function ChevronIcon({
   className = 'w-4 h-4', 
   direction = 'down',
   ...props 
-}: ChevronIconProps) {
+}: Props) {
   return (
     <svg 
-      className={`${className} ${rotations[direction]}`}
+      className={clsx(className, rotations[direction])}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

@@ -25,7 +25,7 @@ export default function AphasieChallengeEditPage() {
   };
 
   return (
-    <FormPageWrapper title="Modifier un challenge">
+    <FormPageWrapper title="Modifier un exercice">
       <AphasieChallengeForm challengeId={challengeId} onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );

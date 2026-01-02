@@ -5,13 +5,13 @@ import { ErrorMessage, FormActions } from '@/app/components';
 import { InputWithSpeech, TextareaWithSpeech } from '@/app/components/ui';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface AphasieFormProps {
+type Props = {
   itemId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
-}
+};
 
-export default function AphasieForm({ itemId, onSuccess, onCancel }: AphasieFormProps) {
+export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     quote: '',

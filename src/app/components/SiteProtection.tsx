@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import PasswordModal from '@/app/components/PasswordModal';
 import InitialLoader from '@/app/components/InitialLoader';
+import type { ReactNode } from 'react';
 
-interface SiteProtectionProps {
-  children: React.ReactNode;
+type Props = {
+  children: ReactNode;
   onAuthSuccess?: () => void;
-}
+};
 
-export default function SiteProtection({ children, onAuthSuccess }: SiteProtectionProps) {
+export default function SiteProtection({ children, onAuthSuccess }: Props) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 

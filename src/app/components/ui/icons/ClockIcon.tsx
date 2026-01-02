@@ -1,11 +1,11 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface ClockIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   strokeWidth?: number;
 }
 
-export function ClockIcon({ className = 'w-4 h-4', strokeWidth = 2, ...props }: ClockIconProps) {
+export function ClockIcon({ className = 'w-4 h-4', strokeWidth = 2, ...props }: Props) {
   return (
     <svg 
       className={className} 

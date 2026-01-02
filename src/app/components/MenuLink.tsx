@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-interface MenuLinkProps {
+type Props = {
   href: string;
   onClick?: () => void;
   icon: ReactNode;
@@ -12,7 +12,7 @@ interface MenuLinkProps {
   iconBgColor?: string;
   iconTextColor?: string;
   tabIndex?: number;
-}
+};
 
 export default function MenuLink({
   href,
@@ -23,7 +23,7 @@ export default function MenuLink({
   iconBgColor = 'bg-gradient-to-br from-gray-100 to-gray-200',
   iconTextColor = 'text-gray-700',
   tabIndex,
-}: MenuLinkProps) {
+}: Props) {
   return (
     <Link
       href={href}

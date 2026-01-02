@@ -1,9 +1,10 @@
 import { CheckIcon } from '@/app/components/ui/icons';
+import clsx from 'clsx';
 
-interface CompletedBadgeProps {
+type Props = {
   isCompletedToday: boolean;
   completedAt?: Date | string | null;
-}
+};
 
 const getDayName = (date: Date | string | null): string => {
   if (!date) return 'Cette semaine';
@@ -21,15 +22,14 @@ const getDayName = (date: Date | string | null): string => {
   return dayName.charAt(0).toUpperCase() + dayName.slice(1);
 };
 
-export function CompletedBadge({ isCompletedToday, completedAt }: CompletedBadgeProps) {
+export function CompletedBadge({ isCompletedToday, completedAt }: Props) {
   return (
-    <span className={`
-      flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1
-      ${isCompletedToday 
+    <span className={clsx(
+      'flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1',
+      isCompletedToday 
         ? 'bg-emerald-500 text-white' 
         : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-      }
-    `}>
+    )}>
       <CheckIcon className="w-3.5 h-3.5" />
       {isCompletedToday ? 'Fait' : getDayName(completedAt as Date)}
     </span>

@@ -95,7 +95,7 @@ export default function Home() {
                     <CategoryCardWithProgress
                       key={category}
                       category={category}
-                      exercices={exercices}
+                      total={categoryExercices.length}
                       completedCount={categoryStats[category]}
                     />
                   );

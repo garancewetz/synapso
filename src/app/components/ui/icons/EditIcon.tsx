@@ -1,11 +1,11 @@
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-interface EditIconProps extends SVGProps<SVGSVGElement> {
+type Props = SVGProps<SVGSVGElement> & {
   className?: string;
   filled?: boolean;
 }
 
-export function EditIcon({ className = 'w-4 h-4', filled = false, ...props }: EditIconProps) {
+export function EditIcon({ className = 'w-4 h-4', filled = false, ...props }: Props) {
   return (
     <svg 
       className={className} 

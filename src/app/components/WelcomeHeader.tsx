@@ -142,9 +142,10 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
 
   return (
     <div 
-      className={`relative bg-white rounded-2xl shadow-sm border py-5 md:p-6 mb-6 overflow-hidden transition-all duration-500 ${
+      className={clsx(
+        'relative bg-white rounded-2xl shadow-sm border py-5 md:p-6 mb-6 overflow-hidden transition-all duration-500',
         isGoalReached ? 'border-emerald-300 shadow-emerald-100' : 'border-gray-200'
-      }`}
+      )}
     >
       
       {/* Effet de brillance sur la bordure quand objectif atteint */}
@@ -217,13 +218,12 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
             </h1>
             {/* Badge de réinitialisation - affiché seulement si l'information est chargée */}
             {resetFrequency && (
-              <span className={`
-                inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium mb-2
-                ${resetFrequency === 'DAILY' 
+              <span className={clsx(
+                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium mb-2',
+                resetFrequency === 'DAILY' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'bg-purple-100 text-purple-700'
-                }
-              `}>
+              )}>
                 {resetFrequency === 'DAILY' ? (
                   <>
                     <ClockIcon className="w-3 h-3" />

@@ -2,15 +2,16 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import AphasieForm from '@/app/components/AphasieForm';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
-interface AphasieEditPageProps {
+type AphasieEditPageProps = {
   params: Promise<{
     id: string;
   }>;
-}
+};
 
 export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   const router = useRouter();
@@ -19,8 +20,7 @@ export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   const itemId = id ? parseInt(id) : null;
 
   if (!itemId || isNaN(itemId)) {
-    router.push('/aphasie');
-    return null;
+    notFound();
   }
 
   // Ne rien afficher si l'utilisateur n'a pas accès à la page aphasie

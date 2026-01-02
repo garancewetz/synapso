@@ -52,7 +52,7 @@ export default function AphasieChallengeCard({
             
             {/* Titre */}
             <div className="mb-2">
-              <p className={`${GOLDEN_TEXT_STYLES.primary} font-semibold leading-relaxed`}>
+              <p className={clsx(GOLDEN_TEXT_STYLES.primary, 'font-semibold leading-relaxed')}>
                 {challenge.text}
               </p>
             </div>

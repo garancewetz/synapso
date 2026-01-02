@@ -2,15 +2,16 @@
 
 import { Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import ExerciceForm from '@/app/components/ExerciceForm';
 import BackToHomeButton from '@/app/components/BackToHomeButton';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
 import { Loader } from '@/app/components/ui';
 
-interface EditPageContentProps {
+type EditPageContentProps = {
   exerciceId: number;
   onNavigateBack: () => void;
-}
+};
 
 function EditPageContent({ exerciceId, onNavigateBack }: EditPageContentProps) {
   return (
@@ -22,9 +23,9 @@ function EditPageContent({ exerciceId, onNavigateBack }: EditPageContentProps) {
   );
 }
 
-interface EditPageWrapperProps {
+type EditPageWrapperProps = {
   exerciceId: number;
-}
+};
 
 function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
   const router = useRouter();
@@ -58,18 +59,18 @@ function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
   );
 }
 
-interface AdminEditPageProps {
+type AdminEditPageProps = {
   params: Promise<{
     id: string;
   }>;
-}
+};
 
 export default function AdminEditPage({ params }: AdminEditPageProps) {
   const { id } = use(params);
   const exerciceId = id ? parseInt(id) : null;
 
   if (!exerciceId || isNaN(exerciceId)) {
-    return null;
+    notFound();
   }
 
   return (

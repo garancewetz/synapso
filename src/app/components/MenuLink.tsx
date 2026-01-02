@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import clsx from 'clsx';
 
 type Props = {
   href: string;
@@ -35,11 +36,15 @@ export default function MenuLink({
                  active:scale-[0.98] transition-all duration-200
                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
     >
-      <span className={`
-        w-12 h-12 ${iconBgColor} rounded-xl flex items-center justify-center flex-shrink-0
-        shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200
-      `}>
-        <span className={`w-6 h-6 ${iconTextColor} group-hover:scale-110 transition-transform duration-200 flex items-center justify-center`}>
+      <span className={clsx(
+        'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
+        'shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200',
+        iconBgColor
+      )}>
+        <span className={clsx(
+          'w-6 h-6 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center',
+          iconTextColor
+        )}>
           {icon}
         </span>
       </span>

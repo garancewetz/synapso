@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavBar from "@/app/components/NavBar";
 import BottomNavBar from "@/app/components/BottomNavBar";
@@ -11,10 +11,10 @@ import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "Synapso",
   description: "Exercices de rééducation",
   manifest: "/manifest.json",
-  themeColor: "#ffffff",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -34,6 +34,10 @@ export const metadata: Metadata = {
       },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({

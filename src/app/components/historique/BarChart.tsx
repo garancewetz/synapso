@@ -3,6 +3,7 @@
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 type Props = {
@@ -135,7 +136,7 @@ export function BarChart({ data, currentStreak, victoryDates }: Props) {
           <span>Aujourd&apos;hui</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-sm">⭐</span>
+          <span className="text-sm">{VICTORY_EMOJIS.STAR}</span>
           <span>Victoire</span>
         </div>
       </div>

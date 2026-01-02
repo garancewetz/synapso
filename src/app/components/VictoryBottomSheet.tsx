@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS, VICTORY_TAGS_WITH_EMOJI } from '@/app/constants/victory.constants';
+import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS, VICTORY_TAGS_WITH_EMOJI, ORTHOPHONIE_COLORS } from '@/app/constants/victory.constants';
+import { VICTORY_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_VICTORY_EMOJI } from '@/app/constants/emoji.constants';
+import { getExerciceCategoryFromEmoji, isOrthophonieVictory } from '@/app/utils/victory.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
 import { BottomSheetModal, DeleteButton } from '@/app/components/ui';
 import ErrorMessage from '@/app/components/ErrorMessage';
@@ -15,11 +17,14 @@ type Props = {
   onSuccess: () => void;
   userId: number;
   victoryToEdit?: Victory | null;
+  defaultCategory?: VictoryCategory;
 };
 
-export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit }: Props) {
+type VictoryCategory = ExerciceCategory | 'ORTHOPHONIE';
+
+export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit, defaultCategory }: Props) {
   const [content, setContent] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ExerciceCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<VictoryCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
@@ -38,19 +43,25 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
     ? (content ? `${content} ${interimTranscript}` : interimTranscript)
     : content;
 
-  // Pré-remplir les champs en mode édition
+  // Pré-remplir les champs en mode édition ou avec defaultCategory
   useEffect(() => {
     if (isOpen && victoryToEdit) {
       setContent(victoryToEdit.content);
-      const categoryFromEmoji = CATEGORY_ORDER.find(
-        cat => CATEGORY_ICONS[cat] === victoryToEdit.emoji
-      );
-      setSelectedCategory(categoryFromEmoji || null);
+      // Utiliser les utilitaires factorisés pour déterminer la catégorie
+      if (isOrthophonieVictory(victoryToEdit.emoji)) {
+        setSelectedCategory('ORTHOPHONIE');
+      } else {
+        const categoryFromEmoji = getExerciceCategoryFromEmoji(victoryToEdit.emoji);
+        setSelectedCategory(categoryFromEmoji || null);
+      }
+    } else if (isOpen && defaultCategory) {
+      // Pré-sélectionner la catégorie par défaut si fournie
+      setSelectedCategory(defaultCategory);
     } else if (!isOpen) {
       setContent('');
       setSelectedCategory(null);
     }
-  }, [isOpen, victoryToEdit]);
+  }, [isOpen, victoryToEdit, defaultCategory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +74,12 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
     setIsSubmitting(true);
     setError('');
 
-    const categoryEmoji = selectedCategory ? CATEGORY_ICONS[selectedCategory] : null;
+    // Déterminer l'emoji selon la catégorie sélectionnée
+    const categoryEmoji = selectedCategory === 'ORTHOPHONIE' 
+      ? ORTHOPHONIE_VICTORY_EMOJI 
+      : selectedCategory 
+        ? CATEGORY_ICONS[selectedCategory] 
+        : null;
 
     try {
       const url = isEditMode ? `/api/victories/${victoryToEdit!.id}` : '/api/victories';
@@ -96,17 +112,21 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
   const handleDelete = async () => {
     if (!victoryToEdit) return;
 
-    const response = await fetch(`/api/victories/${victoryToEdit.id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+    try {
+      const response = await fetch(`/api/victories/${victoryToEdit.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
 
-    if (response.ok) {
-      resetForm();
-      onSuccess();
-      handleClose();
-    } else {
-      throw new Error('Erreur lors de la suppression');
+      if (response.ok) {
+        resetForm();
+        onSuccess();
+        handleClose();
+      } else {
+        throw new Error('Erreur lors de la suppression');
+      }
+    } catch {
+      setError('Erreur lors de la suppression. Réessaie !');
     }
   };
 
@@ -141,7 +161,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
       {/* Titre */}
         <div className="text-center pb-3 md:pt-4">
           <h2 className="text-xl font-bold text-gray-900">
-            {isEditMode ? 'Modifier ta victoire ✏️' : 'Ta victoire ! 🌟'}
+            {isEditMode ? 'Modifier ta victoire ✏️' : `Ta victoire ! ${VICTORY_EMOJIS.STAR_BRIGHT}`}
           </h2>
         </div>
 
@@ -214,7 +234,8 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
         {/* Catégories */}
         <div className="mb-4">
           <p className="text-xs text-gray-500 text-center mb-2">Zone travaillée (optionnel)</p>
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-3 flex-wrap">
+            {/* Catégories physiques */}
             {CATEGORY_ORDER.map((category) => {
               const emoji = CATEGORY_ICONS[category];
               const label = CATEGORY_LABELS_SHORT[category];
@@ -246,6 +267,27 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
                 </button>
               );
             })}
+            
+            {/* Option Orthophonie - à la fin avec couleur jaune */}
+            <button
+              type="button"
+              onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
+              className="flex flex-col items-center gap-1 transition-all duration-150"
+            >
+              <div className={`
+                w-12 h-12 rounded-full flex items-center justify-center
+                transition-all duration-150
+                ${selectedCategory === 'ORTHOPHONIE' 
+                  ? `${ORTHOPHONIE_COLORS.active} scale-110` 
+                  : `${ORTHOPHONIE_COLORS.inactive} hover:scale-105`
+                }
+              `}>
+                <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
+              </div>
+              <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
+                Ortho
+              </span>
+            </button>
           </div>
         </div>
 

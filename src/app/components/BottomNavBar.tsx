@@ -7,6 +7,7 @@ import {
   CATEGORY_ORDER, 
   CATEGORY_MOBILE_CONFIG 
 } from '@/app/constants/exercice.constants';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
 export default function BottomNavBar() {
   const pathname = usePathname();
@@ -37,7 +38,7 @@ export default function BottomNavBar() {
               }
             `}
           >
-            <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">🏠</span>
+            <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
           </Link>
 
           {/* Catégories */}

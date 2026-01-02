@@ -10,6 +10,7 @@ import {
   CATEGORY_NAV_CONFIG,
   CATEGORY_ICONS
 } from '@/app/constants/exercice.constants';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
 type Props = {
   counts: Record<ExerciceCategory, number>;
@@ -36,7 +37,7 @@ export default function CategoryTabs({ counts }: Props) {
             }
           `}
         >
-          <span className="text-xl">🏠</span>
+          <span className="text-xl">{NAVIGATION_EMOJIS.HOME}</span>
         </Link>
 
         {/* Liens de catégorie */}

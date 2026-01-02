@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
+import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 
@@ -26,14 +27,14 @@ export default function AphasieCitationsPage() {
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>💬 Journal d&apos;aphasie</span>
+          <span>{CATEGORY_EMOJIS.ORTHOPHONIE} Journal d&apos;aphasie</span>
         </Link>
       </div>
 
       <div className="px-3 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">💬 Toutes les citations</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{CATEGORY_EMOJIS.ORTHOPHONIE} Toutes les citations</h1>
             <AphasieSectionHeader
               addHref="/aphasie/add"
               addLabel="Ajouter une citation"

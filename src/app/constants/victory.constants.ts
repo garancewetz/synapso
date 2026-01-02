@@ -85,6 +85,12 @@ export const VICTORY_DISPLAY_COLORS: Record<ExerciceCategory, {
 // Couleur par défaut pour les victoires sans catégorie
 export const VICTORY_DEFAULT_GRADIENT = 'from-amber-400 to-yellow-500';
 
+// Couleurs pour la catégorie Orthophonie (jaune, couleur de l'aphasie)
+export const ORTHOPHONIE_COLORS = {
+  active: 'bg-yellow-200 ring-2 ring-yellow-500',
+  inactive: 'bg-yellow-50',
+} as const;
+
 // ============================================================================
 // HELPERS
 // ============================================================================

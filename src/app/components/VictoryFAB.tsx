@@ -9,6 +9,7 @@ import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
   onSuccess?: () => void;
+  defaultCategory?: 'ORTHOPHONIE';
 };
 
 /**
@@ -22,7 +23,7 @@ type Props = {
  * Ouvre le VictoryBottomSheet pour noter une petite victoire.
  * Déclenche une pluie de confettis dorés lors d'une victoire ajoutée.
  */
-export default function VictoryFAB({ onSuccess }: Props) {
+export default function VictoryFAB({ onSuccess, defaultCategory }: Props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();
@@ -71,6 +72,7 @@ export default function VictoryFAB({ onSuccess }: Props) {
         onClose={() => setShowBottomSheet(false)}
         onSuccess={handleSuccess}
         userId={currentUser.id}
+        defaultCategory={defaultCategory}
       />
     </>
   );

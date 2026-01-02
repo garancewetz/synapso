@@ -1,27 +1,28 @@
-/**
- * Constantes pour les styles de cartes (BaseCard, VictoryCard, etc.)
- */
+// ============================================================================
+// CONSTANTES POUR LES STYLES DE CARTES (BaseCard, VictoryCard, etc.)
+// ============================================================================
 
 // ============================================================================
 // STYLES GOLDEN (VictoryCard et challenges maîtrisés)
 // ============================================================================
 
 export const GOLDEN_CARD_STYLES = {
-  // Fond avec gradient doré
-  bg: 'bg-gradient-to-br from-amber-50 via-amber-50/90 to-yellow-50',
-  // Bordure dorée
-  border: 'border-2 border-amber-400',
+  // Fond avec gradient doré plus chaud et festif
+  bg: 'bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80',
+  // Bordure dorée avec effet néon
+  border: 'border-2 border-amber-400/80',
   // Border radius
   rounded: 'rounded-2xl',
-  // Classes complètes pour la carte
-  card: 'bg-gradient-to-br from-amber-50 via-amber-50/90 to-yellow-50 rounded-2xl border-2 border-amber-400 overflow-hidden',
+  // Classes complètes pour la carte avec effet néon doré
+  // Utilise ring pour la lueur néon et drop-shadow pour l'effet de profondeur
+  card: 'bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80 rounded-2xl border-2 border-amber-400/80 ring-2 ring-amber-300/40 ring-offset-0 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)] overflow-hidden',
 } as const;
 
 export const GOLDEN_ACCENT_STYLES = {
-  // Gradient de la bande latérale
-  gradient: 'bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500',
-  // Largeur de la bande
-  width: 'w-2',
+  // Gradient de la bande latérale plus chaud et festif
+  gradient: 'bg-gradient-to-b from-amber-500 via-yellow-500 to-amber-600',
+  // Largeur de la bande légèrement plus épaisse
+  width: 'w-2.5',
 } as const;
 
 export const GOLDEN_FOOTER_STYLES = {
@@ -30,19 +31,19 @@ export const GOLDEN_FOOTER_STYLES = {
 } as const;
 
 export const GOLDEN_BADGE_STYLES = {
-  // Classes du badge doré
-  classes: 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-900 border border-amber-300',
+  // Classes du badge doré plus chaud
+  classes: 'bg-gradient-to-r from-amber-300 to-yellow-300 text-amber-900 border border-amber-400 shadow-sm',
 } as const;
 
 export const GOLDEN_TEXT_STYLES = {
-  // Texte principal
-  primary: 'text-amber-900',
+  // Texte principal plus foncé pour meilleur contraste
+  primary: 'text-amber-950',
   // Texte secondaire (date)
-  secondary: 'text-amber-600',
+  secondary: 'text-amber-700',
   // Texte des icônes
-  icon: 'text-amber-700',
+  icon: 'text-amber-800',
   // Tags de victoire
-  tag: 'bg-amber-100 text-amber-800',
+  tag: 'bg-amber-200/80 text-amber-900 border border-amber-300/50',
 } as const;
 
 // ============================================================================

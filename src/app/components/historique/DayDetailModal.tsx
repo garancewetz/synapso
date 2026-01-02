@@ -4,6 +4,7 @@ import type { Victory } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/app/constants/exercice.constants';
 import { VICTORY_DISPLAY_COLORS } from '@/app/constants/victory.constants';
+import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
 import { VictoryCard } from './VictoryCard';
@@ -20,13 +21,14 @@ type Props = {
   date: Date | null;
   exercises: DayExercise[];
   victory: Victory | null;
+  onEdit?: (victory: Victory) => void;
 };
 
 /**
  * Modale affichant le détail d'une journée du parcours
  * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
  */
-export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Props) {
+export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEdit }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
 
   // Grouper les exercices par catégorie
@@ -56,7 +58,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Pr
           )}
           {victory && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold">
-              🌟 Victoire
+              {VICTORY_EMOJIS.STAR_BRIGHT} Victoire
             </span>
           )}
         </div>
@@ -65,14 +67,14 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Pr
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-gray-50/50">
         
-        {/* Section Victoire - Mise en avant */}
+        {/* Section Victoire - Mise en avant avec style doré amélioré */}
         {victory && (
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-4 border-2 border-amber-200">
+          <div className="bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80 rounded-2xl p-4 border-2 border-amber-500/60 shadow-lg shadow-amber-200/50">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">🌟</span>
-              <h3 className="text-lg font-bold text-amber-800">Ta victoire !</h3>
+              <span className="text-2xl">{VICTORY_EMOJIS.STAR_BRIGHT}</span>
+              <h3 className="text-lg font-bold text-amber-950">Ta victoire !</h3>
             </div>
-            <VictoryCard victory={victory} />
+            <VictoryCard victory={victory} onEdit={onEdit} />
           </div>
         )}
 
@@ -131,7 +133,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory }: Pr
           </div>
         ) : !victory && (
           <div className="text-center py-8 bg-white rounded-2xl border border-gray-200">
-            <span className="text-4xl mb-3 block">📋</span>
+            <span className="text-4xl mb-3 block">{NAVIGATION_EMOJIS.CLIPBOARD}</span>
             <p className="text-gray-600 text-lg font-medium">Rien ce jour-là</p>
             <p className="text-gray-400 text-sm mt-1">C&apos;est ok, chaque jour est différent !</p>
           </div>

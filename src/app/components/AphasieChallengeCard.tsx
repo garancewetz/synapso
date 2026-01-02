@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { BaseCard, CompleteButton, IconButton, Badge } from '@/app/components/ui';
 import { EditIcon } from '@/app/components/ui/icons';
 import { GOLDEN_BADGE_STYLES, GOLDEN_TEXT_STYLES, APHASIE_COLORS } from '@/app/constants/card.constants';
+import { VICTORY_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import type { AphasieChallenge } from '@/app/types';
 
 type Props = {
@@ -44,9 +45,9 @@ export default function AphasieChallengeCard({
           <>
             {/* Style VictoryCard : étoile et badge en haut */}
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
+              <span className="text-2xl">{VICTORY_EMOJIS.STAR}</span>
               <Badge className={GOLDEN_BADGE_STYLES.classes}>
-                💬 Ortho
+                {CATEGORY_EMOJIS.ORTHOPHONIE} Ortho
               </Badge>
             </div>
             

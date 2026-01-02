@@ -13,6 +13,7 @@ type Props = {
   iconBgColor?: string;
   iconTextColor?: string;
   tabIndex?: number;
+  noCardStyle?: boolean;
 };
 
 export default function MenuLink({
@@ -24,25 +25,31 @@ export default function MenuLink({
   iconBgColor = 'bg-gradient-to-br from-gray-100 to-gray-200',
   iconTextColor = 'text-gray-700',
   tabIndex,
+  noCardStyle = false,
 }: Props) {
   return (
     <Link
       href={href}
       onClick={onClick}
       tabIndex={tabIndex}
-      className="group flex items-center gap-3 px-4 py-3.5 text-gray-800 
-                 bg-white border-2 border-gray-100 rounded-xl
-                 hover:border-gray-300 hover:shadow-lg hover:scale-[1.02]
-                 active:scale-[0.98] transition-all duration-200
-                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+      className={clsx(
+        'group flex items-center gap-3 px-4 py-3.5 transition-all duration-200',
+        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400',
+        noCardStyle
+          ? 'bg-white border-2 border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] rounded-xl'
+          : 'bg-white border-2 border-gray-100 text-gray-800 rounded-xl hover:border-gray-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+      )}
     >
       <span className={clsx(
-        'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-        'shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200',
+        'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200',
+        noCardStyle
+          ? 'group-hover:scale-105'
+          : 'shadow-md group-hover:shadow-lg group-hover:scale-110',
         iconBgColor
       )}>
         <span className={clsx(
-          'w-6 h-6 group-hover:scale-110 transition-transform duration-200 flex items-center justify-center',
+          'w-6 h-6 transition-transform duration-200 flex items-center justify-center',
+          noCardStyle ? '' : 'group-hover:scale-110',
           iconTextColor
         )}>
           {icon}

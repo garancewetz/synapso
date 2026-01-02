@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
 import { MenuIcon } from '@/app/components/ui/icons';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
@@ -102,7 +103,7 @@ export default function NavBar() {
                 className="text-sm font-medium text-gray-600 px-2 hover:text-gray-800 transition-colors cursor-pointer flex items-center gap-1.5"
                 aria-label="Retour à l'accueil"
               >
-                <span className="text-base">🏠</span>
+                <span className="text-base">{NAVIGATION_EMOJIS.HOME}</span>
                 {currentUser.name}
               </Link>
             )}

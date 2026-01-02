@@ -280,6 +280,15 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
   const now = new Date();
   const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
   
+  // Filtrer les victoires pour ne garder que celles qui existent réellement
+  // (avec un ID valide et un contenu non vide)
+  const activeVictories = victories.filter(v => 
+    v.id != null && 
+    v.id > 0 && 
+    v.content && 
+    v.content.trim().length > 0
+  );
+  
   // Helper pour obtenir la clé et le label de la semaine
   const getWeekInfo = (date: Date): { weekKey: string; weekLabel: string } => {
     const weekStart = startOfWeek(date, { weekStartsOn: 1 });
@@ -308,8 +317,8 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
     grouped[weekKey].entries.push(entry);
   });
 
-  // Grouper les victoires
-  victories.forEach(victory => {
+  // Grouper uniquement les victoires actives
+  activeVictories.forEach(victory => {
     const victoryDate = new Date(victory.createdAt);
     const { weekKey, weekLabel } = getWeekInfo(victoryDate);
     ensureGroup(weekKey, weekLabel);

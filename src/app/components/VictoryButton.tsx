@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 
 type Props = {
   onClick: () => void;
@@ -46,7 +47,7 @@ export default function VictoryButton({
       className={clsx(baseClasses, variantClasses[variant], positionClass)}
       aria-label="Noter une victoire"
     >
-      <span className={isFixed ? 'text-xl' : 'text-lg'}>🌟</span>
+      <span className={isFixed ? 'text-xl' : 'text-lg'}>{VICTORY_EMOJIS.STAR_BRIGHT}</span>
       <span className="hidden md:inline">
         {isFixed ? 'Noter une victoire' : label}
       </span>

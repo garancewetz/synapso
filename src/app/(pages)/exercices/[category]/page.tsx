@@ -8,6 +8,7 @@ import { Loader, SegmentedControl } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { BookmarkIcon } from '@/app/components/ui/icons';
 import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
@@ -137,7 +138,7 @@ export default function CategoryPage() {
             </div>
           ) : filteredExercices.length === 0 ? (
             <EmptyState
-              icon="📂"
+              icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
               title={
                 filter === 'notCompleted'
                   ? "Tous les exercices sont faits !"

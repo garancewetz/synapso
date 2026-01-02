@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import type { Victory } from '@/app/types';
 
-interface UseVictoryModalReturn {
+type UseVictoryModalReturn = {
   isOpen: boolean;
   victoryToEdit: Victory | null;
   openForCreate: () => void;
   openForEdit: (victory: Victory) => void;
   close: () => void;
-}
+};
 
 /**
  * Hook pour gérer l'état de la modale de victoire (création et édition)

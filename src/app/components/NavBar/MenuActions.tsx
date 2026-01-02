@@ -20,6 +20,7 @@ type MenuAction = {
   iconBgColor: string;
   iconTextColor: string;
   condition?: (user: User | null) => boolean;
+  noCardStyle?: boolean;
 }
 
 const MENU_ACTIONS: MenuAction[] = [
@@ -48,9 +49,10 @@ const MENU_ACTIONS: MenuAction[] = [
   {
     href: () => '/settings',
     icon: <SettingsIcon />,
-    title: 'Paramètres',
-    iconBgColor: MENU_COLORS.SETTINGS.bg,
-    iconTextColor: MENU_COLORS.SETTINGS.text,
+    title: 'Mon profil',
+    iconBgColor: 'bg-white',
+    iconTextColor: 'text-gray-900',
+    noCardStyle: true,
   },
 ];
 
@@ -71,7 +73,7 @@ export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {
   return (
     <>
       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1 mt-2">
-        Actions
+        Activités principales
       </h3>
       {visibleActions.map((action) => {
         const href = typeof action.href === 'function' ? action.href(pathname) : action.href;
@@ -86,6 +88,7 @@ export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {
             iconBgColor={action.iconBgColor}
             iconTextColor={action.iconTextColor}
             tabIndex={tabIndex}
+            noCardStyle={action.noCardStyle}
           />
         );
       })}

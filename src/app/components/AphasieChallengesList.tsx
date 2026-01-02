@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import AphasieChallengeCard from '@/app/components/AphasieChallengeCard';
+import { VictoryCard } from '@/app/components/historique';
 import type { AphasieChallenge } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
+import { useOrthophonieVictories } from '@/app/hooks/useOrthophonieVictories';
 
 type Props = {
   onMasteredChange?: () => void;
@@ -18,6 +21,10 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();
+  const router = useRouter();
+  
+  // Utiliser le hook factorisé pour récupérer les victoires orthophonie
+  const { victories, refetch: refetchVictories } = useOrthophonieVictories(currentUser?.id ?? null);
 
   const fetchChallenges = useCallback(() => {
     if (!currentUser) return;
@@ -41,6 +48,11 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
   useEffect(() => {
     fetchChallenges();
   }, [fetchChallenges]);
+
+  // Créer un map des victoires par contenu (text du challenge)
+  const victoriesByContent = useMemo(() => {
+    return new Map(victories.map(v => [v.content, v]));
+  }, [victories]);
 
   const handleMasteredToggle = async (id: number, currentMastered: boolean) => {
     const wasNotMastered = !currentMastered;
@@ -66,6 +78,7 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
       }
 
       fetchChallenges();
+      refetchVictories(); // Recharger les victoires après modification
       if (onMasteredChange) {
         onMasteredChange();
       }
@@ -90,14 +103,35 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
         {displayedChallenges.length > 0 ? (
           <>
             <ul className="space-y-3">
-              {displayedChallenges.map(challenge => (
-                <AphasieChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  onMasteredToggle={handleMasteredToggle}
-                  isUpdating={isUpdating === challenge.id}
-                />
-              ))}
+              {displayedChallenges.map(challenge => {
+                // Si l'exercice est maîtrisé, afficher VictoryCard
+                if (challenge.mastered) {
+                  const victory = victoriesByContent.get(challenge.text);
+                  if (victory) {
+                    return (
+                      <li key={challenge.id}>
+                        <VictoryCard
+                          victory={victory}
+                          onEdit={() => {
+                            // Ouvrir la page d'édition de l'exercice
+                            router.push(`/aphasie/challenges/edit/${challenge.id}`);
+                          }}
+                        />
+                      </li>
+                    );
+                  }
+                }
+                
+                // Sinon, afficher la carte normale
+                return (
+                  <AphasieChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    onMasteredToggle={handleMasteredToggle}
+                    isUpdating={isUpdating === challenge.id}
+                  />
+                );
+              })}
             </ul>
             {limit && hasMoreTotal && (
               <div className="mt-4">

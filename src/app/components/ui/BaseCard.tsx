@@ -15,6 +15,7 @@ type BaseCardProps = {
   ariaExpanded?: boolean;
   as?: 'div' | 'li';
   isGolden?: boolean;
+  fullHeight?: boolean;
 };
 
 /**
@@ -43,10 +44,12 @@ export function BaseCard({
   ariaExpanded,
   as: Component = 'div',
   isGolden = false,
+  fullHeight = false,
 }: BaseCardProps) {
   const baseClasses = clsx(
     isGolden ? GOLDEN_CARD_STYLES.card : DEFAULT_CARD_STYLES.card,
-    onClick && 'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300',
+    onClick && isGolden && 'cursor-pointer transition-all duration-200 hover:ring-amber-300/60 hover:ring-4 hover:drop-shadow-[0_0_12px_rgba(251,191,36,0.5)] hover:border-amber-400',
+    onClick && !isGolden && 'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300',
     className
   );
 
@@ -60,7 +63,7 @@ export function BaseCard({
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
     >
-      <div className="flex">
+      <div className={clsx('flex', fullHeight && 'h-full')}>
         {children}
       </div>
     </Component>

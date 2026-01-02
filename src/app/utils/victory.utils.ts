@@ -1,4 +1,8 @@
 import { VICTORY_TAGS, VICTORY_TAGS_WITH_EMOJI } from '@/app/constants/victory.constants';
+import { CATEGORY_ICONS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT, CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
+import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { ORTHOPHONIE_VICTORY_EMOJI } from '@/app/constants/emoji.constants';
+import type { ExerciceCategory } from '@/app/types/exercice';
 
 /**
  * Extrait les victory tags du contenu et retourne le contenu nettoyé + les tags trouvés
@@ -30,5 +34,58 @@ export function extractVictoryTags(content: string): { cleanContent: string; tag
   });
 
   return { cleanContent, tags: foundTags };
+}
+
+/**
+ * Extrait la catégorie d'exercice à partir de l'emoji d'une victoire
+ * 
+ * @param emoji - L'emoji de la victoire (peut être null)
+ * @returns La catégorie d'exercice si trouvée, null sinon
+ */
+export function getExerciceCategoryFromEmoji(emoji: string | null | undefined): ExerciceCategory | null {
+  if (!emoji) return null;
+  
+  return CATEGORY_ORDER.find(
+    (cat) => CATEGORY_ICONS[cat] === emoji
+  ) as ExerciceCategory | undefined || null;
+}
+
+/**
+ * Détermine si une victoire est de type orthophonie
+ * 
+ * @param emoji - L'emoji de la victoire (peut être null)
+ * @returns true si c'est une victoire orthophonie
+ */
+export function isOrthophonieVictory(emoji: string | null | undefined): boolean {
+  return emoji === ORTHOPHONIE_VICTORY_EMOJI;
+}
+
+/**
+ * Calcule les badges pour une victoire (type Ortho/Physique et catégorie d'exercice)
+ * 
+ * @param emoji - L'emoji de la victoire
+ * @returns Un objet contenant les informations des badges
+ */
+export function getVictoryBadges(emoji: string | null | undefined) {
+  const isOrthophonie = isOrthophonieVictory(emoji);
+  const exerciceCategory = getExerciceCategoryFromEmoji(emoji);
+
+  const typeBadge = {
+    emoji: isOrthophonie ? CATEGORY_EMOJIS.ORTHOPHONIE : CATEGORY_EMOJIS.PHYSIQUE,
+    label: isOrthophonie ? 'Ortho' : 'Physique',
+    color: '#f97316', // Couleur orange pour la bande latérale
+  };
+
+  const categoryBadge = exerciceCategory ? {
+    emoji: CATEGORY_ICONS[exerciceCategory],
+    label: CATEGORY_LABELS_SHORT[exerciceCategory],
+    color: CATEGORY_CHART_COLORS[exerciceCategory],
+  } : null;
+
+  return {
+    typeBadge,
+    categoryBadge,
+    exerciceCategory,
+  };
 }
 

@@ -8,6 +8,7 @@ import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { VictoryTimeline } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import { VICTORY_EMOJIS, CATEGORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'orthophonie' | 'physique';
@@ -65,7 +66,16 @@ export default function VictoriesPage() {
   }, [fetchVictories]);
 
   // Filtrer les victoires selon le filtre sélectionné
+  // Si l'utilisateur n'est pas aphasique, on affiche toutes les victoires
   const filteredVictories = useMemo(() => {
+    const isAphasic = currentUser?.isAphasic ?? false;
+    
+    // Si l'utilisateur n'est pas aphasique, toujours afficher toutes les victoires
+    if (!isAphasic) {
+      return victories;
+    }
+    
+    // Sinon, appliquer le filtre sélectionné
     if (filter === 'all') {
       return victories;
     }
@@ -74,7 +84,7 @@ export default function VictoriesPage() {
     }
     // filter === 'physique'
     return victories.filter(v => v.emoji !== '🎯');
-  }, [victories, filter]);
+  }, [victories, filter, currentUser?.isAphasic]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
@@ -85,7 +95,7 @@ export default function VictoriesPage() {
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>🗺️ Mon parcours</span>
+          <span>{NAVIGATION_EMOJIS.MAP} Mon parcours</span>
         </Link>
       </div>
 
@@ -93,7 +103,7 @@ export default function VictoriesPage() {
         {/* Header */}
         <div className={clsx('flex items-center justify-between mb-6', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
-            🌟 Toutes mes réussites
+            {VICTORY_EMOJIS.STAR_BRIGHT} Toutes mes réussites
           </h1>
           {currentUser && (
             <VictoryButton 
@@ -104,8 +114,8 @@ export default function VictoriesPage() {
           )}
         </div>
 
-        {/* Filtre */}
-        {!loading && victories.length > 0 && (
+        {/* Filtre - affiché uniquement pour les utilisateurs aphasiques */}
+        {!loading && victories.length > 0 && (currentUser?.isAphasic ?? false) && (
           <div className="mb-6">
             <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
               <button
@@ -117,7 +127,7 @@ export default function VictoriesPage() {
                     : 'text-gray-500 hover:text-gray-700'
                 )}
               >
-                <span className="text-lg mb-1">🌟</span>
+                <span className="text-lg mb-1">{VICTORY_EMOJIS.STAR_BRIGHT}</span>
                 <span>Toutes</span>
               </button>
               <button
@@ -129,7 +139,7 @@ export default function VictoriesPage() {
                     : 'text-gray-500 hover:text-gray-700'
                 )}
               >
-                <span className="text-lg mb-1">💬</span>
+                <span className="text-lg mb-1">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
                 <span>Orthophonie</span>
               </button>
               <button

@@ -17,11 +17,28 @@
   --stretching-light: #F3E8FF;
   --core: #14B8A6;            /* Teal */
   --core-light: #CCFBF1;
+  --aphasie: #FACC15;         /* Jaune solaire (yellow-400) */
+  --aphasie-light: #FEF9C3;   /* Jaune clair (yellow-100) */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card-bg: var(--card-bg);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-upper-body: var(--upper-body);
+  --color-upper-body-light: var(--upper-body-light);
+  --color-lower-body: var(--lower-body);
+  --color-lower-body-light: var(--lower-body-light);
+  --color-stretching: var(--stretching);
+  --color-stretching-light: var(--stretching-light);
+  --color-core: var(--core);
+  --color-core-light: var(--core-light);
+  --color-aphasie: var(--aphasie);
+  --color-aphasie-light: var(--aphasie-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

@@ -84,8 +84,8 @@ export default function SettingsPage() {
           setInitialLoading(false);
         })
         .catch((err) => {
-          console.error('Erreur lors du chargement des paramètres:', err);
-          setError('Erreur lors du chargement des paramètres');
+          console.error('Erreur lors du chargement du profil:', err);
+          setError('Erreur lors du chargement du profil');
           setInitialLoading(false);
         });
     }
@@ -144,7 +144,7 @@ export default function SettingsPage() {
       }, 3000);
     } catch (err) {
       console.error('Erreur:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour des paramètres');
+      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour du profil');
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,7 @@ export default function SettingsPage() {
         <BackToHomeButton />
 
         {/* Titre */}
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Paramètres utilisateur</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon profil</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <ErrorMessage message={error} />
@@ -189,7 +189,7 @@ export default function SettingsPage() {
           {success && (
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
               <p className="text-emerald-700 text-sm font-medium">
-                ✓ Paramètres enregistrés avec succès
+                ✓ Profil enregistré avec succès
               </p>
             </div>
           )}
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                   <span>Enregistrement...</span>
                 </>
               ) : (
-                'Enregistrer les paramètres'
+                'Enregistrer mon profil'
               )}
             </Button>
             <Button

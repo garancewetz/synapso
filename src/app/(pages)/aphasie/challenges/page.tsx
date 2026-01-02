@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
+import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,7 @@ export default function AphasieChallengesPage() {
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>💬 Journal d&apos;aphasie</span>
+          <span>{CATEGORY_EMOJIS.ORTHOPHONIE} Journal d&apos;aphasie</span>
         </Link>
       </div>
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
 import type { ReactNode } from 'react';
 
@@ -23,7 +24,7 @@ export default function FormPageWrapper({ children, title, backHref, backLabel }
 
   // Afficher "🏠 Retour" si on retourne vers l'accueil ou si on est sur la page de création d'exercice
   const isHomeLink = backHref === '/' || pathname === '/exercice/add';
-  const label = backLabel || (isHomeLink ? '🏠 Retour' : 'Retour');
+  const label = backLabel || (isHomeLink ? `${NAVIGATION_EMOJIS.HOME} Retour` : 'Retour');
 
   // Placer le focus sur le premier élément focusable de la page (excluant le menu fermé)
   // Priorité aux inputs et textareas pour les pages de formulaire

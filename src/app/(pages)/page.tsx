@@ -6,6 +6,7 @@ import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, Cat
 import { VictoryCard } from '@/app/components/historique';
 import type { Victory } from '@/app/types';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
@@ -107,7 +108,7 @@ export default function Home() {
                 <section>
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                      🌟 Ma dernière réussite
+                      {VICTORY_EMOJIS.STAR_BRIGHT} Ma dernière réussite
                     </h2>
                   </div>
                   <VictoryCard 

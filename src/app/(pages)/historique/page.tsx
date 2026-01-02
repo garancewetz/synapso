@@ -9,6 +9,7 @@ import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/component
 import BackToHomeButton from '@/app/components/BackToHomeButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import clsx from 'clsx';
 import {
   STATS_DAYS,
@@ -205,7 +206,7 @@ export default function HistoriquePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
             <div className={clsx('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
               <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-                🌟 Mes réussites personnelles
+                {VICTORY_EMOJIS.STAR_BRIGHT} Mes réussites personnelles
               </h2>
               {currentUser && (
                 <VictoryButton 
@@ -223,7 +224,7 @@ export default function HistoriquePage() {
               <ViewAllLink 
                 href="/historique/victories"
                 label="Voir toutes les réussites"
-                emoji="🌟"
+                emoji={VICTORY_EMOJIS.STAR_BRIGHT}
               />
             )}
           </div>
@@ -245,7 +246,7 @@ export default function HistoriquePage() {
         {/* Historique détaillé */}
         <div className="space-y-3">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-            📋 Ton parcours de BG
+            {NAVIGATION_EMOJIS.CLIPBOARD} Ton parcours de BG
           </h2>
 
           {groupedByWeek.length === 0 ? (
@@ -299,6 +300,7 @@ export default function HistoriquePage() {
         date={selectedDay?.date || null}
         exercises={selectedDayExercises}
         victory={selectedDayVictory}
+        onEdit={victoryModal.openForEdit}
       />
     </div>
   );

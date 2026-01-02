@@ -6,7 +6,10 @@ import type { HistoryEntry, Victory } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { ActivityHeatmap, DayDetailModal } from '@/app/components/historique';
+import { VictoryBottomSheet } from '@/app/components';
+import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { ROADMAP_FULL_DAYS } from '@/app/constants/historique.constants';
+import { NAVIGATION_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import {
   getHeatmapData,
   calculateCurrentStreak,
@@ -18,6 +21,7 @@ export default function RoadmapPage() {
   const [victories, setVictories] = useState<Victory[]>([]);
   const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const { currentUser } = useUser();
+  const victoryModal = useVictoryModal();
 
   // Fetch de l'historique
   const fetchHistory = useCallback(() => {
@@ -108,6 +112,11 @@ export default function RoadmapPage() {
     return victories.find(v => v.createdAt.split('T')[0] === selectedDay.dateKey) || null;
   }, [selectedDay, victories]);
 
+  // Handler pour le succès d'une victoire
+  const handleVictorySuccess = useCallback(() => {
+    fetchVictories();
+  }, [fetchVictories]);
+
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Header avec bouton retour */}
@@ -121,7 +130,7 @@ export default function RoadmapPage() {
         </Link>
 
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-          🗺️ Mon chemin parcouru
+          {NAVIGATION_EMOJIS.MAP} Mon chemin parcouru
         </h1>
         <p className="text-gray-500 mt-2">
           Les {ROADMAP_FULL_DAYS} derniers jours de ton parcours
@@ -145,7 +154,7 @@ export default function RoadmapPage() {
           </div>
           <div className="bg-yellow-50 rounded-xl p-3 md:p-4 text-center">
             <p className="text-xl md:text-2xl font-bold text-yellow-600">{totalVictories}</p>
-            <p className="text-[10px] md:text-xs text-yellow-700">victoires 🌟</p>
+            <p className="text-[10px] md:text-xs text-yellow-700">victoires {VICTORY_EMOJIS.STAR_BRIGHT}</p>
           </div>
         </div>
       </div>
@@ -168,7 +177,19 @@ export default function RoadmapPage() {
         date={selectedDay?.date || null}
         exercises={selectedDayExercises}
         victory={selectedDayVictory}
+        onEdit={victoryModal.openForEdit}
       />
+
+      {/* Modal de victoire */}
+      {currentUser && (
+        <VictoryBottomSheet
+          isOpen={victoryModal.isOpen}
+          onClose={victoryModal.close}
+          onSuccess={handleVictorySuccess}
+          userId={currentUser.id}
+          victoryToEdit={victoryModal.victoryToEdit}
+        />
+      )}
     </div>
   );
 }

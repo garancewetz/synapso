@@ -1,6 +1,10 @@
-/**
- * Constantes pour l'accessibilité et la gestion du focus
- */
+// ============================================================================
+// CONSTANTES POUR L'ACCESSIBILITÉ ET LA GESTION DU FOCUS
+// ============================================================================
+
+// ============================================================================
+// DÉLAIS POUR LA GESTION DU FOCUS
+// ============================================================================
 
 // Délais pour la gestion du focus (en millisecondes)
 export const FOCUS_DELAYS = {
@@ -12,6 +16,10 @@ export const FOCUS_DELAYS = {
   RESTORE_FOCUS: 150,
 } as const;
 
+// ============================================================================
+// SÉLECTEURS CSS POUR LES ÉLÉMENTS FOCUSABLES
+// ============================================================================
+
 // Sélecteurs CSS pour les éléments focusables
 export const FOCUSABLE_SELECTORS = [
   'button:not([disabled]):not([aria-disabled="true"])',
@@ -22,6 +30,10 @@ export const FOCUSABLE_SELECTORS = [
   '[tabindex]:not([tabindex="-1"])',
   '[contenteditable="true"]:not([tabindex="-1"])',
 ] as const;
+
+// ============================================================================
+// TOUCHES DU CLAVIER POUR L'ACCESSIBILITÉ
+// ============================================================================
 
 // Touches du clavier pour l'accessibilité
 export const KEYBOARD_KEYS = {

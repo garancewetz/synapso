@@ -8,6 +8,7 @@ import { useHandPreference } from '@/app/hooks/useHandPreference';
 import clsx from 'clsx';
 import { UserSection } from './UserSection';
 import { MenuActions } from './MenuActions';
+import { UserSwitch } from './UserSwitch';
 import type { User } from '@/app/types';
 import type { RefObject } from 'react';
 
@@ -91,15 +92,23 @@ export function MenuDrawer({
 
         {/* Contenu du menu */}
         <div className="p-5 pb-24 md:pb-5 flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
-          <UserSection
+          {/* Carte du user sélectionné */}
+          <UserSection currentUser={currentUser} />
+
+          {/* Activités principales */}
+          <MenuActions currentUser={currentUser} onMenuClose={onClose} isMenuOpen={isOpen} />
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-2" />
+
+          {/* Switch pour changer d'utilisateur */}
+          <UserSwitch
             users={users}
             currentUser={currentUser}
             onUserChange={onUserChange}
             onCreateUser={onCreateUser}
             isMenuOpen={isOpen}
           />
-
-          <MenuActions currentUser={currentUser} onMenuClose={onClose} isMenuOpen={isOpen} />
         </div>
       </div>
     </>

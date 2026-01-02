@@ -4,6 +4,7 @@ import { format, isToday, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
+import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 
@@ -147,7 +148,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                   hasExercise && category ? (
                     <span className="text-xl sm:text-2xl md:text-3xl w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 flex items-center justify-center">{CATEGORY_ICONS[category]}</span>
                   ) : (
-                    <span className="text-xl sm:text-2xl md:text-3xl">📍</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl">{NAVIGATION_EMOJIS.PIN}</span>
                   )
                 ) : hasExercise && category ? (
                   <span className="text-xl sm:text-2xl md:text-3xl w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 flex items-center justify-center">{CATEGORY_ICONS[category]}</span>
@@ -161,7 +162,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
                     className="absolute -top-2 -left-2 text-xl md:text-2xl drop-shadow-md"
                     title="Une victoire notée ce jour !"
                   >
-                    ⭐
+                    {VICTORY_EMOJIS.STAR}
                   </span>
                 )}
               </div>
@@ -202,7 +203,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
         <ViewAllLink 
           href="/historique/roadmap"
           label="Voir tout le chemin parcouru"
-          emoji="🗺️"
+          emoji={NAVIGATION_EMOJIS.MAP}
         />
       )}
     </div>

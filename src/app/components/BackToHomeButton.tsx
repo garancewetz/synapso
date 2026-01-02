@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ChevronIcon } from '@/app/components/ui/icons';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
 export default function BackToHomeButton() {
   return (
@@ -10,7 +11,7 @@ export default function BackToHomeButton() {
         aria-label="Retour à l'accueil"
       >
         <ChevronIcon direction="left" className="w-5 h-5" />
-        <span>🏠 Retour</span>
+        <span>{NAVIGATION_EMOJIS.HOME} Retour</span>
       </Link>
     </div>
   );

@@ -15,6 +15,7 @@ type Props = {
   iconTextColor?: string;
   isSecondary?: boolean;
   isChild?: boolean;
+  ringColor?: string;
 };
 
 /**
@@ -31,6 +32,7 @@ export function SiteMapCard({
   iconTextColor = 'text-gray-700',
   isSecondary = false,
   isChild = false,
+  ringColor,
 }: Props) {
   const commonClasses = clsx(
     'block group',
@@ -39,7 +41,8 @@ export function SiteMapCard({
     'hover:border-gray-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400',
     isChild && 'border-l-4',
-    isSecondary && 'border-dashed'
+    isSecondary && 'border-dashed',
+    ringColor && `ring-2 ring-offset-2 ${ringColor}`
   );
 
   const content = (

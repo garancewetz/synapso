@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback, useMemo, type ReactNode } from 'react';
+import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, SiteMapCard } from '@/app/components';
-import { VictoryCard, WeekHeatmap, DayDetailModal } from '@/app/components/historique';
+import { VictoryCard, DayDetailModal } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
+import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
@@ -15,7 +16,6 @@ import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
-import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
 
 type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
 
@@ -40,26 +40,8 @@ export default function Home() {
   // Charger l'historique
   const { history } = useHistory();
 
-  // Charger les victoires (pour le calendrier et la dernière victoire)
+  // Charger les victoires (pour la dernière victoire)
   const { victories, lastVictory, refetch: refetchVictories } = useVictories();
-
-  // Données selon le rythme de l'utilisateur
-  const weekData = useMemo(() => {
-    const resetFrequency = currentUser?.resetFrequency || 'DAILY';
-    return resetFrequency === 'WEEKLY' 
-      ? getCurrentWeekData(history)
-      : getLast7DaysData(history);
-  }, [history, currentUser?.resetFrequency]);
-
-  // Dates des victoires pour le calendrier
-  const victoryDates = useMemo(() => {
-    return new Set(victories.map(v => v.createdAt.split('T')[0]));
-  }, [victories]);
-
-  // Gestion du clic sur une journée du calendrier
-  const handleDayClick = useCallback((day: HeatmapDay) => {
-    setSelectedDay(day);
-  }, []);
 
   // Exercices du jour sélectionné
   const selectedDayExercises = useMemo(() => {
@@ -79,8 +61,6 @@ export default function Home() {
     return victories.find(v => v.createdAt.split('T')[0] === selectedDay.dateKey) || null;
   }, [selectedDay, victories]);
 
-  // Période affichée
-  const periodLabel = currentUser?.resetFrequency === 'WEEKLY' ? 'cette semaine' : 'des derniers jours';
 
   // Options des onglets
   const tabOptions = useMemo(() => {
@@ -144,21 +124,6 @@ export default function Home() {
             />
           ) : (
             <div className="space-y-6">
-              {/* Progression de la semaine */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <SparklesIcon className="w-5 h-5" /> Ma progression {periodLabel}
-                  </h2>
-                </div>
-                <WeekHeatmap 
-                  weekData={weekData}
-                  victoryDates={victoryDates}
-                  onDayClick={handleDayClick}
-                  resetFrequency={currentUser?.resetFrequency || 'DAILY'}
-                />
-              </div>
-
               {/* Onglets */}
               {tabOptions.length > 0 && (
                 <div>
@@ -295,6 +260,7 @@ export default function Home() {
                     onClick={() => victoryModal.openForCreate()}
                     iconBgColor={SITEMAP_ICON_STYLES.primary.victory.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.victory.text}
+                    ringColor="ring-amber-400"
                   />
                   
                   {/* Section dernière victoire */}
@@ -302,7 +268,7 @@ export default function Home() {
                     <div className="mt-6">
                       <div className="flex items-center justify-between mb-3">
                         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <SparklesIcon className="w-5 h-5" /> Ma dernière réussite
+                          <span>{VICTORY_EMOJIS.STAR_BRIGHT}</span> Ma dernière réussite
                         </h2>
                       </div>
                       <VictoryCard 

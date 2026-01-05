@@ -2,39 +2,47 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
-import { isMonday } from 'date-fns';
+import { isToday, isYesterday, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { ActivityHeatmapCell } from '@/app/components/historique/ActivityHeatmapCell';
+import type { HeatmapDay } from '@/app/utils/historique.utils';
 import clsx from 'clsx';
 
 type Props = {
   userName: string;
   completedToday: number | null;
   resetFrequency?: 'DAILY' | 'WEEKLY' | null;
+  weekData?: HeatmapDay[];
+  victoryDates?: Set<string>;
+  onDayClick?: (day: HeatmapDay) => void;
 };
 
 // Objectif quotidien : 5 exercices par jour
 const DAILY_GOAL = 5;
 const CELEBRATION_DURATION_MS = 4800;
 
-const ENCOURAGEMENTS = [
-  "Continue comme ça !",
-  "Chaque effort compte.",
-  "Belle progression !",
-  "Tu es sur la bonne voie.",
-  "Excellent travail.",
-];
+// Noms des jours de la semaine (lundi = début) - pour rythme hebdomadaire
+const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-const COMPLETION_MESSAGES = [
-  { threshold: 0, message: "Prête pour ta séance ?" },
-  { threshold: 0.2, message: "Bon début !" },
-  { threshold: 0.4, message: "Tu avances bien." },
-  { threshold: 0.6, message: "Plus que quelques-uns." },
-  { threshold: 0.8, message: "Presque terminé !" },
-  { threshold: 1, message: "Objectif atteint !" },
-];
+// Génère les labels pour les 7 derniers jours (rythme quotidien)
+function getDailyLabels(days: HeatmapDay[]): string[] {
+  return days.map((day) => {
+    if (!day.date) return '';
+    
+    if (isToday(day.date)) {
+      return 'Auj.';
+    }
+    if (isYesterday(day.date)) {
+      return 'Hier';
+    }
+    // Pour les jours précédents, afficher le jour de la semaine court
+    return format(day.date, 'EEE', { locale: fr }).substring(0, 3);
+  });
+}
 
 // Couleurs et emojis pour les animations
 const SPARKLE_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6'];
@@ -42,9 +50,8 @@ const CONFETTI_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', 
 const CELEBRATION_EMOJIS = ['🎉', '🎊', '⭐', '💪', '🌟', '✨', '🏆', '💫'];
 
 
-export default function WelcomeHeader({ userName, completedToday, resetFrequency = null }: Props) {
+export default function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, victoryDates, onDayClick }: Props) {
   const { isLeftHanded } = useHandPreference();
-  const [encouragement, setEncouragement] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const prevCompletedRef = useRef(completedToday);
@@ -56,11 +63,6 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
   const progress = isLoading ? 0 : Math.min(count / DAILY_GOAL, 1);
   const isGoalReached = !isLoading && count >= DAILY_GOAL;
   const bonusExercices = isLoading ? 0 : Math.max(0, count - DAILY_GOAL);
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * ENCOURAGEMENTS.length);
-    setEncouragement(ENCOURAGEMENTS[randomIndex]);
-  }, []);
 
   // Déclencher les confettis uniquement quand on atteint exactement 5/5 (sans bonus)
   useEffect(() => {
@@ -109,20 +111,13 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
     return "Bonsoir";
   };
 
-  const getCompletionMessage = () => {
-    // Message spécial le lundi pour les utilisateurs en mode hebdomadaire
-    if (resetFrequency === 'WEEKLY' && isMonday(new Date())) {
-      return "C'est parti pour une nouvelle semaine !";
-    }
-    
-    if (bonusExercices > 0) {
-      return `${bonusExercices} exercice${bonusExercices > 1 ? 's' : ''} en bonus !`;
-    }
-    const matchingMessage = [...COMPLETION_MESSAGES]
-      .reverse()
-      .find((m) => progress >= m.threshold);
-    return matchingMessage?.message || COMPLETION_MESSAGES[0].message;
-  };
+  // Labels pour le calendrier de la semaine
+  const weekLabels = useMemo(() => {
+    if (!weekData || weekData.length !== 7) return [];
+    return resetFrequency === 'DAILY' 
+      ? getDailyLabels(weekData)
+      : WEEKDAY_NAMES;
+  }, [weekData, resetFrequency]);
 
   // Mémoriser les paillettes pour éviter qu'elles se régénèrent à chaque render
   // Elles apparaissent seulement quand l'objectif est atteint (5/5 ou plus)
@@ -209,8 +204,8 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
         </div>
       )}
 
-      {/* Greeting */}
-      <div className="mb-5 relative z-10 px-3 md:px-4">
+      {/* Ligne 1 : Greeting + Paramètres */}
+      <div className="mb-4 relative z-10 px-3 md:px-4">
         <div className={clsx('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
@@ -219,7 +214,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
             {/* Badge de réinitialisation - affiché seulement si l'information est chargée */}
             {resetFrequency && (
               <span className={clsx(
-                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium mb-2',
+                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium',
                 resetFrequency === 'DAILY' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'bg-purple-100 text-purple-700'
@@ -237,13 +232,10 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
                 )}
               </span>
             )}
-            <p className="text-gray-500 text-sm md:text-base mt-1">
-              {getCompletionMessage()}
-            </p>
           </div>
           <Link
             href="/settings"
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
             aria-label="Mon profil"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,8 +246,8 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-3 relative z-10 px-3 md:px-4">
+      {/* Ligne 2 : Jauge du jour (Priorité 1) */}
+      <div className="mb-4 relative z-10 px-3 md:px-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Objectif du jour
@@ -268,7 +260,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
           </span>
         </div>
         <div 
-          className="h-2 bg-gray-100 rounded-full overflow-hidden relative"
+          className="h-2.5 bg-gray-100 rounded-full overflow-hidden relative"
           role="progressbar"
           aria-valuenow={isLoading ? 0 : count}
           aria-valuemin={0}
@@ -276,7 +268,12 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
           aria-label={`Progression : ${isLoading ? 'chargement' : `${count} sur ${DAILY_GOAL} exercices complétés`}`}
         >
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 relative overflow-hidden"
+            className={clsx(
+              "h-full rounded-full relative overflow-hidden",
+              isGoalReached 
+                ? "bg-gradient-to-r from-emerald-500 to-emerald-600" 
+                : "bg-gradient-to-r from-teal-400 to-emerald-500"
+            )}
             initial={{ width: '0%' }}
             animate={{ 
               width: isLoading ? '0%' : `${progress * 100}%`,
@@ -301,37 +298,46 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
             />
           )}
         </div>
-
       </div>
 
-      {/* Encouragement discret */}
-      {!isLoading && count > 0 && !isGoalReached && (
-        <p className="text-sm text-gray-500 mt-3 relative z-10 px-3 md:px-4">
-          {encouragement}
-        </p>
-      )}
+      {/* Ligne 3 : Calendrier de la semaine */}
+      {weekData && weekData.length === 7 && (
+        <div className="relative z-10 px-3 md:px-4">
+          {/* En-têtes des jours */}
+          <div className="grid grid-cols-7 gap-2 mb-2">
+            {weekLabels.map((label, index) => {
+              const isWeekend = resetFrequency === 'WEEKLY' && index >= 5;
+              const isTodayLabel = resetFrequency === 'DAILY' && index === 6;
+              const isHighlighted = isWeekend || isTodayLabel;
+              
+              return (
+                <div 
+                  key={`day-label-${index}`}
+                  className={clsx(
+                    'text-center text-xs font-semibold flex items-center justify-center',
+                    isHighlighted ? 'text-emerald-600' : 'text-gray-500'
+                  )}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
 
-      {/* Message de succès avec animation */}
-      <AnimatePresence>
-        {isGoalReached && (
-          <motion.div 
-            className="mt-4 mx-3 md:mx-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg relative z-10 backdrop-blur-sm"
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            <p className="text-emerald-700 font-medium text-sm flex items-center gap-2">
-              <motion.span
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.5, repeat: 2 }}
-              >
-                🎉
-              </motion.span>
-              Objectif quotidien atteint — Bravo !
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Grille des jours */}
+          <div className="grid grid-cols-7 gap-2">
+            {weekData.map((day) => (
+              <ActivityHeatmapCell
+                key={day.dateKey}
+                day={day}
+                victoryDates={victoryDates}
+                onDayClick={onDayClick}
+                showDate={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,7 +20,7 @@ export const SITEMAP_ICON_STYLES = {
       text: 'text-white',
     },
     victory: {
-      bg: 'bg-gradient-to-br from-amber-400 to-yellow-400',
+      bg: 'bg-gradient-to-br from-yellow-500 to-amber-500',
       text: 'text-white',
     },
     addExercice: {
@@ -32,5 +32,16 @@ export const SITEMAP_ICON_STYLES = {
       text: 'text-gray-900',
     },
   },
+} as const;
+
+/**
+ * Couleurs de ring pour les onglets actifs du SegmentedControl
+ * Correspond aux couleurs des catégories pour créer un lien visuel
+ */
+export const TAB_RING_COLORS = {
+  corps: 'ring-blue-500',
+  aphasie: 'ring-yellow-400',
+  parcours: 'ring-amber-500',
+  paramètres: 'ring-gray-400',
 } as const;
 

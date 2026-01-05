@@ -18,6 +18,8 @@ type Props<T extends string> = {
   /** Taille du composant */
   size?: 'sm' | 'md';
   className?: string;
+  /** Couleur du ring pour l'onglet actif (ex: 'ring-blue-500') */
+  activeRingColor?: string;
 };
 
 /**
@@ -48,6 +50,7 @@ export function SegmentedControl<T extends string>({
   fullWidth = false,
   size = 'sm',
   className = '',
+  activeRingColor,
 }: Props<T>) {
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
@@ -68,10 +71,13 @@ export function SegmentedControl<T extends string>({
             className={clsx(
               fullWidth && 'flex-1',
               sizeClasses[size],
-              'font-medium rounded-md transition-all duration-200',
+              'rounded-md transition-all duration-200 relative',
               isActive
-                ? 'bg-white text-gray-800 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
+                ? clsx(
+                    'bg-white text-gray-800 shadow-lg font-bold',
+                    activeRingColor ? `ring-2 ring-offset-1 ${activeRingColor}` : ''
+                  )
+                : 'font-medium text-gray-500 hover:text-gray-700',
               // Sur mobile : disposition verticale (icône en haut, texte en bas)
               // Sur desktop : disposition horizontale (icône et texte côte à côte)
               hasIcon && 'flex flex-col items-center justify-center gap-0.5',

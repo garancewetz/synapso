@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
+import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import BackButton from '@/app/components/BackButton';
-import { ActivityHeatmap, DayDetailModal } from '@/app/components/historique';
+import { ActivityHeatmap } from '@/app/components/historique';
 import { VictoryBottomSheet, StatBadge } from '@/app/components';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
@@ -17,8 +18,8 @@ import {
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 export default function RoadmapPage() {
-  const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const { currentUser } = useUser();
+  const { openDayDetail } = useDayDetailModal();
   const victoryModal = useVictoryModal();
   const { history } = useHistory();
   const { victories, refetch: refetchVictories } = useVictories();
@@ -46,26 +47,8 @@ export default function RoadmapPage() {
 
   // Gestion du clic sur une journée du calendrier
   const handleDayClick = (day: HeatmapDay) => {
-    setSelectedDay(day);
+    openDayDetail(day);
   };
-
-  // Exercices du jour sélectionné
-  const selectedDayExercises = useMemo(() => {
-    if (!selectedDay?.dateKey) return [];
-    return history
-      .filter(entry => entry.completedAt.split('T')[0] === selectedDay.dateKey)
-      .map(entry => ({
-        name: entry.exercice.name,
-        category: entry.exercice.category!,
-        completedAt: entry.completedAt,
-      }));
-  }, [selectedDay, history]);
-
-  // Victoire du jour sélectionné
-  const selectedDayVictory = useMemo(() => {
-    if (!selectedDay?.dateKey) return null;
-    return victories.find(v => v.createdAt.split('T')[0] === selectedDay.dateKey) || null;
-  }, [selectedDay, victories]);
 
   // Handler pour le succès d'une victoire
   const handleVictorySuccess = useCallback(() => {
@@ -136,15 +119,6 @@ export default function RoadmapPage() {
         />
       </div>
 
-      {/* Modal détail d'une journée */}
-      <DayDetailModal
-        isOpen={!!selectedDay}
-        onClose={() => setSelectedDay(null)}
-        date={selectedDay?.date || null}
-        exercises={selectedDayExercises}
-        victory={selectedDayVictory}
-        onEdit={victoryModal.openForEdit}
-      />
 
       {/* Modal de victoire */}
       {currentUser && (

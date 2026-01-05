@@ -3,18 +3,16 @@
 import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, SiteMapCard } from '@/app/components';
-import { VictoryCard, DayDetailModal } from '@/app/components/historique';
+import { VictoryCard } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
 import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
-import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
 
 type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
@@ -22,7 +20,6 @@ type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
 export default function Home() {
   const pathname = usePathname();
   const { currentUser, users, loading: userLoading } = useUser();
-  const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const victoryModal = useVictoryModal();
   const isAphasic = currentUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
@@ -37,29 +34,8 @@ export default function Home() {
     resetFrequency: currentUser?.resetFrequency || 'DAILY',
   });
 
-  // Charger l'historique
-  const { history } = useHistory();
-
   // Charger les victoires (pour la dernière victoire)
-  const { victories, lastVictory, refetch: refetchVictories } = useVictories();
-
-  // Exercices du jour sélectionné
-  const selectedDayExercises = useMemo(() => {
-    if (!selectedDay?.dateKey) return [];
-    return history
-      .filter(entry => entry.completedAt.split('T')[0] === selectedDay.dateKey)
-      .map(entry => ({
-        name: entry.exercice.name,
-        category: entry.exercice.category!,
-        completedAt: entry.completedAt,
-      }));
-  }, [selectedDay, history]);
-
-  // Victoire du jour sélectionné
-  const selectedDayVictory = useMemo(() => {
-    if (!selectedDay?.dateKey) return null;
-    return victories.find(v => v.createdAt.split('T')[0] === selectedDay.dateKey) || null;
-  }, [selectedDay, victories]);
+  const { lastVictory, refetch: refetchVictories } = useVictories();
 
 
   // Options des onglets
@@ -316,15 +292,6 @@ export default function Home() {
         />
       )}
 
-      {/* Modal détail d'une journée */}
-      <DayDetailModal
-        isOpen={!!selectedDay}
-        onClose={() => setSelectedDay(null)}
-        date={selectedDay?.date || null}
-        exercises={selectedDayExercises}
-        victory={selectedDayVictory}
-        onEdit={victoryModal.openForEdit}
-      />
     </section>
   );
 }

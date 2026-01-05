@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { 
   CATEGORY_LABELS, 
@@ -11,6 +10,7 @@ import {
   CATEGORY_ICONS
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { TouchLink } from '@/app/components/TouchLink';
 
 type Props = {
   counts: Record<ExerciceCategory, number>;
@@ -25,7 +25,7 @@ export default function CategoryTabs({ counts }: Props) {
       {/* Container - flex sur desktop */}
       <div className="flex flex-wrap justify-center gap-2">
         {/* Icône maison pour la page d'accueil */}
-        <Link
+        <TouchLink
           href="/"
           aria-label="Page d'accueil"
           className={`
@@ -38,7 +38,7 @@ export default function CategoryTabs({ counts }: Props) {
           `}
         >
           <span className="text-xl">{NAVIGATION_EMOJIS.HOME}</span>
-        </Link>
+        </TouchLink>
 
         {/* Liens de catégorie */}
         {CATEGORY_ORDER.map((category) => {
@@ -49,7 +49,7 @@ export default function CategoryTabs({ counts }: Props) {
           const count = counts[category] || 0;
 
           return (
-            <Link
+            <TouchLink
               key={category}
               href={href}
               className={`
@@ -65,7 +65,7 @@ export default function CategoryTabs({ counts }: Props) {
               }`}>
                 {count}
               </span>
-            </Link>
+            </TouchLink>
           );
         })}
       </div>

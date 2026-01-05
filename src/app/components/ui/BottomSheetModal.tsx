@@ -75,6 +75,12 @@ export default function BottomSheetModal({
           <div
             className="absolute inset-0 bg-black/30 md:bg-black/50"
             onClick={onClose}
+            onTouchStart={(e) => {
+              // Empêcher le double-tap zoom et améliorer la réactivité sur mobile
+              e.preventDefault();
+              onClose();
+            }}
+            style={{ touchAction: 'manipulation' }}
           />
 
           {/* Bottom Sheet (mobile) / Modal (desktop) */}

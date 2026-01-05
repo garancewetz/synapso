@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
+import { TouchLink } from '@/app/components/TouchLink';
 
 type Props = {
   href: string;
@@ -28,7 +28,7 @@ export default function MenuLink({
   noCardStyle = false,
 }: Props) {
   return (
-    <Link
+    <TouchLink
       href={href}
       onClick={onClick}
       tabIndex={tabIndex}
@@ -65,7 +65,7 @@ export default function MenuLink({
           </p>
         )}
       </div>
-    </Link>
+    </TouchLink>
   );
 }
 

@@ -51,8 +51,14 @@ export function MenuDrawer({
         <div
           className="fixed inset-0 bg-black/50 z-40 transition-opacity"
           onClick={onClose}
+          onTouchStart={(e) => {
+            // Empêcher le double-tap zoom sur l'overlay
+            e.preventDefault();
+            onClose();
+          }}
           aria-hidden="true"
           role="presentation"
+          style={{ touchAction: 'manipulation' }}
         />
       )}
 

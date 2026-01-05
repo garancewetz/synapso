@@ -25,6 +25,7 @@ import VictoryFAB from './VictoryFAB';
 import ViewVictoriesButton from './ViewVictoriesButton';
 import WelcomeHeader from './WelcomeHeader';
 import WelcomeHeaderWrapper from './WelcomeHeaderWrapper';
+import { TouchLink } from './TouchLink';
 
 // UI Components
 import { Badge, Button, CalendarIcon, Input, Loader, Logo, Textarea, PinIcon, SparklesIcon } from './ui';
@@ -60,6 +61,7 @@ export {
   SiteMapCard,
   StatBadge,
   Textarea,
+  TouchLink,
   VictoryBottomSheet,
   VictoryButton,
   VictoryFAB,

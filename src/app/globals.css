@@ -57,6 +57,9 @@ body {
 a {
   text-decoration: none;
   color: inherit;
+  /* Améliorer la réactivité tactile sur mobile */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scroll-smooth {
@@ -85,6 +88,34 @@ button:focus-visible,
 a:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Améliorer la réactivité tactile sur mobile pour tous les boutons */
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Optimisation pour les éléments interactifs sur mobile */
+a[href],
+button,
+[role="button"],
+[tabindex] {
+  /* Réduire le délai de 300ms sur mobile */
+  touch-action: manipulation;
+  /* Supprimer le highlight bleu sur iOS/Safari */
+  -webkit-tap-highlight-color: transparent;
+  /* Empêcher la sélection de texte lors des clics rapides */
+  user-select: none;
+  /* Améliorer la performance des transitions */
+  will-change: transform;
+}
+
+/* Exception pour les inputs et textareas qui doivent permettre la sélection */
+input,
+textarea {
+  user-select: text;
+  touch-action: auto;
 }
 
 /* Touch-friendly button sizes */

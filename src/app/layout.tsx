@@ -9,6 +9,8 @@ import DevBanner from "@/app/components/DevBanner";
 import PWARegister from "@/app/components/PWARegister";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
+import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
+import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -51,16 +53,19 @@ export default function RootLayout({
         <PWARegister />
         <UserProvider>
           <CategoryProvider>
-            <DevBanner />
-            <AuthWrapper>
-              <NavBar />
-              <WelcomeHeaderWrapper />
-              <CategoryTabsWrapper />
-              <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
-                {children}
-              </main>
-              <BottomNavBar />
-            </AuthWrapper>
+            <DayDetailModalProvider>
+              <DevBanner />
+              <AuthWrapper>
+                <NavBar />
+                <WelcomeHeaderWrapper />
+                <CategoryTabsWrapper />
+                <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
+                  {children}
+                </main>
+                <BottomNavBar />
+                <DayDetailModalWrapper />
+              </AuthWrapper>
+            </DayDetailModalProvider>
           </CategoryProvider>
         </UserProvider>
       </body>

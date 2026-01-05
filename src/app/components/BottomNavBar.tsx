@@ -1,13 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { 
   CATEGORY_ORDER, 
   CATEGORY_MOBILE_CONFIG 
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { TouchLink } from '@/app/components/TouchLink';
 
 export default function BottomNavBar() {
   const pathname = usePathname();
@@ -26,7 +26,7 @@ export default function BottomNavBar() {
       <div className="">
         <div className="grid grid-cols-5 gap-0.5">
           {/* Icône maison pour la page d'accueil */}
-          <Link
+          <TouchLink
             href="/"
             aria-label="Accueil"
             className={`
@@ -39,7 +39,7 @@ export default function BottomNavBar() {
             `}
           >
             <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
-          </Link>
+          </TouchLink>
 
           {/* Catégories */}
           {categories.map((category) => {
@@ -47,7 +47,7 @@ export default function BottomNavBar() {
             const active = isActive(category);
 
             return (
-              <Link
+              <TouchLink
                 key={category}
                 href={config.href}
                 aria-label={config.label}
@@ -60,7 +60,7 @@ export default function BottomNavBar() {
               >
                 <span className="text-lg flex items-center justify-center" role="img" aria-hidden="true">{config.icon}</span>
                 <span className={active ? 'text-white' : ''}>{config.label}</span>
-              </Link>
+              </TouchLink>
             );
           })}
         </div>

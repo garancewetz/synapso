@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
 import WelcomeHeader from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
+import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
@@ -13,6 +14,7 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 export default function WelcomeHeaderWrapper() {
   const pathname = usePathname();
   const { currentUser } = useUser();
+  const { openDayDetail } = useDayDetailModal();
   const completedToday = useTodayCompletedCount();
   const displayName = currentUser?.name || "";
   const resetFrequency = currentUser?.resetFrequency || null;
@@ -34,10 +36,10 @@ export default function WelcomeHeaderWrapper() {
     return new Set(victories.map(v => v.createdAt.split('T')[0]));
   }, [victories]);
 
-  // Gestion du clic sur une journée du calendrier (pour l'instant, pas de modal)
-  const handleDayClick = useCallback((_day: HeatmapDay) => {
-    // TODO: Implémenter l'ouverture de la modal de détail de journée
-  }, []);
+  // Gestion du clic sur une journée du calendrier
+  const handleDayClick = useCallback((day: HeatmapDay) => {
+    openDayDetail(day);
+  }, [openDayDetail]);
 
   // Ne pas afficher sur les pages d'ajout/édition d'exercice, sur l'historique, sur les paramètres et sur toutes les pages aphasie
   const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie', '/historique', '/settings'];

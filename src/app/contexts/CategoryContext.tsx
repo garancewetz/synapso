@@ -1,17 +1,17 @@
 'use client';
 
 import { createContext, useContext, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 import { ExerciceCategory } from '@/app/types/exercice';
 
-interface CategoryContextType {
+type CategoryContextType = {
   activeCategory: ExerciceCategory | null;
   setActiveCategory: (category: ExerciceCategory | null) => void;
-}
+};
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
 
-export function CategoryProvider({ children }: { children: ReactNode }) {
+export function CategoryProvider({ children }: PropsWithChildren) {
   const [activeCategory, setActiveCategory] = useState<ExerciceCategory | null>(null);
 
   return (

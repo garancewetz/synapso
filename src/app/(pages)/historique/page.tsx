@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
+import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
-import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryStatsChart, DayDetailModal } from '@/app/components/historique';
+import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryStatsChart } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import BackButton from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
@@ -26,7 +27,6 @@ import {
 
 export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     thisWeek: 0,
@@ -36,6 +36,7 @@ export default function HistoriquePage() {
   });
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set(['current']));
   const { currentUser } = useUser();
+  const { openDayDetail } = useDayDetailModal();
   const victoryModal = useVictoryModal();
   const displayName = currentUser?.name || "";
 
@@ -109,26 +110,8 @@ export default function HistoriquePage() {
 
   // Gestion du clic sur une journée du calendrier
   const handleDayClick = (day: HeatmapDay) => {
-    setSelectedDay(day);
+    openDayDetail(day);
   };
-
-  // Exercices du jour sélectionné
-  const selectedDayExercises = useMemo(() => {
-    if (!selectedDay?.dateKey) return [];
-    return history
-      .filter(entry => entry.completedAt.split('T')[0] === selectedDay.dateKey)
-      .map(entry => ({
-        name: entry.exercice.name,
-        category: entry.exercice.category!,
-        completedAt: entry.completedAt,
-      }));
-  }, [selectedDay, history]);
-
-  // Victoire du jour sélectionné
-  const selectedDayVictory = useMemo(() => {
-    if (!selectedDay?.dateKey) return null;
-    return victories.find(v => v.createdAt.split('T')[0] === selectedDay.dateKey) || null;
-  }, [selectedDay, victories]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
@@ -258,15 +241,6 @@ export default function HistoriquePage() {
         />
       )}
 
-      {/* Modal détail d'une journée */}
-      <DayDetailModal
-        isOpen={!!selectedDay}
-        onClose={() => setSelectedDay(null)}
-        date={selectedDay?.date || null}
-        exercises={selectedDayExercises}
-        victory={selectedDayVictory}
-        onEdit={victoryModal.openForEdit}
-      />
     </div>
   );
 }

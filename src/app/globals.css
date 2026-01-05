@@ -121,3 +121,19 @@ a:focus-visible {
   transform: translateY(0);
 }
 
+/* Animation de brillance dorée pour les emojis de victoire */
+@keyframes golden-shine {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.9));
+    transform: scale(1.1);
+  }
+}
+
+.golden-shine {
+  animation: golden-shine 2s ease-in-out infinite;
+}
+

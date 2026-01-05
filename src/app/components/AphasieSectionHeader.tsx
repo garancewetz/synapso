@@ -9,6 +9,7 @@ type Props = {
   emoji?: string;
   addHref: string;
   addLabel: string;
+  hideAddButton?: boolean;
 };
 
 /**
@@ -18,7 +19,8 @@ export default function AphasieSectionHeader({
   title, 
   emoji, 
   addHref, 
-  addLabel 
+  addLabel,
+  hideAddButton = false
 }: Props) {
   const { isLeftHanded } = useHandPreference();
 
@@ -37,7 +39,7 @@ export default function AphasieSectionHeader({
         {emoji && <span>{emoji}</span>}
         {title && <span>{title}</span>}
       </h2>
-      <AddButton href={addHref} label={addLabel} />
+      {!hideAddButton && <AddButton href={addHref} label={addLabel} />}
     </div>
   );
 }

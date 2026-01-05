@@ -24,6 +24,7 @@ type MenuAction = {
 }
 
 const MENU_ACTIONS: MenuAction[] = [
+ 
   {
     href: () => '/aphasie',
     icon: <ChatIcon />,
@@ -54,6 +55,7 @@ const MENU_ACTIONS: MenuAction[] = [
     iconTextColor: 'text-gray-900',
     noCardStyle: true,
   },
+
 ];
 
 export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {

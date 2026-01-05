@@ -5,7 +5,7 @@ import AphasieChallengeForm from '@/app/components/AphasieChallengeForm';
 import FormPageWrapper from '@/app/components/FormPageWrapper';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
-export default function AphasieChallengeEditPage() {
+export default function AphasieExerciceEditPage() {
   const router = useRouter();
   const params = useParams();
   const { hasAccess } = useAphasieCheck();

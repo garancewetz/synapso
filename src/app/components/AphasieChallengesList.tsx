@@ -1,14 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import ConfettiRain from '@/app/components/ConfettiRain';
 import AphasieChallengeCard from '@/app/components/AphasieChallengeCard';
-import { VictoryCard } from '@/app/components/historique';
-import type { AphasieChallenge } from '@/app/types';
-import { useUser } from '@/app/contexts/UserContext';
-import { useOrthophonieVictories } from '@/app/hooks/useOrthophonieVictories';
+import { useAphasieChallenges } from '@/app/hooks/useAphasieChallenges';
 
 type Props = {
   onMasteredChange?: () => void;
@@ -17,42 +13,9 @@ type Props = {
 };
 
 export default function AphasieChallengesList({ onMasteredChange, limit }: Props) {
-  const [challenges, setChallenges] = useState<AphasieChallenge[]>([]);
+  const { challenges, refetch: refetchChallenges } = useAphasieChallenges();
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const { currentUser } = useUser();
-  const router = useRouter();
-  
-  // Utiliser le hook factorisé pour récupérer les victoires orthophonie
-  const { victories, refetch: refetchVictories } = useOrthophonieVictories(currentUser?.id ?? null);
-
-  const fetchChallenges = useCallback(() => {
-    if (!currentUser) return;
-    
-    fetch(`/api/aphasie-challenges?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setChallenges(data);
-        } else {
-          console.error('API error:', data);
-          setChallenges([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setChallenges([]);
-      });
-  }, [currentUser]);
-
-  useEffect(() => {
-    fetchChallenges();
-  }, [fetchChallenges]);
-
-  // Créer un map des victoires par contenu (text du challenge)
-  const victoriesByContent = useMemo(() => {
-    return new Map(victories.map(v => [v.content, v]));
-  }, [victories]);
 
   const handleMasteredToggle = async (id: number, currentMastered: boolean) => {
     const wasNotMastered = !currentMastered;
@@ -77,8 +40,7 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
         setTimeout(() => setShowConfetti(false), 3200);
       }
 
-      fetchChallenges();
-      refetchVictories(); // Recharger les victoires après modification
+      refetchChallenges();
       if (onMasteredChange) {
         onMasteredChange();
       }
@@ -103,40 +65,19 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
         {displayedChallenges.length > 0 ? (
           <>
             <ul className="space-y-3">
-              {displayedChallenges.map(challenge => {
-                // Si l'exercice est maîtrisé, afficher VictoryCard
-                if (challenge.mastered) {
-                  const victory = victoriesByContent.get(challenge.text);
-                  if (victory) {
-                    return (
-                      <li key={challenge.id}>
-                        <VictoryCard
-                          victory={victory}
-                          onEdit={() => {
-                            // Ouvrir la page d'édition de l'exercice
-                            router.push(`/aphasie/challenges/edit/${challenge.id}`);
-                          }}
-                        />
-                      </li>
-                    );
-                  }
-                }
-                
-                // Sinon, afficher la carte normale
-                return (
-                  <AphasieChallengeCard
-                    key={challenge.id}
-                    challenge={challenge}
-                    onMasteredToggle={handleMasteredToggle}
-                    isUpdating={isUpdating === challenge.id}
-                  />
-                );
-              })}
+              {displayedChallenges.map(challenge => (
+                <AphasieChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  onMasteredToggle={handleMasteredToggle}
+                  isUpdating={isUpdating === challenge.id}
+                />
+              ))}
             </ul>
             {limit && hasMoreTotal && (
               <div className="mt-4">
                 <ViewAllLink 
-                  href="/aphasie/challenges"
+                  href="/aphasie/exercices"
                   label="Voir tous les exercices"
                   emoji="🎯"
                 />
@@ -154,22 +95,7 @@ export default function AphasieChallengesList({ onMasteredChange, limit }: Props
 }
 
 export function useAphasieChallengesCount() {
-  const { currentUser } = useUser();
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    
-    fetch(`/api/aphasie-challenges?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setCount(data.length);
-        }
-      })
-      .catch(() => setCount(0));
-  }, [currentUser]);
-
-  return count;
+  const { challenges } = useAphasieChallenges();
+  return challenges.length;
 }
 

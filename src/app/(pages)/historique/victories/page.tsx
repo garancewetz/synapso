@@ -1,55 +1,40 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import Link from 'next/link';
-import type { Victory } from '@/app/types';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useHistory } from '@/app/hooks/useHistory';
+import { useVictories } from '@/app/hooks/useVictories';
 import { VictoryTimeline } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
-import { ChevronIcon } from '@/app/components/ui/icons';
-import { VICTORY_EMOJIS, CATEGORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import BackButton from '@/app/components/BackButton';
+import { VICTORY_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { isOrthophonieVictory } from '@/app/utils/victory.utils';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'orthophonie' | 'physique';
 
 export default function VictoriesPage() {
-  const [victories, setVictories] = useState<Victory[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>('all');
   const { currentUser } = useUser();
   const victoryModal = useVictoryModal();
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get('filter') as FilterType | null;
+  const [filter, setFilter] = useState<FilterType>(filterParam && ['all', 'orthophonie', 'physique'].includes(filterParam) ? filterParam : 'all');
 
-  // Fetch des victoires
-  const fetchVictories = useCallback(() => {
-    if (!currentUser) return;
+  // Charger l'historique
+  const { history } = useHistory();
 
-    setLoading(true);
-    fetch(`/api/victories?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setVictories(data);
-        } else {
-          console.error('API error:', data);
-          setVictories([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setVictories([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [currentUser]);
+  // Charger les victoires
+  const { victories, loading, refetch: refetchVictories } = useVictories();
 
+  // Synchroniser le filtre avec le paramètre d'URL
   useEffect(() => {
-    if (currentUser) {
-      fetchVictories();
+    if (filterParam && ['all', 'orthophonie', 'physique'].includes(filterParam)) {
+      setFilter(filterParam);
     }
-  }, [fetchVictories, currentUser]);
+  }, [filterParam]);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -60,10 +45,10 @@ export default function VictoriesPage() {
   }, [showConfetti]);
 
   // Handler pour le succès d'une victoire avec confettis dorés
-  const handleVictorySuccess = useCallback(() => {
+  const handleVictorySuccess = () => {
     setShowConfetti(true);
-    fetchVictories();
-  }, [fetchVictories]);
+    refetchVictories();
+  };
 
   // Filtrer les victoires selon le filtre sélectionné
   // Si l'utilisateur n'est pas aphasique, on affiche toutes les victoires
@@ -89,15 +74,7 @@ export default function VictoriesPage() {
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour */}
-      <div className="px-3 sm:px-6 mb-2">
-        <Link 
-          href="/historique"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>{NAVIGATION_EMOJIS.MAP} Mon parcours</span>
-        </Link>
-      </div>
+      <BackButton backHref="/historique" className="mb-4" />
 
       <div className="px-3 sm:p-6">
         {/* Header */}
@@ -114,7 +91,7 @@ export default function VictoriesPage() {
           )}
         </div>
 
-        {/* Filtre - affiché uniquement pour les utilisateurs aphasiques */}
+        {/* Filtre avec nombre de réussites - affiché uniquement pour les utilisateurs aphasiques */}
         {!loading && victories.length > 0 && (currentUser?.isAphasic ?? false) && (
           <div className="mb-6">
             <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
@@ -129,6 +106,7 @@ export default function VictoriesPage() {
               >
                 <span className="text-lg mb-1">{VICTORY_EMOJIS.STAR_BRIGHT}</span>
                 <span>Toutes</span>
+                <span className="text-xs mt-0.5 opacity-75">({victories.length})</span>
               </button>
               <button
                 onClick={() => setFilter('orthophonie')}
@@ -141,6 +119,7 @@ export default function VictoriesPage() {
               >
                 <span className="text-lg mb-1">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
                 <span>Orthophonie</span>
+                <span className="text-xs mt-0.5 opacity-75">({victories.filter(v => isOrthophonieVictory(v.emoji)).length})</span>
               </button>
               <button
                 onClick={() => setFilter('physique')}
@@ -153,6 +132,7 @@ export default function VictoriesPage() {
               >
                 <span className="text-lg mb-1">🏋️</span>
                 <span>Physique</span>
+                <span className="text-xs mt-0.5 opacity-75">({victories.filter(v => !isOrthophonieVictory(v.emoji)).length})</span>
               </button>
             </div>
           </div>
@@ -165,8 +145,11 @@ export default function VictoriesPage() {
           </div>
         ) : (
           <VictoryTimeline 
-            victories={filteredVictories} 
+            victories={filteredVictories}
+            allVictories={victories}
+            history={history}
             onEdit={victoryModal.openForEdit}
+            hideChart={true}
           />
         )}
       </div>

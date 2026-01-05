@@ -4,7 +4,7 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
 export default function BackToHomeButton() {
   return (
-    <div className="px-3 sm:px-6 mb-2">
+    <div className=" mb-2">
       <Link 
         href="/"
         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"

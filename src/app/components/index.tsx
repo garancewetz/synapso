@@ -17,6 +17,8 @@ import NavBar from './NavBar';
 import PasswordModal from './PasswordModal';
 import PWARegister from './PWARegister';
 import SiteProtection from './SiteProtection';
+import { SiteMapCard } from './SiteMapCard';
+import { StatBadge } from './StatBadge';
 import VictoryBottomSheet from './VictoryBottomSheet';
 import VictoryButton from './VictoryButton';
 import VictoryFAB from './VictoryFAB';
@@ -55,6 +57,8 @@ export {
   SparklesIcon,
   PWARegister,
   SiteProtection,
+  SiteMapCard,
+  StatBadge,
   Textarea,
   VictoryBottomSheet,
   VictoryButton,

@@ -37,7 +37,7 @@ export default function AphasieEditPage({ params }: AphasieEditPageProps) {
   };
 
   return (
-    <FormPageWrapper>
+    <FormPageWrapper backHref="/aphasie">
       <AphasieForm
         itemId={itemId}
         onSuccess={handleSuccess}

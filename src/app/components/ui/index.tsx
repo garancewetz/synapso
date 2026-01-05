@@ -6,6 +6,7 @@ export { Badge } from './Badge';
 export { default as Button } from './Button';
 export { CompleteButton } from './CompleteButton';
 export { CompletedBadge } from './CompletedBadge';
+export { MasteredBadge } from './MasteredBadge';
 export { DeleteButton } from './DeleteButton';
 export { IconButton } from './IconButton';
 export { default as Input } from './Input';

@@ -6,6 +6,7 @@ export { CheckIcon } from './CheckIcon';
 export { ChevronIcon } from './ChevronIcon';
 export { ClockIcon } from './ClockIcon';
 export { CloseIcon } from './CloseIcon';
+export { CompassIcon } from './CompassIcon';
 export { EditIcon } from './EditIcon';
 export { MapIcon } from './MapIcon';
 export { MenuIcon } from './MenuIcon';

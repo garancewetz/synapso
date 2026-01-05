@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import CategoryTabs from '@/app/components/CategoryTabs';
 import { useUser } from '@/app/contexts/UserContext';
+import { useExercices } from '@/app/hooks/useExercices';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
 export default function CategoryTabsWrapper() {
   const pathname = usePathname();
   const { currentUser } = useUser();
-  const [counts, setCounts] = useState<Record<ExerciceCategory, number>>(
-    CATEGORY_ORDER.reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {} as Record<ExerciceCategory, number>)
-  );
 
   // Pages où on ne veut pas afficher la navigation
   // Sur la page d'accueil, on masque car les CategoryCard font déjà le travail de navigation
@@ -24,30 +22,21 @@ export default function CategoryTabsWrapper() {
     pathname?.startsWith('/aphasie/edit') ||
     pathname === '/settings';
 
-  useEffect(() => {
+  const { exercices } = useExercices({
+    userId: currentUser?.id,
+  });
+
+  // Calculer les counts par catégorie
+  const counts = useMemo(() => {
     if (shouldHide || !currentUser) {
-      setCounts(
-        CATEGORY_ORDER.reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {} as Record<ExerciceCategory, number>)
-      );
-      return;
+      return CATEGORY_ORDER.reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {} as Record<ExerciceCategory, number>);
     }
 
-    // Charger les exercices pour calculer les counts
-    fetch(`/api/exercices?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const calculatedCounts = CATEGORY_ORDER.reduce((acc, cat) => ({
-            ...acc,
-            [cat]: data.filter((e: { category: ExerciceCategory }) => e.category === cat).length,
-          }), {} as Record<ExerciceCategory, number>);
-          setCounts(calculatedCounts);
-        }
-      })
-      .catch(() => {
-        // En cas d'erreur, garder les counts à 0
-      });
-  }, [currentUser, shouldHide, pathname]);
+    return CATEGORY_ORDER.reduce((acc, cat) => ({
+      ...acc,
+      [cat]: exercices.filter(e => e.category === cat).length,
+    }), {} as Record<ExerciceCategory, number>);
+  }, [exercices, shouldHide, currentUser]);
 
   if (shouldHide) {
     return null;

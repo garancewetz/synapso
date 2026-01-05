@@ -7,7 +7,7 @@ import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 export const dynamic = 'force-dynamic';
 
-export default function AphasieChallengesPage() {
+export default function AphasieExercicesPage() {
   const { hasAccess } = useAphasieCheck();
 
   if (!hasAccess) {

@@ -2,11 +2,9 @@
 
 import { useCallback } from 'react';
 import Link from 'next/link';
-import clsx from 'clsx';
-import { BaseCard, CompleteButton, IconButton, Badge } from '@/app/components/ui';
+import { BaseCard, CompleteButton, IconButton, MasteredBadge } from '@/app/components/ui';
 import { EditIcon } from '@/app/components/ui/icons';
-import { GOLDEN_BADGE_STYLES, GOLDEN_TEXT_STYLES, APHASIE_COLORS } from '@/app/constants/card.constants';
-import { VICTORY_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { APHASIE_COLORS } from '@/app/constants/card.constants';
 import type { AphasieChallenge } from '@/app/types';
 
 type Props = {
@@ -17,7 +15,7 @@ type Props = {
 
 /**
  * Composant pour afficher un exercice aphasie
- * Bande jaune solaire par défaut, passe en golden (style VictoryCard) quand maîtrisé
+ * Bande jaune solaire par défaut, badge "Maîtrisé" en vert quand maîtrisé
  */
 export default function AphasieChallengeCard({ 
   challenge, 
@@ -31,51 +29,27 @@ export default function AphasieChallengeCard({
   }, [onMasteredToggle, challenge.id, challenge.mastered]);
 
   return (
-    <BaseCard
-      as="li"
-      isGolden={isMastered}
-    >
-      <BaseCard.Accent 
-        color={isMastered ? undefined : APHASIE_COLORS.SOLAR_YELLOW}
-        isGolden={isMastered}
-      />
+    <BaseCard as="li">
+      <BaseCard.Accent color={APHASIE_COLORS.SOLAR_YELLOW} />
       <BaseCard.Content>
-        <div className={clsx('p-4', isMastered ? '' : 'md:p-5')}>
-        {isMastered ? (
-          <>
-            {/* Style VictoryCard : étoile et badge en haut */}
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-2xl">{VICTORY_EMOJIS.STAR}</span>
-              <Badge className={GOLDEN_BADGE_STYLES.classes}>
-                {CATEGORY_EMOJIS.ORTHOPHONIE} Ortho
-              </Badge>
-            </div>
-            
-            {/* Titre */}
-            <div className="mb-2">
-              <p className={clsx(GOLDEN_TEXT_STYLES.primary, 'font-semibold leading-relaxed')}>
-                {challenge.text}
-              </p>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-start gap-3">
-            {/* Contenu simple pour non maîtrisé */}
+        <div className="p-4 md:p-5">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="text-base md:text-lg font-semibold text-gray-800 leading-tight">
                 {challenge.text}
               </div>
             </div>
+            {/* Badge maîtrisé */}
+            {isMastered && <MasteredBadge />}
           </div>
-        )}
         </div>
-        <BaseCard.Footer isGolden={isMastered}>
-          <Link href={`/aphasie/challenges/edit/${challenge.id}`}>
+        <BaseCard.Footer>
+          <Link href={`/aphasie/exercices/edit/${challenge.id}`}>
             <IconButton
               title="Modifier"
               aria-label="Modifier l'exercice"
             >
-              <EditIcon className={clsx('w-4 h-4', isMastered && GOLDEN_TEXT_STYLES.icon)} />
+              <EditIcon className="w-4 h-4" />
             </IconButton>
           </Link>
           <CompleteButton

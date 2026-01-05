@@ -4,7 +4,7 @@ import { Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import ExerciceForm from '@/app/components/ExerciceForm';
-import BackToHomeButton from '@/app/components/BackToHomeButton';
+import BackButton from '@/app/components/BackButton';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
 import { Loader } from '@/app/components/ui';
 
@@ -46,7 +46,11 @@ function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
-      <BackToHomeButton />
+      <BackButton 
+        backHref={backHref} 
+        className="mb-4" 
+        buttonClassName="py-3"
+      />
       <div className="px-3 sm:p-6 bg-gray-50">
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 sm:p-6">

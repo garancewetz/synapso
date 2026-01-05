@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import Link from 'next/link';
-import type { HistoryEntry, Victory } from '@/app/types';
+import { useState, useCallback, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { ChevronIcon } from '@/app/components/ui/icons';
+import BackButton from '@/app/components/BackButton';
 import { ActivityHeatmap, DayDetailModal } from '@/app/components/historique';
-import { VictoryBottomSheet } from '@/app/components';
+import { VictoryBottomSheet, StatBadge } from '@/app/components';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useHistory } from '@/app/hooks/useHistory';
+import { useVictories } from '@/app/hooks/useVictories';
 import { ROADMAP_FULL_DAYS } from '@/app/constants/historique.constants';
 import { NAVIGATION_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import {
@@ -17,56 +17,11 @@ import {
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 export default function RoadmapPage() {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [victories, setVictories] = useState<Victory[]>([]);
   const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const { currentUser } = useUser();
   const victoryModal = useVictoryModal();
-
-  // Fetch de l'historique
-  const fetchHistory = useCallback(() => {
-    if (!currentUser) return;
-
-    fetch(`/api/history?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setHistory(data);
-        } else {
-          console.error('API error:', data);
-          setHistory([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setHistory([]);
-      });
-  }, [currentUser]);
-
-  // Fetch des victoires
-  const fetchVictories = useCallback(() => {
-    if (!currentUser) return;
-
-    fetch(`/api/victories?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setVictories(data);
-        } else {
-          setVictories([]);
-        }
-      })
-      .catch(() => {
-        setVictories([]);
-      });
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchHistory();
-      fetchVictories();
-    }
-  }, [fetchHistory, fetchVictories, currentUser]);
+  const { history } = useHistory();
+  const { victories, refetch: refetchVictories } = useVictories();
 
   // Données pour la roadmap complète (90 jours)
   const roadmapData = useMemo(() => {
@@ -114,20 +69,18 @@ export default function RoadmapPage() {
 
   // Handler pour le succès d'une victoire
   const handleVictorySuccess = useCallback(() => {
-    fetchVictories();
-  }, [fetchVictories]);
+    refetchVictories();
+  }, [refetchVictories]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Header avec bouton retour */}
       <div className="px-4 md:px-6 mb-6">
-        <Link 
-          href="/historique"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors mb-4"
-        >
-          <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>Retour à l&apos;historique</span>
-        </Link>
+        <BackButton 
+          backHref="/historique" 
+          className="mb-4" 
+          buttonClassName="py-3"
+        />
 
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
           {NAVIGATION_EMOJIS.MAP} Mon chemin parcouru
@@ -140,22 +93,35 @@ export default function RoadmapPage() {
       {/* Statistiques globales */}
       <div className="px-4 md:px-6 mb-6">
         <div className="grid grid-cols-4 gap-2 md:gap-3">
-          <div className="bg-emerald-50 rounded-xl p-3 md:p-4 text-center">
-            <p className="text-xl md:text-2xl font-bold text-emerald-600">{daysWithExercises}</p>
-            <p className="text-[10px] md:text-xs text-emerald-700">jours actifs</p>
-          </div>
-          <div className="bg-blue-50 rounded-xl p-3 md:p-4 text-center">
-            <p className="text-xl md:text-2xl font-bold text-blue-600">{totalExercises}</p>
-            <p className="text-[10px] md:text-xs text-blue-700">exercices</p>
-          </div>
-          <div className="bg-amber-50 rounded-xl p-3 md:p-4 text-center">
-            <p className="text-xl md:text-2xl font-bold text-amber-600">{currentStreak}</p>
-            <p className="text-[10px] md:text-xs text-amber-700">jours d&apos;affilée</p>
-          </div>
-          <div className="bg-yellow-50 rounded-xl p-3 md:p-4 text-center">
-            <p className="text-xl md:text-2xl font-bold text-yellow-600">{totalVictories}</p>
-            <p className="text-[10px] md:text-xs text-yellow-700">victoires {VICTORY_EMOJIS.STAR_BRIGHT}</p>
-          </div>
+          <StatBadge
+            value={daysWithExercises}
+            label="jours actifs"
+            bgColorClass="bg-emerald-50"
+            textColorClass="text-emerald-600"
+            textColorDarkClass="text-emerald-700"
+          />
+          <StatBadge
+            value={totalExercises}
+            label="exercices"
+            bgColorClass="bg-blue-50"
+            textColorClass="text-blue-600"
+            textColorDarkClass="text-blue-700"
+          />
+          <StatBadge
+            value={currentStreak}
+            label="jours d'affilée"
+            bgColorClass="bg-amber-50"
+            textColorClass="text-amber-600"
+            textColorDarkClass="text-amber-700"
+          />
+          <StatBadge
+            value={totalVictories}
+            label="victoires"
+            bgColorClass="bg-yellow-50"
+            textColorClass="text-yellow-600"
+            textColorDarkClass="text-yellow-700"
+            emoji={VICTORY_EMOJIS.STAR_BRIGHT}
+          />
         </div>
       </div>
 

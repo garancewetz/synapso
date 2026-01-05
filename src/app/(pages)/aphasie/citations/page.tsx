@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { ChevronIcon } from '@/app/components/ui/icons';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
+import BackButton from '@/app/components/BackButton';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
@@ -21,15 +20,11 @@ export default function AphasieCitationsPage() {
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour page aphasie */}
-      <div className="px-3 sm:px-6 mb-2">
-        <Link 
-          href="/aphasie"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <ChevronIcon direction="left" className="w-5 h-5" />
-          <span>{CATEGORY_EMOJIS.ORTHOPHONIE} Journal d&apos;aphasie</span>
-        </Link>
-      </div>
+      <BackButton 
+        backHref="/aphasie" 
+        className="mb-4" 
+        buttonClassName="py-3"
+      />
 
       <div className="px-3 sm:p-6">
         <div className="max-w-4xl mx-auto">

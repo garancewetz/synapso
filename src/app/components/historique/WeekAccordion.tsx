@@ -176,14 +176,14 @@ function VictoryCardCompact({ victory }: VictoryCardCompactProps) {
         }}
       />
       
-      <div className="flex items-center gap-3 p-3 flex-1">
+      <div className="flex items-start gap-3 p-3 flex-1 min-w-0">
         {/* Icône de succès */}
-        <span className="text-2xl">
+        <span className="text-2xl shrink-0">
           {VICTORY_EMOJIS.STAR}
         </span>
         
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-amber-950 text-sm truncate">
+          <h4 className="font-medium text-amber-950 text-sm break-words line-clamp-2">
             {cleanContent}
           </h4>
           <div className="flex flex-wrap gap-1 mt-1">
@@ -208,7 +208,7 @@ function VictoryCardCompact({ victory }: VictoryCardCompactProps) {
           </div>
         </div>
       
-        <span className="text-xs text-amber-600 whitespace-nowrap">
+        <span className="text-xs text-amber-600 whitespace-nowrap shrink-0">
           {format(new Date(victory.createdAt), "d MMM HH:mm", { locale: fr })}
         </span>
       </div>

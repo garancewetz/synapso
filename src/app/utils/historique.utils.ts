@@ -10,6 +10,7 @@ import {
   startOfDay,
   eachDayOfInterval,
   getDay,
+  endOfWeek,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
@@ -272,6 +273,149 @@ export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_P
 }
 
 // ============================================================================
+// DONNÉES DES 7 DERNIERS JOURS (POUR RYTHME QUOTIDIEN)
+// ============================================================================
+
+export function getLast7DaysData(history: HistoryEntry[]): HeatmapDay[] {
+  const today = new Date();
+  const startDate = subDays(today, 6); // 7 jours au total (aujourd'hui + 6 jours précédents)
+  const allDays = eachDayOfInterval({ start: startDate, end: today });
+  
+  // Créer un Set des dateKeys pour un filtrage rapide
+  const dateKeys = new Set(allDays.map(day => format(day, 'yyyy-MM-dd')));
+  
+  // Compter les exercices par jour et par catégorie
+  const exercisesByDay: Record<string, {
+    count: number;
+    byCategory: Record<ExerciceCategory, number>;
+  }> = {};
+  
+  history.forEach(entry => {
+    const dateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
+    
+    if (dateKeys.has(dateKey)) {
+      if (!exercisesByDay[dateKey]) {
+        exercisesByDay[dateKey] = {
+          count: 0,
+          byCategory: {
+            UPPER_BODY: 0,
+            CORE: 0,
+            LOWER_BODY: 0,
+            STRETCHING: 0,
+          },
+        };
+      }
+      exercisesByDay[dateKey].count++;
+      if (entry.exercice.category) {
+        exercisesByDay[dateKey].byCategory[entry.exercice.category]++;
+      }
+    }
+  });
+
+  const realDays = allDays.map(day => {
+    const dateKey = format(day, 'yyyy-MM-dd');
+    const dayData = exercisesByDay[dateKey];
+    const count = dayData?.count || 0;
+    const { dominant, secondary } = dayData 
+      ? getDominantCategories(dayData.byCategory)
+      : { dominant: null, secondary: null };
+    
+    const allCategories = dayData 
+      ? (Object.entries(dayData.byCategory) as [ExerciceCategory, number][])
+          .filter(([, cnt]) => cnt > 0)
+          .sort((a, b) => b[1] - a[1])
+          .map(([cat]) => cat)
+      : [];
+    
+    return {
+      date: day as Date | null,
+      dateKey,
+      count,
+      dominantCategory: dominant,
+      secondaryCategory: secondary,
+      allCategories,
+      isToday: isSameDay(day, today),
+      isEmpty: false,
+    };
+  });
+
+  return realDays;
+}
+
+// ============================================================================
+// DONNÉES DE LA SEMAINE EN COURS (LUNDI À DIMANCHE)
+// ============================================================================
+
+export function getCurrentWeekData(history: HistoryEntry[]): HeatmapDay[] {
+  const today = new Date();
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+  const allDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  
+  // Créer un Set des dateKeys de la semaine pour un filtrage rapide
+  const weekDateKeys = new Set(allDays.map(day => format(day, 'yyyy-MM-dd')));
+  
+  // Compter les exercices par jour et par catégorie
+  const exercisesByDay: Record<string, {
+    count: number;
+    byCategory: Record<ExerciceCategory, number>;
+  }> = {};
+  
+  history.forEach(entry => {
+    const dateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
+    
+    // Vérifier si l'entrée est dans la semaine en cours
+    if (weekDateKeys.has(dateKey)) {
+      if (!exercisesByDay[dateKey]) {
+        exercisesByDay[dateKey] = {
+          count: 0,
+          byCategory: {
+            UPPER_BODY: 0,
+            CORE: 0,
+            LOWER_BODY: 0,
+            STRETCHING: 0,
+          },
+        };
+      }
+      exercisesByDay[dateKey].count++;
+      if (entry.exercice.category) {
+        exercisesByDay[dateKey].byCategory[entry.exercice.category]++;
+      }
+    }
+  });
+
+  const realDays = allDays.map(day => {
+    const dateKey = format(day, 'yyyy-MM-dd');
+    const dayData = exercisesByDay[dateKey];
+    const count = dayData?.count || 0;
+    const { dominant, secondary } = dayData 
+      ? getDominantCategories(dayData.byCategory)
+      : { dominant: null, secondary: null };
+    
+    // Extraire toutes les catégories travaillées ce jour (triées par nombre décroissant)
+    const allCategories = dayData 
+      ? (Object.entries(dayData.byCategory) as [ExerciceCategory, number][])
+          .filter(([, cnt]) => cnt > 0)
+          .sort((a, b) => b[1] - a[1])
+          .map(([cat]) => cat)
+      : [];
+    
+    return {
+      date: day as Date | null,
+      dateKey,
+      count,
+      dominantCategory: dominant,
+      secondaryCategory: secondary,
+      allCategories,
+      isToday: isSameDay(day, today),
+      isEmpty: false,
+    };
+  });
+
+  return realDays;
+}
+
+// ============================================================================
 // GROUPEMENT PAR SEMAINE
 // ============================================================================
 
@@ -337,6 +481,35 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
       entries,
       victories: weekVictories,
     }));
+}
+
+/**
+ * Calcule la première date entre les victoires et l'historique
+ * Utilisé pour déterminer le point de départ des graphiques de victoires
+ */
+export function getFirstDateFromVictoriesAndHistory(
+  victories: Victory[],
+  history: HistoryEntry[]
+): Date | null {
+  const sortedVictories = [...victories].sort((a, b) => 
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+  const sortedHistory = [...history].sort((a, b) => 
+    new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
+  );
+
+  if (sortedVictories.length > 0 && sortedHistory.length > 0) {
+    const firstVictoryDate = new Date(sortedVictories[0].createdAt);
+    const firstExerciseDate = new Date(sortedHistory[0].completedAt);
+    return firstVictoryDate < firstExerciseDate ? firstVictoryDate : firstExerciseDate;
+  }
+  if (sortedHistory.length > 0) {
+    return new Date(sortedHistory[0].completedAt);
+  }
+  if (sortedVictories.length > 0) {
+    return new Date(sortedVictories[0].createdAt);
+  }
+  return null;
 }
 
 // ============================================================================

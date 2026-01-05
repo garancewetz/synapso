@@ -35,7 +35,7 @@ export default function CategoryPage() {
   const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
   // Ne charger les exercices que si le user est chargé et disponible
-  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
+  const { exercices, loading: loadingExercices, updateExercice, refetch } = useExercices({
     userId: userLoading ? undefined : currentUser?.id,
     category: isValidCategory ? categoryParam : undefined,
   });
@@ -210,7 +210,10 @@ export default function CategoryPage() {
       </div>
 
       {/* Bouton flottant "Noter une victoire" */}
-      <VictoryFAB />
+      <VictoryFAB onSuccess={() => {
+        // Rafraîchir la liste des exercices au cas où une victoire orthophonie a été créée
+        refetch();
+      }} />
     </section>
   );
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { HistoryEntry, Victory } from '@/app/types';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
-import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryTimeline, DayDetailModal } from '@/app/components/historique';
+import { useHistory } from '@/app/hooks/useHistory';
+import { useVictories } from '@/app/hooks/useVictories';
+import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryStatsChart, DayDetailModal } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
-import BackToHomeButton from '@/app/components/BackToHomeButton';
+import BackButton from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -24,8 +25,6 @@ import {
 } from '@/app/utils/historique.utils';
 
 export default function HistoriquePage() {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [victories, setVictories] = useState<Victory[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [selectedDay, setSelectedDay] = useState<HeatmapDay | null>(null);
   const [stats, setStats] = useState({
@@ -40,69 +39,17 @@ export default function HistoriquePage() {
   const victoryModal = useVictoryModal();
   const displayName = currentUser?.name || "";
 
-  // Calcul des statistiques
-  const updateStats = useCallback((data: HistoryEntry[]) => {
-    const calculatedStats = calculateStats(data);
-    setStats(calculatedStats);
-  }, []);
+  // Charger l'historique
+  const { history } = useHistory();
 
-  // Fetch de l'historique
-  const fetchHistory = useCallback(() => {
-    if (!currentUser) return;
+  // Charger les victoires
+  const { victories, refetch: refetchVictories } = useVictories();
 
-    fetch(`/api/history?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setHistory(data);
-          updateStats(data);
-        } else {
-          console.error('API error:', data);
-          setHistory([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setHistory([]);
-      });
-  }, [updateStats, currentUser]);
-
-  // Fetch des victoires
-  const fetchVictories = useCallback(() => {
-    if (!currentUser) return;
-
-    fetch(`/api/victories?userId=${currentUser.id}`, { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setVictories(data);
-        } else {
-          console.error('API error:', data);
-          setVictories([]);
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        setVictories([]);
-      });
-  }, [currentUser]);
-
+  // Calcul des statistiques à partir de l'historique
   useEffect(() => {
-    if (currentUser) {
-      fetchHistory();
-      fetchVictories();
-    }
-  }, [fetchHistory, fetchVictories, currentUser]);
+    const calculatedStats = calculateStats(history);
+    setStats(calculatedStats);
+  }, [history]);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -113,10 +60,10 @@ export default function HistoriquePage() {
   }, [showConfetti]);
 
   // Handler pour le succès d'une victoire avec confettis dorés
-  const handleVictorySuccess = useCallback(() => {
+  const handleVictorySuccess = () => {
     setShowConfetti(true);
-    fetchVictories();
-  }, [fetchVictories]);
+    refetchVictories();
+  };
 
   // Dates des victoires pour le calendrier
   const victoryDates = useMemo(() => {
@@ -186,7 +133,10 @@ export default function HistoriquePage() {
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       {/* Bouton retour accueil */}
-      <BackToHomeButton />
+      <BackButton 
+        className="mb-4" 
+        buttonClassName="py-3"
+      />
 
       <div className="px-3 sm:p-6">
 
@@ -203,11 +153,18 @@ export default function HistoriquePage() {
           />
           
           {/* 2. Mes réussites personnelles - L'humain et le moral au premier plan */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
             <div className={clsx('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-                {VICTORY_EMOJIS.STAR_BRIGHT} Mes réussites personnelles
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+                  {VICTORY_EMOJIS.STAR_BRIGHT} Mes réussites
+                </h2>
+                {victories.length > 0 && (
+                  <span className="text-sm font-medium text-gray-600">
+                    ({victories.length})
+                  </span>
+                )}
+              </div>
               {currentUser && (
                 <VictoryButton 
                   onClick={victoryModal.openForCreate}
@@ -216,10 +173,18 @@ export default function HistoriquePage() {
                 />
               )}
             </div>
-            <VictoryTimeline 
-              victories={victories.slice(0, 2)} 
-              onEdit={victoryModal.openForEdit}
-            />
+            {victories.length >= 2 ? (
+              <VictoryStatsChart 
+                victories={victories}
+                history={history}
+                hideTitle={true}
+              />
+            ) : (
+              <div className="text-center py-8">
+                <span className="text-3xl mb-2 block">🌟</span>
+                <p className="text-gray-500">Tes réussites apparaîtront ici !</p>
+              </div>
+            )}
             {victories.length > 0 && (
               <ViewAllLink 
                 href="/historique/victories"
@@ -228,9 +193,6 @@ export default function HistoriquePage() {
               />
             )}
           </div>
-          
-          {/* 3. Ta régularité (30 jours) - Indicateur de persévérance */}
-          <BarChart data={barChartData} currentStreak={currentStreak} victoryDates={victoryDates} />
           
           {/* 4. Zones travaillées - Information plus abstraite, moins cruciale pour le moral */}
           <DonutChart
@@ -241,6 +203,9 @@ export default function HistoriquePage() {
             fullWidth={true}
             legendPosition="right"
           />
+          {/* 3. Ta régularité (30 jours) - Indicateur de persévérance */}
+          <BarChart data={barChartData} currentStreak={currentStreak} victoryDates={victoryDates} />
+          
         </div>
 
         {/* Historique détaillé */}

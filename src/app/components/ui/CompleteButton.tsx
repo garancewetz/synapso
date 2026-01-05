@@ -44,7 +44,7 @@ export function CompleteButton({
   const getStyles = () => {
     if (variant === 'challenge') {
       if (isCompleted) {
-        return 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-[0_2px_8px_rgba(217,119,6,0.3)]';
+        return 'bg-emerald-500 text-white hover:bg-emerald-600';
       }
       return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
     }
@@ -59,9 +59,7 @@ export function CompleteButton({
 
   const getIcon = () => {
     if (variant === 'challenge') {
-      return (
-        <SparklesIcon className={clsx('w-4 h-4', isCompleted && 'animate-pulse')} />
-      );
+      return <SparklesIcon className="w-4 h-4" />;
     }
     return <CheckIcon className="w-4 h-4" />;
   };

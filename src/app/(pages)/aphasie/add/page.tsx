@@ -23,7 +23,7 @@ export default function AphasieAddPage() {
   }
 
   return (
-    <FormPageWrapper>
+    <FormPageWrapper backHref="/aphasie">
       <AphasieForm
         onSuccess={handleSuccess}
         onCancel={handleCancel}

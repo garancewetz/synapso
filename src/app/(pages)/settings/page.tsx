@@ -8,7 +8,7 @@ import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Loader from '@/app/components/ui/Loader';
-import BackToHomeButton from '@/app/components/BackToHomeButton';
+import BackButton from '@/app/components/BackButton';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
@@ -42,52 +42,26 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (currentUser) {
-      // Pré-remplir avec les données du contexte immédiatement
-      setName(currentUser.name || '');
-      if (currentUser.resetFrequency) {
-        setResetFrequency(currentUser.resetFrequency as ResetFrequency);
-      }
-      if (currentUser.dominantHand) {
-        setDominantHand(currentUser.dominantHand as DominantHand);
-      }
-      if (currentUser.isAphasic !== undefined) {
-        setIsAphasic(currentUser.isAphasic);
-      }
+      // Utiliser directement les données du contexte (déjà chargées depuis l'API)
+      const loadedName = currentUser.name || '';
+      const loadedResetFrequency = (currentUser.resetFrequency as ResetFrequency) || 'DAILY';
+      const loadedDominantHand = (currentUser.dominantHand as DominantHand) || 'RIGHT';
+      const loadedIsAphasic = currentUser.isAphasic ?? false;
       
-      // Charger les paramètres complets depuis l'API (pour être sûr d'avoir les dernières valeurs)
-      fetch(`/api/users/${currentUser.id}`, { credentials: 'include' })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Erreur HTTP: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          const loadedName = data.name || '';
-          const loadedResetFrequency = (data.resetFrequency as ResetFrequency) || 'DAILY';
-          const loadedDominantHand = (data.dominantHand as DominantHand) || 'RIGHT';
-          const loadedIsAphasic = data.isAphasic ?? false;
-          
-          setName(loadedName);
-          setResetFrequency(loadedResetFrequency);
-          setDominantHand(loadedDominantHand);
-          setIsAphasic(loadedIsAphasic);
-          
-          // Sauvegarder les valeurs initiales
-          setInitialValues({
-            name: loadedName,
-            resetFrequency: loadedResetFrequency,
-            dominantHand: loadedDominantHand,
-            isAphasic: loadedIsAphasic,
-          });
-          
-          setInitialLoading(false);
-        })
-        .catch((err) => {
-          console.error('Erreur lors du chargement du profil:', err);
-          setError('Erreur lors du chargement du profil');
-          setInitialLoading(false);
-        });
+      setName(loadedName);
+      setResetFrequency(loadedResetFrequency);
+      setDominantHand(loadedDominantHand);
+      setIsAphasic(loadedIsAphasic);
+      
+      // Sauvegarder les valeurs initiales
+      setInitialValues({
+        name: loadedName,
+        resetFrequency: loadedResetFrequency,
+        dominantHand: loadedDominantHand,
+        isAphasic: loadedIsAphasic,
+      });
+      
+      setInitialLoading(false);
     }
   }, [currentUser]);
   
@@ -178,7 +152,7 @@ export default function SettingsPage() {
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
       <div className="px-3 sm:px-6">
         {/* Bouton retour */}
-        <BackToHomeButton />
+        <BackButton className="mb-4" buttonClassName="py-3" />
 
         {/* Titre */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon profil</h1>

@@ -80,29 +80,10 @@ export async function DELETE(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que la victoire appartient à l'utilisateur
-    const existingVictory = await prisma.victory.findFirst({
+    // Vérifier que la victoire existe
+    const existingVictory = await prisma.victory.findUnique({
       where: {
         id: victoryId,
-        userId: userIdNumber,
       },
     });
 
@@ -113,6 +94,7 @@ export async function DELETE(
       );
     }
 
+    // Supprimer la victoire
     await prisma.victory.delete({
       where: { id: victoryId },
     });

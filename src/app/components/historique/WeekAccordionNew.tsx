@@ -5,9 +5,9 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HistoryEntry, Victory } from '@/app/types';
-import { BODYPART_ICONS, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { Accordion, Badge } from '@/app/components/ui';
+import { Accordion } from '@/app/components/ui';
 import { extractVictoryTags } from '@/app/utils/victory.utils';
 import { useVictoryBadges } from '@/app/hooks/useVictoryBadges';
 
@@ -147,7 +147,7 @@ function VictoryCardCompact({ victory }: VictoryCardCompactProps) {
   const formattedDate = format(new Date(victory.createdAt), 'EEE d MMM', { locale: fr });
 
   return (
-    <div className="bg-linear-to-br from-amber-50 via-yellow-50 to-orange-50 border-2 border-amber-200 rounded-xl p-3 shadow-sm">
+    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
       <div className="flex items-start gap-2">
         <span className="text-2xl shrink-0">
           {categoryBadge?.emoji || typeBadge.emoji || victory.emoji || VICTORY_EMOJIS.STAR}
@@ -175,32 +175,28 @@ type HistoryEntryCardProps = {
 
 function HistoryEntryCard({ entry }: HistoryEntryCardProps) {
   const category = entry.exercice.category;
+  const categoryColors = category ? CATEGORY_COLORS[category] : null;
   const categoryIcon = category ? CATEGORY_ICONS[category] : '💪';
   const bodypart = entry.exercice.bodyparts[0]?.name;
-  const bodypartIcon = bodypart ? BODYPART_ICONS[bodypart] || '💪' : '💪';
   const formattedDate = format(new Date(entry.completedAt), 'EEE d MMM', { locale: fr });
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-      <div className="flex items-start gap-2 mb-2">
-        <span className="text-xl shrink-0">{bodypartIcon}</span>
+    <div className="bg-white rounded-xl border border-gray-200">
+      <div className="flex items-center gap-3 p-3">
+        {/* Badge icône avec fond coloré */}
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${categoryColors?.iconBg || 'bg-gray-100'}`}>
+          <span className="text-lg">{categoryIcon}</span>
+        </div>
+        
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800 mb-0.5 line-clamp-1">
+          <p className="text-sm font-semibold text-gray-800 line-clamp-1">
             {entry.exercice.name}
           </p>
-          {bodypart && (
-            <p className="text-xs text-gray-500 flex items-center gap-1.5">
-              <span>{categoryIcon}</span>
-              <span>{bodypart}</span>
-            </p>
-          )}
+          <p className="text-xs text-gray-400">
+            {bodypart && <span>{bodypart} · </span>}
+            {formattedDate}
+          </p>
         </div>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-gray-400">{formattedDate}</p>
-        <Badge className="bg-emerald-100 text-emerald-700 text-xs">
-          ✓ Complété
-        </Badge>
       </div>
     </div>
   );

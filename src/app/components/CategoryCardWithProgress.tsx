@@ -46,7 +46,6 @@ export function CategoryCardWithProgress({
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         styles.bg,
         styles.cardBorder,
-        styles.cardRing,
         styles.focusRing
       )}
     >

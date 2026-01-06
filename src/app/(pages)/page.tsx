@@ -2,7 +2,7 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, SiteMapCard } from '@/app/components';
+import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
 import { VictoryCard } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
@@ -147,88 +147,85 @@ export default function Home() {
               )}
 
               {currentActiveTab === 'aphasie' && isAphasic && (
-                <div className="space-y-3">
+                <SiteMapGroup
+                  title="Journal d'aphasie"
+                  icon={<ChatIcon className="w-5 h-5" />}
+                  description="Mes citations et mes exercices"
+                  href="/aphasie"
+                  iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
+                  iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
+                >
                   <SiteMapCard
-                    title="Journal d'aphasie"
-                    icon={<ChatIcon className="w-5 h-5" />}
-                    description="Mes citations et mes exercices"
-                    href="/aphasie"
-                    iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
+                    title="Mes citations"
+                    icon={<BookIcon className="w-5 h-5" />}
+                    description="Voir toutes"
+                    href="/aphasie/citations"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                    variant="vertical"
                   />
-                  <div className="ml-6 md:ml-8 space-y-2">
-                    <SiteMapCard
-                      title="Mes citations"
-                      icon={<BookIcon className="w-5 h-5" />}
-                      description="Voir toutes mes citations"
-                      href="/aphasie/citations"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
-                    />
-                    <SiteMapCard
-                      title="Ajouter une citation"
-                      icon={<PlusIcon className="w-5 h-5" />}
-                      description="Créer une nouvelle citation"
-                      href="/aphasie/add"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
-                      isSecondary={true}
-                    />
-                    <SiteMapCard
-                      title="Mes exercices ortho"
-                      icon={<PinIcon className="w-5 h-5" />}
-                      description="Voir mes exercices ortho"
-                      href="/aphasie/exercices"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
-                    />
-                    <SiteMapCard
-                      title="Ajouter exercice ortho"
-                      icon={<PlusIcon className="w-5 h-5" />}
-                      description="Créer un exercice ortho"
-                      href="/aphasie/exercices/add"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
-                      isSecondary={true}
-                    />
-                  </div>
-                </div>
+                  <SiteMapCard
+                    title="Ajouter citation"
+                    icon={<PlusIcon className="w-5 h-5" />}
+                    description="Créer une nouvelle"
+                    href="/aphasie/add"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                    isSecondary={true}
+                    variant="vertical"
+                  />
+                  <SiteMapCard
+                    title="Exercices ortho"
+                    icon={<PinIcon className="w-5 h-5" />}
+                    description="Voir mes exercices"
+                    href="/aphasie/exercices"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                    variant="vertical"
+                  />
+                  <SiteMapCard
+                    title="Ajouter exercice"
+                    icon={<PlusIcon className="w-5 h-5" />}
+                    description="Créer un exercice"
+                    href="/aphasie/exercices/add"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                    isSecondary={true}
+                    variant="vertical"
+                  />
+                </SiteMapGroup>
               )}
 
               {currentActiveTab === 'parcours' && (
                 <div className="space-y-3">
-                  <SiteMapCard
+                  <SiteMapGroup
                     title="Mon parcours"
                     icon={<MapIcon className="w-5 h-5" />}
                     description="Voir mon historique et mes statistiques"
                     href="/historique"
                     iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
-                  />
-                  <div className="ml-6 md:ml-8 space-y-2">
+                  >
                     <SiteMapCard
-                      title="Mon chemin parcouru"
+                      title="Chemin parcouru"
                       icon={<MapIcon className="w-5 h-5" />}
-                      description="Voir les 40 derniers jours de mon parcours"
+                      description="40 derniers jours"
                       href="/historique/roadmap"
                       iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                       iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
+                      variant="vertical"
                     />
                     <SiteMapCard
                       title="Mes réussites"
                       icon={<SparklesIcon className="w-5 h-5" />}
-                      description="Voir toutes mes victoires"
+                      description="Toutes mes victoires"
                       href="/historique/victories"
                       iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                       iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      isChild={true}
+                      variant="vertical"
                     />
-                  </div>
+                  </SiteMapGroup>
+
                   <SiteMapCard
                     title="Noter une réussite"
                     icon={<SparklesIcon className="w-5 h-5" />}
@@ -236,7 +233,6 @@ export default function Home() {
                     onClick={() => victoryModal.openForCreate()}
                     iconBgColor={SITEMAP_ICON_STYLES.primary.victory.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.victory.text}
-                    ringColor="ring-amber-400"
                   />
                   
                   {/* Section dernière victoire */}

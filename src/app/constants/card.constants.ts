@@ -7,15 +7,14 @@
 // ============================================================================
 
 export const GOLDEN_CARD_STYLES = {
-  // Fond avec gradient doré plus chaud et festif
-  bg: 'bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80',
-  // Bordure dorée avec effet néon
-  border: 'border-2 border-amber-400/80',
+  // Fond doré simple et épuré
+  bg: 'bg-amber-50',
+  // Bordure dorée
+  border: 'border-2 border-amber-300',
   // Border radius
   rounded: 'rounded-2xl',
-  // Classes complètes pour la carte avec effet néon doré
-  // Utilise ring pour la lueur néon et drop-shadow pour l'effet de profondeur
-  card: 'bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80 rounded-2xl border-2 border-amber-400/80 ring-2 ring-amber-300/40 ring-offset-0 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)] overflow-hidden',
+  // Classes complètes pour la carte dorée
+  card: 'bg-amber-50 rounded-2xl border-2 border-amber-300 overflow-hidden',
 } as const;
 
 export const GOLDEN_ACCENT_STYLES = {

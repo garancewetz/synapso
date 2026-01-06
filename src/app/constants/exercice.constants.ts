@@ -59,7 +59,6 @@ const TAILWIND_COLOR_MAP = {
     tag: 'bg-blue-100 text-blue-600',
     focusRing: 'focus:ring-blue-500',
     ring: 'ring-blue-200',
-    cardRing: 'ring-2 ring-offset-2 ring-blue-200',
     iconBg: 'bg-gradient-to-br from-blue-100 to-blue-200',
     iconText: 'text-blue-700',
     navActive: 'bg-blue-600 text-white border-blue-600',
@@ -77,7 +76,6 @@ const TAILWIND_COLOR_MAP = {
     tag: 'bg-orange-100 text-orange-700',
     focusRing: 'focus:ring-orange-500',
     ring: 'ring-orange-200',
-    cardRing: 'ring-2 ring-offset-2 ring-orange-200',
     iconBg: 'bg-gradient-to-br from-orange-100 to-orange-200',
     iconText: 'text-orange-700',
     navActive: 'bg-orange-600 text-white border-orange-600',
@@ -95,7 +93,6 @@ const TAILWIND_COLOR_MAP = {
     tag: 'bg-purple-100 text-purple-600',
     focusRing: 'focus:ring-purple-500',
     ring: 'ring-purple-200',
-    cardRing: 'ring-2 ring-offset-2 ring-purple-200',
     iconBg: 'bg-gradient-to-br from-purple-100 to-purple-200',
     iconText: 'text-purple-700',
     navActive: 'bg-purple-600 text-white border-purple-600',
@@ -113,7 +110,6 @@ const TAILWIND_COLOR_MAP = {
     tag: 'bg-teal-100 text-teal-600',
     focusRing: 'focus:ring-teal-500',
     ring: 'ring-teal-200',
-    cardRing: 'ring-2 ring-offset-2 ring-teal-200',
     iconBg: 'bg-gradient-to-br from-teal-100 to-teal-200',
     iconText: 'text-teal-700',
     navActive: 'bg-teal-600 text-white border-teal-600',
@@ -163,7 +159,6 @@ export const CATEGORY_COLORS = Object.fromEntries(
       tag: colors.tag,
       focusRing: colors.focusRing,
       ring: colors.ring,
-      cardRing: colors.cardRing,
       iconBg: colors.iconBg,
       iconText: colors.iconText,
     }];
@@ -177,7 +172,6 @@ export const CATEGORY_COLORS = Object.fromEntries(
   tag: string;
   focusRing: string;
   ring: string;
-  cardRing: string;
   iconBg: string;
   iconText: string;
 }>;

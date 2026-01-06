@@ -12,13 +12,13 @@ type Props = {
   iconBgColor?: string;
   iconTextColor?: string;
   isSecondary?: boolean;
-  isChild?: boolean;
-  ringColor?: string;
+  /** Layout vertical (icône en haut) pour les grilles */
+  variant?: 'horizontal' | 'vertical';
 };
 
 /**
  * Carte pour le plan du site
- * Wrapper autour de MenuLink avec showChevron activé par défaut
+ * Design épuré sans chevron - l'interactivité est déjà claire via le style de carte
  */
 export function SiteMapCard({
   title,
@@ -29,8 +29,7 @@ export function SiteMapCard({
   iconBgColor = 'bg-gradient-to-br from-gray-100 to-gray-200',
   iconTextColor = 'text-gray-700',
   isSecondary = false,
-  isChild = false,
-  ringColor,
+  variant = 'horizontal',
 }: Props) {
   if (!href && !onClick) {
     throw new Error('SiteMapCard must have either href or onClick');
@@ -45,11 +44,9 @@ export function SiteMapCard({
       description={description}
       iconBgColor={iconBgColor}
       iconTextColor={iconTextColor}
-      showChevron={true}
       isSecondary={isSecondary}
-      isChild={isChild}
-      ringColor={ringColor}
       iconSize={isSecondary ? 'sm' : 'md'}
+      variant={variant}
     />
   );
 }

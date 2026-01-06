@@ -18,6 +18,7 @@ import PasswordModal from './PasswordModal';
 import PWARegister from './PWARegister';
 import SiteProtection from './SiteProtection';
 import { SiteMapCard } from './SiteMapCard';
+import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
 import VictoryBottomSheet from './VictoryBottomSheet';
 import VictoryButton from './VictoryButton';
@@ -59,6 +60,7 @@ export {
   PWARegister,
   SiteProtection,
   SiteMapCard,
+  SiteMapGroup,
   StatBadge,
   Textarea,
   TouchLink,

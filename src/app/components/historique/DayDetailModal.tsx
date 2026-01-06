@@ -2,8 +2,7 @@
 
 import type { Victory } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/app/constants/exercice.constants';
-import { VICTORY_DISPLAY_COLORS } from '@/app/constants/victory.constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
@@ -30,15 +29,7 @@ type Props = {
  */
 export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEdit }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
-
-  // Grouper les exercices par catégorie
-  const exercisesByCategory = exercises.reduce((acc, exercise) => {
-    if (!acc[exercise.category]) {
-      acc[exercise.category] = [];
-    }
-    acc[exercise.category].push(exercise);
-    return acc;
-  }, {} as Record<ExerciceCategory, DayExercise[]>);
+  const hasContent = exercises.length > 0 || victory;
 
   return (
     <BottomSheetModal 
@@ -47,98 +38,77 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEd
       showFooterClose
       closeLabel="Fermer"
     >
-      {/* Header simplifié - Grande date lisible */}
-        <div className="px-6 py-4 md:pt-5 border-b border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900">{formattedDate}</h2>
-        <div className="flex items-center gap-3 mt-2">
+      {/* Header compact */}
+      <div className="px-5 py-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">{formattedDate}</h2>
+        
+        {/* Badges résumé */}
+        <div className="flex items-center gap-2">
           {exercises.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
-              ✓ {exercises.length} exercice{exercises.length > 1 ? 's' : ''}
+            <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+              ✓ {exercises.length}
             </span>
           )}
           {victory && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold">
-              {VICTORY_EMOJIS.STAR_BRIGHT} Victoire
+            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
+              {VICTORY_EMOJIS.STAR_BRIGHT}
             </span>
           )}
         </div>
       </div>
 
       {/* Contenu scrollable */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-gray-50/50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
         
-        {/* Section Victoire - Mise en avant avec style doré amélioré */}
+        {/* Section Victoire */}
         {victory && (
-          <div className="bg-gradient-to-br from-amber-50 via-yellow-50/95 to-amber-100/80 rounded-2xl p-4 border-2 border-amber-500/60 shadow-lg shadow-amber-200/50">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">{VICTORY_EMOJIS.STAR_BRIGHT}</span>
-              <h3 className="text-lg font-bold text-amber-950">Ta victoire !</h3>
-            </div>
+          <section>
             <VictoryCard victory={victory} onEdit={onEdit} />
-          </div>
+          </section>
         )}
 
-        {/* Section Exercices - Groupés par catégorie avec couleurs */}
-        {exercises.length > 0 ? (
-          <div className="space-y-4">
-            {Object.entries(exercisesByCategory).map(([category, categoryExercises]) => {
-              const colors = VICTORY_DISPLAY_COLORS[category as ExerciceCategory];
+        {/* Section Exercices */}
+        {exercises.length > 0 && (
+          <section className="space-y-2">
+            {exercises.map((exercise, index) => {
+              const styles = CATEGORY_COLORS[exercise.category];
               
               return (
-                <div 
-                  key={category} 
-                  className={`rounded-2xl border-2 overflow-hidden ${colors.border}`}
+                <div
+                  key={`${exercise.name}-${index}`}
+                  className="bg-white rounded-xl border border-gray-200"
                 >
-                  {/* En-tête de catégorie - Très visible */}
-                  <div className={`${colors.bg} px-4 py-3 flex items-center gap-3`}>
-                    <span className="text-3xl">{CATEGORY_ICONS[category as ExerciceCategory]}</span>
-                    <div>
-                      <h3 className={`text-lg font-bold ${colors.text}`}>
-                        {CATEGORY_LABELS[category as ExerciceCategory]}
-                      </h3>
-                      <p className={`text-sm ${colors.text} opacity-75`}>
-                        {categoryExercises.length} exercice{categoryExercises.length > 1 ? 's' : ''} fait{categoryExercises.length > 1 ? 's' : ''}
-                      </p>
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    {/* Badge icône avec fond coloré */}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+                      <span className="text-lg">
+                        {CATEGORY_ICONS[exercise.category]}
+                      </span>
                     </div>
-                  </div>
-                  
-                  {/* Liste des exercices */}
-                  <div className="bg-white divide-y divide-gray-100">
-                    {categoryExercises.map((exercise, index) => (
-                      <div
-                        key={`${exercise.name}-${index}`}
-                        className="flex items-center gap-3 px-4 py-3"
-                      >
-                        {/* Barre de couleur */}
-                        <div className={`w-1.5 h-10 rounded-full ${colors.accent}`} />
-                        
-                        {/* Nom de l'exercice - Plus gros */}
-                        <span className="text-base font-medium text-gray-800 flex-1">
-                          {exercise.name}
-                        </span>
-                        
-                        {/* Heure */}
-                        <span className="text-sm text-gray-400">
-                          {formatTime(exercise.completedAt)}
-                        </span>
-                        
-                        {/* Check visible */}
-                        <span className="text-xl text-emerald-500">✓</span>
-                      </div>
-                    ))}
+                    <span className="text-base font-medium text-gray-800 flex-1 truncate">
+                      {exercise.name}
+                    </span>
+                    <span className="text-xs text-gray-400 shrink-0 bg-gray-100 px-2 py-1 rounded-lg">
+                      {formatTime(exercise.completedAt)}
+                    </span>
                   </div>
                 </div>
               );
             })}
-          </div>
-        ) : !victory && (
-          <div className="text-center py-8 bg-white rounded-2xl border border-gray-200">
-            <span className="text-4xl mb-3 block">{NAVIGATION_EMOJIS.CLIPBOARD}</span>
-            <p className="text-gray-600 text-lg font-medium">Rien ce jour-là</p>
-            <p className="text-gray-400 text-sm mt-1">C&apos;est ok, chaque jour est différent !</p>
+          </section>
+        )}
+
+        {/* État vide */}
+        {!hasContent && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">{NAVIGATION_EMOJIS.CLIPBOARD}</span>
+            </div>
+            <p className="text-gray-700 text-lg font-semibold">Jour de repos</p>
+            <p className="text-gray-400 text-sm mt-1">Chaque jour est différent, c&apos;est ok !</p>
           </div>
         )}
-        </div>
+      </div>
     </BottomSheetModal>
   );
 }

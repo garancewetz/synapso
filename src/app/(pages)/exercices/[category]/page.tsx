@@ -73,7 +73,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <section>
+    <section className="pb-4 md:pb-8">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header */}
         {!userLoading && !loadingExercices && (

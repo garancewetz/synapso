@@ -5,7 +5,7 @@ import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
-import BackButton from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/BackButton';
 import ViewVictoriesButton from '@/app/components/ViewVictoriesButton';
 import { VictoryFAB, VictoryBottomSheet } from '@/app/components';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
@@ -46,7 +46,7 @@ export default function AphasiePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-4 md:pb-8">
       {/* Bouton retour accueil */}
       <BackButton className="mb-4" buttonClassName="py-3" />
 

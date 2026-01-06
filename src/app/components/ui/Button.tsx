@@ -6,7 +6,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'danger' | 'action' | 'danger-outline';
 };
 
-export default function Button({
+export function Button({
   children,
   onClick,
   variant = 'primary',

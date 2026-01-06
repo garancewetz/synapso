@@ -19,7 +19,7 @@ const baseClasses = `
 `;
 
 const variantClasses = {
-  fixed: 'fixed bottom-24 md:bottom-8 z-40 w-14 h-14 md:w-auto md:h-auto md:px-5 md:py-3 font-semibold',
+  fixed: 'fixed bottom-28 md:bottom-8 z-40 w-14 h-14 md:w-auto md:h-auto md:px-5 md:py-3 font-semibold',
   inline: 'w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 font-bold text-sm',
 };
 

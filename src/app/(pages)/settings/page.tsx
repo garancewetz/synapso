@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 
-import Button from '@/app/components/ui/Button';
+import { Button } from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Loader from '@/app/components/ui/Loader';
-import BackButton from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/BackButton';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';

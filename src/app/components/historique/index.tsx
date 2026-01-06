@@ -3,6 +3,7 @@ export { BarChart } from './BarChart';
 export { ActivityHeatmap } from './ActivityHeatmap';
 export { WeekHeatmap } from './WeekHeatmap';
 export { WeekAccordion } from './WeekAccordion';
+export { WeekAccordionList } from './WeekAccordionNew';
 export { VictoryCard } from './VictoryCard';
 export { VictoryTimeline } from './VictoryTimeline';
 export { VictoryStatsChart } from './VictoryStatsChart';

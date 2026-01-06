@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import ConfettiRain from '@/app/components/ConfettiRain';
-import clsx from 'clsx';
 
 const SPARKLE_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6'];
 const CONFETTI_COLORS = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6', '#ef4444', '#06b6d4'];

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ErrorMessage, Loader, Input, Button } from '@/app/components';
 import { PlusIcon, CheckIcon } from '@/app/components/ui/icons';
+import { useSlidingIndicator } from '@/app/hooks/useSlidingIndicator';
 import type { User } from '@/app/types';
 
 type Props = {
@@ -27,6 +28,15 @@ export function UserSwitch({
   const [newUserName, setNewUserName] = useState('');
   const [creatingUser, setCreatingUser] = useState(false);
   const [createUserError, setCreateUserError] = useState('');
+
+  const activeUserIndex = users.findIndex((user) => user.id === currentUser?.id);
+
+  // Utiliser le hook pour l'animation de glissement vertical
+  const { itemsRef: usersRef, indicatorStyle, isReady } = useSlidingIndicator(
+    activeUserIndex,
+    'vertical',
+    [users]
+  );
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,19 +77,32 @@ export function UserSwitch({
       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1">
         Changer d&apos;utilisateur
       </h3>
-      <div className="bg-gray-50 rounded-xl p-2.5 space-y-2 max-h-50 overflow-y-auto border-2 border-gray-200">
-        {users.map((user) => (
+      <div className="bg-gray-50 rounded-xl p-2.5 space-y-2 max-h-50 overflow-y-auto border-2 border-gray-200 relative">
+        {/* Élément de fond qui glisse */}
+        <span
+          className="absolute left-2.5 right-2.5 -z-0 flex overflow-hidden rounded-lg transition-all duration-300 ease-out pointer-events-none"
+          style={{
+            ...indicatorStyle,
+            opacity: isReady ? 1 : 0,
+            transitionProperty: 'top, height, opacity'
+          }}
+        >
+          <span className="h-full w-full rounded-lg bg-white shadow-md border-2 border-emerald-200" />
+        </span>
+
+        {users.map((user, index) => (
           <button
             key={user.id}
+            ref={(el) => { usersRef.current[index] = el }}
             onClick={() => onUserChange(user.id)}
             tabIndex={tabIndex}
             className={`
-              w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-all duration-200
-              min-h-[56px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400
+              w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-colors duration-200
+              min-h-[56px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 relative z-10
               ${
                 currentUser?.id === user.id
-                  ? 'bg-white shadow-md text-gray-900 font-semibold border-2 border-emerald-200'
-                  : 'text-gray-700 hover:bg-white/70 border-2 border-transparent hover:border-gray-200'
+                  ? 'text-gray-900 font-semibold'
+                  : 'text-gray-700 hover:bg-white/40'
               }
             `}
           >

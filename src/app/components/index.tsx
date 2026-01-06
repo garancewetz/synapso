@@ -1,6 +1,6 @@
 import AphasieForm from './AphasieForm';
-import BottomNavBar from './BottomNavBar';
-import CategoryCardWithProgress from './CategoryCardWithProgress';
+import { BottomNavBar } from './BottomNavBar';
+import { CategoryCardWithProgress } from './CategoryCardWithProgress';
 import CategoryTabs from './CategoryTabs';
 import CategoryTabsWrapper from './CategoryTabsWrapper';
 import ConfettiRain from './ConfettiRain';
@@ -12,7 +12,7 @@ import ExerciceCard from './ExerciceCard';
 import ExerciceForm from './ExerciceForm';
 import FormActions from './FormActions';
 import FormPageWrapper from './FormPageWrapper';
-import MenuLink from './MenuLink';
+import { MenuLink } from './MenuLink';
 import NavBar from './NavBar';
 import PasswordModal from './PasswordModal';
 import PWARegister from './PWARegister';

@@ -15,7 +15,7 @@ type Props = {
   buttonClassName?: string;
 };
 
-export default function BackButton({ 
+export function BackButton({ 
   backHref, 
   backLabel, 
   className,
@@ -59,6 +59,7 @@ export default function BackButton({
     'active:scale-[0.98]',
     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400',
     'px-4 py-3',
+    'cursor-pointer',
     buttonClassName
   );
 

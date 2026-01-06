@@ -2,8 +2,9 @@
 export { CalendarIcon, PinIcon, SparklesIcon } from './icons';
 
 // UI Components
+export { Accordion } from './Accordion';
 export { Badge } from './Badge';
-export { default as Button } from './Button';
+export { Button } from './Button';
 export { CompleteButton } from './CompleteButton';
 export { CompletedBadge } from './CompletedBadge';
 export { MasteredBadge } from './MasteredBadge';

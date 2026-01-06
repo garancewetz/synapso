@@ -7,7 +7,7 @@ export default function BackToHomeButton() {
     <div className=" mb-2">
       <Link 
         href="/"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
         aria-label="Retour à l'accueil"
       >
         <ChevronIcon direction="left" className="w-5 h-5" />

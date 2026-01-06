@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavBar from "@/app/components/NavBar";
-import BottomNavBar from "@/app/components/BottomNavBar";
+import { BottomNavBar } from "@/app/components/BottomNavBar";
 import AuthWrapper from "@/app/components/AuthWrapper";
 import WelcomeHeaderWrapper from "@/app/components/WelcomeHeaderWrapper";
 import CategoryTabsWrapper from "@/app/components/CategoryTabsWrapper";

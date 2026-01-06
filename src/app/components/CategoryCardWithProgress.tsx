@@ -13,77 +13,111 @@ type Props = {
 
 /**
  * Carte de catégorie avec jauge de progression intégrée
+ * Style harmonisé avec MenuLink + ring coloré + jauge
  * Design optimisé pour les personnes post-AVC :
  * - Grande zone de clic
  * - Icône visuelle claire
  * - Progression visible directement
  */
-export default function CategoryCardWithProgress({ 
+export function CategoryCardWithProgress({ 
   category, 
   total, 
   completedCount 
 }: Props) {
-  const categoryStyle = CATEGORY_COLORS[category];
+  const styles = CATEGORY_COLORS[category];
   const icon = CATEGORY_ICONS[category];
   const label = CATEGORY_LABELS[category];
   const href = CATEGORY_HREFS[category];
 
-  // Calculer le pourcentage de progression
+  // Calculer le pourcentage de progression (max 100%)
   const percentage = total > 0 ? Math.min((completedCount / total) * 100, 100) : 0;
+  const hasProgress = completedCount > 0;
+  const isComplete = completedCount >= total;
+  const hasBonus = completedCount > total;
 
   return (
     <Link 
       href={href}
-      aria-label={`${label} - ${completedCount} sur ${total} exercices complétés`}
+      aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? `, ${completedCount - total} exercices bonus` : ''}`}
       aria-describedby={`progress-${category}`}
       className={clsx(
-        'block rounded-2xl border-2 transition-all duration-200 overflow-hidden',
-        categoryStyle.bg,
-        categoryStyle.border,
+        'group block border-2 rounded-xl transition-all duration-200',
         'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        categoryStyle.focusRing
+        styles.bg,
+        styles.cardBorder,
+        styles.cardRing,
+        styles.focusRing
       )}
     >
-      {/* Contenu principal */}
-      <div className="p-4 md:p-5">
-        <div className="flex items-center gap-3 md:gap-4">
+      <div className="p-4">
+        <div className="flex items-center gap-3">
           {/* Icône */}
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-white/60">
-            <span className="text-3xl md:text-4xl w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" role="img" aria-label={`Icône ${label}`}>
+          <div className={clsx(
+            'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
+            'shadow-md group-hover:shadow-lg group-hover:scale-110',
+            'transition-all duration-200',
+            styles.iconBg
+          )}>
+            <span 
+              className={clsx(
+                'text-2xl flex items-center justify-center',
+                'transition-transform duration-200 group-hover:scale-110',
+                styles.iconText
+              )}
+              role="img" 
+              aria-label={`Icône ${label}`}
+            >
               {icon}
             </span>
           </div>
           
           {/* Textes */}
           <div className="flex-1 min-w-0">
-            <h3 className={`text-base md:text-lg font-bold ${categoryStyle.text} truncate`}>
+            <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-950 transition-colors truncate">
               {label}
             </h3>
-            <p className="text-sm text-gray-600 font-medium">
+            <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
               {total} exercice{total > 1 ? 's' : ''}
             </p>
           </div>
 
           {/* Badge de progression */}
           <div className={clsx(
-            'flex-shrink-0 px-3 py-1.5 rounded-full font-bold text-sm',
-            completedCount > 0 
-              ? `${categoryStyle.accent} text-white`
-              : 'bg-gray-200 text-gray-500'
+            'shrink-0 px-2.5 py-1 rounded-full font-bold text-xs flex items-center gap-1',
+            hasProgress ? `${styles.accent} text-white` : 'bg-gray-200 text-gray-500'
           )}>
-            {completedCount} / {total}
+            {isComplete ? (
+              <>
+                <span>✓</span>
+                <span>{total}/{total}</span>
+                {hasBonus && <span className="text-[10px] opacity-75">+{completedCount - total}</span>}
+              </>
+            ) : (
+              <span>{completedCount}/{total}</span>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Jauge de progression arrondie en bas */}
-      <div className="px-4 pb-4">
-        <div className="h-2 bg-white/60 rounded-full overflow-hidden" role="progressbar" aria-valuenow={completedCount} aria-valuemin={0} aria-valuemax={total} aria-label={`Progression : ${completedCount} sur ${total} exercices complétés`} id={`progress-${category}`}>
-          <div
-            className={`h-full rounded-full transition-all duration-500 ease-out ${categoryStyle.accent}`}
-            style={{ width: `${percentage}%` }}
-          />
+        {/* Jauge de progression */}
+        <div className="mt-3">
+          <div 
+            className="h-1.5 bg-white/60 rounded-full overflow-hidden" 
+            role="progressbar" 
+            aria-valuenow={Math.min(completedCount, total)} 
+            aria-valuemin={0} 
+            aria-valuemax={total} 
+            aria-label={`Progression : ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? ` (+${completedCount - total} bonus)` : ''}`} 
+            id={`progress-${category}`}
+          >
+            <div
+              className={clsx(
+                'h-full rounded-full transition-all duration-500 ease-out',
+                styles.accent
+              )}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
         </div>
       </div>
     </Link>

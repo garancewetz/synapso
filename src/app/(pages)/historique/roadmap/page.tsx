@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
-import BackButton from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/BackButton';
 import { ActivityHeatmap } from '@/app/components/historique';
 import { VictoryBottomSheet, StatBadge } from '@/app/components';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
@@ -56,7 +56,7 @@ export default function RoadmapPage() {
   }, [refetchVictories]);
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-24 md:pb-8">
       {/* Header avec bouton retour */}
       <div className="px-4 md:px-6 mb-6">
         <BackButton 

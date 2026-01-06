@@ -1,7 +1,7 @@
 'use client';
 
 import { usePageFocus } from '@/app/hooks/usePageFocus';
-import BackButton from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/BackButton';
 import type { ReactNode } from 'react';
 
 type Props = {

@@ -6,9 +6,9 @@ import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
-import { DonutChart, BarChart, ActivityHeatmap, WeekAccordion, VictoryStatsChart } from '@/app/components/historique';
+import { DonutChart, BarChart, ActivityHeatmap, WeekAccordionList, VictoryStatsChart } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
-import BackButton from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -34,7 +34,6 @@ export default function HistoriquePage() {
     byBodypart: {} as Record<string, number>,
     byCategory: {} as Record<string, number>,
   });
-  const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set(['current']));
   const { currentUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const victoryModal = useVictoryModal();
@@ -91,18 +90,6 @@ export default function HistoriquePage() {
     return groupHistoryByWeek(history, victories);
   }, [history, victories]);
 
-  const toggleWeek = (weekKey: string) => {
-    setExpandedWeeks(prev => {
-      const next = new Set(prev);
-      if (next.has(weekKey)) {
-        next.delete(weekKey);
-      } else {
-        next.add(weekKey);
-      }
-      return next;
-    });
-  };
-
   // Série de jours consécutifs (basé sur les 30 jours)
   const currentStreak = useMemo(() => {
     return calculateCurrentStreak(barChartData);
@@ -114,7 +101,7 @@ export default function HistoriquePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-24 md:pb-8">
       {/* Bouton retour accueil */}
       <BackButton 
         className="mb-4" 
@@ -162,6 +149,12 @@ export default function HistoriquePage() {
                 history={history}
                 hideTitle={true}
               />
+            ) : victories.length === 1 ? (
+              <div className="text-center py-8">
+                <span className="text-3xl mb-2 block">🌟</span>
+                <p className="text-gray-700 font-medium mb-1">Ta première réussite est enregistrée !</p>
+                <p className="text-gray-500 text-sm">Continue pour voir ton graphique de progression.</p>
+              </div>
             ) : (
               <div className="text-center py-8">
                 <span className="text-3xl mb-2 block">🌟</span>
@@ -198,7 +191,7 @@ export default function HistoriquePage() {
           </h2>
 
           {groupedByWeek.length === 0 ? (
-            <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+            <div className="bg-linear-to-br from-slate-50 to-gray-100 rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
               <span className="text-4xl mb-3 block">🌱</span>
               <p className="text-gray-600 font-medium">Ton aventure commence maintenant !</p>
               <p className="text-gray-400 text-sm mt-1">
@@ -206,17 +199,10 @@ export default function HistoriquePage() {
               </p>
             </div>
           ) : (
-            groupedByWeek.map(({ weekKey, label, entries, victories: weekVictories }) => (
-              <WeekAccordion
-                key={weekKey}
-                weekKey={weekKey}
-                label={label}
-                entries={entries}
-                victories={weekVictories}
-                isExpanded={expandedWeeks.has(weekKey)}
-                onToggle={() => toggleWeek(weekKey)}
-              />
-            ))
+            <WeekAccordionList 
+              weeks={groupedByWeek}
+              defaultExpanded={['current']}
+            />
           )}
         </div>
       </div>

@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useRef } from 'react';
-import type { ReactNode, MouseEvent, PointerEvent } from 'react';
+import { useCallback, useRef, forwardRef } from 'react';
+import type { ReactNode, MouseEvent, PointerEvent, ComponentPropsWithoutRef } from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 
-type Props = {
+type Props = Omit<ComponentPropsWithoutRef<typeof Link>, 'href' | 'onClick' | 'prefetch'> & {
   href: string;
   children: ReactNode;
   className?: string;
@@ -15,7 +15,6 @@ type Props = {
   prefetch?: boolean;
   /** Désactiver la navigation tactile optimisée */
   disableTouchOptimization?: boolean;
-  [key: string]: unknown;
 };
 
 /**
@@ -25,15 +24,18 @@ type Props = {
  * Utilise onPointerDown pour une meilleure réactivité sur mobile
  * tout en conservant la compatibilité avec les clics souris
  */
-export function TouchLink({
-  href,
-  children,
-  className,
-  onClick,
-  prefetch = true,
-  disableTouchOptimization = false,
-  ...props
-}: Props) {
+export const TouchLink = forwardRef<HTMLAnchorElement, Props>(function TouchLink(
+  {
+    href,
+    children,
+    className,
+    onClick,
+    prefetch = true,
+    disableTouchOptimization = false,
+    ...props
+  },
+  ref
+) {
   const router = useRouter();
   const touchStartTimeRef = useRef<number | null>(null);
   const isNavigatingRef = useRef(false);
@@ -91,6 +93,7 @@ export function TouchLink({
 
   return (
     <Link
+      ref={ref}
       href={href}
       className={clsx('select-none', className)}
       onPointerDown={handlePointerDown}
@@ -102,5 +105,5 @@ export function TouchLink({
       {children}
     </Link>
   );
-}
+});
 

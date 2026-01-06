@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Button from '@/app/components/ui/Button';
+import { Button } from '@/app/components/ui/Button';
 import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
 
 type Props = {

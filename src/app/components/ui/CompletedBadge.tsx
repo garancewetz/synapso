@@ -26,9 +26,7 @@ export function CompletedBadge({ isCompletedToday, completedAt }: Props) {
   return (
     <span className={clsx(
       'shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1',
-      isCompletedToday 
-        ? 'bg-emerald-500 text-white' 
-        : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+      'border bg-emerald-500/90 text-white border-emerald-400/50'
     )}>
       <CheckIcon className="w-3.5 h-3.5" />
       {isCompletedToday ? 'Fait' : getDayName(completedAt as Date)}

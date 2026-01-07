@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
-import { isCompletedToday, isCompletedInPeriod, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
 export async function PATCH(
@@ -62,23 +62,26 @@ export async function PATCH(
     const resetFrequency = user?.resetFrequency || 'DAILY';
     const now = new Date();
     
-    // Vérifier si l'exercice a été complété dans la période courante
-    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
-    const completedInCurrentPeriod = isCompletedInPeriod(completedDate, resetFrequency, now);
-
-    // Si complété dans la période, on démarque. Sinon, on marque comme complété
-    const isCompleting = !completedInCurrentPeriod;
+    // En mode hebdomadaire, vérifier s'il y a déjà une entrée pour aujourd'hui
+    // En mode quotidien, vérifier s'il y a une entrée pour aujourd'hui
+    const startOfToday = startOfDay(now);
+    const endOfToday = startOfDay(addDays(now, 1));
+    
+    const todayHistory = await prisma.history.findFirst({
+      where: {
+        exerciceId: id,
+        completedAt: {
+          gte: startOfToday,
+          lt: endOfToday,
+        },
+      },
+    });
+    
+    // Si complété aujourd'hui, on démarque. Sinon, on marque comme complété
+    const isCompleting = !todayHistory;
     
     // Utiliser une transaction pour garantir l'intégrité des données
     const updatedExercice = await prisma.$transaction(async (tx) => {
-      const updated = await tx.exercice.update({
-        where: { id },
-        data: {
-          completed: isCompleting,
-          completedAt: isCompleting ? now : null,
-        },
-      });
-
       if (isCompleting) {
         // Marquer comme complété : ajouter une entrée dans l'historique
         await tx.history.create({
@@ -87,43 +90,52 @@ export async function PATCH(
             completedAt: now,
           },
         });
+        
+        // Mettre à jour completedAt avec la date actuelle
+        const updated = await tx.exercice.update({
+          where: { id },
+          data: {
+            completedAt: now,
+          },
+        });
+        
+        return updated;
       } else {
-        // Démarquer : supprimer l'entrée de complétion actuelle
-        // En mode DAILY : supprimer l'entrée d'aujourd'hui
-        // En mode WEEKLY : supprimer l'entrée correspondant à completedAt
-        if (resetFrequency === 'DAILY') {
-          await tx.history.deleteMany({
-            where: {
-              exerciceId: id,
-              completedAt: {
-                gte: startOfDay(now),
-                lt: startOfDay(addDays(now, 1)),
-              },
+        // Démarquer : supprimer l'entrée d'aujourd'hui
+        await tx.history.deleteMany({
+          where: {
+            exerciceId: id,
+            completedAt: {
+              gte: startOfToday,
+              lt: endOfToday,
             },
-          });
-        } else {
-          // Mode WEEKLY : supprimer l'entrée la plus récente de la période
-          if (completedDate) {
-            await tx.history.deleteMany({
-              where: {
-                exerciceId: id,
-                completedAt: {
-                  gte: startOfDay(completedDate),
-                  lt: startOfDay(addDays(completedDate, 1)),
-                },
-              },
-            });
-          }
-        }
+          },
+        });
+        
+        // Mettre à jour completedAt : prendre la date de la dernière entrée de l'historique
+        // ou null si aucune entrée n'existe
+        const remainingHistory = await tx.history.findFirst({
+          where: {
+            exerciceId: id,
+          },
+          orderBy: {
+            completedAt: 'desc',
+          },
+        });
+        
+        const updated = await tx.exercice.update({
+          where: { id },
+          data: {
+            completedAt: remainingHistory?.completedAt || null,
+          },
+        });
+        
+        return updated;
       }
-
-      return updated;
     });
     
-    // Calculer completedToday pour la réponse
-    const completedToday = isCompleting && updatedExercice.completedAt
-      ? isCompletedToday(new Date(updatedExercice.completedAt), now)
-      : false;
+    // Calculer completedToday pour la réponse : vérifier s'il y a une entrée pour aujourd'hui
+    const completedToday = isCompleting;
 
     // Récupérer toutes les complétions de la période pour weeklyCompletions
     const startOfPeriod = getStartOfPeriod(resetFrequency, now);

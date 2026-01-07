@@ -65,7 +65,7 @@ export default function BottomSheetModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-4"
+          className="fixed inset-0 z-60 flex items-end md:items-center justify-center md:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -100,7 +100,7 @@ export default function BottomSheetModal({
             <button
               type="button"
               onClick={onClose}
-              className="w-full flex justify-center pt-3 pb-2 cursor-pointer hover:bg-gray-50 transition-colors md:hidden flex-shrink-0"
+              className="w-full flex justify-center pt-3 pb-2 cursor-pointer hover:bg-gray-50 transition-colors md:hidden shrink-0"
               aria-label="Fermer"
             >
               <div className="w-12 h-1.5 bg-gray-300 rounded-full hover:bg-gray-400 transition-colors" />
@@ -121,7 +121,7 @@ export default function BottomSheetModal({
 
             {/* Footer avec bouton fermer (mobile, optionnel) */}
             {showFooterClose && (
-              <div className="px-5 py-4 bg-white border-t border-gray-100 md:hidden flex-shrink-0">
+              <div className="px-5 py-4 bg-white border-t border-gray-100 md:hidden shrink-0">
                 <button
                   onClick={onClose}
                   className="w-full py-4 px-4 rounded-2xl font-bold text-lg text-gray-700

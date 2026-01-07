@@ -29,10 +29,10 @@ export default function NotFound() {
         <div className="space-y-3">
           <Link 
             href="/" 
-            className="flex w-full bg-slate-800 text-white hover:bg-slate-900 px-4 py-3 rounded-md font-medium transition-colors items-center justify-center gap-2 text-base"
+            className="flex w-full bg-slate-800 text-white hover:bg-slate-900 px-6 py-4 rounded-lg font-semibold transition-colors items-center justify-center gap-3 text-lg shadow-md"
           >
-            <span role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
-            Retour à l&apos;accueil
+            <span className="text-2xl" role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
+            <span className="text-white!">Retour à l&apos;accueil</span>
           </Link>
         </div>
       </div>

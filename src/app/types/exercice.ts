@@ -20,6 +20,7 @@ export interface Exercice {
   completedToday: boolean; // Complété aujourd'hui (pour la gauge)
   completedAt: Date | null;
   pinned: boolean;
+  weeklyCompletions?: Date[]; // Toutes les dates de complétion de la semaine (mode WEEKLY)
 }
 
 export interface Bodypart {

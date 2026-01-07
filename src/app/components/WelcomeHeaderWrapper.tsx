@@ -13,7 +13,7 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 export default function WelcomeHeaderWrapper() {
   const pathname = usePathname();
-  const { currentUser } = useUser();
+  const { currentUser, loading } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const completedToday = useTodayCompletedCount();
   const displayName = currentUser?.name || "";
@@ -45,7 +45,8 @@ export default function WelcomeHeaderWrapper() {
   const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie', '/historique', '/settings'];
   const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
 
-  if (shouldHide) {
+  // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
+  if (shouldHide || !currentUser || loading) {
     return null;
   }
 

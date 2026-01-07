@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
@@ -24,23 +23,21 @@ export function BackButton({
   const router = useRouter();
 
   // Calculer le label à afficher
-  const label = useMemo(() => {
-    if (backLabel) {
-      return backLabel;
-    }
-
+  let label = backLabel;
+  if (!label) {
     if (backHref) {
       const pageName = getCurrentPageName(backHref);
       if (pageName) {
-        return `Retour à ${pageName.toLowerCase()}`;
+        label = `Retour à ${pageName.toLowerCase()}`;
+      } else if (backHref === '/') {
+        label = `${NAVIGATION_EMOJIS.HOME} Retour à l'accueil`;
+      } else {
+        label = `${NAVIGATION_EMOJIS.HOME} Retour à l'accueil`;
       }
-      if (backHref === '/') {
-        return `${NAVIGATION_EMOJIS.HOME} Retour à l'accueil`;
-      }
+    } else {
+      label = `${NAVIGATION_EMOJIS.HOME} Retour à l'accueil`;
     }
-
-    return `${NAVIGATION_EMOJIS.HOME} Retour à l'accueil`;
-  }, [backLabel, backHref]);
+  }
 
   // Navigation par défaut vers l'accueil si pas de href
   const href = backHref || '/';

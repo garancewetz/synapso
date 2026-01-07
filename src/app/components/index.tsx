@@ -9,6 +9,7 @@ import DevBanner from './DevBanner';
 import EmptyState from './EmptyState';
 import ErrorMessage from './ErrorMessage';
 import ExerciceCard from './ExerciceCard';
+import { ExerciceTags } from './ExerciceTags';
 import ExerciceForm from './ExerciceForm';
 import FormActions from './FormActions';
 import FormPageWrapper from './FormPageWrapper';
@@ -46,6 +47,7 @@ export {
   EmptyState,
   ErrorMessage,
   ExerciceCard,
+  ExerciceTags,
   ExerciceForm,
   FormActions,
   FormPageWrapper,

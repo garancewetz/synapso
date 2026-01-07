@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
-import { isCompletedInPeriod, isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { isCompletedToday, isCompletedInPeriod, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
 export async function PATCH(
@@ -60,15 +60,14 @@ export async function PATCH(
     });
     
     const resetFrequency = user?.resetFrequency || 'DAILY';
+    const now = new Date();
     
-    // Vérifier si l'exercice a été complété dans la période de réinitialisation
+    // Vérifier si l'exercice a été complété dans la période courante
     const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
-    const completedInPeriod = isCompletedInPeriod(completedDate, resetFrequency);
+    const completedInCurrentPeriod = isCompletedInPeriod(completedDate, resetFrequency, now);
 
     // Si complété dans la période, on démarque. Sinon, on marque comme complété
-    const isCompleting = !completedInPeriod;
-    
-    const now = new Date();
+    const isCompleting = !completedInCurrentPeriod;
     
     // Utiliser une transaction pour garantir l'intégrité des données
     const updatedExercice = await prisma.$transaction(async (tx) => {
@@ -89,23 +88,33 @@ export async function PATCH(
           },
         });
       } else {
-        // Démarquer : supprimer les entrées de la période dans l'historique
-        const startOfPeriod = getStartOfPeriod(resetFrequency, now);
-        
-        // Calculer la fin de période
-        const endOfPeriod = resetFrequency === 'DAILY'
-          ? startOfDay(addDays(now, 1))
-          : startOfDay(addDays(startOfPeriod, 7));
-        
-        await tx.history.deleteMany({
-          where: {
-            exerciceId: id,
-            completedAt: {
-              gte: startOfPeriod,
-              lt: endOfPeriod,
+        // Démarquer : supprimer l'entrée de complétion actuelle
+        // En mode DAILY : supprimer l'entrée d'aujourd'hui
+        // En mode WEEKLY : supprimer l'entrée correspondant à completedAt
+        if (resetFrequency === 'DAILY') {
+          await tx.history.deleteMany({
+            where: {
+              exerciceId: id,
+              completedAt: {
+                gte: startOfDay(now),
+                lt: startOfDay(addDays(now, 1)),
+              },
             },
-          },
-        });
+          });
+        } else {
+          // Mode WEEKLY : supprimer l'entrée la plus récente de la période
+          if (completedDate) {
+            await tx.history.deleteMany({
+              where: {
+                exerciceId: id,
+                completedAt: {
+                  gte: startOfDay(completedDate),
+                  lt: startOfDay(addDays(completedDate, 1)),
+                },
+              },
+            });
+          }
+        }
       }
 
       return updated;
@@ -116,10 +125,33 @@ export async function PATCH(
       ? isCompletedToday(new Date(updatedExercice.completedAt), now)
       : false;
 
+    // Récupérer toutes les complétions de la période pour weeklyCompletions
+    const startOfPeriod = getStartOfPeriod(resetFrequency, now);
+    const endOfPeriod = resetFrequency === 'DAILY'
+      ? startOfDay(addDays(now, 1))
+      : startOfDay(addDays(startOfPeriod, 7));
+
+    const weeklyHistory = await prisma.history.findMany({
+      where: {
+        exerciceId: id,
+        completedAt: {
+          gte: startOfPeriod,
+          lt: endOfPeriod,
+        },
+      },
+      orderBy: {
+        completedAt: 'asc',
+      },
+    });
+
+    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
+    const completedInPeriod = weeklyCompletions.length > 0;
+
     return NextResponse.json({
       ...updatedExercice,
-      completed: isCompleting,
+      completed: completedInPeriod,
       completedToday: completedToday,
+      weeklyCompletions: weeklyCompletions,
     });
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error);

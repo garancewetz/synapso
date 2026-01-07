@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -20,7 +21,7 @@ function getBarColor(count: number, isToday: boolean): string {
   return '#10B981';
 }
 
-export function BarChart({ data, currentStreak, victoryDates }: Props) {
+export const BarChart = memo(function BarChart({ data, currentStreak, victoryDates }: Props) {
   // Filtrer les jours vides et formater pour le graphique
   const chartData = data
     .filter(day => !day.isEmpty)
@@ -142,5 +143,5 @@ export function BarChart({ data, currentStreak, victoryDates }: Props) {
       </div>
     </div>
   );
-}
+});
 

@@ -162,7 +162,6 @@ export default function Home() {
                     href="/aphasie/citations"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    variant="vertical"
                   />
                   <SiteMapCard
                     title="Ajouter citation"
@@ -172,7 +171,6 @@ export default function Home() {
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                     isSecondary={true}
-                    variant="vertical"
                   />
                   <SiteMapCard
                     title="Exercices ortho"
@@ -181,7 +179,6 @@ export default function Home() {
                     href="/aphasie/exercices"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    variant="vertical"
                   />
                   <SiteMapCard
                     title="Ajouter exercice"
@@ -191,7 +188,6 @@ export default function Home() {
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                     isSecondary={true}
-                    variant="vertical"
                   />
                 </SiteMapGroup>
               )}
@@ -213,7 +209,6 @@ export default function Home() {
                       href="/historique/roadmap"
                       iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                       iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      variant="vertical"
                     />
                     <SiteMapCard
                       title="Mes réussites"
@@ -222,7 +217,6 @@ export default function Home() {
                       href="/historique/victories"
                       iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                       iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                      variant="vertical"
                     />
                   </SiteMapGroup>
 

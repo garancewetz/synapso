@@ -1,5 +1,3 @@
-'use client';
-
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { GOLDEN_CARD_STYLES, GOLDEN_ACCENT_STYLES, GOLDEN_FOOTER_STYLES, DEFAULT_CARD_STYLES, DEFAULT_ACCENT_STYLES, DEFAULT_FOOTER_STYLES } from '@/app/constants/card.constants';
@@ -84,7 +82,7 @@ function Accent({ color, width, isGolden = false }: AccentProps) {
   const accentWidth = isGolden ? GOLDEN_ACCENT_STYLES.width : (width || DEFAULT_ACCENT_STYLES.width);
   
   return (
-    <div className={clsx('flex-shrink-0', accentWidth, accentColor)} />
+    <div className={clsx('shrink-0', accentWidth, accentColor)} />
   );
 }
 

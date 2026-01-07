@@ -1,5 +1,5 @@
 // Icons
-export { CalendarIcon, PinIcon, SparklesIcon } from './icons';
+export { CalendarIcon, HeartIcon, PinIcon, SparklesIcon } from './icons';
 
 // UI Components
 export { Accordion } from './Accordion';
@@ -9,16 +9,20 @@ export { CompleteButton } from './CompleteButton';
 export { CompletedBadge } from './CompletedBadge';
 export { MasteredBadge } from './MasteredBadge';
 export { DeleteButton } from './DeleteButton';
+export { Dropdown } from './Dropdown';
 export { IconButton } from './IconButton';
 export { default as Input } from './Input';
 export { default as Loader } from './Loader';
 export { default as Logo } from './Logo';
 export { SegmentedControl } from './SegmentedControl';
+export { SettingsSection } from './SettingsSection';
 export { default as Textarea } from './Textarea';
 export { default as TextareaWithSpeech } from './TextareaWithSpeech';
 export { default as InputWithSpeech } from './InputWithSpeech';
+export { ToggleButtonGroup } from './ToggleButtonGroup';
 export { default as BottomSheetModal } from './BottomSheetModal';
 export { default as ViewAllLink } from './ViewAllLink';
 export { default as AddButton } from './AddButton';
 export { Card } from './Card';
 export { BaseCard } from './BaseCard';
+export { WeeklyCompletionIndicator } from './WeeklyCompletionIndicator';

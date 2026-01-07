@@ -11,9 +11,16 @@ import {
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
+import { useUser } from '@/app/contexts/UserContext';
 
 export function BottomNavBar() {
   const pathname = usePathname();
+  const { currentUser, loading } = useUser();
+  
+  // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
+  if (!currentUser || loading) {
+    return null;
+  }
   
   const categories = CATEGORY_ORDER;
   const isHomeActive = pathname === '/';
@@ -23,7 +30,7 @@ export function BottomNavBar() {
       className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 pb-safe md:hidden shadow-lg"
       aria-label="Navigation principale"
     >
-      <div className="px-1 py-2">
+      <div className="px-1">
         <div className="grid grid-cols-5 gap-1">
           {/* Icône maison pour la page d'accueil */}
           <TouchLink

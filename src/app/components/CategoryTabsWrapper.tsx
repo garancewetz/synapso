@@ -10,7 +10,7 @@ import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
 export default function CategoryTabsWrapper() {
   const pathname = usePathname();
-  const { currentUser } = useUser();
+  const { currentUser, loading } = useUser();
 
   // Pages où on ne veut pas afficher la navigation
   // Sur la page d'accueil, on masque car les CategoryCard font déjà le travail de navigation
@@ -38,7 +38,8 @@ export default function CategoryTabsWrapper() {
     }), {} as Record<ExerciceCategory, number>);
   }, [exercices, shouldHide, currentUser]);
 
-  if (shouldHide) {
+  // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
+  if (shouldHide || !currentUser || loading) {
     return null;
   }
 

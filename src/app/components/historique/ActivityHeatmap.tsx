@@ -81,7 +81,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
         </div>
         <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+            className="h-full bg-linear-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

@@ -3,7 +3,8 @@ import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
-import { isCompletedToday, isCompletedInPeriod } from '@/app/utils/resetFrequency.utils';
+import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { startOfWeek, addDays, startOfDay } from 'date-fns';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -52,6 +53,13 @@ export async function GET(request: NextRequest) {
       whereClause.category = category as PrismaExerciceCategory;
     }
 
+    // Calculer la période de réinitialisation
+    const now = new Date();
+    const startOfPeriod = getStartOfPeriod(user.resetFrequency, now);
+    const endOfPeriod = user.resetFrequency === 'DAILY'
+      ? startOfDay(addDays(now, 1))
+      : startOfDay(addDays(startOfPeriod, 7));
+
     // Utiliser Prisma Query Builder natif
     const exercices = await prisma.exercice.findMany({
       where: whereClause,
@@ -59,6 +67,17 @@ export async function GET(request: NextRequest) {
         bodyparts: {
           include: {
             bodypart: true,
+          },
+        },
+        history: {
+          where: {
+            completedAt: {
+              gte: startOfPeriod,
+              lt: endOfPeriod,
+            },
+          },
+          orderBy: {
+            completedAt: 'asc',
           },
         },
       },
@@ -70,11 +89,15 @@ export async function GET(request: NextRequest) {
 
     // Reformater les données
     const formattedExercices = exercices.map((exercice) => {
-      const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+      // Extraire les dates de complétion de la période (pour mode WEEKLY)
+      const weeklyCompletions = exercice.history.map((h) => h.completedAt);
       
-      // Utiliser les utilitaires pour calculer completedToday et completedInPeriod
+      // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
+      const completedInPeriod = weeklyCompletions.length > 0;
+      
+      // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
+      const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
       const completedToday = isCompletedToday(completedDate);
-      const completedInPeriod = isCompletedInPeriod(completedDate, user.resetFrequency);
 
       // Parser les équipements
       let equipmentsParsed: string[] = [];
@@ -106,6 +129,7 @@ export async function GET(request: NextRequest) {
         completedToday: completedToday,
         completedAt: exercice.completedAt,
         pinned: exercice.pinned ?? false,
+        weeklyCompletions: weeklyCompletions,
       };
     });
     

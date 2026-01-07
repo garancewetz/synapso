@@ -1,5 +1,3 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
@@ -93,9 +91,9 @@ export function SiteMapGroup({
       {/* Séparateur */}
       <div className="border-t border-gray-100" />
 
-      {/* Grille des enfants */}
+      {/* Liste des enfants */}
       <div className="bg-gray-50/50 p-3">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-2">
           {children}
         </div>
       </div>

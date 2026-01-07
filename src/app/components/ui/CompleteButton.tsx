@@ -9,6 +9,7 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isCompletedToday?: boolean;
   isLoading?: boolean;
   variant?: 'exercice' | 'challenge';
+  weeklyCount?: number; // Nombre de fois fait cette semaine
 };
 
 export function CompleteButton({ 
@@ -16,18 +17,23 @@ export function CompleteButton({
   isCompletedToday = false,
   isLoading = false,
   variant = 'exercice',
+  weeklyCount = 0,
   className = '',
   ...props 
 }: Props) {
-  const getLabel = () => {
+  const getLabel = (): React.ReactNode => {
     if (variant === 'challenge') {
       return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
     }
     
     if (isCompleted) {
+      // Si fait plusieurs fois cette semaine, afficher le compteur
+      if (weeklyCount > 1) {
+        return `Fait (${weeklyCount}× cette semaine)`;
+      }
       return isCompletedToday ? 'Fait' : 'Fait cette semaine';
     }
-    return 'Marquer fait';
+    return 'Fait aujourd\'hui';
   };
 
   const getTitle = () => {
@@ -38,7 +44,7 @@ export function CompleteButton({
     if (isCompleted) {
       return isCompletedToday ? 'Démarquer' : 'Fait cette semaine - Démarquer';
     }
-    return 'Marquer comme fait';
+    return 'Marquer comme fait aujourd\'hui';
   };
 
   const getStyles = () => {
@@ -68,7 +74,7 @@ export function CompleteButton({
     <button
       className={clsx(
         'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg',
-        'font-semibold text-sm transition-all duration-200 shadow-sm',
+        'font-semibold text-sm transition-all duration-200 shadow-sm whitespace-nowrap',
         getStyles(),
         className
       )}
@@ -85,7 +91,7 @@ export function CompleteButton({
       ) : (
         <>
           {getIcon()}
-          <span>{getLabel()}</span>
+          {getLabel()}
         </>
       )}
     </button>

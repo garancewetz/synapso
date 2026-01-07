@@ -8,7 +8,6 @@ import { useHandPreference } from '@/app/hooks/useHandPreference';
 import clsx from 'clsx';
 import { UserSection } from './UserSection';
 import { MenuActions } from './MenuActions';
-import { UserSwitch } from './UserSwitch';
 import type { User } from '@/app/types';
 import type { RefObject } from 'react';
 
@@ -78,7 +77,7 @@ export function MenuDrawer({
         aria-hidden={!isOpen}
       >
         {/* En-tête du drawer */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+        <div className="flex items-center justify-between p-5 border-b border-gray-200 bg-linear-to-r from-gray-50 to-white">
           <div className="flex items-center gap-3">
             <Logo size={32} />
             <h2 id="menu-title" className="text-xl font-bold text-gray-900">
@@ -98,23 +97,17 @@ export function MenuDrawer({
 
         {/* Contenu du menu */}
         <div className="p-5 pb-24 md:pb-5 flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
-          {/* Carte du user sélectionné */}
-          <UserSection currentUser={currentUser} />
-
-          {/* Activités principales */}
-          <MenuActions currentUser={currentUser} onMenuClose={onClose} isMenuOpen={isOpen} />
-
-          {/* Divider */}
-          <div className="border-t border-gray-200 my-2" />
-
-          {/* Switch pour changer d'utilisateur */}
-          <UserSwitch
+          {/* Carte du user sélectionné avec dropdown de changement */}
+          <UserSection
             users={users}
             currentUser={currentUser}
             onUserChange={onUserChange}
             onCreateUser={onCreateUser}
             isMenuOpen={isOpen}
           />
+
+          {/* Activités principales */}
+          <MenuActions currentUser={currentUser} onMenuClose={onClose} isMenuOpen={isOpen} />
         </div>
       </div>
     </>

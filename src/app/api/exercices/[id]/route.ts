@@ -3,6 +3,8 @@ import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
+import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { addDays, startOfDay } from 'date-fns';
 
 export async function GET(
   request: NextRequest,
@@ -39,6 +41,26 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // Récupérer l'utilisateur pour obtenir le resetFrequency
+    const user = await prisma.user.findUnique({
+      where: { id: userIdNumber },
+      select: { resetFrequency: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const resetFrequency = user.resetFrequency || 'DAILY';
+    const now = new Date();
+    const startOfPeriod = getStartOfPeriod(resetFrequency, now);
+    const endOfPeriod = resetFrequency === 'DAILY'
+      ? startOfDay(addDays(now, 1))
+      : startOfDay(addDays(startOfPeriod, 7));
     
     const exercice = await prisma.exercice.findFirst({
       where: { 
@@ -49,6 +71,17 @@ export async function GET(
         bodyparts: {
           include: {
             bodypart: true,
+          },
+        },
+        history: {
+          where: {
+            completedAt: {
+              gte: startOfPeriod,
+              lt: endOfPeriod,
+            },
+          },
+          orderBy: {
+            completedAt: 'asc',
           },
         },
       },
@@ -69,6 +102,16 @@ export async function GET(
       equipmentsParsed = [];
     }
 
+    // Calculer les statuts de complétion
+    const weeklyCompletions = exercice.history.map(h => h.completedAt);
+    
+    // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
+    const completedInPeriod = weeklyCompletions.length > 0;
+    
+    // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
+    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+    const completedToday = isCompletedToday(completedDate);
+
     // Reformater les données
     const formattedExercice = {
       id: exercice.id,
@@ -85,9 +128,11 @@ export async function GET(
       equipments: equipmentsParsed,
       bodyparts: exercice.bodyparts.map(eb => eb.bodypart.name),
       category: exercice.category as ExerciceCategory,
-      completed: exercice.completed,
+      completed: completedInPeriod,
+      completedToday: completedToday,
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,
+      weeklyCompletions: weeklyCompletions,
     };
 
     return NextResponse.json(formattedExercice);
@@ -166,6 +211,26 @@ export async function PUT(
       );
     }
 
+    // Récupérer l'utilisateur pour obtenir le resetFrequency
+    const user = await prisma.user.findUnique({
+      where: { id: userIdNumber },
+      select: { resetFrequency: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const resetFrequency = user.resetFrequency || 'DAILY';
+    const now = new Date();
+    const startOfPeriod = getStartOfPeriod(resetFrequency, now);
+    const endOfPeriod = resetFrequency === 'DAILY'
+      ? startOfDay(addDays(now, 1))
+      : startOfDay(addDays(startOfPeriod, 7));
+
     // Utiliser une transaction pour garantir l'intégrité des données
     const exercice = await prisma.$transaction(async (tx) => {
       // Mettre à jour l'exercice
@@ -210,6 +275,20 @@ export async function PUT(
       return updated;
     });
 
+    // Récupérer l'historique pour calculer les statuts
+    const history = await prisma.history.findMany({
+      where: {
+        exerciceId: id,
+        completedAt: {
+          gte: startOfPeriod,
+          lt: endOfPeriod,
+        },
+      },
+      orderBy: {
+        completedAt: 'asc',
+      },
+    });
+
     // Parser les équipements de manière sécurisée
     let equipmentsParsed: string[] = [];
     try {
@@ -217,6 +296,16 @@ export async function PUT(
     } catch {
       equipmentsParsed = [];
     }
+
+    // Calculer les statuts de complétion
+    const weeklyCompletions = history.map(h => h.completedAt);
+    
+    // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
+    const completedInPeriod = weeklyCompletions.length > 0;
+    
+    // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
+    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+    const completedToday = isCompletedToday(completedDate);
 
     // Reformater les données
     const formattedExercice = {
@@ -234,9 +323,11 @@ export async function PUT(
       equipments: equipmentsParsed,
       bodyparts: updatedData.bodyparts || [],
       category: exercice.category as ExerciceCategory,
-      completed: exercice.completed,
+      completed: completedInPeriod,
+      completedToday: completedToday,
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,
+      weeklyCompletions: weeklyCompletions,
     };
 
     return NextResponse.json(formattedExercice);

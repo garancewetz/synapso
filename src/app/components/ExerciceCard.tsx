@@ -7,8 +7,8 @@ import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/app/hooks/useTodayCompletedCount';
-import { ChevronIcon, EditIcon, PinIcon } from '@/app/components/ui/icons';
-import { Badge, IconButton, CompleteButton, CompletedBadge, BaseCard } from '@/app/components/ui';
+import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
+import { Badge, IconButton, CompleteButton, CompletedBadge, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
 
 type Props = {
     exercice: Exercice;
@@ -49,15 +49,16 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
 
             if (response.ok) {
                 const data = await response.json();
-                const wasCompleted = exercice.completed;
+                const wasCompletedToday = exercice.completedToday;
                 // Créer l'exercice mis à jour localement avec les nouvelles valeurs
                 const updatedExercice: Exercice = {
                     ...exercice,
                     completed: data.completed,
                     completedToday: data.completedToday ?? false,
                     completedAt: data.completedAt ? new Date(data.completedAt) : null,
+                    weeklyCompletions: data.weeklyCompletions || exercice.weeklyCompletions,
                 };
-                if (!wasCompleted && updatedExercice.completed) {
+                if (!wasCompletedToday && updatedExercice.completedToday) {
                     setShowSuccess(true);
                     setTimeout(() => setShowSuccess(false), 1500);
                 }
@@ -125,7 +126,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
             role="button"
             tabIndex={0}
             ariaExpanded={isExpanded}
-            ariaLabel={`${exercice.name} - ${exercice.completed ? 'Complété' : 'À faire'}`}
+            ariaLabel={`${exercice.name} - ${exercice.completedToday ? 'Fait aujourd\'hui' : 'À faire'}`}
         >
             <BaseCard.Accent color={categoryStyle.accent} />
             <BaseCard.Content>
@@ -133,24 +134,28 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                 <div className="p-4 md:p-5">
                         <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="flex-1 min-w-0">
-                                {/* Icône épinglé */}
-                                {exercice.pinned && (
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <PinIcon className="w-3.5 h-3.5 text-red-500" fill="currentColor" />
-                                    </div>
-                                )}
                                 <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight">
                                     {exercice.name}
                                 </h3>
                             </div>
 
-                            {/* Badge complété */}
-                            {exercice.completed && (
-                                <CompletedBadge 
-                                    isCompletedToday={exercice.completedToday}
-                                    completedAt={exercice.completedAt}
-                                />
-                            )}
+                            {/* Badge complété OU indicateur hebdomadaire */}
+                            <div className="flex items-center gap-2">
+                                {/* Si mode WEEKLY : afficher l'indicateur de jours */}
+                                {currentUser?.resetFrequency === 'WEEKLY' && exercice.weeklyCompletions && exercice.weeklyCompletions.length > 0 ? (
+                                    <WeeklyCompletionIndicator 
+                                        completions={exercice.weeklyCompletions}
+                                    />
+                                ) : (
+                                    /* Si mode DAILY : badge classique */
+                                    exercice.completedToday && (
+                                        <CompletedBadge 
+                                            isCompletedToday={exercice.completedToday}
+                                            completedAt={exercice.completedAt}
+                                        />
+                                    )
+                                )}
+                            </div>
                         </div>
 
                         {/* Tags : bodyparts, workout, équipements */}
@@ -253,15 +258,15 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                         )}
                     </div>
                 <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
-                    {/* Bouton Épingler */}
+                    {/* Bouton Favori */}
                     <IconButton
                         onClick={handlePin}
                         disabled={isPinning}
                         isActive={exercice.pinned}
-                        title={exercice.pinned ? 'Désépingler' : 'Épingler'}
-                        aria-label={exercice.pinned ? 'Désépingler' : 'Épingler'}
+                        title={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                        aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                     >
-                        <PinIcon className="w-4 h-4" fill={exercice.pinned ? "currentColor" : "none"} />
+                        <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
                     </IconButton>
 
                     {/* Bouton Modifier */}
@@ -276,9 +281,10 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                     {/* Bouton Fait - principal */}
                     <CompleteButton
                         onClick={handleComplete}
-                        isCompleted={exercice.completed}
+                        isCompleted={exercice.completedToday}
                         isCompletedToday={exercice.completedToday}
                         isLoading={isCompleting}
+                        weeklyCount={exercice.weeklyCompletions?.length || 0}
                     />
                 </BaseCard.Footer>
             </BaseCard.Content>

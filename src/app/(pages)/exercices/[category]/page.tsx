@@ -9,7 +9,6 @@ import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { BookmarkIcon } from '@/app/components/ui/icons';
 import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
@@ -63,9 +62,8 @@ export default function CategoryPage() {
     ? exercices.filter(e => !e.completed)
     : exercices.filter(e => e.completed);
 
-  // Séparer les exercices épinglés des autres
-  const pinned = filteredExercices.filter(e => e.pinned);
-  const regular = filteredExercices.filter(e => !e.pinned);
+  // Les favoris sont déjà en haut grâce au tri dans l'API
+  // (orderBy: [{ pinned: 'desc' }, { id: 'desc' }])
   const completedCount = exercices.filter(e => e.completed).length;
 
   if (!isValidCategory) {
@@ -156,47 +154,15 @@ export default function CategoryPage() {
               subMessage={filter === 'all' ? "Ajoutez des exercices depuis le menu." : undefined}
             />
           ) : (
-            <div className="space-y-6">
-              {/* Section des exercices épinglés */}
-              {pinned.length > 0 && (
-                <div>
-                  <h2 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <BookmarkIcon className="w-4 h-4 text-red-500" />
-                    Priorités
-                  </h2>
-                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-                    {pinned.map((exercice) => (
-                      <ExerciceCard
-                        key={exercice.id}
-                        exercice={exercice}
-                        onEdit={handleEditClick}
-                        onCompleted={handleCompleted}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tous les exercices */}
-              {regular.length > 0 && (
-                <div>
-                  {pinned.length > 0 && (
-                    <h2 className="text-base font-semibold text-gray-800 mb-3">
-                      Autres exercices
-                    </h2>
-                  )}
-                  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-                    {regular.map((exercice) => (
-                      <ExerciceCard
-                        key={exercice.id}
-                        exercice={exercice}
-                        onEdit={handleEditClick}
-                        onCompleted={handleCompleted}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+              {filteredExercices.map((exercice) => (
+                <ExerciceCard
+                  key={exercice.id}
+                  exercice={exercice}
+                  onEdit={handleEditClick}
+                  onCompleted={handleCompleted}
+                />
+              ))}
             </div>
           )}
 

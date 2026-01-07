@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 type DonutChartItem = {
@@ -19,7 +20,7 @@ type Props = {
   legendPosition?: 'bottom' | 'right';
 };
 
-export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: Props) {
+export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: Props) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
@@ -82,7 +83,7 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = f
               className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
             >
               <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
+                className="w-3 h-3 rounded-full shrink-0"
                 style={{ backgroundColor: item.color }}
               />
               <span className="text-lg">{item.icon}</span>
@@ -96,5 +97,5 @@ export function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = f
       </div>
     </div>
   );
-}
+});
 

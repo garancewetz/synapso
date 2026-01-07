@@ -8,6 +8,7 @@ export { ClockIcon } from './ClockIcon';
 export { CloseIcon } from './CloseIcon';
 export { CompassIcon } from './CompassIcon';
 export { EditIcon } from './EditIcon';
+export { HeartIcon } from './HeartIcon';
 export { MapIcon } from './MapIcon';
 export { MenuIcon } from './MenuIcon';
 export { PinIcon } from './PinIcon';

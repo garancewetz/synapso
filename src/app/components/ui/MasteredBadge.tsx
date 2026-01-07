@@ -8,7 +8,7 @@ type Props = {
 export function MasteredBadge({ className }: Props) {
   return (
     <span className={clsx(
-      'flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1',
+      'shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1',
       'bg-emerald-500 text-white',
       className
     )}>

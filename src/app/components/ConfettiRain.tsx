@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 
 type ConfettiVariant = 'default' | 'golden';
@@ -145,7 +145,7 @@ function Confetti({ delay, startX, color, size, fromWindow = false, randomRotati
   );
 }
 
-export default function ConfettiRain({
+const ConfettiRain = memo(function ConfettiRain({
   show = false,
   fromWindow = false,
   emojiCount = 5,
@@ -231,5 +231,7 @@ export default function ConfettiRain({
       ))}
     </>
   );
-}
+});
+
+export default ConfettiRain;
 

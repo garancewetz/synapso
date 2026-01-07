@@ -10,6 +10,7 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isLoading?: boolean;
   variant?: 'exercice' | 'challenge';
   weeklyCount?: number; // Nombre de fois fait cette semaine
+  resetFrequency?: 'DAILY' | 'WEEKLY'; // Mode de réinitialisation
 };
 
 export function CompleteButton({ 
@@ -18,6 +19,7 @@ export function CompleteButton({
   isLoading = false,
   variant = 'exercice',
   weeklyCount = 0,
+  resetFrequency = 'DAILY',
   className = '',
   ...props 
 }: Props) {
@@ -27,12 +29,17 @@ export function CompleteButton({
     }
     
     if (isCompleted) {
-      // Si fait plusieurs fois cette semaine, afficher le compteur
+      // En mode hebdomadaire, toujours afficher "Fait aujourd'hui" si complété
+      if (resetFrequency === 'WEEKLY') {
+        return isCompletedToday ? 'Fait aujourd\'hui' : 'Fait aujourd\'hui';
+      }
+      // En mode quotidien, afficher le compteur si fait plusieurs fois
       if (weeklyCount > 1) {
         return `Fait (${weeklyCount}× cette semaine)`;
       }
       return isCompletedToday ? 'Fait' : 'Fait cette semaine';
     }
+    // Quand pas complété, toujours "Fait aujourd'hui"
     return 'Fait aujourd\'hui';
   };
 

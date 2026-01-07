@@ -285,6 +285,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                         isCompletedToday={exercice.completedToday}
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
+                        resetFrequency={currentUser?.resetFrequency}
                     />
                 </BaseCard.Footer>
             </BaseCard.Content>

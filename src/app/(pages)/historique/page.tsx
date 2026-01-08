@@ -1,39 +1,32 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
-import { DonutChart, BarChart, ActivityHeatmap, WeekAccordionList, VictoryStatsChart } from '@/app/components/historique';
+import { DonutChart, ActivityHeatmap, VictoryStatsChart } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { BackButton } from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
+import { SegmentedControl } from '@/app/components/ui';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import clsx from 'clsx';
+import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { ROADMAP_PREVIEW_DAYS } from '@/app/constants/historique.constants';
 import {
-  STATS_DAYS,
-  ROADMAP_PREVIEW_DAYS,
-} from '@/app/constants/historique.constants';
-import {
-  calculateStats,
+  calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
   getHeatmapData,
-  groupHistoryByWeek,
   calculateCurrentStreak,
 } from '@/app/utils/historique.utils';
 
+type BodypartPeriodFilter = 'week' | 'month' | 'all';
+
 export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
-  const [stats, setStats] = useState({
-    total: 0,
-    thisWeek: 0,
-    thisMonth: 0,
-    byBodypart: {} as Record<string, number>,
-    byCategory: {} as Record<string, number>,
-  });
+  const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('all');
   const { currentUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const victoryModal = useVictoryModal();
@@ -44,12 +37,6 @@ export default function HistoriquePage() {
 
   // Charger les victoires
   const { victories, refetch: refetchVictories } = useVictories();
-
-  // Calcul des statistiques à partir de l'historique
-  useEffect(() => {
-    const calculatedStats = calculateStats(history);
-    setStats(calculatedStats);
-  }, [history]);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -70,30 +57,21 @@ export default function HistoriquePage() {
     return new Set(victories.map(v => v.createdAt.split('T')[0]));
   }, [victories]);
 
-  // Données pour le graphique donut par partie du corps
+  // Données pour le graphique donut par partie du corps (selon la période sélectionnée)
   const donutDataBodyparts = useMemo(() => {
-    return getDonutDataBodyparts(stats.byBodypart);
-  }, [stats.byBodypart]);
+    const bodypartStats = calculateBodypartStatsByPeriod(history, bodypartPeriod);
+    return getDonutDataBodyparts(bodypartStats);
+  }, [history, bodypartPeriod]);
 
   // Données pour le parcours (7 jours)
   const roadmapData = useMemo(() => {
     return getHeatmapData(history, ROADMAP_PREVIEW_DAYS);
   }, [history]);
 
-  // Données pour la régularité (30 jours)
-  const barChartData = useMemo(() => {
-    return getHeatmapData(history, STATS_DAYS);
-  }, [history]);
-
-  // Grouper l'historique et les victoires par semaine
-  const groupedByWeek = useMemo(() => {
-    return groupHistoryByWeek(history, victories);
-  }, [history, victories]);
-
-  // Série de jours consécutifs (basé sur les 30 jours)
+  // Série de jours consécutifs (basé sur les 7 derniers jours)
   const currentStreak = useMemo(() => {
-    return calculateCurrentStreak(barChartData);
-  }, [barChartData]);
+    return calculateCurrentStreak(roadmapData);
+  }, [roadmapData]);
 
   // Gestion du clic sur une journée du calendrier
   const handleDayClick = (day: HeatmapDay) => {
@@ -101,7 +79,7 @@ export default function HistoriquePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-24 md:pb-8">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
       {/* Bouton retour accueil */}
       <BackButton 
         className="mb-4" 
@@ -146,7 +124,6 @@ export default function HistoriquePage() {
             {victories.length >= 2 ? (
               <VictoryStatsChart 
                 victories={victories}
-                history={history}
                 hideTitle={true}
               />
             ) : victories.length === 1 ? (
@@ -170,7 +147,7 @@ export default function HistoriquePage() {
             )}
           </div>
           
-          {/* 4. Zones travaillées - Information plus abstraite, moins cruciale pour le moral */}
+          {/* 3. Zones travaillées - Information plus abstraite, moins cruciale pour le moral */}
           <DonutChart
             title="🦴 Zones travaillées"
             data={donutDataBodyparts}
@@ -178,32 +155,20 @@ export default function HistoriquePage() {
             emptyMessage="Tes zones travaillées apparaîtront ici !"
             fullWidth={true}
             legendPosition="right"
+            filterSlot={
+              <SegmentedControl
+                options={[
+                  { value: 'week', label: 'Cette semaine' },
+                  { value: 'month', label: 'Ce mois-ci' },
+                  { value: 'all', label: 'Tout' },
+                ]}
+                value={bodypartPeriod}
+                onChange={(value) => setBodypartPeriod(value as BodypartPeriodFilter)}
+                fullWidth
+                size="sm"
+              />
+            }
           />
-          {/* 3. Ta régularité (30 jours) - Indicateur de persévérance */}
-          <BarChart data={barChartData} currentStreak={currentStreak} victoryDates={victoryDates} />
-          
-        </div>
-
-        {/* Historique détaillé */}
-        <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-            {NAVIGATION_EMOJIS.CLIPBOARD} Ton parcours de BG
-          </h2>
-
-          {groupedByWeek.length === 0 ? (
-            <div className="bg-linear-to-br from-slate-50 to-gray-100 rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
-              <span className="text-4xl mb-3 block">🌱</span>
-              <p className="text-gray-600 font-medium">Ton aventure commence maintenant !</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Complète ton premier exercice pour voir ton historique apparaître ici.
-              </p>
-            </div>
-          ) : (
-            <WeekAccordionList 
-              weeks={groupedByWeek}
-              defaultExpanded={['current']}
-            />
-          )}
         </div>
       </div>
 

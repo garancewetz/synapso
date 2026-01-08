@@ -16,7 +16,6 @@ import { fr } from 'date-fns/locale';
 import {
   BODYPART_TO_CATEGORY,
   CATEGORY_CHART_COLORS,
-  CATEGORY_ORDER,
   BODYPART_ICONS,
 } from '@/app/constants/exercice.constants';
 import {
@@ -108,6 +107,39 @@ export function calculateStats(data: HistoryEntry[]): Stats {
   return { total: data.length, thisWeek, thisMonth, byBodypart, byCategory };
 }
 
+// Calculer les stats par bodypart selon une période
+export function calculateBodypartStatsByPeriod(
+  data: HistoryEntry[],
+  period: 'week' | 'month' | 'all'
+): Record<string, number> {
+  const now = new Date();
+  const startOfWeekDate = startOfWeek(now, { weekStartsOn: 1 });
+  const startOfMonthDate = startOfMonth(now);
+  const byBodypart: Record<string, number> = {};
+
+  data.forEach(entry => {
+    const entryDate = new Date(entry.completedAt);
+    
+    // Filtrer selon la période
+    let includeEntry = false;
+    if (period === 'all') {
+      includeEntry = true;
+    } else if (period === 'week' && !isBefore(entryDate, startOfWeekDate)) {
+      includeEntry = true;
+    } else if (period === 'month' && !isBefore(entryDate, startOfMonthDate)) {
+      includeEntry = true;
+    }
+
+    if (includeEntry) {
+      entry.exercice.bodyparts.forEach(bp => {
+        byBodypart[bp.name] = (byBodypart[bp.name] || 0) + 1;
+      });
+    }
+  });
+
+  return byBodypart;
+}
+
 // ============================================================================
 // DONUT CHART - DONNÉES PAR BODYPART
 // ============================================================================
@@ -122,25 +154,11 @@ export function getDonutDataBodyparts(
     return baseColor + Math.round(opacity * 255).toString(16).padStart(2, '0');
   };
 
-  // Trier d'abord par catégorie selon CATEGORY_ORDER, puis par valeur décroissante
+  // Trier par nombre d'exercices décroissant pour afficher les 6 zones les plus travaillées
   const sortedBodyparts = Object.entries(byBodypart)
     .filter(([, count]) => count > 0)
-    .sort((a, b) => {
-      const categoryA = BODYPART_TO_CATEGORY[a[0]] || 'STRETCHING';
-      const categoryB = BODYPART_TO_CATEGORY[b[0]] || 'STRETCHING';
-      
-      // Comparer d'abord par ordre de catégorie
-      const indexA = CATEGORY_ORDER.indexOf(categoryA);
-      const indexB = CATEGORY_ORDER.indexOf(categoryB);
-      
-      if (indexA !== indexB) {
-        return indexA - indexB;
-      }
-      
-      // Si même catégorie, trier par valeur décroissante
-      return b[1] - a[1];
-    })
-    .slice(0, MAX_BODYPARTS_IN_CHART)
+    .sort((a, b) => b[1] - a[1]) // Tri par valeur décroissante uniquement
+    .slice(0, MAX_BODYPARTS_IN_CHART) // Prendre les 6 premières
     .map(([name, count], index) => ({
       name,
       value: count,

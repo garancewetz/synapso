@@ -4,11 +4,13 @@ import { useCallback, useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { BackButton } from '@/app/components/BackButton';
-import { ActivityHeatmap } from '@/app/components/historique';
+import { ActivityHeatmap, ActivityLineChart } from '@/app/components/historique';
 import { VictoryBottomSheet, StatBadge } from '@/app/components';
+import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
+import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
 import { ROADMAP_FULL_DAYS } from '@/app/constants/historique.constants';
 import { NAVIGATION_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
 import {
@@ -38,6 +40,26 @@ export default function RoadmapPage() {
   const victoryDates = useMemo(() => {
     return new Set(victories.map(v => v.createdAt.split('T')[0]));
   }, [victories]);
+
+  // Comptage des victoires par jour pour le graphique
+  const victoryCountByDate = useMemo(() => {
+    const counts = new Map<string, number>();
+    victories.forEach(v => {
+      const date = v.createdAt.split('T')[0];
+      counts.set(date, (counts.get(date) || 0) + 1);
+    });
+    return counts;
+  }, [victories]);
+
+  // Navigation par périodes de 20 jours
+  const {
+    barChartData,
+    selectedMonthLabel,
+    canGoBack,
+    canGoForward,
+    goToPreviousPeriod,
+    goToNextPeriod,
+  } = usePeriodNavigation(history, 20);
 
   // Statistiques du parcours
   const realDays = roadmapData.filter(day => !day.isEmpty);
@@ -109,7 +131,7 @@ export default function RoadmapPage() {
       </div>
 
       {/* Roadmap complète */}
-      <div className="px-4 md:px-6">
+      <div className="px-4 md:px-6 mb-6">
         <ActivityHeatmap 
           data={roadmapData} 
           currentStreak={currentStreak} 
@@ -119,6 +141,26 @@ export default function RoadmapPage() {
         />
       </div>
 
+      {/* Chaîne de montagnes - Vue détaillée par période */}
+      <div className="px-4 md:px-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <PeriodNavigation
+            label={selectedMonthLabel}
+            onPrevious={goToPreviousPeriod}
+            onNext={goToNextPeriod}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+          />
+
+          <ActivityLineChart 
+            data={barChartData} 
+            currentStreak={currentStreak} 
+            victoryCountByDate={victoryCountByDate}
+            onDayClick={handleDayClick}
+            showFullLink={false}
+          />
+        </div>
+      </div>
 
       {/* Modal de victoire */}
       {currentUser && (

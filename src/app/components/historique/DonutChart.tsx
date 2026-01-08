@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 type DonutChartItem = {
@@ -18,15 +18,17 @@ type Props = {
   emptyMessage: string;
   fullWidth?: boolean;
   legendPosition?: 'bottom' | 'right';
+  filterSlot?: ReactNode;
 };
 
-export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom' }: Props) {
+export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom', filterSlot }: Props) {
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           {title}
         </h2>
+        {filterSlot && <div className="mb-4">{filterSlot}</div>}
         <div className="text-center py-8">
           <span className="text-3xl mb-2 block">{emptyIcon}</span>
           <p className="text-gray-500">{emptyMessage}</p>
@@ -42,6 +44,9 @@ export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emp
       <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         {title}
       </h2>
+      
+      {/* Filtre optionnel sous le titre */}
+      {filterSlot && <div className="mb-4">{filterSlot}</div>}
       
       {/* Sur mobile: toujours en colonne (légende en bas), sur desktop: selon legendPosition */}
       <div className={`flex flex-col items-center gap-4 ${isHorizontalLayout ? 'md:flex-row md:items-center md:gap-6' : ''}`}>

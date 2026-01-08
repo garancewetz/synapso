@@ -22,8 +22,8 @@ export const REWARD_EMOJIS = [
   { threshold: 10, emoji: '🎯' },
 ] as const;
 
-// Nombre de jours pour les statistiques de régularité
-export const STATS_DAYS = 30;
+// Nombre de jours pour les statistiques de régularité (2 semaines)
+export const STATS_DAYS = 14;
 
 // Nombre de jours à afficher dans la roadmap (aperçu)
 export const ROADMAP_PREVIEW_DAYS = 7;

@@ -53,7 +53,7 @@ export function VictoryTimeline({ victories, allVictories, history, onEdit, hide
       {/* Graphique encourageant avant les deux dernières cards */}
       {!hideChart && victoriesForChart.length >= 2 && (
         <div className="md:col-span-2">
-          <VictoryStatsChart victories={victoriesForChart} history={history} />
+          <VictoryStatsChart victories={victoriesForChart} />
         </div>
       )}
       

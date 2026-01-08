@@ -43,11 +43,21 @@ export function useVictories(options: UseVictoriesOptions = {}): UseVictoriesRet
     fetch(url, { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
+          // Ne pas logger l'erreur 404 comme une erreur critique
+          // Elle peut survenir lors du premier chargement si aucune victoire n'existe
+          if (res.status === 404) {
+            setVictories([]);
+            setError(null);
+            setLoading(false);
+            return null;
+          }
           throw new Error(`Erreur HTTP: ${res.status}`);
         }
         return res.json();
       })
       .then(data => {
+        if (data === null) return; // Cas 404 géré ci-dessus
+        
         if (Array.isArray(data)) {
           setVictories(data);
         } else {

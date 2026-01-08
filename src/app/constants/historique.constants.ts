@@ -29,7 +29,7 @@ export const STATS_DAYS = 14;
 export const ROADMAP_PREVIEW_DAYS = 7;
 
 // Nombre de jours à afficher dans la roadmap complète
-export const ROADMAP_FULL_DAYS = 40;
+export const ROADMAP_FULL_DAYS = 25;
 
 // Nombre maximum de bodyparts à afficher dans le donut chart
 export const MAX_BODYPARTS_IN_CHART = 6;

@@ -6,7 +6,7 @@ import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.consta
 import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
-import { VictoryCard } from './VictoryCard';
+import { VictoryCardCompact } from './VictoryCardCompact';
 
 type DayExercise = {
   name: string;
@@ -19,17 +19,16 @@ type Props = {
   onClose: () => void;
   date: Date | null;
   exercises: DayExercise[];
-  victory: Victory | null;
-  onEdit?: (victory: Victory) => void;
+  victories: Victory[];
 };
 
 /**
  * Modale affichant le détail d'une journée du parcours
  * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
  */
-export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEdit }: Props) {
+export function DayDetailModal({ isOpen, onClose, date, exercises, victories }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
-  const hasContent = exercises.length > 0 || victory;
+  const hasContent = exercises.length > 0 || victories.length > 0;
 
   return (
     <BottomSheetModal 
@@ -49,9 +48,9 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEd
               ✓ {exercises.length}
             </span>
           )}
-          {victory && (
+          {victories.length > 0 && (
             <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-              {VICTORY_EMOJIS.STAR_BRIGHT}
+              {VICTORY_EMOJIS.STAR_BRIGHT} {victories.length}
             </span>
           )}
         </div>
@@ -60,10 +59,12 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victory, onEd
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
         
-        {/* Section Victoire */}
-        {victory && (
-          <section>
-            <VictoryCard victory={victory} onEdit={onEdit} />
+        {/* Section Victoires */}
+        {victories.length > 0 && (
+          <section className="space-y-2">
+            {victories.map((victory) => (
+              <VictoryCardCompact key={victory.id} victory={victory} />
+            ))}
           </section>
         )}
 

@@ -13,11 +13,11 @@ type DayExercise = {
 
 type UseDayDetailDataReturn = {
   exercises: DayExercise[];
-  victory: ReturnType<typeof useVictories>['victories'][number] | null;
+  victories: ReturnType<typeof useVictories>['victories'];
 };
 
 /**
- * Hook pour calculer les exercices et la victoire d'un jour donné
+ * Hook pour calculer les exercices et les victoires d'un jour donné
  * Utilisé par le modal de détail du jour
  * 
  * IMPORTANT: Utilise la même logique de normalisation de date que getHeatmapData
@@ -25,7 +25,7 @@ type UseDayDetailDataReturn = {
  */
 export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDataReturn {
   const { history } = useHistory();
-  const { victories } = useVictories();
+  const { victories: allVictories } = useVictories();
 
   const exercises = useMemo(() => {
     if (!selectedDay?.dateKey) return [];
@@ -46,18 +46,18 @@ export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDa
       }));
   }, [selectedDay, history]);
 
-  const victory = useMemo(() => {
-    if (!selectedDay?.dateKey) return null;
+  const victories = useMemo(() => {
+    if (!selectedDay?.dateKey) return [];
     
-    return victories.find(v => {
+    return allVictories.filter(v => {
       // Utiliser la même logique de normalisation pour les victoires
       // v.createdAt est une string ISO depuis l'API
       const victoryDate = new Date(v.createdAt);
       const victoryDateKey = format(startOfDay(victoryDate), 'yyyy-MM-dd');
       return victoryDateKey === selectedDay.dateKey;
-    }) || null;
-  }, [selectedDay, victories]);
+    });
+  }, [selectedDay, allVictories]);
 
-  return { exercises, victory };
+  return { exercises, victories };
 }
 

@@ -35,8 +35,17 @@ export function usePeriodNavigation(
     const periodEnd = endOfDay(periodEndDate);
     const periodStart = startOfDay(new Date(periodEndDate.getTime() - (daysPerPeriod - 1) * 24 * 60 * 60 * 1000));
     
-    // Créer tous les jours de la période
+    // Créer tous les jours de la période - garantir qu'on a toujours des jours
     const daysInMonth = eachDayOfInterval({ start: periodStart, end: periodEnd });
+    
+    // Sécurité : si pour une raison quelconque eachDayOfInterval retourne un tableau vide
+    if (daysInMonth.length === 0) {
+      console.error('usePeriodNavigation: eachDayOfInterval returned empty array', {
+        periodStart,
+        periodEnd,
+        selectedMonthOffset,
+      });
+    }
     
     // Filtrer l'historique pour la période sélectionnée
     const monthHistory = history.filter(entry => {

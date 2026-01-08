@@ -8,6 +8,7 @@ import { getExerciceCategoryFromEmoji, isOrthophonieVictory } from '@/app/utils/
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
 import { BottomSheetModal, DeleteButton } from '@/app/components/ui';
 import ErrorMessage from '@/app/components/ErrorMessage';
+import { useUser } from '@/app/contexts/UserContext';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Victory } from '@/app/types';
 
@@ -23,6 +24,7 @@ type Props = {
 type VictoryCategory = ExerciceCategory | 'ORTHOPHONIE';
 
 export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit, defaultCategory }: Props) {
+  const { currentUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<VictoryCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -268,26 +270,28 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
               );
             })}
             
-            {/* Option Orthophonie - à la fin avec couleur jaune */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
-              className="flex flex-col items-center gap-1 transition-all duration-150"
-            >
-              <div className={`
-                w-12 h-12 rounded-full flex items-center justify-center
-                transition-all duration-150
-                ${selectedCategory === 'ORTHOPHONIE' 
-                  ? `${ORTHOPHONIE_COLORS.active} scale-110` 
-                  : `${ORTHOPHONIE_COLORS.inactive} hover:scale-105`
-                }
-              `}>
-                <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
-              </div>
-              <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
-                Ortho
-              </span>
-            </button>
+            {/* Option Orthophonie - à la fin avec couleur jaune (uniquement si l'utilisateur est aphasique) */}
+            {currentUser?.isAphasic && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
+                className="flex flex-col items-center gap-1 transition-all duration-150"
+              >
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center
+                  transition-all duration-150
+                  ${selectedCategory === 'ORTHOPHONIE' 
+                    ? `${ORTHOPHONIE_COLORS.active} scale-110` 
+                    : `${ORTHOPHONIE_COLORS.inactive} hover:scale-105`
+                  }
+                `}>
+                  <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
+                </div>
+                <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
+                  Ortho
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -309,7 +313,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
             type="submit"
             disabled={isSubmitting || !content.trim()}
             className="flex-1 py-4 px-4 rounded-2xl font-bold text-amber-950 
-                       bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
+                       bg-linear-to-r from-amber-300 via-yellow-400 to-amber-500 
                        shadow-md hover:shadow-lg
                        transition-all active:scale-[0.98]
                        disabled:opacity-50 disabled:cursor-not-allowed

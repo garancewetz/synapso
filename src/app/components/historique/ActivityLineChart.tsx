@@ -22,16 +22,23 @@ type TooltipData = {
 
 export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData>(null);
-  // Garder TOUS les jours, y compris ceux à 0 exercice (pour que la courbe touche le sol)
-  const allDays = data;
   
-  if (allDays.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <span className="text-3xl mb-2 block">📊</span>
-        <p className="text-gray-500">Aucune donnée à afficher</p>
-      </div>
-    );
+  // Ne jamais afficher "Aucune donnée" - toujours montrer le graphique avec une ligne à zéro
+  let allDays = data;
+  if (!allDays || allDays.length === 0) {
+    // Créer au moins un jour fictif pour afficher la ligne à zéro
+    const today = new Date();
+    const dummyDay: HeatmapDay = {
+      date: today,
+      dateKey: format(today, 'yyyy-MM-dd'),
+      count: 0,
+      dominantCategory: null,
+      secondaryCategory: null,
+      allCategories: [],
+      isToday: true,
+      isEmpty: true,
+    };
+    allDays = [dummyDay];
   }
 
   // Configuration du graphique
@@ -59,7 +66,13 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
 
   // Fonction pour créer une courbe douce (Catmull-Rom avec tension modérée)
   const createSmoothPath = (pointsArray: Array<{ x: number; y: number; day: HeatmapDay; index: number }>) => {
-    if (pointsArray.length < 2) return '';
+    if (pointsArray.length === 0) return '';
+    
+    // Si un seul point, tracer une ligne horizontale
+    if (pointsArray.length === 1) {
+      const point = pointsArray[0];
+      return `M ${padding.left} ${point.y} L ${chartWidth - padding.right} ${point.y}`;
+    }
     
     let path = `M ${pointsArray[0].x} ${pointsArray[0].y}`;
     
@@ -117,11 +130,6 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
 
   return (
     <div>
-      {/* Titre */}
-      <h3 className="text-center text-base sm:text-lg font-semibold text-gray-700 mb-6">
-        🏔️ Ta chaîne de montagnes
-      </h3>
-
       {/* Graphique */}
       <div className="relative w-full max-w-3xl mx-auto mb-4" style={{ height: 'clamp(220px, 30vh, 280px)' }}>
         {/* Tooltip */}
@@ -143,7 +151,7 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
               </div>
               {victoryCountByDate?.get(tooltip.day.dateKey) && (
                 <div className="text-yellow-300 text-xs mt-1">
-                  ⭐ {victoryCountByDate.get(tooltip.day.dateKey)} victoire{(victoryCountByDate.get(tooltip.day.dateKey) || 0) > 1 ? 's' : ''}
+                  ⭐ {victoryCountByDate.get(tooltip.day.dateKey)} victoire{(victoryCountByDate.get(tooltip.day.dateKey) || 0) > 1 ? 's' : ''} physique{(victoryCountByDate.get(tooltip.day.dateKey) || 0) > 1 ? 's' : ''} 💪
                 </div>
               )}
             </div>
@@ -333,16 +341,16 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
             );
           })}
 
-          {/* Étoiles sur les sommets (connectées à la ligne) */}
+          {/* Étoiles sur les sommets (ou au niveau du sol si pas d'exercice) */}
           {points.map((point) => {
             const victoryCount = victoryCountByDate?.get(point.day.dateKey) || 0;
-            if (victoryCount === 0 || point.day.count === 0) return null;
+            if (victoryCount === 0) return null;
 
             // Créer plusieurs étoiles superposées en fonction du nombre de victoires
             const stars = Array.from({ length: Math.min(victoryCount, 5) }, (_, i) => {
-              // La première étoile (i=0) est sur la ligne, les suivantes au-dessus
-              const offsetX = 0; // Pas de décalage horizontal - parfaitement centrées
-              const offsetY = i === 0 ? 0 : -20 - (i - 1) * 8; // 1ère sur ligne, autres empilées au-dessus
+              // Décalages pour positionner les étoiles au-dessus du sommet (ou du sol)
+              const offsetX = 2; // Léger décalage horizontal pour centrer l'étoile dans le halo
+              const offsetY = i === 0 ? -15 : -32 - (i - 1) * 18; // 1ère à 15px au-dessus, autres empilées avec espacement de 18px
               
               return (
                 <g key={`star-${i}`}>
@@ -359,7 +367,7 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
                   {/* Étoile - première sur le sommet, autres au-dessus */}
                   <text
                     x={point.x + offsetX}
-                    y={point.y + offsetY}
+                    y={point.y + offsetY + 1}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontSize={i === 0 ? "26" : "22"}
@@ -431,14 +439,14 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
       </div>
 
       {/* Légende */}
-      <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-linear-to-t from-blue-700 to-blue-100 border-2 border-blue-500"></div>
-          <span>Altitude = Nombre d&apos;exercices</span>
+      <div className="flex items-center justify-center gap-4 text-xs text-gray-600">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded-full bg-linear-to-t from-blue-700 to-blue-100 border border-blue-500"></div>
+          <span>Exercices</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xl">⭐</span>
-          <span>Victoire</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">⭐</span>
+          <span>Victoires 💪</span>
         </div>
       </div>
       

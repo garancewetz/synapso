@@ -6,6 +6,7 @@ import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'dat
 import { fr } from 'date-fns/locale';
 import { isOrthophonieVictory } from '@/app/utils/victory.utils';
 import { CATEGORY_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { useUser } from '@/app/contexts/UserContext';
 import type { Victory } from '@/app/types';
 
 type Props = {
@@ -53,6 +54,8 @@ function countVictoriesByType(victories: Victory[]) {
  * Montre la progression cumulative des réussites - la montagne ne fait que grandir !
  */
 export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
+  const { currentUser } = useUser();
+  
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (victories.length === 0) return [];
 
@@ -126,14 +129,16 @@ export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
               }}
               formatter={formatTooltip}
             />
-            <Area 
-              type="monotone" 
-              dataKey="ortho" 
-              stackId="1"
-              stroke={COLORS.ORTHO} 
-              fill="url(#colorOrtho)"
-              strokeWidth={2.5}
-            />
+            {currentUser?.isAphasic && (
+              <Area 
+                type="monotone" 
+                dataKey="ortho" 
+                stackId="1"
+                stroke={COLORS.ORTHO} 
+                fill="url(#colorOrtho)"
+                strokeWidth={2.5}
+              />
+            )}
             <Area 
               type="monotone" 
               dataKey="physique" 
@@ -146,7 +151,7 @@ export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <ChartLegend />
+      <ChartLegend isAphasic={currentUser?.isAphasic ?? false} />
     </div>
   );
 }
@@ -193,13 +198,15 @@ function ChartGradients() {
 }
 
 // Composant: Légende du graphique
-function ChartLegend() {
+function ChartLegend({ isAphasic }: { isAphasic: boolean }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 text-xs mb-4">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded bg-yellow-500" />
-        <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.ORTHOPHONIE} Orthophonie</span>
-      </div>
+      {isAphasic && (
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-yellow-500" />
+          <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.ORTHOPHONIE} Orthophonie</span>
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <div className="w-4 h-4 rounded bg-orange-500" />
         <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.PHYSIQUE} Physique</span>

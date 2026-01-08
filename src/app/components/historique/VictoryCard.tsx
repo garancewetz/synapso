@@ -14,13 +14,14 @@ import clsx from 'clsx';
 type Props = {
   victory: Victory;
   onEdit?: (victory: Victory) => void;
+  compact?: boolean;
 };
 
 /**
  * Carte de victoire individuelle
  * Style doré avec étoile et emoji de catégorie
  */
-export function VictoryCard({ victory, onEdit }: Props) {
+export function VictoryCard({ victory, onEdit, compact = false }: Props) {
   // Mémoriser l'extraction des tags (calcul coûteux)
   const { cleanContent, tags } = useMemo(
     () => extractVictoryTags(victory.content),
@@ -42,43 +43,60 @@ export function VictoryCard({ victory, onEdit }: Props) {
       <BaseCard.Accent isGolden />
       <BaseCard.Content className="flex flex-col flex-1 min-h-0">
         {/* Contenu principal */}
-        <div className="p-4 flex flex-col flex-1 min-h-0">
+        <div className={clsx(
+          'flex flex-col flex-1 min-h-0',
+          compact ? 'p-3' : 'p-4'
+        )}>
           {/* En-tête avec icônes de succès et badges */}
-          <div className="flex items-start justify-between gap-3 mb-3">
+          <div className={clsx(
+            'flex items-start justify-between gap-2',
+            compact ? 'mb-2' : 'mb-3'
+          )}>
             {/* Icônes de célébration */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl">{VICTORY_EMOJIS.STAR_BRIGHT}</span>
-              <span className="text-xl">{VICTORY_EMOJIS.TROPHY}</span>
-              <span className="text-xl">{VICTORY_EMOJIS.THUMBS_UP}</span>
+            <div className="flex items-center gap-1">
+              <span className={compact ? 'text-lg' : 'text-2xl'}>{VICTORY_EMOJIS.STAR_BRIGHT}</span>
+              {!compact && (
+                <>
+                  <span className="text-xl">{VICTORY_EMOJIS.TROPHY}</span>
+                  <span className="text-xl">{VICTORY_EMOJIS.THUMBS_UP}</span>
+                </>
+              )}
             </div>
             
             {/* Badges regroupés en haut à droite */}
             <div className="flex items-center gap-1.5 flex-wrap justify-end">
               {/* Badge Ortho/Physique */}
               <Badge className={GOLDEN_BADGE_STYLES.classes}>
-                {typeBadge.emoji} {typeBadge.label}
+                {typeBadge.emoji} {compact ? '' : `${typeBadge.label}`}
               </Badge>
               {/* Badge catégorie d'exercice si disponible */}
               {categoryBadge && (
                 <Badge className={GOLDEN_BADGE_STYLES.classes}>
-                  {categoryBadge.emoji} {categoryBadge.label}
+                  {categoryBadge.emoji} {compact ? '' : `${categoryBadge.label}`}
                 </Badge>
               )}
             </div>
           </div>
           
           {/* Titre - Plus grand et plus gras, star de la carte */}
-          <div className="mb-3 flex-1 min-h-0">
+          <div className={clsx(
+            'flex-1 min-h-0',
+            compact ? 'mb-2' : 'mb-3'
+          )}>
             <h3 className={clsx(
               GOLDEN_TEXT_STYLES.primary,
-              ' sm:text-xl font-bold leading-tight'
+              compact ? 'text-sm sm:text-base' : 'text-base sm:text-xl',
+              'font-bold leading-tight'
             )}>
               {cleanContent}
             </h3>
             
             {/* Victory tags sous le titre */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
+              <div className={clsx(
+                'flex flex-wrap gap-1.5',
+                compact ? 'mt-1.5' : 'mt-2'
+              )}>
                 {tags.map(({ label, emoji }) => (
                   <span
                     key={label}
@@ -97,15 +115,17 @@ export function VictoryCard({ victory, onEdit }: Props) {
           </div>
           
           {/* Date en bas */}
-          <div className="mt-auto pt-2 shrink-0">
-            <p className={clsx(
-              'text-xs',
-              GOLDEN_TEXT_STYLES.secondary,
-              'font-medium'
-            )}>
-              {formatVictoryDate(victory.createdAt)}
-            </p>
-          </div>
+          {!compact && (
+            <div className="mt-auto pt-2 shrink-0">
+              <p className={clsx(
+                'text-xs',
+                GOLDEN_TEXT_STYLES.secondary,
+                'font-medium'
+              )}>
+                {formatVictoryDate(victory.createdAt)}
+              </p>
+            </div>
+          )}
         </div>
         
         {/* Footer avec bouton modifier - toujours en bas */}

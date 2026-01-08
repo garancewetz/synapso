@@ -73,7 +73,7 @@ export default function VictoriesPage() {
   }, [victories, filter, currentUser?.isAphasic]);
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-24 md:pb-8">
+    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
       {/* Bouton retour */}
       <BackButton backHref="/historique" className="mb-4" />
 

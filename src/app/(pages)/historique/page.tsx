@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useVictoryModal } from '@/app/hooks/useVictoryModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useVictories } from '@/app/hooks/useVictories';
+import { useVictoryStats } from '@/app/hooks/useVictoryStats';
 import { DonutChart, ActivityHeatmap, VictoryStatsChart } from '@/app/components/historique';
 import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
 import { BackButton } from '@/app/components/BackButton';
@@ -46,52 +47,37 @@ export default function HistoriquePage() {
     }
   }, [showConfetti]);
 
-  // Handler pour le succès d'une victoire avec confettis dorés
   const handleVictorySuccess = () => {
     setShowConfetti(true);
     refetchVictories();
   };
 
-  // Dates des victoires pour le calendrier
-  const victoryDates = useMemo(() => {
-    return new Set(victories.map(v => v.createdAt.split('T')[0]));
-  }, [victories]);
+  const {
+    victoryDates,
+    totalVictories,
+    totalPhysicalVictories,
+    totalOrthoVictories,
+  } = useVictoryStats(victories);
 
-  // Données pour le graphique donut par partie du corps (selon la période sélectionnée)
   const donutDataBodyparts = useMemo(() => {
     const bodypartStats = calculateBodypartStatsByPeriod(history, bodypartPeriod);
     return getDonutDataBodyparts(bodypartStats);
   }, [history, bodypartPeriod]);
 
-  // Données pour le parcours (7 jours)
-  const roadmapData = useMemo(() => {
-    return getHeatmapData(history, ROADMAP_PREVIEW_DAYS);
-  }, [history]);
-
-  // Série de jours consécutifs (basé sur les 7 derniers jours)
-  const currentStreak = useMemo(() => {
-    return calculateCurrentStreak(roadmapData);
-  }, [roadmapData]);
-
-  // Gestion du clic sur une journée du calendrier
-  const handleDayClick = (day: HeatmapDay) => {
-    openDayDetail(day);
-  };
+  const roadmapData = useMemo(() => getHeatmapData(history, ROADMAP_PREVIEW_DAYS), [history]);
+  const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);
+  
+  const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
-      {/* Bouton retour accueil */}
       <BackButton 
         className="mb-4" 
         buttonClassName="py-3"
       />
 
       <div className="px-3 sm:p-6">
-
-        {/* Sections réorganisées pour maximiser la motivation */}
         <div className="space-y-6 mb-6">
-          
-          {/* 1. Résumé de la semaine - Sentiment d'accomplissement immédiat */}
           <ActivityHeatmap 
             data={roadmapData} 
             currentStreak={currentStreak} 
@@ -100,17 +86,34 @@ export default function HistoriquePage() {
             onDayClick={handleDayClick}
           />
           
-          {/* 2. Mes réussites personnelles - L'humain et le moral au premier plan */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
-            <div className={clsx('flex items-center justify-between mb-4', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
-              <div className="flex items-center gap-2">
+            <div className={clsx('flex items-center justify-between mb-2', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+              <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                   {VICTORY_EMOJIS.STAR_BRIGHT} Mes réussites
                 </h2>
-                {victories.length > 0 && (
-                  <span className="text-sm font-medium text-gray-600">
-                    ({victories.length})
-                  </span>
+                {totalVictories > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    {currentUser?.isAphasic ? (
+                      <>
+                        <span className="text-xs font-medium text-gray-500">
+                          {totalVictories} au total
+                        </span>
+                        <span className="text-gray-300">•</span>
+                        <span className="text-xs font-medium text-orange-600">
+                          {totalPhysicalVictories} 💪
+                        </span>
+                        <span className="text-gray-300">•</span>
+                        <span className="text-xs font-medium text-yellow-600">
+                          {totalOrthoVictories} 💬
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs font-medium text-gray-500">
+                        {totalVictories} victoire{totalVictories > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
               {currentUser && (
@@ -146,8 +149,7 @@ export default function HistoriquePage() {
               />
             )}
           </div>
-          
-          {/* 3. Zones travaillées - Information plus abstraite, moins cruciale pour le moral */}
+
           <DonutChart
             title="🦴 Zones travaillées"
             data={donutDataBodyparts}
@@ -172,7 +174,6 @@ export default function HistoriquePage() {
         </div>
       </div>
 
-      {/* Pluie de confettis dorés pour célébrer la victoire */}
       <ConfettiRain 
         show={showConfetti} 
         fromWindow 
@@ -181,7 +182,6 @@ export default function HistoriquePage() {
         confettiCount={35}
       />
 
-      {/* Modal de victoire */}
       {currentUser && (
         <VictoryBottomSheet
           isOpen={victoryModal.isOpen}

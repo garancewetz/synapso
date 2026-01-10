@@ -52,9 +52,9 @@ export const GOLDEN_TEXT_STYLES = {
 export const DEFAULT_CARD_STYLES = {
   bg: 'bg-white',
   border: 'border border-gray-200',
-  rounded: 'rounded-xl',
+  rounded: 'rounded-2xl',
   shadow: 'shadow-sm',
-  card: 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden',
+  card: 'bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden',
 } as const;
 
 export const DEFAULT_ACCENT_STYLES = {

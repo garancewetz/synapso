@@ -1,17 +1,21 @@
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
+import { DEFAULT_CARD_STYLES } from '@/app/constants/card.constants';
 
 type Props = {
   children: ReactNode;
+  /** Variante visuelle de la carte */
   variant?: 'default' | 'elevated' | 'outlined' | 'subtle';
+  /** Taille du padding interne */
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  /** Classes CSS additionnelles */
   className?: string;
 };
 
 const variantStyles = {
-  default: 'bg-white border border-gray-100 shadow-sm',
-  elevated: 'bg-white border border-gray-100 shadow-lg',
-  outlined: 'bg-white border-2 border-gray-200',
+  default: `${DEFAULT_CARD_STYLES.bg} ${DEFAULT_CARD_STYLES.border} ${DEFAULT_CARD_STYLES.shadow}`,
+  elevated: `${DEFAULT_CARD_STYLES.bg} ${DEFAULT_CARD_STYLES.border} shadow-lg`,
+  outlined: `${DEFAULT_CARD_STYLES.bg} border-2 border-gray-200`,
   subtle: 'bg-gray-50 border border-gray-100',
 };
 
@@ -23,8 +27,9 @@ const paddingStyles = {
 };
 
 /**
- * Composant Card réutilisable
+ * Composant Card réutilisable pour contenus statiques
  * Standardise l'affichage des cartes dans l'application
+ * Pour les cartes interactives avec actions, utiliser BaseCard
  */
 export function Card({ 
   children, 
@@ -34,7 +39,7 @@ export function Card({
 }: Props) {
   return (
     <div className={clsx(
-      'rounded-2xl',
+      DEFAULT_CARD_STYLES.rounded,
       variantStyles[variant],
       paddingStyles[padding],
       className

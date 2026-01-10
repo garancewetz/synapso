@@ -40,7 +40,7 @@ export function ProgressCard({ progress, onEdit, compact = false }: Props) {
   
   return (
     <BaseCard isGolden className="h-full" fullHeight>
-      <BaseCard.Accent isGolden />
+      <BaseCard.Accent />
       <BaseCard.Content className="flex flex-col flex-1 min-h-0">
         {/* Contenu principal */}
         <div className={clsx(
@@ -130,7 +130,7 @@ export function ProgressCard({ progress, onEdit, compact = false }: Props) {
         
         {/* Footer avec bouton modifier - toujours en bas */}
         {onEdit && (
-          <BaseCard.Footer isGolden className="shrink-0">
+          <BaseCard.Footer className="shrink-0">
             <IconButton
               onClick={handleEdit}
               title="Modifier"

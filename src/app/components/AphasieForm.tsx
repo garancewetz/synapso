@@ -11,7 +11,7 @@ type Props = {
   onCancel?: () => void;
 };
 
-export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
+export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     quote: '',
@@ -24,23 +24,37 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    if (itemId) {
-      fetch(`/api/aphasie/${itemId}`, { credentials: 'include' })
-        .then((res) => res.json())
+    if (itemId && currentUser) {
+      fetch(`/api/aphasie/${itemId}?userId=${currentUser.id}`, { credentials: 'include' })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Erreur HTTP: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
+          // Convertir la date ISO en format YYYY-MM-DD pour l'input date
+          let dateValue = '';
+          if (data.date) {
+            const date = new Date(data.date);
+            if (!isNaN(date.getTime())) {
+              dateValue = date.toISOString().split('T')[0];
+            }
+          }
+          
           setFormData({
             quote: data.quote || '',
             meaning: data.meaning || '',
-            date: data.date || '',
+            date: dateValue,
             comment: data.comment || '',
           });
         })
         .catch((err) => {
           console.error('Erreur lors du chargement:', err);
-          setError('Erreur lors du chargement de l\'item');
+          setError('Erreur lors du chargement de l&apos;item');
         });
     }
-  }, [itemId]);
+  }, [itemId, currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +97,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de l\'enregistrement de l\'item');
+      setError('Erreur lors de l&apos;enregistrement de l&apos;item');
     } finally {
       setLoading(false);
     }
@@ -95,11 +109,17 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
       return;
     }
 
+    if (!currentUser) {
+      setError('Utilisateur non connecté');
+      setShowDeleteConfirm(false);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`/api/aphasie/${itemId}`, {
+      const response = await fetch(`/api/aphasie/${itemId}?userId=${currentUser.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -113,7 +133,7 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
       }
     } catch (err) {
       console.error('Erreur:', err);
-      setError('Erreur lors de la suppression de l\'item');
+      setError('Erreur lors de la suppression de l&apos;item');
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
@@ -140,13 +160,21 @@ export default function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
         onValueChange={(value) => setFormData({ ...formData, meaning: value })}
       />
 
-      <InputWithSpeech
-        label="Date"
-        type="text"
-        value={formData.date}
-        onValueChange={(value) => setFormData({ ...formData, date: value })}
-        placeholder="ex: Octobre 2025"
-      />
+      <div>
+        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+          Date de la citation <span className="text-gray-400 font-normal">(optionnel)</span>
+        </label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          aria-label="Date de la citation (optionnel)"
+        />
+        <p className="mt-1 text-xs text-gray-500">Par défaut : date d&apos;ajout</p>
+      </div>
 
       <TextareaWithSpeech
         label="Commentaire"

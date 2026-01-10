@@ -1,4 +1,4 @@
-export interface AphasieItem {
+export type AphasieItem = {
   id: number;
   quote: string;
   meaning: string;
@@ -6,13 +6,14 @@ export interface AphasieItem {
   comment: string | null;
   userId: number;
   createdAt: string;
-}
+  updatedAt: string;
+};
 
-export interface AphasieChallenge {
+export type AphasieChallenge = {
   id: number;
   text: string;
   mastered: boolean;
   userId: number;
   createdAt: string;
   updatedAt: string;
-}
+};

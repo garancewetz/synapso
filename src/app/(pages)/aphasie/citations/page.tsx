@@ -1,7 +1,7 @@
 'use client';
 
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
-import AphasieItemCard from '@/app/components/AphasieItemCard';
+import { AphasieItemCard } from '@/app/components/AphasieItemCard';
 import { BackButton } from '@/app/components/BackButton';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';

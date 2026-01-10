@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId: userIdNumber,
       },
-      orderBy: { id: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json(items);
@@ -75,11 +75,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convertir la date string (YYYY-MM-DD) en DateTime si fournie
+    let dateValue: Date | null = null;
+    if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate.getTime())) {
+        dateValue = parsedDate;
+      }
+    }
+
     const item = await prisma.aphasieItem.create({
       data: {
         quote: quote.trim(),
         meaning: meaning.trim(),
-        date: date || null,
+        date: dateValue,
         comment: comment ? comment.trim() : null,
         userId: userIdNumber,
       },

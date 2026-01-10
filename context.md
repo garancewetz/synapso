@@ -807,6 +807,315 @@ export async function GET(request: NextRequest) {
 3. **Accessibilité** : Respect WCAG, navigation clavier, contrastes élevés, lecteurs d'écran
 4. **Encouragement** : Feedback positif, célébration, progression visible, messages motivants
 
+### Design System
+
+#### Composants de base
+
+##### BaseCard (Compound Component Pattern)
+
+**Fichier** : `src/app/components/ui/BaseCard.tsx`
+
+Composant de carte universel utilisant le pattern compound components pour une composition flexible.
+
+**Structure** :
+```typescript
+<BaseCard>
+  <BaseCard.Accent color="bg-teal-500" />
+  <BaseCard.Content>
+    {/* Contenu principal */}
+  </BaseCard.Content>
+  <BaseCard.Footer>
+    {/* Actions (boutons) */}
+  </BaseCard.Footer>
+</BaseCard>
+```
+
+**Styles de carte** :
+- `border-2` : Bordure épaisse pour la visibilité
+- `rounded-2xl` : Coins arrondis généreux (16px)
+- `shadow-sm` : Ombre légère par défaut
+- `hover:shadow-lg` : Ombre accentuée au survol
+- `transition-all duration-200` : Transitions fluides
+- `bg-white` : Fond blanc standard
+
+**BaseCard.Accent** :
+- Bande verticale colorée sur le bord gauche (4px de large)
+- Couleur basée sur la catégorie de l'exercice
+- Indicateur visuel rapide de la catégorie
+
+**BaseCard.Footer** :
+- Section d'actions avec fond gris clair (`bg-gray-50`)
+- Bordure supérieure (`border-t border-gray-100`)
+- Flex layout pour aligner les boutons
+- Padding généreux pour les zones de touch (`p-3`)
+
+**Variante dorée (Golden)** :
+- Pour les items maîtrisés ou célébrations
+- Border et ombre dorées (`border-amber-400`, `shadow-amber-200`)
+- Hover avec glow effect
+
+##### Card Simple
+
+**Fichier** : `src/app/components/ui/Card.tsx`
+
+Carte simple pour contenus statiques sans actions.
+
+**Variantes** :
+- `default` : Carte standard blanche avec ombre légère
+- `elevated` : Ombre accentuée (`shadow-lg`)
+- `outlined` : Bordure épaisse sans ombre
+- `subtle` : Fond gris clair (`bg-gray-50`)
+
+**Padding** :
+- `none` : Pas de padding
+- `sm` : `p-3`
+- `md` : `p-4 sm:p-6` (par défaut)
+- `lg` : `p-6 sm:p-8`
+
+##### Badge
+
+**Fichier** : `src/app/components/ui/Badge.tsx`
+
+Petit élément d'information visuelle (tags, labels).
+
+**Variantes** :
+- `default` : Badge catégorisé (couleur selon catégorie)
+- `workout` : Info d'entraînement (gris clair)
+- `equipment` : Équipement (avec icône)
+
+**Styles** :
+- Taille : `text-xs` (12px)
+- Padding : `px-2 py-0.5`
+- Border radius : `rounded-md`
+- Font weight : `font-medium`
+
+##### Button
+
+**Fichier** : `src/app/components/ui/Button.tsx`
+
+Bouton d'action standard.
+
+**Variantes** :
+- `primary` : Slate foncé (`bg-slate-800`)
+- `secondary` : Gris (`bg-gray-200`)
+- `danger` : Rouge (`bg-red-600`)
+- `action` : Bleu (`bg-blue-600`)
+- `danger-outline` : Rouge outline (`border border-red-300`)
+
+**Styles** :
+- Padding : `px-4 py-2`
+- Border radius : `rounded-md`
+- Transitions : `transition-colors`
+- États disabled avec opacité réduite
+
+##### CompleteButton
+
+**Fichier** : `src/app/components/ui/CompleteButton.tsx`
+
+Bouton spécial pour marquer un exercice comme fait.
+
+**États** :
+- Non fait : Gris avec texte "Fait"
+- Fait aujourd'hui : Vert émeraude avec checkmark
+- Fait cette semaine : Badge avec compteur (mode hebdomadaire)
+
+**Couleurs** :
+- Non fait : `bg-gray-100 text-gray-600`
+- Fait : `bg-emerald-500 text-white`
+- Hover : `hover:bg-emerald-600`
+
+##### IconButton
+
+**Fichier** : `src/app/components/ui/IconButton.tsx`
+
+Bouton carré avec icône uniquement.
+
+**Styles** :
+- Taille : `w-9 h-9` (36x36px)
+- Border radius : `rounded-lg`
+- Fond : `bg-white` avec bordure
+- Hover : `hover:bg-gray-50`
+- Active state : Bordure colorée + fond teinté
+
+#### Constantes de couleurs
+
+**Fichier** : `src/app/constants/exercice.constants.ts`
+
+Source unique de vérité pour toutes les couleurs de l'application.
+
+**Palette principale** :
+- 🦺 **Orange** : Haut du corps, énergie, action
+- 👉 **Teal** : Milieu du corps, gainage, force centrale
+- 👖 **Bleu** : Bas du corps, ancrage, stabilité
+- 🧘‍♀️ **Violet** : Étirements, détente, souplesse
+
+**Pour chaque couleur** :
+```typescript
+{
+  bg: 'bg-orange-50',           // Fond très léger
+  text: 'text-orange-800',      // Texte foncé
+  border: 'border-orange-200',  // Bordure
+  accent: 'bg-orange-500',      // Accent fort
+  tag: 'bg-orange-100 text-orange-600', // Badge
+  cardBorder: 'border-orange-200',
+  iconBg: 'bg-orange-100',
+  iconText: 'text-orange-600',
+  focusRing: 'focus:ring-orange-400'
+}
+```
+
+**Couleurs spéciales** :
+- **Vert émeraude** (`emerald`) : Validation, succès, exercice fait
+- **Jaune/Or** (`amber`) : Victoires, célébration, items maîtrisés
+- **Violet** (`purple`) : Orthophonie, module aphasie
+
+#### Patterns de design
+
+##### Pattern de liste avec cartes
+
+**Utilisation** : Listes d'exercices, citations, challenges
+
+```tsx
+<ul className="space-y-4">
+  {items.map(item => (
+    <BaseCard key={item.id}>
+      {/* Contenu */}
+    </BaseCard>
+  ))}
+</ul>
+```
+
+**Spacing** : `space-y-4` (16px entre les cartes)
+
+##### Pattern de grille de catégories
+
+**Utilisation** : Dashboard, vue catégories
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {categories.map(cat => (
+    <CategoryCardWithProgress key={cat} {...props} />
+  ))}
+</div>
+```
+
+**Responsive** : 1 colonne mobile, 2 colonnes desktop
+
+##### Pattern d'expansion (Accordion)
+
+**Utilisation** : ExerciceCard, AccordionWeek
+
+**Librairie** : Framer Motion pour animations fluides
+
+```tsx
+<AnimatePresence>
+  {isExpanded && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
+    >
+      {/* Contenu caché */}
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+**Indicateur** : ChevronIcon qui tourne
+
+##### Pattern de modal (Bottom Sheet)
+
+**Utilisation** : ProgressBottomSheet, DayDetailModal
+
+**Composant** : `BottomSheetModal`
+
+**Caractéristiques** :
+- Slide up depuis le bas sur mobile
+- Centre de l'écran sur desktop
+- Backdrop semi-transparent
+- Focus trap automatique
+- Fermeture par Escape ou backdrop click
+
+#### Typographie
+
+**Tailles** :
+- `text-xs` (12px) : Badges, hints
+- `text-sm` (14px) : Corps de texte secondaire
+- `text-base` (16px) : Corps de texte principal
+- `text-lg` (18px) : Sous-titres
+- `text-xl` (20px) : Titres de cartes
+- `text-2xl` (24px) : Titres de sections
+- `text-3xl` (30px) : Titres de pages
+
+**Weights** :
+- `font-medium` : Labels, badges (500)
+- `font-semibold` : Titres de cartes (600)
+- `font-bold` : Titres principaux, badges de compteur (700)
+
+**Line height** :
+- `leading-tight` : Titres
+- `leading-relaxed` : Corps de texte pour lisibilité
+
+**Couleurs de texte** :
+- `text-gray-900` : Titres principaux
+- `text-gray-800` : Titres secondaires
+- `text-gray-700` : Corps de texte
+- `text-gray-600` : Texte secondaire
+- `text-gray-500` : Hints, placeholders
+- `text-gray-400` : Texte désactivé
+
+#### Spacing et Layout
+
+**Container max-width** : `max-w-5xl mx-auto`
+
+**Padding de page** :
+- Mobile : `px-3 sm:p-6`
+- Desktop : `p-6 sm:p-8`
+
+**Gaps et Spacing** :
+- Entre cartes : `space-y-4` (16px)
+- Entre sections : `space-y-6` (24px)
+- Dans une card : `p-4 md:p-5`
+- Entre éléments inline : `gap-3` (12px)
+
+**Responsive breakpoints** :
+- `sm:` : 640px
+- `md:` : 768px
+- `lg:` : 1024px
+
+#### Animations et Transitions
+
+**Durées standard** :
+- `duration-150` : Micro-interactions (hover, focus)
+- `duration-200` : Transitions de cartes, buttons
+- `duration-300` : Modals, accordions
+- `duration-500` : Animations de progression
+
+**Easing** :
+- `ease-out` : Par défaut
+- `ease-in-out` : Modals
+
+**Hover effects** :
+- Scale légère : `hover:scale-[1.02]`
+- Active scale : `active:scale-[0.98]`
+- Shadow : `hover:shadow-lg`
+- Brightness : `hover:brightness-105`
+
+#### Accessibilité (ARIA)
+
+**Attributs obligatoires** :
+- `aria-label` : Sur tous les boutons d'action
+- `role` : Sur les éléments interactifs custom
+- `tabIndex={0}` : Sur les cartes cliquables
+- `aria-expanded` : Sur les accordions
+- `aria-valuenow/min/max` : Sur les barres de progression
+
+**Navigation clavier** :
+- Enter et Space : Activer les cartes/boutons
+- Escape : Fermer les modals
+- Tab : Navigation entre éléments focusables
+
 ### Navigation
 
 #### Navigation principale (Desktop)

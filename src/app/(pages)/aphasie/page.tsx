@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
-import AphasieItemCard from '@/app/components/AphasieItemCard';
+import { AphasieItemCard } from '@/app/components/AphasieItemCard';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/BackButton';
 import ViewProgressButton from '@/app/components/ViewProgressButton';

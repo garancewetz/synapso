@@ -127,12 +127,21 @@ export async function PUT(
       );
     }
 
+    // Convertir la date string (YYYY-MM-DD) en DateTime si fournie
+    let dateValue: Date | null = null;
+    if (updatedData.date) {
+      const parsedDate = new Date(updatedData.date);
+      if (!isNaN(parsedDate.getTime())) {
+        dateValue = parsedDate;
+      }
+    }
+
     const item = await prisma.aphasieItem.update({
       where: { id },
       data: {
         quote: updatedData.quote.trim(),
         meaning: updatedData.meaning.trim(),
-        date: updatedData.date || null,
+        date: dateValue,
         comment: updatedData.comment ? updatedData.comment.trim() : null,
       },
     });

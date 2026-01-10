@@ -1,35 +1,97 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import type { AphasieItem } from '@/app/types';
+import { BaseCard, Badge, IconButton } from '@/app/components/ui';
+import { EditIcon, CalendarIcon } from '@/app/components/ui/icons';
 
 type Props = {
   item: AphasieItem;
 };
 
+// Couleur d'accent pour les citations d'aphasie (violet - orthophonie)
+const APHASIE_ACCENT_COLOR = 'bg-purple-500';
+
+/**
+ * Formate une date pour l'affichage
+ */
+function formatDisplayDate(dateString: string | null): string | null {
+  if (!dateString) return null;
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    
+    // Format: "5 janv. 2026"
+    return format(date, 'd MMM yyyy', { locale: fr });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Composant pour afficher une citation aphasie
+ * Design harmonisé avec le reste de l'application
  */
-export default function AphasieItemCard({ item }: Props) {
+export function AphasieItemCard({ item }: Props) {
+  const router = useRouter();
+  const displayDate = formatDisplayDate(item.date || item.createdAt);
+
+  const handleEdit = () => {
+    router.push(`/aphasie/edit/${item.id}`);
+  };
+
   return (
-    <li className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
-      <div className="mb-3 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6">
-        <div className="text-lg md:text-xl font-bold text-gray-800 md:w-1/3">{item.quote}</div>
-        <div className="text-gray-700 italic text-sm md:text-base">{item.meaning}</div>
-      </div>
-      {item.comment && (
-        <div className="mb-2 text-xs text-gray-400 italic">{item.comment}</div>
-      )}
-      <div className="flex items-center">
-        {item.date && (
-          <div className="text-sm text-gray-600 font-medium">{item.date}</div>
-        )}
-        <Link
-          href={`/aphasie/edit/${item.id}`}
-          className="ml-auto cursor-pointer text-xs text-gray-400 hover:text-gray-600"
-          aria-label="Modifier la citation"
-        >
-          Modifier
-        </Link>
-      </div>
+    <li>
+      <BaseCard role="article" aria-label={`Citation: ${item.quote}`}>
+        <BaseCard.Accent color={APHASIE_ACCENT_COLOR} />
+        <BaseCard.Content>
+          <div className="p-4 md:p-5">
+            {/* En-tête avec citation et date */}
+            <div className="flex flex-col gap-3 mb-3">
+              {/* Citation principale */}
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">
+                    {item.quote}
+                  </h3>
+                  <p className="text-base md:text-lg text-gray-700 italic">
+                    {item.meaning}
+                  </p>
+                </div>
+                
+                {/* Badge de date */}
+                {displayDate && (
+                  <Badge className="bg-purple-100 text-purple-700 shrink-0 flex items-center gap-1.5">
+                    <CalendarIcon className="w-3 h-3" />
+                    <span>{displayDate}</span>
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Commentaire si présent */}
+              {item.comment && (
+                <div className="mt-2 p-3 bg-slate-50 border-l-2 border-slate-300 text-slate-700 text-sm rounded-r">
+                  <span className="font-semibold">Note : </span>
+                  {item.comment}
+                </div>
+              )}
+            </div>
+          </div>
+        </BaseCard.Content>
+        
+        <BaseCard.Footer>
+          <IconButton
+            onClick={handleEdit}
+            title="Modifier la citation"
+            aria-label="Modifier la citation"
+          >
+            <EditIcon className="w-4 h-4" />
+          </IconButton>
+        </BaseCard.Footer>
+      </BaseCard>
     </li>
   );
 }

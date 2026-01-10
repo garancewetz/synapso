@@ -1,4 +1,4 @@
-import AphasieForm from './AphasieForm';
+import { AphasieForm } from './AphasieForm';
 import { BottomNavBar } from './BottomNavBar';
 import { CategoryCardWithProgress } from './CategoryCardWithProgress';
 import CategoryTabs from './CategoryTabs';

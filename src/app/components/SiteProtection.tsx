@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import PasswordModal from '@/app/components/PasswordModal';
+import { AuthScreen } from '@/app/components/AuthScreen';
 import InitialLoader from '@/app/components/InitialLoader';
+import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
 
 type Props = {
@@ -11,11 +12,13 @@ type Props = {
 };
 
 export default function SiteProtection({ children, onAuthSuccess }: Props) {
+  const { currentUser, loading: userLoading } = useUser();
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Vérification initiale de l'authentification
   useEffect(() => {
-    // Vérifier l'authentification côté serveur via l'API
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/check', {
@@ -39,10 +42,18 @@ export default function SiteProtection({ children, onAuthSuccess }: Props) {
     checkAuth();
   }, []);
 
-  const handlePasswordSuccess = async () => {
-    // Le cookie est défini par le serveur dans la réponse POST précédente
-    // Il est immédiatement disponible pour les requêtes suivantes
-    // On vérifie simplement que l'auth fonctionne maintenant
+  // Synchroniser avec UserContext : si currentUser devient null (déconnexion), réinitialiser l'état
+  useEffect(() => {
+    // Ne pas agir pendant le chargement initial
+    if (userLoading || isLoading) return;
+    
+    // Si l'utilisateur était authentifié mais currentUser est maintenant null → déconnexion
+    if (isAuthenticated && currentUser === null) {
+      setIsAuthenticated(false);
+    }
+  }, [currentUser, userLoading, isLoading, isAuthenticated]);
+
+  const handleAuthSuccess = async () => {
     try {
       const response = await fetch('/api/auth/check', {
         credentials: 'include',
@@ -52,7 +63,6 @@ export default function SiteProtection({ children, onAuthSuccess }: Props) {
         const data = await response.json();
         if (data.authenticated) {
           setIsAuthenticated(true);
-          // Notifier le parent que l'auth a réussi (callback sécurisé)
           onAuthSuccess?.();
         } else {
           console.error('Authentification échouée après connexion');
@@ -73,24 +83,8 @@ export default function SiteProtection({ children, onAuthSuccess }: Props) {
   }
 
   if (!isAuthenticated) {
-    return (
-      <>
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Accès protégé</h1>
-            <p className="text-gray-600 mb-6">Veuillez entrer le mot de passe pour accéder au site</p>
-          </div>
-        </div>
-        <PasswordModal
-          isOpen={true}
-          onClose={() => {}}
-          onSuccess={handlePasswordSuccess}
-          title="Accès au site"
-        />
-      </>
-    );
+    return <AuthScreen onSuccess={handleAuthSuccess} />;
   }
 
   return <>{children}</>;
 }
-

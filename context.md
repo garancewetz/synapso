@@ -816,9 +816,11 @@ export async function GET(request: NextRequest) {
 **Fichier** : `src/app/components/ui/BaseCard.tsx`
 
 Composant de carte universel utilisant le pattern compound components pour une composition flexible.
+Utilise un **Context interne** pour propager automatiquement `isGolden` aux sous-composants.
 
 **Structure** :
 ```typescript
+// Carte normale
 <BaseCard>
   <BaseCard.Accent color="bg-teal-500" />
   <BaseCard.Content>
@@ -828,42 +830,57 @@ Composant de carte universel utilisant le pattern compound components pour une c
     {/* Actions (boutons) */}
   </BaseCard.Footer>
 </BaseCard>
+
+// Carte dorée - isGolden propagé automatiquement aux sous-composants
+<BaseCard isGolden>
+  <BaseCard.Accent />  {/* Style doré automatique */}
+  <BaseCard.Content>Victoire !</BaseCard.Content>
+  <BaseCard.Footer>🎉</BaseCard.Footer>  {/* Style doré automatique */}
+</BaseCard>
 ```
 
-**Styles de carte** :
-- `border-2` : Bordure épaisse pour la visibilité
+**Typage TypeScript** :
+- Export typé `BaseCardComponent` avec sous-composants pour une meilleure autocomplétion
+- Props documentées avec JSDoc
+
+**Styles de carte** (via `card.constants.ts`) :
+- `border border-gray-200` : Bordure légère pour la visibilité
 - `rounded-2xl` : Coins arrondis généreux (16px)
 - `shadow-sm` : Ombre légère par défaut
-- `hover:shadow-lg` : Ombre accentuée au survol
+- `hover:shadow-md` : Ombre accentuée au survol
 - `transition-all duration-200` : Transitions fluides
 - `bg-white` : Fond blanc standard
 
 **BaseCard.Accent** :
-- Bande verticale colorée sur le bord gauche (4px de large)
-- Couleur basée sur la catégorie de l'exercice
-- Indicateur visuel rapide de la catégorie
+- Bande verticale colorée sur le bord gauche (`w-1.5` par défaut, `w-2.5` en mode golden)
+- Couleur basée sur la catégorie de l'exercice (prop `color`)
+- Utilise le Context pour détecter automatiquement le mode golden
 
 **BaseCard.Footer** :
-- Section d'actions avec fond gris clair (`bg-gray-50`)
+- Section d'actions avec fond gris clair (`bg-gray-50/70`)
 - Bordure supérieure (`border-t border-gray-100`)
 - Flex layout pour aligner les boutons
-- Padding généreux pour les zones de touch (`p-3`)
+- Padding généreux pour les zones de touch (`px-4 py-3`)
+- Utilise le Context pour détecter automatiquement le mode golden
 
 **Variante dorée (Golden)** :
+- Activée via `<BaseCard isGolden>` - propagé automatiquement aux sous-composants
 - Pour les items maîtrisés ou célébrations
-- Border et ombre dorées (`border-amber-400`, `shadow-amber-200`)
-- Hover avec glow effect
+- Fond doré (`bg-amber-50`), bordure dorée (`border-amber-300`)
+- Hover avec glow effect (`hover:ring-amber-300/60`)
+- Accent en gradient (`from-amber-500 via-yellow-500 to-amber-600`)
 
 ##### Card Simple
 
 **Fichier** : `src/app/components/ui/Card.tsx`
 
 Carte simple pour contenus statiques sans actions.
+Utilise les constantes de `card.constants.ts` pour garantir la cohérence avec `BaseCard`.
 
 **Variantes** :
-- `default` : Carte standard blanche avec ombre légère
+- `default` : Carte standard blanche avec ombre légère (utilise `DEFAULT_CARD_STYLES`)
 - `elevated` : Ombre accentuée (`shadow-lg`)
-- `outlined` : Bordure épaisse sans ombre
+- `outlined` : Bordure épaisse sans ombre (`border-2 border-gray-200`)
 - `subtle` : Fond gris clair (`bg-gray-50`)
 
 **Padding** :
@@ -872,6 +889,8 @@ Carte simple pour contenus statiques sans actions.
 - `md` : `p-4 sm:p-6` (par défaut)
 - `lg` : `p-6 sm:p-8`
 
+**Cohérence** : Le `border-radius` (`rounded-2xl`) est partagé avec `BaseCard` via `DEFAULT_CARD_STYLES.rounded`.
+
 ##### Badge
 
 **Fichier** : `src/app/components/ui/Badge.tsx`
@@ -879,15 +898,22 @@ Carte simple pour contenus statiques sans actions.
 Petit élément d'information visuelle (tags, labels).
 
 **Variantes** :
-- `default` : Badge catégorisé (couleur selon catégorie)
-- `workout` : Info d'entraînement (gris clair)
-- `equipment` : Équipement (avec icône)
+- `default` : Badge neutre gris (`bg-gray-100 text-gray-800`), utilisé pour les bodyparts avec `className` de couleur personnalisée
+- `workout` : Info d'entraînement slate (`bg-slate-100 text-slate-700`) - séries, répétitions, durée
+- `equipment` : Matériel nécessaire gris avec bordure (`bg-gray-100 text-gray-700 border border-gray-200`)
 
-**Styles** :
+**Props** :
+- `variant` : Variante visuelle (`default`, `workout`, `equipment`)
+- `icon` : Icône optionnelle affichée avant le texte (ex: "🏋️")
+- `className` : Classes CSS additionnelles (peuvent surcharger les couleurs par défaut)
+
+**Styles de base** :
 - Taille : `text-xs` (12px)
-- Padding : `px-2 py-0.5`
+- Padding : `px-2.5 py-1`
 - Border radius : `rounded-md`
 - Font weight : `font-medium`
+
+**Logique de couleur** : Si `className` contient `bg-` ou `text-`, les couleurs de la variante ne sont pas appliquées (permet de personnaliser via les constantes de catégorie).
 
 ##### Button
 

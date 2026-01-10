@@ -15,10 +15,10 @@ import { useUser } from '@/app/contexts/UserContext';
 
 export function BottomNavBar() {
   const pathname = usePathname();
-  const { currentUser, loading } = useUser();
+  const { effectiveUser, loading } = useUser();
   
   // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
-  if (!currentUser || loading) {
+  if (!effectiveUser || loading) {
     return null;
   }
   

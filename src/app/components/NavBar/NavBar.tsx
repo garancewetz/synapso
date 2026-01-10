@@ -1,12 +1,12 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
+import { UserBadge } from '@/app/components/UserBadge';
 import { MenuIcon, PinIcon } from '@/app/components/ui/icons';
-import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
@@ -19,14 +19,14 @@ import { MenuDrawer } from './MenuDrawer';
  * 
  * Fonctionnalités :
  * - Menu latéral avec trap focus pour l'accessibilité
- * - Gestion des utilisateurs
+ * - Affichage de l'utilisateur actuel
  * - Navigation vers les différentes sections
  * - Support de la préférence de main (gauche/droite)
  */
 export default function NavBar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const { currentUser, setCurrentUser, users, changingUser, refreshUsers } = useUser();
+  const { effectiveUser, loading } = useUser();
   const { isOpen, openMenu, closeMenu } = useMenuState();
   const { isLeftHanded } = useHandPreference();
 
@@ -35,45 +35,6 @@ export default function NavBar() {
 
   // Obtenir le nom de la page actuelle
   const currentPageName = getCurrentPageName(pathname);
-
-  /**
-   * Gère le changement d'utilisateur
-   */
-  const handleUserChange = useCallback(
-    (userId: number) => {
-      const selectedUser = users.find((u) => u.id === userId);
-      if (selectedUser) {
-        setCurrentUser(selectedUser);
-      }
-    },
-    [users, setCurrentUser]
-  );
-
-  /**
-   * Gère la création d'un nouvel utilisateur
-   */
-  const handleCreateUser = useCallback(
-    async (name: string) => {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ name: name.trim() }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la création');
-      }
-
-      const newUser = await response.json();
-      await refreshUsers();
-      setCurrentUser(newUser);
-    },
-    [refreshUsers, setCurrentUser]
-  );
 
   return (
     <>
@@ -93,7 +54,7 @@ export default function NavBar() {
             <Link
               href="/"
               className={clsx(
-                'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0',
+                'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0 cursor-pointer',
                 !isLeftHanded && '-ml-2'
               )}
               aria-label="Retour à l'accueil Synapso"
@@ -116,31 +77,24 @@ export default function NavBar() {
             )}
           </div>
 
-          {/* Nom utilisateur et bouton menu */}
+          {/* Badge utilisateur et bouton menu */}
           <div className={clsx(
-            'flex items-center gap-3 flex-shrink-0',
+            'flex items-center gap-2 flex-shrink-0',
             isLeftHanded && 'flex-row-reverse'
           )}>
-            {currentUser && (
-              <Link
-                href="/"
-                className="text-sm font-medium text-gray-600 px-2 hover:text-gray-800 transition-colors cursor-pointer flex items-center gap-1.5"
-                aria-label="Retour à l'accueil"
-              >
-                <span className="text-base">{NAVIGATION_EMOJIS.HOME}</span>
-                {currentUser.name}
-              </Link>
+            {effectiveUser && (
+              <UserBadge showName size="md" />
             )}
             <button
               ref={menuButtonRef}
               onClick={openMenu}
-              disabled={changingUser}
-              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+              disabled={loading}
+              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 cursor-pointer"
               aria-label="Ouvrir le menu"
               aria-expanded={isOpen}
               aria-controls="main-menu"
             >
-              {changingUser ? (
+              {loading ? (
                 <Loader size="small" />
               ) : (
                 <MenuIcon className="w-6 h-6 flex items-center justify-center" />
@@ -154,13 +108,9 @@ export default function NavBar() {
       <MenuDrawer
         isOpen={isOpen}
         onClose={closeMenu}
-        users={users}
-        currentUser={currentUser}
-        onUserChange={handleUserChange}
-        onCreateUser={handleCreateUser}
+        effectiveUser={effectiveUser}
         menuButtonRef={menuButtonRef}
       />
     </>
   );
 }
-

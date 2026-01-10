@@ -14,20 +14,14 @@ import type { RefObject } from 'react';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  users: User[];
-  currentUser: User | null;
-  onUserChange: (userId: number) => void;
-  onCreateUser: (name: string) => Promise<void>;
+  effectiveUser: User | null;
   menuButtonRef: RefObject<HTMLButtonElement | null>;
 }
 
 export function MenuDrawer({
   isOpen,
   onClose,
-  users,
-  currentUser,
-  onUserChange,
-  onCreateUser,
+  effectiveUser,
   menuButtonRef,
 }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -40,8 +34,6 @@ export function MenuDrawer({
     restoreFocusRef: menuButtonRef,
     onEscape: onClose,
   });
-
-  const tabIndex = isOpen ? 0 : -1;
 
   return (
     <>
@@ -86,9 +78,9 @@ export function MenuDrawer({
           </div>
           <button
             onClick={onClose}
-            tabIndex={tabIndex}
+            tabIndex={isOpen ? 0 : -1}
             data-menu-item="true"
-            className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+            className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 cursor-pointer"
             aria-label="Fermer le menu"
           >
             <CloseIcon className="w-5 h-5" />
@@ -97,20 +89,13 @@ export function MenuDrawer({
 
         {/* Contenu du menu */}
         <div className="p-5 pb-24 md:pb-5 flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
-          {/* Carte du user sélectionné avec dropdown de changement */}
-          <UserSection
-            users={users}
-            currentUser={currentUser}
-            onUserChange={onUserChange}
-            onCreateUser={onCreateUser}
-            isMenuOpen={isOpen}
-          />
+          {/* Carte du user sélectionné */}
+          <UserSection effectiveUser={effectiveUser} />
 
           {/* Activités principales */}
-          <MenuActions currentUser={currentUser} onMenuClose={onClose} isMenuOpen={isOpen} />
+          <MenuActions currentUser={effectiveUser} onMenuClose={onClose} isMenuOpen={isOpen} />
         </div>
       </div>
     </>
   );
 }
-

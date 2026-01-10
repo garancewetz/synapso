@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
 import { format, startOfDay } from 'date-fns';
-import WelcomeHeader from '@/app/components/WelcomeHeader';
+import { WelcomeHeader } from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
@@ -12,13 +12,13 @@ import { useProgress } from '@/app/hooks/useProgress';
 import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
-export default function WelcomeHeaderWrapper() {
+export function WelcomeHeaderWrapper() {
   const pathname = usePathname();
-  const { currentUser, loading } = useUser();
+  const { effectiveUser, loading } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const completedToday = useTodayCompletedCount();
-  const displayName = currentUser?.name || "";
-  const resetFrequency = currentUser?.resetFrequency || null;
+  const displayName = effectiveUser?.name || "";
+  const resetFrequency = effectiveUser?.resetFrequency || null;
   
   // Charger l'historique et les victoires pour le calendrier
   const { history } = useHistory();
@@ -53,7 +53,7 @@ export default function WelcomeHeaderWrapper() {
   const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
 
   // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
-  if (shouldHide || !currentUser || loading) {
+  if (shouldHide || !effectiveUser || loading) {
     return null;
   }
 

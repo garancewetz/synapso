@@ -24,7 +24,7 @@ export const TouchLink = forwardRef<HTMLAnchorElement, Props>(function TouchLink
     <Link
       ref={ref}
       href={href}
-      className={clsx('select-none', className)}
+      className={clsx('select-none cursor-pointer', className)}
       prefetch={prefetch}
       style={{ touchAction: 'manipulation' }}
       {...props}

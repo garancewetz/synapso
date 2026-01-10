@@ -51,7 +51,7 @@ export function WelcomeHeaderGreeting({ userName, resetFrequency }: Props) {
         </div>
         <Link
           href="/settings"
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors shrink-0 cursor-pointer"
           aria-label="Mon profil"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

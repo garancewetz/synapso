@@ -24,7 +24,7 @@ type Props = {
 type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
 
 export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProgressCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,7 +182,7 @@ export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId
                 key={label}
                 type="button"
                 onClick={() => handleTagClick(label, emoji)}
-                className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl
+                className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl cursor-pointer
                            transition-all duration-150 active:scale-95
                            ${isActive 
                              ? 'bg-emerald-500 text-white shadow-lg scale-[1.02]' 
@@ -254,7 +254,7 @@ export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId
                   key={category}
                   type="button"
                   onClick={handleCategoryClick}
-                  className="flex flex-col items-center gap-1 transition-all duration-150"
+                  className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
                 >
                   <div className={`
                     w-12 h-12 rounded-full flex items-center justify-center
@@ -271,11 +271,11 @@ export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId
             })}
             
             {/* Option Orthophonie - à la fin avec couleur jaune (uniquement si l'utilisateur est aphasique) */}
-            {currentUser?.isAphasic && (
+            {effectiveUser?.isAphasic && (
               <button
                 type="button"
                 onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
-                className="flex flex-col items-center gap-1 transition-all duration-150"
+                className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
               >
                 <div className={`
                   w-12 h-12 rounded-full flex items-center justify-center

@@ -26,7 +26,7 @@ type Props = {
 export default function ProgressFAB({ onSuccess, defaultCategory }: Props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const { isLeftHanded } = useHandPreference();
 
   // Réinitialiser les confettis après l'animation
@@ -38,7 +38,7 @@ export default function ProgressFAB({ onSuccess, defaultCategory }: Props) {
   }, [showConfetti]);
 
   // Ne pas afficher si pas d'utilisateur connecté
-  if (!currentUser) return null;
+  if (!effectiveUser) return null;
 
   const position = isLeftHanded ? 'left' : 'right';
 
@@ -71,7 +71,7 @@ export default function ProgressFAB({ onSuccess, defaultCategory }: Props) {
         isOpen={showBottomSheet}
         onClose={() => setShowBottomSheet(false)}
         onSuccess={handleSuccess}
-        userId={currentUser.id}
+        userId={effectiveUser.id}
         defaultCategory={defaultCategory}
       />
     </>

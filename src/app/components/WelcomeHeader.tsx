@@ -19,7 +19,7 @@ type Props = {
   onDayClick?: (day: HeatmapDay) => void;
 };
 
-export default function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick }: Props) {
+export function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick }: Props) {
   const { showCelebration, animationKey } = useCelebration(completedToday);
   
   const isLoading = completedToday === null;

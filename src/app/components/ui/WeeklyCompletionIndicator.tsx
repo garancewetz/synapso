@@ -90,7 +90,7 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
           setIsOpen(!isOpen);
         }}
         className={clsx(
-          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold',
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer',
           'transition-all duration-200',
           'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm ring-2 ring-emerald-400 ring-offset-1'
         )}

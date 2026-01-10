@@ -37,11 +37,11 @@ export function ToggleButtonGroup<T extends string | boolean>({
           onClick={() => onChange(option.value)}
           disabled={disabled}
           className={clsx(
-            'flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all',
+            'flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all cursor-pointer',
             value === option.value
               ? getActiveStyles()
               : 'text-gray-600 hover:bg-gray-100',
-            disabled && 'opacity-50 cursor-not-allowed'
+            disabled && 'opacity-50 cursor-not-allowed!'
           )}
         >
           {option.icon && <span className="text-xl">{option.icon}</span>}

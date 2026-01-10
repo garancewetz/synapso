@@ -80,7 +80,7 @@ export function CompleteButton({
   return (
     <button
       className={clsx(
-        'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg',
+        'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer',
         'font-semibold text-sm transition-all duration-200 shadow-sm whitespace-nowrap',
         getStyles(),
         className

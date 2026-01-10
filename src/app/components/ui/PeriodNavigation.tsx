@@ -24,7 +24,7 @@ export function PeriodNavigation({
         className={clsx(
           'p-2 rounded-lg transition-colors',
           canGoBack 
-            ? 'text-gray-700 hover:bg-gray-100 active:bg-gray-200' 
+            ? 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 cursor-pointer' 
             : 'text-gray-300 cursor-not-allowed'
         )}
         aria-label="Période précédente"
@@ -42,7 +42,7 @@ export function PeriodNavigation({
         className={clsx(
           'p-2 rounded-lg transition-colors',
           canGoForward 
-            ? 'text-gray-700 hover:bg-gray-100 active:bg-gray-200' 
+            ? 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 cursor-pointer' 
             : 'text-gray-300 cursor-not-allowed'
         )}
         aria-label="Période suivante"

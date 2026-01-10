@@ -53,7 +53,7 @@ export function Dropdown({ trigger, children, align = 'left', className, isMenuO
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={tabIndex}
-        className="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 rounded-xl"
+        className="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 rounded-xl cursor-pointer"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >

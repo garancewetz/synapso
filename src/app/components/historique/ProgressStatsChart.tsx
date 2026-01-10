@@ -54,7 +54,7 @@ function countProgressByType(progressList: Progress[]) {
  * Montre la progression cumulative des progrès - la montagne ne fait que grandir !
  */
 export function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (progressList.length === 0) return [];
@@ -129,7 +129,7 @@ export function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
               }}
               formatter={formatTooltip}
             />
-            {currentUser?.isAphasic && (
+            {effectiveUser?.isAphasic && (
               <Area 
                 type="monotone" 
                 dataKey="ortho" 
@@ -151,7 +151,7 @@ export function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <ChartLegend isAphasic={currentUser?.isAphasic ?? false} />
+      <ChartLegend isAphasic={effectiveUser?.isAphasic ?? false} />
     </div>
   );
 }

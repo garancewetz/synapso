@@ -173,7 +173,7 @@ function AccordionTrigger({
     <button
       onClick={() => toggleItem(value)}
       className={clsx(
-        'w-full flex items-center justify-between gap-3',
+        'w-full flex items-center justify-between gap-3 cursor-pointer',
         'p-4 sm:p-5',
         'hover:bg-gray-50 transition-colors',
         'text-left',

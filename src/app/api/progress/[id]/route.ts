@@ -11,11 +11,11 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const victoryId = parseInt(id);
+    const progressId = parseInt(id);
 
-    if (isNaN(victoryId)) {
+    if (isNaN(progressId)) {
       return NextResponse.json(
-        { error: 'Invalid victory ID' },
+        { error: 'Invalid progress ID' },
         { status: 400 }
       );
     }
@@ -23,16 +23,16 @@ export async function PATCH(
     const body = await request.json();
     const { content, emoji } = body;
 
-    // Vérifier que la victoire existe
-    const existingVictory = await prisma.victory.findFirst({
+    // Vérifier que le progrès existe
+    const existingProgress = await prisma.progress.findFirst({
       where: {
-        id: victoryId,
+        id: progressId,
       },
     });
 
-    if (!existingVictory) {
+    if (!existingProgress) {
       return NextResponse.json(
-        { error: 'Victory not found' },
+        { error: 'Progress not found' },
         { status: 404 }
       );
     }
@@ -44,19 +44,19 @@ export async function PATCH(
       );
     }
 
-    const updatedVictory = await prisma.victory.update({
-      where: { id: victoryId },
+    const updatedProgress = await prisma.progress.update({
+      where: { id: progressId },
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
       },
     });
 
-    return NextResponse.json(updatedVictory);
+    return NextResponse.json(updatedProgress);
   } catch (error) {
-    console.error('Error updating victory:', error);
+    console.error('Error updating progress:', error);
     return NextResponse.json(
-      { error: 'Failed to update victory' },
+      { error: 'Failed to update progress' },
       { status: 500 }
     );
   }
@@ -71,39 +71,39 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    const victoryId = parseInt(id);
+    const progressId = parseInt(id);
 
-    if (isNaN(victoryId)) {
+    if (isNaN(progressId)) {
       return NextResponse.json(
-        { error: 'Invalid victory ID' },
+        { error: 'Invalid progress ID' },
         { status: 400 }
       );
     }
 
-    // Vérifier que la victoire existe
-    const existingVictory = await prisma.victory.findUnique({
+    // Vérifier que le progrès existe
+    const existingProgress = await prisma.progress.findUnique({
       where: {
-        id: victoryId,
+        id: progressId,
       },
     });
 
-    if (!existingVictory) {
+    if (!existingProgress) {
       return NextResponse.json(
-        { error: 'Victory not found' },
+        { error: 'Progress not found' },
         { status: 404 }
       );
     }
 
-    // Supprimer la victoire
-    await prisma.victory.delete({
-      where: { id: victoryId },
+    // Supprimer le progrès
+    await prisma.progress.delete({
+      where: { id: progressId },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting victory:', error);
+    console.error('Error deleting progress:', error);
     return NextResponse.json(
-      { error: 'Failed to delete victory' },
+      { error: 'Failed to delete progress' },
       { status: 500 }
     );
   }

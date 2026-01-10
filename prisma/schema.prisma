@@ -16,7 +16,7 @@ model User {
   dominantHand   DominantHand       @default(RIGHT)
   isAphasic      Boolean            @default(false)
   exercices      Exercice[]
-  victories      Victory[]
+  progress       Progress[]
   aphasieItems   AphasieItem[]
   aphasieChallenges AphasieChallenge[]
 }
@@ -37,6 +37,8 @@ model Exercice {
   userId             Int
   pinned             Boolean            @default(false)
   category           ExerciceCategory   @default(UPPER_BODY)
+  mastered           Boolean            @default(false)
+  masteredAt         DateTime?
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bodyparts          ExerciceBodypart[]
   history            History[]
@@ -45,6 +47,7 @@ model Exercice {
   @@index([category])
   @@index([completed])
   @@index([pinned])
+  @@index([mastered])
 }
 
 model Bodypart {
@@ -102,7 +105,7 @@ model AphasieChallenge {
   @@index([userId])
 }
 
-model Victory {
+model Progress {
   id        Int      @id @default(autoincrement())
   content   String
   emoji     String?
@@ -113,6 +116,7 @@ model Victory {
 
   @@index([userId])
   @@index([createdAt])
+  @@map("Victory")
 }
 
 enum ExerciceCategory {

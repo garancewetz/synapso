@@ -1,42 +1,42 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
-import type { Victory } from '@/app/types';
+import type { Progress } from '@/app/types';
 import { EditIcon } from '@/app/components/ui/icons';
 import { IconButton, Badge, BaseCard } from '@/app/components/ui';
 import { formatVictoryDate } from '@/app/utils/date.utils';
-import { extractVictoryTags } from '@/app/utils/victory.utils';
-import { useVictoryBadges } from '@/app/hooks/useVictoryBadges';
+import { extractProgressTags } from '@/app/utils/progress.utils';
+import { useProgressBadges } from '@/app/hooks/useProgressBadges';
 import { GOLDEN_BADGE_STYLES, GOLDEN_TEXT_STYLES } from '@/app/constants/card.constants';
-import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import clsx from 'clsx';
 
 type Props = {
-  victory: Victory;
-  onEdit?: (victory: Victory) => void;
+  progress: Progress;
+  onEdit?: (progress: Progress) => void;
   compact?: boolean;
 };
 
 /**
- * Carte de victoire individuelle
+ * Carte de progrès individuelle
  * Style doré avec étoile et emoji de catégorie
  */
-export function VictoryCard({ victory, onEdit, compact = false }: Props) {
+export function ProgressCard({ progress, onEdit, compact = false }: Props) {
   // Mémoriser l'extraction des tags (calcul coûteux)
   const { cleanContent, tags } = useMemo(
-    () => extractVictoryTags(victory.content),
-    [victory.content]
+    () => extractProgressTags(progress.content),
+    [progress.content]
   );
   
   // Calculer les badges via le hook factorisé
-  const { typeBadge, categoryBadge } = useVictoryBadges(victory);
+  const { typeBadge, categoryBadge } = useProgressBadges(progress);
   
   // Mémoriser le handler d'édition
   const handleEdit = useCallback(() => {
     if (onEdit) {
-      onEdit(victory);
+      onEdit(progress);
     }
-  }, [onEdit, victory]);
+  }, [onEdit, progress]);
   
   return (
     <BaseCard isGolden className="h-full" fullHeight>
@@ -54,11 +54,11 @@ export function VictoryCard({ victory, onEdit, compact = false }: Props) {
           )}>
             {/* Icônes de célébration */}
             <div className="flex items-center gap-1">
-              <span className={compact ? 'text-lg' : 'text-2xl'}>{VICTORY_EMOJIS.STAR_BRIGHT}</span>
+              <span className={compact ? 'text-lg' : 'text-2xl'}>{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
               {!compact && (
                 <>
-                  <span className="text-xl">{VICTORY_EMOJIS.TROPHY}</span>
-                  <span className="text-xl">{VICTORY_EMOJIS.THUMBS_UP}</span>
+                  <span className="text-xl">{PROGRESS_EMOJIS.TROPHY}</span>
+                  <span className="text-xl">{PROGRESS_EMOJIS.THUMBS_UP}</span>
                 </>
               )}
             </div>
@@ -91,7 +91,7 @@ export function VictoryCard({ victory, onEdit, compact = false }: Props) {
               {cleanContent}
             </h3>
             
-            {/* Victory tags sous le titre */}
+            {/* Progress tags sous le titre */}
             {tags.length > 0 && (
               <div className={clsx(
                 'flex flex-wrap gap-1.5',
@@ -122,7 +122,7 @@ export function VictoryCard({ victory, onEdit, compact = false }: Props) {
                 GOLDEN_TEXT_STYLES.secondary,
                 'font-medium'
               )}>
-                {formatVictoryDate(victory.createdAt)}
+                {formatVictoryDate(progress.createdAt)}
               </p>
             </div>
           )}
@@ -134,7 +134,7 @@ export function VictoryCard({ victory, onEdit, compact = false }: Props) {
             <IconButton
               onClick={handleEdit}
               title="Modifier"
-              aria-label="Modifier cette victoire"
+              aria-label="Modifier ce progrès"
             >
               <EditIcon className={`w-4 h-4 ${GOLDEN_TEXT_STYLES.icon}`} />
             </IconButton>
@@ -144,3 +144,4 @@ export function VictoryCard({ victory, onEdit, compact = false }: Props) {
     </BaseCard>
   );
 }
+

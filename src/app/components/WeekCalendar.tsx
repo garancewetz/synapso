@@ -8,7 +8,7 @@ import { ActivityHeatmapCell } from '@/app/components/historique/ActivityHeatmap
 
 type Props = {
   weekData: HeatmapDay[];
-  victoryDates?: Set<string>;
+  progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
   resetFrequency?: 'DAILY' | 'WEEKLY' | null;
 };
@@ -29,7 +29,7 @@ function getDailyLabels(days: HeatmapDay[]): string[] {
   });
 }
 
-export function WeekCalendar({ weekData, victoryDates, onDayClick, resetFrequency = null }: Props) {
+export function WeekCalendar({ weekData, progressDates, onDayClick, resetFrequency = null }: Props) {
   if (!weekData || weekData.length !== 7) {
     return null;
   }
@@ -67,7 +67,7 @@ export function WeekCalendar({ weekData, victoryDates, onDayClick, resetFrequenc
           <ActivityHeatmapCell
             key={day.dateKey}
             day={day}
-            victoryDates={victoryDates}
+            progressDates={progressDates}
             onDayClick={onDayClick}
             showDate={false}
           />

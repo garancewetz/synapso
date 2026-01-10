@@ -1,12 +1,12 @@
 'use client';
 
-import type { Victory } from '@/app/types';
+import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
-import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
-import { VictoryCardCompact } from './VictoryCardCompact';
+import { ProgressCardCompact } from './ProgressCardCompact';
 
 type DayExercise = {
   name: string;
@@ -19,16 +19,16 @@ type Props = {
   onClose: () => void;
   date: Date | null;
   exercises: DayExercise[];
-  victories: Victory[];
+  progress: Progress[];
 };
 
 /**
  * Modale affichant le détail d'une journée du parcours
  * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
  */
-export function DayDetailModal({ isOpen, onClose, date, exercises, victories }: Props) {
+export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
-  const hasContent = exercises.length > 0 || victories.length > 0;
+  const hasContent = exercises.length > 0 || progress.length > 0;
 
   return (
     <BottomSheetModal 
@@ -48,9 +48,9 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victories }: 
               ✓ {exercises.length}
             </span>
           )}
-          {victories.length > 0 && (
+          {progress.length > 0 && (
             <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-              {VICTORY_EMOJIS.STAR_BRIGHT} {victories.length}
+              {PROGRESS_EMOJIS.STAR_BRIGHT} {progress.length}
             </span>
           )}
         </div>
@@ -59,11 +59,11 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, victories }: 
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
         
-        {/* Section Victoires */}
-        {victories.length > 0 && (
+        {/* Section Progrès */}
+        {progress.length > 0 && (
           <section className="space-y-2">
-            {victories.map((victory) => (
-              <VictoryCardCompact key={victory.id} victory={victory} />
+            {progress.map((item) => (
+              <ProgressCardCompact key={item.id} progress={item} />
             ))}
           </section>
         )}

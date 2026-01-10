@@ -6,16 +6,16 @@ import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
 import AphasieItemCard from '@/app/components/AphasieItemCard';
 import AphasieChallengesList from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/BackButton';
-import ViewVictoriesButton from '@/app/components/ViewVictoriesButton';
-import { VictoryFAB, VictoryBottomSheet } from '@/app/components';
+import ViewProgressButton from '@/app/components/ViewProgressButton';
+import { ProgressFAB, ProgressBottomSheet } from '@/app/components';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 import { useUser } from '@/app/contexts/UserContext';
-import { useVictoryModal } from '@/app/hooks/useVictoryModal';
-import { useOrthophonieVictories } from '@/app/hooks/useOrthophonieVictories';
-import { VictoryTimeline } from '@/app/components/historique';
-import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { useProgressModal } from '@/app/hooks/useProgressModal';
+import { useOrthophonieProgress } from '@/app/hooks/useOrthophonieProgress';
+import { ProgressTimeline } from '@/app/components/historique';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +23,9 @@ export default function AphasiePage() {
   const { hasAccess } = useAphasieCheck();
   const { items } = useAphasieItems();
   const { currentUser } = useUser();
-  const victoryModal = useVictoryModal();
+  const progressModal = useProgressModal();
   const [showConfetti, setShowConfetti] = useState(false);
-  const { victories: orthoVictories, refetch: refetchVictories } = useOrthophonieVictories(currentUser?.id ?? null);
+  const { progressList: orthoProgress, refetch: refetchProgress } = useOrthophonieProgress(currentUser?.id ?? null);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -35,11 +35,11 @@ export default function AphasiePage() {
     }
   }, [showConfetti]);
 
-  // Handler pour le succès d'une victoire avec confettis dorés
-  const handleVictorySuccess = useCallback(() => {
+  // Handler pour le succès d'un progrès avec confettis dorés
+  const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
-    refetchVictories();
-  }, [refetchVictories]);
+    refetchProgress();
+  }, [refetchProgress]);
 
   if (!hasAccess) {
     return null;
@@ -62,7 +62,7 @@ export default function AphasiePage() {
             />
             <AphasieChallengesList 
               limit={3} 
-              onMasteredChange={refetchVictories}
+              onMasteredChange={refetchProgress}
             />
           </div>
 
@@ -96,48 +96,48 @@ export default function AphasiePage() {
             )}
           </div>
 
-          {/* Section Victoires */}
+          {/* Section Progrès */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
             <AphasieSectionHeader
-              title="Mes réussites"
-              emoji={VICTORY_EMOJIS.STAR_BRIGHT}
+              title="Mes progrès"
+              emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               addHref="#"
               addLabel=""
               hideAddButton
             />
-            <VictoryTimeline 
-              victories={orthoVictories.slice(0, 3)} 
-              onEdit={victoryModal.openForEdit}
+            <ProgressTimeline 
+              progressList={orthoProgress.slice(0, 3)} 
+              onEdit={progressModal.openForEdit}
               hideChart
             />
-            {orthoVictories.length > 3 && (
+            {orthoProgress.length > 3 && (
               <ViewAllLink 
                 href="/historique/victories?filter=orthophonie"
-                label="Voir toutes les réussites"
-                emoji={VICTORY_EMOJIS.STAR_BRIGHT}
+                label="Voir tous les progrès"
+                emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               />
             )}
           </div>
 
           {/* Bouton "Mon parcours" */}
           <div>
-            <ViewVictoriesButton />
+            <ViewProgressButton />
           </div>
         </div>
       </div>
 
-      {/* Bouton flottant "Noter une victoire" avec catégorie orthophonie par défaut */}
-      {currentUser && <VictoryFAB onSuccess={handleVictorySuccess} defaultCategory="ORTHOPHONIE" />}
+      {/* Bouton flottant "Noter un progrès" avec catégorie orthophonie par défaut */}
+      {currentUser && <ProgressFAB onSuccess={handleProgressSuccess} defaultCategory="ORTHOPHONIE" />}
 
-      {/* Modal de victoire avec catégorie orthophonie par défaut */}
+      {/* Modal de progrès avec catégorie orthophonie par défaut */}
       {currentUser && (
-        <VictoryBottomSheet
-          isOpen={victoryModal.isOpen}
-          onClose={victoryModal.close}
-          onSuccess={handleVictorySuccess}
+        <ProgressBottomSheet
+          isOpen={progressModal.isOpen}
+          onClose={progressModal.close}
+          onSuccess={handleProgressSuccess}
           userId={currentUser.id}
-          victoryToEdit={victoryModal.victoryToEdit}
-          defaultCategory={victoryModal.victoryToEdit ? undefined : 'ORTHOPHONIE'}
+          progressToEdit={progressModal.progressToEdit}
+          defaultCategory={progressModal.progressToEdit ? undefined : 'ORTHOPHONIE'}
         />
       )}
     </div>

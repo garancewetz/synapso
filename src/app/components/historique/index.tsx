@@ -4,10 +4,10 @@ export { ActivityHeatmap } from './ActivityHeatmap';
 export { ActivityLineChart } from './ActivityLineChart';
 export { WeekHeatmap } from './WeekHeatmap';
 export { WeekAccordionList } from './WeekAccordionNew';
-export { VictoryCard } from './VictoryCard';
-export { VictoryCardCompact } from './VictoryCardCompact';
-export { VictoryTimeline } from './VictoryTimeline';
-export { VictoryStatsChart } from './VictoryStatsChart';
+export { ProgressCard } from './ProgressCard';
+export { ProgressCardCompact } from './ProgressCardCompact';
+export { ProgressTimeline } from './ProgressTimeline';
+export { ProgressStatsChart } from './ProgressStatsChart';
 export { DayDetailModal } from './DayDetailModal';
 export { StatsCard } from './StatsCard';
 

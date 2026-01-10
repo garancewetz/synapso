@@ -5,7 +5,7 @@ import { MapIcon } from '@/app/components/ui/icons';
  * Bouton "Mon parcours" - Composant réutilisable
  * Style doré avec dégradé ambre pour encourager la consultation du parcours
  */
-export default function ViewVictoriesButton() {
+export default function ViewProgressButton() {
   return (
     <div className="flex justify-center mt-8">
       <Link

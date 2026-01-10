@@ -2,35 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { VICTORY_TAGS, VICTORY_CATEGORY_COLORS, VICTORY_TAGS_WITH_EMOJI, ORTHOPHONIE_COLORS } from '@/app/constants/victory.constants';
-import { VICTORY_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_VICTORY_EMOJI } from '@/app/constants/emoji.constants';
-import { getExerciceCategoryFromEmoji, isOrthophonieVictory } from '@/app/utils/victory.utils';
+import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, PROGRESS_TAGS_WITH_EMOJI, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
+import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
+import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
 import { BottomSheetModal, DeleteButton } from '@/app/components/ui';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import type { Victory } from '@/app/types';
+import type { Progress } from '@/app/types';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   userId: number;
-  victoryToEdit?: Victory | null;
-  defaultCategory?: VictoryCategory;
+  progressToEdit?: Progress | null;
+  defaultCategory?: ProgressCategory;
 };
 
-type VictoryCategory = ExerciceCategory | 'ORTHOPHONIE';
+type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
 
-export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId, victoryToEdit, defaultCategory }: Props) {
+export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
   const { currentUser } = useUser();
   const [content, setContent] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<VictoryCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ProgressCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  const isEditMode = !!victoryToEdit;
+  const isEditMode = !!progressToEdit;
 
   // Hook de reconnaissance vocale
   const { isListening, isSupported: speechSupported, interimTranscript, toggleListening } = useSpeechRecognition({
@@ -47,13 +47,13 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
 
   // Pré-remplir les champs en mode édition ou avec defaultCategory
   useEffect(() => {
-    if (isOpen && victoryToEdit) {
-      setContent(victoryToEdit.content);
+    if (isOpen && progressToEdit) {
+      setContent(progressToEdit.content);
       // Utiliser les utilitaires factorisés pour déterminer la catégorie
-      if (isOrthophonieVictory(victoryToEdit.emoji)) {
+      if (isOrthophonieProgress(progressToEdit.emoji)) {
         setSelectedCategory('ORTHOPHONIE');
       } else {
-        const categoryFromEmoji = getExerciceCategoryFromEmoji(victoryToEdit.emoji);
+        const categoryFromEmoji = getExerciceCategoryFromEmoji(progressToEdit.emoji);
         setSelectedCategory(categoryFromEmoji || null);
       }
     } else if (isOpen && defaultCategory) {
@@ -63,7 +63,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
       setContent('');
       setSelectedCategory(null);
     }
-  }, [isOpen, victoryToEdit, defaultCategory]);
+  }, [isOpen, progressToEdit, defaultCategory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,13 +78,13 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
 
     // Déterminer l'emoji selon la catégorie sélectionnée
     const categoryEmoji = selectedCategory === 'ORTHOPHONIE' 
-      ? ORTHOPHONIE_VICTORY_EMOJI 
+      ? ORTHOPHONIE_PROGRESS_EMOJI 
       : selectedCategory 
         ? CATEGORY_ICONS[selectedCategory] 
         : null;
 
     try {
-      const url = isEditMode ? `/api/victories/${victoryToEdit!.id}` : '/api/victories';
+      const url = isEditMode ? `/api/progress/${progressToEdit!.id}` : '/api/progress';
       
       const response = await fetch(url, {
         method: isEditMode ? 'PATCH' : 'POST',
@@ -112,10 +112,10 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
   };
 
   const handleDelete = async () => {
-    if (!victoryToEdit) return;
+    if (!progressToEdit) return;
 
     try {
-      const response = await fetch(`/api/victories/${victoryToEdit.id}`, {
+      const response = await fetch(`/api/progress/${progressToEdit.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -146,7 +146,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
   const handleTagClick = (label: string, emoji: string) => {
     // Pour Force, Souplesse, Équilibre : format "emoji+label+emoji"
     // Pour Confort : juste le label sans emoji
-    const shouldUseEmojiFormat = VICTORY_TAGS_WITH_EMOJI.includes(label as typeof VICTORY_TAGS_WITH_EMOJI[number]);
+    const shouldUseEmojiFormat = PROGRESS_TAGS_WITH_EMOJI.includes(label as typeof PROGRESS_TAGS_WITH_EMOJI[number]);
     
     const textToAdd = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
     const isActive = content.includes(textToAdd);
@@ -163,17 +163,17 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
       {/* Titre */}
         <div className="text-center pb-3 md:pt-4">
           <h2 className="text-xl font-bold text-gray-900">
-            {isEditMode ? 'Modifier ta victoire ✏️' : `Ta victoire ! ${VICTORY_EMOJIS.STAR_BRIGHT}`}
+            {isEditMode ? 'Modifier ton progrès ✏️' : `Ton progrès ! ${PROGRESS_EMOJIS.STAR_BRIGHT}`}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="px-5 pb-8">
-        {/* Tags de victoire */}
+        {/* Tags de progrès */}
         <div className="grid grid-cols-4 gap-2 mb-4">
-          {VICTORY_TAGS.map(({ label, emoji }) => {
+          {PROGRESS_TAGS.map(({ label, emoji }) => {
             // Pour Force, Souplesse, Équilibre : vérifier avec format emoji+label+emoji
             // Pour Confort : vérifier juste le label
-            const shouldUseEmojiFormat = VICTORY_TAGS_WITH_EMOJI.includes(label as typeof VICTORY_TAGS_WITH_EMOJI[number]);
+            const shouldUseEmojiFormat = PROGRESS_TAGS_WITH_EMOJI.includes(label as typeof PROGRESS_TAGS_WITH_EMOJI[number]);
             const textToCheck = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
             const isActive = content.includes(textToCheck);
             
@@ -200,7 +200,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
         <div className="mb-4">
           <div className="relative">
             <textarea
-              id="victory-content"
+              id="progress-content"
               value={displayContent}
               onChange={(e) => setContent(e.target.value)}
               className={`w-full px-4 py-3 pr-12 border-2 rounded-2xl 
@@ -241,7 +241,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
             {CATEGORY_ORDER.map((category) => {
               const emoji = CATEGORY_ICONS[category];
               const label = CATEGORY_LABELS_SHORT[category];
-              const colors = VICTORY_CATEGORY_COLORS[category];
+              const colors = PROGRESS_CATEGORY_COLORS[category];
               const isSelected = selectedCategory === category;
               
               const handleCategoryClick = () => {
@@ -329,7 +329,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
             ) : (
               <>
                 <span>🎉</span>
-                Célébrer !
+                Noter !
               </>
             )}
           </button>
@@ -339,7 +339,7 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
         {isEditMode && (
           <DeleteButton
             onDelete={handleDelete}
-            label="🗑️ Supprimer cette victoire"
+            label="🗑️ Supprimer ce progrès"
             disabled={isSubmitting}
             className="mt-3"
           />
@@ -348,3 +348,4 @@ export default function VictoryBottomSheet({ isOpen, onClose, onSuccess, userId,
     </BottomSheetModal>
   );
 }
+

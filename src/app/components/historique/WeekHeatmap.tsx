@@ -8,7 +8,7 @@ import { ActivityHeatmapCell } from './ActivityHeatmapCell';
 
 type Props = {
   weekData: HeatmapDay[];
-  victoryDates?: Set<string>;
+  progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
   resetFrequency?: 'DAILY' | 'WEEKLY';
 };
@@ -32,7 +32,7 @@ function getDailyLabels(days: HeatmapDay[]): string[] {
   });
 }
 
-export function WeekHeatmap({ weekData, victoryDates, onDayClick, resetFrequency = 'WEEKLY' }: Props) {
+export function WeekHeatmap({ weekData, progressDates, onDayClick, resetFrequency = 'WEEKLY' }: Props) {
   // Vérifier que nous avons exactement 7 jours
   if (weekData.length !== 7) {
     return null;
@@ -72,7 +72,7 @@ export function WeekHeatmap({ weekData, victoryDates, onDayClick, resetFrequency
           <ActivityHeatmapCell
             key={day.dateKey}
             day={day}
-            victoryDates={victoryDates}
+            progressDates={progressDates}
             onDayClick={onDayClick}
           />
         ))}

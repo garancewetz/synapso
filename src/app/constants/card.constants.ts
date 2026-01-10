@@ -1,9 +1,9 @@
 // ============================================================================
-// CONSTANTES POUR LES STYLES DE CARTES (BaseCard, VictoryCard, etc.)
+// CONSTANTES POUR LES STYLES DE CARTES (BaseCard, ProgressCard, etc.)
 // ============================================================================
 
 // ============================================================================
-// STYLES GOLDEN (VictoryCard uniquement)
+// STYLES GOLDEN (ProgressCard uniquement)
 // ============================================================================
 
 export const GOLDEN_CARD_STYLES = {

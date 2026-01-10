@@ -6,7 +6,7 @@ import { DayDetailModal } from '@/app/components/historique';
 
 export function DayDetailModalWrapper() {
   const { selectedDay, closeDayDetail } = useDayDetailModal();
-  const { exercises, victories } = useDayDetailData(selectedDay);
+  const { exercises, progressList } = useDayDetailData(selectedDay);
 
   return (
     <DayDetailModal
@@ -14,7 +14,7 @@ export function DayDetailModalWrapper() {
       onClose={closeDayDetail}
       date={selectedDay?.date || null}
       exercises={exercises}
-      victories={victories}
+      progress={progressList}
     />
   );
 }

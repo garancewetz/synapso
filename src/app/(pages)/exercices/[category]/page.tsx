@@ -12,7 +12,7 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import { VictoryFAB, ViewVictoriesButton } from '@/app/components';
+import { ProgressFAB, ViewProgressButton } from '@/app/components';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
 
@@ -168,16 +168,16 @@ export default function CategoryPage() {
 
           {/* Bouton "Voir mes réussites" */}
           {!loading && filteredExercices.length > 0 && (
-            <ViewVictoriesButton />
+            <ViewProgressButton />
           )}
           
       
         </div>
       </div>
 
-      {/* Bouton flottant "Noter une victoire" */}
-      <VictoryFAB onSuccess={() => {
-        // Rafraîchir la liste des exercices au cas où une victoire orthophonie a été créée
+      {/* Bouton flottant "Noter un progrès" */}
+      <ProgressFAB onSuccess={() => {
+        // Rafraîchir la liste des exercices au cas où un progrès orthophonie a été créé
         refetch();
       }} />
     </section>

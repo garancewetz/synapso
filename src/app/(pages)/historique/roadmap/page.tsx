@@ -1,17 +1,18 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { format, startOfDay } from 'date-fns';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { BackButton } from '@/app/components/BackButton';
 import { ActivityHeatmap, ActivityLineChart, StatsCard } from '@/app/components/historique';
-import { VictoryBottomSheet } from '@/app/components';
+import { ProgressBottomSheet } from '@/app/components';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
-import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useVictories } from '@/app/hooks/useVictories';
+import { useProgress } from '@/app/hooks/useProgress';
 import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
-import { useVictoryStats } from '@/app/hooks/useVictoryStats';
+import { useProgressStats } from '@/app/hooks/useProgressStats';
 import { ROADMAP_FULL_DAYS } from '@/app/constants/historique.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import {
@@ -23,20 +24,18 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 export default function RoadmapPage() {
   const { currentUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
-  const victoryModal = useVictoryModal();
+  const progressModal = useProgressModal();
   const { history } = useHistory();
-  const { victories, refetch: refetchVictories } = useVictories();
+  const { progressList, refetch: refetchProgress } = useProgress();
 
   const roadmapData = useMemo(() => getHeatmapData(history, ROADMAP_FULL_DAYS), [history]);
   const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);
 
   const {
-    victoryDates,
-    victoryCountByDate,
-    totalVictories,
-    totalPhysicalVictories,
-    totalOrthoVictories,
-  } = useVictoryStats(victories);
+    totalProgress,
+    totalPhysicalProgress,
+    totalOrthoProgress,
+  } = useProgressStats(progressList);
 
   const {
     barChartData,
@@ -47,6 +46,14 @@ export default function RoadmapPage() {
     goToNextPeriod,
   } = usePeriodNavigation(history, 15);
 
+  const progressDates = useMemo(() => {
+    return new Set(
+      progressList.map(progress => 
+        format(startOfDay(new Date(progress.createdAt)), 'yyyy-MM-dd')
+      )
+    );
+  }, [progressList]);
+
   const { daysWithExercises, totalExercises } = useMemo(() => {
     const realDays = roadmapData.filter(day => !day.isEmpty);
     return {
@@ -56,7 +63,7 @@ export default function RoadmapPage() {
   }, [roadmapData]);
 
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
-  const handleVictorySuccess = useCallback(() => refetchVictories(), [refetchVictories]);
+  const handleProgressSuccess = useCallback(() => refetchProgress(), [refetchProgress]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
@@ -94,11 +101,11 @@ export default function RoadmapPage() {
           />
           
           <StatsCard
-            value={totalVictories > 0 ? `${totalVictories} 🌟` : '—'}
+            value={totalProgress > 0 ? `${totalProgress} 🌟` : '—'}
             label={
-              totalVictories > 0 && currentUser?.isAphasic && totalOrthoVictories > 0
-                ? `${totalPhysicalVictories}💪 ${totalOrthoVictories}💬`
-                : `victoire${totalVictories > 1 ? 's' : ''}`
+              totalProgress > 0 && currentUser?.isAphasic && totalOrthoProgress > 0
+                ? `${totalPhysicalProgress}💪 ${totalOrthoProgress}💬`
+                : `progrès`
             }
             bgColor="bg-yellow-50"
             textColor="text-yellow-700"
@@ -112,7 +119,7 @@ export default function RoadmapPage() {
           data={roadmapData} 
           currentStreak={currentStreak} 
           showFullLink={false}
-          victoryDates={victoryDates}
+          progressDates={progressDates}
           onDayClick={handleDayClick}
         />
       </div>
@@ -130,7 +137,6 @@ export default function RoadmapPage() {
           <ActivityLineChart 
             data={barChartData} 
             currentStreak={currentStreak} 
-            victoryCountByDate={victoryCountByDate}
             onDayClick={handleDayClick}
             showFullLink={false}
           />
@@ -138,12 +144,12 @@ export default function RoadmapPage() {
       </div>
 
       {currentUser && (
-        <VictoryBottomSheet
-          isOpen={victoryModal.isOpen}
-          onClose={victoryModal.close}
-          onSuccess={handleVictorySuccess}
+        <ProgressBottomSheet
+          isOpen={progressModal.isOpen}
+          onClose={progressModal.close}
+          onSuccess={handleProgressSuccess}
           userId={currentUser.id}
-          victoryToEdit={victoryModal.victoryToEdit}
+          progressToEdit={progressModal.progressToEdit}
         />
       )}
     </div>

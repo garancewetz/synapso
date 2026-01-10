@@ -4,17 +4,17 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
-import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useVictories } from '@/app/hooks/useVictories';
-import { useVictoryStats } from '@/app/hooks/useVictoryStats';
-import { DonutChart, ActivityHeatmap, VictoryStatsChart } from '@/app/components/historique';
-import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
+import { useProgress } from '@/app/hooks/useProgress';
+import { useProgressStats } from '@/app/hooks/useProgressStats';
+import { DonutChart, ActivityHeatmap, ProgressStatsChart } from '@/app/components/historique';
+import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
 import { BackButton } from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import { SegmentedControl } from '@/app/components/ui';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { ROADMAP_PREVIEW_DAYS } from '@/app/constants/historique.constants';
 import {
   calculateBodypartStatsByPeriod,
@@ -30,14 +30,14 @@ export default function HistoriquePage() {
   const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('all');
   const { currentUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
-  const victoryModal = useVictoryModal();
+  const progressModal = useProgressModal();
   const displayName = currentUser?.name || "";
 
   // Charger l'historique
   const { history } = useHistory();
 
-  // Charger les victoires
-  const { victories, refetch: refetchVictories } = useVictories();
+  // Charger les progrès
+  const { progressList, refetch: refetchProgress } = useProgress();
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -47,17 +47,17 @@ export default function HistoriquePage() {
     }
   }, [showConfetti]);
 
-  const handleVictorySuccess = () => {
+  const handleProgressSuccess = () => {
     setShowConfetti(true);
-    refetchVictories();
+    refetchProgress();
   };
 
   const {
-    victoryDates,
-    totalVictories,
-    totalPhysicalVictories,
-    totalOrthoVictories,
-  } = useVictoryStats(victories);
+    progressDates,
+    totalProgress,
+    totalPhysicalProgress,
+    totalOrthoProgress,
+  } = useProgressStats(progressList);
 
   const donutDataBodyparts = useMemo(() => {
     const bodypartStats = calculateBodypartStatsByPeriod(history, bodypartPeriod);
@@ -78,74 +78,74 @@ export default function HistoriquePage() {
 
       <div className="px-3 sm:p-6">
         <div className="space-y-6 mb-6">
-          <ActivityHeatmap 
-            data={roadmapData} 
-            currentStreak={currentStreak} 
-            userName={displayName} 
-            victoryDates={victoryDates}
-            onDayClick={handleDayClick}
-          />
+            <ActivityHeatmap 
+              data={roadmapData} 
+              currentStreak={currentStreak} 
+              userName={displayName} 
+              progressDates={progressDates}
+              onDayClick={handleDayClick}
+            />
           
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
             <div className={clsx('flex items-center justify-between mb-2', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-                  {VICTORY_EMOJIS.STAR_BRIGHT} Mes réussites
+                  {PROGRESS_EMOJIS.STAR_BRIGHT} Mes progrès
                 </h2>
-                {totalVictories > 0 && (
+                {totalProgress > 0 && (
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     {currentUser?.isAphasic ? (
                       <>
                         <span className="text-xs font-medium text-gray-500">
-                          {totalVictories} au total
+                          {totalProgress} au total
                         </span>
                         <span className="text-gray-300">•</span>
                         <span className="text-xs font-medium text-orange-600">
-                          {totalPhysicalVictories} 💪
+                          {totalPhysicalProgress} 💪
                         </span>
                         <span className="text-gray-300">•</span>
                         <span className="text-xs font-medium text-yellow-600">
-                          {totalOrthoVictories} 💬
+                          {totalOrthoProgress} 💬
                         </span>
                       </>
                     ) : (
                       <span className="text-xs font-medium text-gray-500">
-                        {totalVictories} victoire{totalVictories > 1 ? 's' : ''}
+                        {totalProgress} progrès
                       </span>
                     )}
                   </div>
                 )}
               </div>
               {currentUser && (
-                <VictoryButton 
-                  onClick={victoryModal.openForCreate}
+                <ProgressButton 
+                  onClick={progressModal.openForCreate}
                   variant="inline"
                   label="Ajouter"
                 />
               )}
             </div>
-            {victories.length >= 2 ? (
-              <VictoryStatsChart 
-                victories={victories}
+            {progressList.length >= 2 ? (
+              <ProgressStatsChart 
+                progressList={progressList}
                 hideTitle={true}
               />
-            ) : victories.length === 1 ? (
+            ) : progressList.length === 1 ? (
               <div className="text-center py-8">
                 <span className="text-3xl mb-2 block">🌟</span>
-                <p className="text-gray-700 font-medium mb-1">Ta première réussite est enregistrée !</p>
+                <p className="text-gray-700 font-medium mb-1">Ton premier progrès est enregistré !</p>
                 <p className="text-gray-500 text-sm">Continue pour voir ton graphique de progression.</p>
               </div>
             ) : (
               <div className="text-center py-8">
                 <span className="text-3xl mb-2 block">🌟</span>
-                <p className="text-gray-500">Tes réussites apparaîtront ici !</p>
+                <p className="text-gray-500">Tes progrès apparaîtront ici !</p>
               </div>
             )}
-            {victories.length > 0 && (
+            {progressList.length > 0 && (
               <ViewAllLink 
                 href="/historique/victories"
-                label="Voir toutes les réussites"
-                emoji={VICTORY_EMOJIS.STAR_BRIGHT}
+                label="Voir tous les progrès"
+                emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               />
             )}
           </div>
@@ -183,12 +183,12 @@ export default function HistoriquePage() {
       />
 
       {currentUser && (
-        <VictoryBottomSheet
-          isOpen={victoryModal.isOpen}
-          onClose={victoryModal.close}
-          onSuccess={handleVictorySuccess}
+        <ProgressBottomSheet
+          isOpen={progressModal.isOpen}
+          onClose={progressModal.close}
+          onSuccess={handleProgressSuccess}
           userId={currentUser.id}
-          victoryToEdit={victoryModal.victoryToEdit}
+          progressToEdit={progressModal.progressToEdit}
         />
       )}
 

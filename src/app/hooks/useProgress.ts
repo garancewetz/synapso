@@ -1,34 +1,34 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Victory } from '@/app/types';
+import type { Progress } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 
-type UseVictoriesOptions = {
+type UseProgressOptions = {
   limit?: number;
 };
 
-type UseVictoriesReturn = {
-  victories: Victory[];
+type UseProgressReturn = {
+  progressList: Progress[];
   loading: boolean;
   error: Error | null;
   refetch: () => void;
-  lastVictory: Victory | null;
+  lastProgress: Progress | null;
 };
 
 /**
- * Hook pour récupérer et gérer les victoires
- * Centralise la logique de récupération des victoires
+ * Hook pour récupérer et gérer les progrès
+ * Centralise la logique de récupération des progrès
  */
-export function useVictories(options: UseVictoriesOptions = {}): UseVictoriesReturn {
+export function useProgress(options: UseProgressOptions = {}): UseProgressReturn {
   const { currentUser } = useUser();
   const { limit } = options;
-  const [victories, setVictories] = useState<Victory[]>([]);
+  const [progressList, setProgressList] = useState<Progress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVictories = useCallback(() => {
+  const fetchProgress = useCallback(() => {
     if (!currentUser) {
       setLoading(false);
-      setVictories([]);
+      setProgressList([]);
       setError(null);
       return;
     }
@@ -37,16 +37,16 @@ export function useVictories(options: UseVictoriesOptions = {}): UseVictoriesRet
     setError(null);
 
     const url = limit
-      ? `/api/victories?userId=${currentUser.id}&limit=${limit}`
-      : `/api/victories?userId=${currentUser.id}`;
+      ? `/api/progress?userId=${currentUser.id}&limit=${limit}`
+      : `/api/progress?userId=${currentUser.id}`;
 
     fetch(url, { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
           // Ne pas logger l'erreur 404 comme une erreur critique
-          // Elle peut survenir lors du premier chargement si aucune victoire n'existe
+          // Elle peut survenir lors du premier chargement si aucun progrès n'existe
           if (res.status === 404) {
-            setVictories([]);
+            setProgressList([]);
             setError(null);
             setLoading(false);
             return null;
@@ -59,18 +59,18 @@ export function useVictories(options: UseVictoriesOptions = {}): UseVictoriesRet
         if (data === null) return; // Cas 404 géré ci-dessus
         
         if (Array.isArray(data)) {
-          setVictories(data);
+          setProgressList(data);
         } else {
           console.error('API error:', data);
           setError(new Error('Format de données invalide'));
-          setVictories([]);
+          setProgressList([]);
         }
       })
       .catch(err => {
-        const errorMessage = err instanceof Error ? err : new Error('Erreur lors de la récupération des victoires');
+        const errorMessage = err instanceof Error ? err : new Error('Erreur lors de la récupération des progrès');
         console.error('Fetch error:', errorMessage);
         setError(errorMessage);
-        setVictories([]);
+        setProgressList([]);
       })
       .finally(() => {
         setLoading(false);
@@ -78,13 +78,13 @@ export function useVictories(options: UseVictoriesOptions = {}): UseVictoriesRet
   }, [currentUser, limit]);
 
   useEffect(() => {
-    fetchVictories();
-  }, [fetchVictories]);
+    fetchProgress();
+  }, [fetchProgress]);
 
-  const lastVictory = useMemo(() => {
-    return victories.length > 0 ? victories[0] : null;
-  }, [victories]);
+  const lastProgress = useMemo(() => {
+    return progressList.length > 0 ? progressList[0] : null;
+  }, [progressList]);
 
-  return { victories, loading, error, refetch: fetchVictories, lastVictory };
+  return { progressList, loading, error, refetch: fetchProgress, lastProgress };
 }
 

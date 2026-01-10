@@ -4,13 +4,13 @@ import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { isOrthophonieVictory } from '@/app/utils/victory.utils';
-import { CATEGORY_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { isOrthophonieProgress } from '@/app/utils/progress.utils';
+import { CATEGORY_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { useUser } from '@/app/contexts/UserContext';
-import type { Victory } from '@/app/types';
+import type { Progress } from '@/app/types';
 
 type Props = {
-  victories: Victory[];
+  progressList: Progress[];
   hideTitle?: boolean;
 };
 
@@ -37,37 +37,37 @@ function getWeekEnd(weekStart: Date): Date {
   return weekEnd;
 }
 
-// Helper: Calculer les victoires cumulatives jusqu'à une date
-function getCumulativeVictories(victories: Victory[], untilDate: Date): Victory[] {
-  return victories.filter(v => parseISO(v.createdAt) <= untilDate);
+// Helper: Calculer les progrès cumulatifs jusqu'à une date
+function getCumulativeProgress(progressList: Progress[], untilDate: Date): Progress[] {
+  return progressList.filter(p => parseISO(p.createdAt) <= untilDate);
 }
 
-// Helper: Compter les victoires par type
-function countVictoriesByType(victories: Victory[]) {
-  const ortho = victories.filter(v => isOrthophonieVictory(v.emoji)).length;
-  const physique = victories.length - ortho;
+// Helper: Compter les progrès par type
+function countProgressByType(progressList: Progress[]) {
+  const ortho = progressList.filter(p => isOrthophonieProgress(p.emoji)).length;
+  const physique = progressList.length - ortho;
   return { ortho, physique };
 }
 
 /**
  * Graphique de cumul avec aires empilées
- * Montre la progression cumulative des réussites - la montagne ne fait que grandir !
+ * Montre la progression cumulative des progrès - la montagne ne fait que grandir !
  */
-export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
+export function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
   const { currentUser } = useUser();
   
   const chartData = useMemo<ChartDataPoint[]>(() => {
-    if (victories.length === 0) return [];
+    if (progressList.length === 0) return [];
 
-    // Trier les victoires par date
-    const sortedVictories = [...victories].sort((a, b) => 
+    // Trier les progrès par date
+    const sortedProgress = [...progressList].sort((a, b) => 
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
-    // Définir la plage de semaines : 1 semaine avant la première victoire → semaine actuelle
-    const firstVictoryDate = parseISO(sortedVictories[0].createdAt);
-    const firstVictoryWeek = startOfWeek(firstVictoryDate, { weekStartsOn: 1 });
-    const startDate = addWeeks(firstVictoryWeek, -1);
+    // Définir la plage de semaines : 1 semaine avant le premier progrès → semaine actuelle
+    const firstProgressDate = parseISO(sortedProgress[0].createdAt);
+    const firstProgressWeek = startOfWeek(firstProgressDate, { weekStartsOn: 1 });
+    const startDate = addWeeks(firstProgressWeek, -1);
     const todayWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
     
     const weeks = eachWeekOfInterval(
@@ -78,8 +78,8 @@ export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
     // Créer un point de données pour chaque semaine
     return weeks.map((weekStart): ChartDataPoint => {
       const weekEnd = getWeekEnd(weekStart);
-      const cumulativeVictories = getCumulativeVictories(sortedVictories, weekEnd);
-      const { ortho, physique } = countVictoriesByType(cumulativeVictories);
+      const cumulativeProgress = getCumulativeProgress(sortedProgress, weekEnd);
+      const { ortho, physique } = countProgressByType(cumulativeProgress);
 
       return {
         week: format(weekStart, 'd MMM', { locale: fr }),
@@ -89,13 +89,13 @@ export function VictoryStatsChart({ victories, hideTitle = false }: Props) {
         total: ortho + physique,
       };
     });
-  }, [victories]);
+  }, [progressList]);
 
   // Calculer le maximum pour l'axe Y (+1 pour montrer qu'on peut encore progresser)
-  const maxYValue = useMemo(() => victories.length + 1, [victories.length]);
+  const maxYValue = useMemo(() => progressList.length + 1, [progressList.length]);
 
   // État vide
-  if (victories.length === 0) {
+  if (progressList.length === 0) {
     return (
       <EmptyState hideTitle={hideTitle} />
     );
@@ -163,7 +163,7 @@ function EmptyState({ hideTitle }: { hideTitle: boolean }) {
       {!hideTitle && <ChartTitle />}
       <div className="text-center py-8">
         <span className="text-3xl mb-2 block">🌟</span>
-        <p className="text-gray-500">Tes réussites apparaîtront ici !</p>
+        <p className="text-gray-500">Tes progrès apparaîtront ici !</p>
       </div>
     </div>
   );
@@ -173,8 +173,8 @@ function EmptyState({ hideTitle }: { hideTitle: boolean }) {
 function ChartTitle() {
   return (
     <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-      <span>{VICTORY_EMOJIS.TROPHY}</span>
-      <span>Mes réussites</span>
+      <span>{PROGRESS_EMOJIS.TROPHY}</span>
+      <span>Mes progrès</span>
     </h2>
   );
 }
@@ -219,5 +219,6 @@ function ChartLegend({ isAphasic }: { isAphasic: boolean }) {
 function formatTooltip(value: number | undefined, name: string | undefined) {
   if (value === undefined || name === undefined) return ['', ''];
   const label = name === 'ortho' ? 'Orthophonie' : name === 'physique' ? 'Physique' : 'Total';
-  return [`${value} réussite${value > 1 ? 's' : ''}`, label];
+  return [`${value} progrès`, label];
 }
+

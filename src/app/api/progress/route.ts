@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const victories = await prisma.victory.findMany({
+    const progressList = await prisma.progress.findMany({
       where: {
         userId: userIdNumber,
       },
@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
       ...(limitParam && { take: parseInt(limitParam) }),
     });
 
-    return NextResponse.json(victories);
+    return NextResponse.json(progressList);
   } catch (error) {
-    console.error('Error fetching victories:', error);
+    console.error('Error fetching progress:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch victories' },
+      { error: 'Failed to fetch progress' },
       { status: 500 }
     );
   }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const victory = await prisma.victory.create({
+    const progress = await prisma.progress.create({
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(victory, { status: 201 });
+    return NextResponse.json(progress, { status: 201 });
   } catch (error) {
-    console.error('Error creating victory:', error);
+    console.error('Error creating progress:', error);
     return NextResponse.json(
-      { error: 'Failed to create victory' },
+      { error: 'Failed to create progress' },
       { status: 500 }
     );
   }

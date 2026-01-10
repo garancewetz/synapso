@@ -15,11 +15,11 @@ type Props = {
   completedToday: number | null;
   resetFrequency?: 'DAILY' | 'WEEKLY' | null;
   weekData?: HeatmapDay[];
-  victoryDates?: Set<string>;
+  progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
 };
 
-export default function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, victoryDates, onDayClick }: Props) {
+export default function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick }: Props) {
   const { showCelebration, animationKey } = useCelebration(completedToday);
   
   const isLoading = completedToday === null;
@@ -45,7 +45,7 @@ export default function WelcomeHeader({ userName, completedToday, resetFrequency
       {weekData && weekData.length === 7 && (
         <WeekCalendar 
           weekData={weekData}
-          victoryDates={victoryDates}
+          progressDates={progressDates}
           onDayClick={onDayClick}
           resetFrequency={resetFrequency}
         />

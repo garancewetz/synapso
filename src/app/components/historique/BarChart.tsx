@@ -8,7 +8,7 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 type Props = {
   data: HeatmapDay[];
   currentStreak: number;
-  victoryCountByDate?: Map<string, number>;
+  progressCountByDate?: Map<string, number>;
   filterSlot?: ReactNode;
 };
 
@@ -20,19 +20,19 @@ function getBarColor(count: number, isToday: boolean): string {
   return '#10B981';
 }
 
-export const BarChart = memo(function BarChart({ data, currentStreak, victoryCountByDate, filterSlot }: Props) {
+export const BarChart = memo(function BarChart({ data, currentStreak, progressCountByDate, filterSlot }: Props) {
   // Formater les données pour le graphique (inclut tous les jours)
   const chartData = data.map(day => {
-      const victoryCount = victoryCountByDate && day.dateKey ? victoryCountByDate.get(day.dateKey) || 0 : 0;
+      const progressCount = progressCountByDate && day.dateKey ? progressCountByDate.get(day.dateKey) || 0 : 0;
       return {
         date: day.date,
         dateKey: day.dateKey,
         count: day.count || 0,
         isToday: day.isToday,
         dayNumber: day.date ? format(day.date, 'd') : '',
-        victoryCount,
-        // Valeur pour le scatter: on met la valeur au-dessus de la barre si victoire
-        victoryMarker: victoryCount > 0 ? (day.count || 0) + 0.5 : null,
+        progressCount,
+        // Valeur pour le scatter: on met la valeur au-dessus de la barre si progrès
+        progressMarker: progressCount > 0 ? (day.count || 0) + 0.5 : null,
       };
     });
 
@@ -85,11 +85,11 @@ export const BarChart = memo(function BarChart({ data, currentStreak, victoryCou
             </Bar>
             {/* Points dorés pour les victoires */}
             <Scatter 
-              dataKey="victoryMarker" 
+              dataKey="progressMarker" 
               fill="#F59E0B"
-              shape={(props: { cx?: number; cy?: number; payload?: { victoryMarker: number | null; victoryCount: number } }) => {
-                if (!props.payload?.victoryMarker || !props.payload?.victoryCount) return <></>;
-                const count = props.payload.victoryCount;
+              shape={(props: { cx?: number; cy?: number; payload?: { progressMarker: number | null; progressCount: number } }) => {
+                if (!props.payload?.progressMarker || !props.payload?.progressCount) return <></>;
+                const count = props.payload.progressCount;
                 
                 // Afficher plusieurs étoiles empilées si plusieurs victoires
                 return (

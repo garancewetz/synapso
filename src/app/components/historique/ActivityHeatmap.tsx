@@ -3,7 +3,7 @@
 import { getDay } from 'date-fns';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { NAVIGATION_EMOJIS, VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
@@ -13,14 +13,14 @@ type Props = {
   currentStreak: number;
   showFullLink?: boolean;
   userName?: string;
-  victoryDates?: Set<string>;
+  progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
 };
 
 // Noms des jours de la semaine (lundi = début)
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, victoryDates, onDayClick }: Props) {
+export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, progressDates, onDayClick }: Props) {
   // Filtrer les jours vides et ne garder que les vrais jours
   const realDays = data.filter(day => !day.isEmpty);
   
@@ -110,7 +110,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           <ActivityHeatmapCell
             key={day ? day.dateKey : `empty-${index}`}
             day={day}
-            victoryDates={victoryDates}
+            progressDates={progressDates}
             onDayClick={onDayClick}
           />
         ))}
@@ -127,12 +127,16 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
               <span>{CATEGORY_LABELS_SHORT[category]}</span>
             </div>
           ))}
-          {/* Légende pour les victoires physiques si affichées */}
-          {victoryDates && victoryDates.size > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-base">{VICTORY_EMOJIS.STAR}</span>
-              <span>Victoires physiques</span>
-            </div>
+          
+          {/* Légende pour les progrès si affichés */}
+          {progressDates && progressDates.size > 0 && (
+            <>
+              <span className="text-gray-300">•</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg">{PROGRESS_EMOJIS.STAR}</span>
+                <span>Progrès</span>
+              </div>
+            </>
           )}
         </div>
       </div>

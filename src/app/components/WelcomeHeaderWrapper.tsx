@@ -2,12 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
+import { format, startOfDay } from 'date-fns';
 import WelcomeHeader from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useVictories } from '@/app/hooks/useVictories';
+import { useProgress } from '@/app/hooks/useProgress';
 import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
@@ -21,7 +22,7 @@ export default function WelcomeHeaderWrapper() {
   
   // Charger l'historique et les victoires pour le calendrier
   const { history } = useHistory();
-  const { victories } = useVictories();
+  const { progressList } = useProgress();
 
   // Données selon le rythme de l'utilisateur
   const weekData = useMemo(() => {
@@ -31,10 +32,16 @@ export default function WelcomeHeaderWrapper() {
       : getLast7DaysData(history);
   }, [history, resetFrequency]);
 
-  // Dates des victoires pour le calendrier
-  const victoryDates = useMemo(() => {
-    return new Set(victories.map(v => v.createdAt.split('T')[0]));
-  }, [victories]);
+  // Dates des progrès pour le calendrier
+  // IMPORTANT : Utiliser startOfDay pour normaliser comme dans HeatmapDay.dateKey
+  const progressDates = useMemo(() => {
+    return new Set(
+      progressList.map(p => {
+        const date = new Date(p.createdAt);
+        return format(startOfDay(date), 'yyyy-MM-dd');
+      })
+    );
+  }, [progressList]);
 
   // Gestion du clic sur une journée du calendrier
   const handleDayClick = useCallback((day: HeatmapDay) => {
@@ -57,7 +64,7 @@ export default function WelcomeHeaderWrapper() {
         completedToday={completedToday}
         resetFrequency={resetFrequency}
         weekData={weekData}
-        victoryDates={victoryDates}
+        progressDates={progressDates}
         onDayClick={handleDayClick}
       />
     </div>

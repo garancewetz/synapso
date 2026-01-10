@@ -1,4 +1,4 @@
-import type { HistoryEntry, Victory } from '@/app/types';
+import type { HistoryEntry, Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import {
   startOfWeek,
@@ -59,7 +59,7 @@ export interface WeekGroup {
   weekKey: string;
   label: string;
   entries: HistoryEntry[];
-  victories: Victory[];
+  progress: Progress[];
 }
 
 // ============================================================================
@@ -437,18 +437,18 @@ export function getCurrentWeekData(history: HistoryEntry[]): HeatmapDay[] {
 // GROUPEMENT PAR SEMAINE
 // ============================================================================
 
-export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[] = []): WeekGroup[] {
-  const grouped: Record<string, { label: string; entries: HistoryEntry[]; victories: Victory[] }> = {};
+export function groupHistoryByWeek(history: HistoryEntry[], progress: Progress[] = []): WeekGroup[] {
+  const grouped: Record<string, { label: string; entries: HistoryEntry[]; progress: Progress[] }> = {};
   const now = new Date();
   const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
   
-  // Filtrer les victoires pour ne garder que celles qui existent réellement
+  // Filtrer les progrès pour ne garder que ceux qui existent réellement
   // (avec un ID valide et un contenu non vide)
-  const activeVictories = victories.filter(v => 
-    v.id != null && 
-    v.id > 0 && 
-    v.content && 
-    v.content.trim().length > 0
+  const activeProgress = progress.filter(p => 
+    p.id != null && 
+    p.id > 0 && 
+    p.content && 
+    p.content.trim().length > 0
   );
   
   // Helper pour obtenir la clé et le label de la semaine
@@ -467,7 +467,7 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
   // Initialiser un groupe si nécessaire
   const ensureGroup = (weekKey: string, weekLabel: string) => {
     if (!grouped[weekKey]) {
-      grouped[weekKey] = { label: weekLabel, entries: [], victories: [] };
+      grouped[weekKey] = { label: weekLabel, entries: [], progress: [] };
     }
   };
 
@@ -479,12 +479,12 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
     grouped[weekKey].entries.push(entry);
   });
 
-  // Grouper uniquement les victoires actives
-  activeVictories.forEach(victory => {
-    const victoryDate = new Date(victory.createdAt);
-    const { weekKey, weekLabel } = getWeekInfo(victoryDate);
+  // Grouper uniquement les progrès actifs
+  activeProgress.forEach(item => {
+    const progressDate = new Date(item.createdAt);
+    const { weekKey, weekLabel } = getWeekInfo(progressDate);
     ensureGroup(weekKey, weekLabel);
-    grouped[weekKey].victories.push(victory);
+    grouped[weekKey].progress.push(item);
   });
 
   return Object.entries(grouped)
@@ -493,39 +493,39 @@ export function groupHistoryByWeek(history: HistoryEntry[], victories: Victory[]
       if (keyB === 'current') return 1;
       return keyB.localeCompare(keyA);
     })
-    .map(([weekKey, { label, entries, victories: weekVictories }]) => ({
+    .map(([weekKey, { label, entries, progress: weekProgress }]) => ({
       weekKey,
       label,
       entries,
-      victories: weekVictories,
+      progress: weekProgress,
     }));
 }
 
 /**
- * Calcule la première date entre les victoires et l'historique
- * Utilisé pour déterminer le point de départ des graphiques de victoires
+ * Calcule la première date entre les progrès et l'historique
+ * Utilisé pour déterminer le point de départ des graphiques de progrès
  */
-export function getFirstDateFromVictoriesAndHistory(
-  victories: Victory[],
+export function getFirstDateFromProgressAndHistory(
+  progress: Progress[],
   history: HistoryEntry[]
 ): Date | null {
-  const sortedVictories = [...victories].sort((a, b) => 
+  const sortedProgress = [...progress].sort((a, b) => 
     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
   const sortedHistory = [...history].sort((a, b) => 
     new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
   );
 
-  if (sortedVictories.length > 0 && sortedHistory.length > 0) {
-    const firstVictoryDate = new Date(sortedVictories[0].createdAt);
+  if (sortedProgress.length > 0 && sortedHistory.length > 0) {
+    const firstProgressDate = new Date(sortedProgress[0].createdAt);
     const firstExerciseDate = new Date(sortedHistory[0].completedAt);
-    return firstVictoryDate < firstExerciseDate ? firstVictoryDate : firstExerciseDate;
+    return firstProgressDate < firstExerciseDate ? firstProgressDate : firstExerciseDate;
   }
   if (sortedHistory.length > 0) {
     return new Date(sortedHistory[0].completedAt);
   }
-  if (sortedVictories.length > 0) {
-    return new Date(sortedVictories[0].createdAt);
+  if (sortedProgress.length > 0) {
+    return new Date(sortedProgress[0].createdAt);
   }
   return null;
 }

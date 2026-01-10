@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { format, startOfDay } from 'date-fns';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useVictories } from '@/app/hooks/useVictories';
+import { useProgress } from '@/app/hooks/useProgress';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
@@ -13,7 +13,7 @@ type DayExercise = {
 
 type UseDayDetailDataReturn = {
   exercises: DayExercise[];
-  victories: ReturnType<typeof useVictories>['victories'];
+  progressList: ReturnType<typeof useProgress>['progressList'];
 };
 
 /**
@@ -25,7 +25,7 @@ type UseDayDetailDataReturn = {
  */
 export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDataReturn {
   const { history } = useHistory();
-  const { victories: allVictories } = useVictories();
+  const { progressList: allProgress } = useProgress();
 
   const exercises = useMemo(() => {
     if (!selectedDay?.dateKey) return [];
@@ -46,18 +46,18 @@ export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDa
       }));
   }, [selectedDay, history]);
 
-  const victories = useMemo(() => {
+  const progressList = useMemo(() => {
     if (!selectedDay?.dateKey) return [];
     
-    return allVictories.filter(v => {
-      // Utiliser la même logique de normalisation pour les victoires
-      // v.createdAt est une string ISO depuis l'API
-      const victoryDate = new Date(v.createdAt);
-      const victoryDateKey = format(startOfDay(victoryDate), 'yyyy-MM-dd');
-      return victoryDateKey === selectedDay.dateKey;
+    return allProgress.filter(p => {
+      // Utiliser la même logique de normalisation pour les progrès
+      // p.createdAt est une string ISO depuis l'API
+      const progressDate = new Date(p.createdAt);
+      const progressDateKey = format(startOfDay(progressDate), 'yyyy-MM-dd');
+      return progressDateKey === selectedDay.dateKey;
     });
-  }, [selectedDay, allVictories]);
+  }, [selectedDay, allProgress]);
 
-  return { exercises, victories };
+  return { exercises, progressList };
 }
 

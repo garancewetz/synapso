@@ -2,25 +2,25 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { EmptyState, CreateUserCard, Loader, VictoryFAB, VictoryBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
-import { VictoryCard } from '@/app/components/historique';
+import { EmptyState, CreateUserCard, Loader, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
+import { ProgressCard } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
-import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
-import { useVictories } from '@/app/hooks/useVictories';
+import { useProgress } from '@/app/hooks/useProgress';
 
 type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
 
 export default function Home() {
   const pathname = usePathname();
   const { currentUser, users, loading: userLoading } = useUser();
-  const victoryModal = useVictoryModal();
+  const progressModal = useProgressModal();
   const isAphasic = currentUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
@@ -34,8 +34,8 @@ export default function Home() {
     resetFrequency: currentUser?.resetFrequency || 'DAILY',
   });
 
-  // Charger les victoires (pour la dernière victoire)
-  const { lastVictory, refetch: refetchVictories } = useVictories();
+  // Charger les progrès (pour le dernier progrès)
+  const { lastProgress, refetch: refetchProgress } = useProgress();
 
 
   // Options des onglets
@@ -224,22 +224,22 @@ export default function Home() {
                     title="Noter une réussite"
                     icon={<SparklesIcon className="w-5 h-5" />}
                     description="Célébrez un moment important de votre parcours"
-                    onClick={() => victoryModal.openForCreate()}
+                    onClick={() => progressModal.openForCreate()}
                     iconBgColor={SITEMAP_ICON_STYLES.primary.victory.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.victory.text}
                   />
                   
-                  {/* Section dernière victoire */}
-                  {lastVictory && (
+                  {/* Section dernier progrès */}
+                  {lastProgress && (
                     <div className="mt-6">
                       <div className="flex items-center justify-between mb-3">
                         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <span>{VICTORY_EMOJIS.STAR_BRIGHT}</span> Ma dernière réussite
+                          <span>{PROGRESS_EMOJIS.STAR_BRIGHT}</span> Mon dernier progrès
                         </h2>
                       </div>
-                      <VictoryCard 
-                        victory={lastVictory} 
-                        onEdit={victoryModal.openForEdit}
+                      <ProgressCard 
+                        progress={lastProgress} 
+                        onEdit={progressModal.openForEdit}
                       />
                     </div>
                   )}
@@ -264,21 +264,21 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bouton flottant "Noter une victoire" - visible sur toutes les pages */}
-      {currentUser && exercices.length > 0 && <VictoryFAB />}
+      {/* Bouton flottant "Noter un progrès" - visible sur toutes les pages */}
+      {currentUser && exercices.length > 0 && <ProgressFAB />}
 
-      {/* Modal d'édition de victoire */}
+      {/* Modal d'édition de progrès */}
       {currentUser && (
-        <VictoryBottomSheet
-          isOpen={victoryModal.isOpen}
-          onClose={victoryModal.close}
+        <ProgressBottomSheet
+          isOpen={progressModal.isOpen}
+          onClose={progressModal.close}
           onSuccess={() => {
-            refetchVictories();
-            // Rafraîchir aussi la liste des exercices au cas où une victoire orthophonie a été créée
+            refetchProgress();
+            // Rafraîchir aussi la liste des exercices au cas où un progrès orthophonie a été créé
             refetchExercices();
           }}
           userId={currentUser.id}
-          victoryToEdit={victoryModal.victoryToEdit}
+          progressToEdit={progressModal.progressToEdit}
         />
       )}
 

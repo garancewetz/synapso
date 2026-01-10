@@ -4,17 +4,17 @@ import { format, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS } from '@/app/constants/exercice.constants';
-import { VICTORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 type Props = {
   day: HeatmapDay | null;
-  victoryDates?: Set<string>;
+  progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
   showDate?: boolean;
 };
 
-export function ActivityHeatmapCell({ day, victoryDates, onDayClick, showDate = true }: Props) {
+export function ActivityHeatmapCell({ day, progressDates, onDayClick, showDate = true }: Props) {
   // Case vide pour l'alignement
   if (!day) {
     return <div className="aspect-square" />;
@@ -24,9 +24,9 @@ export function ActivityHeatmapCell({ day, victoryDates, onDayClick, showDate = 
   const hasExercise = day.count > 0;
   const category = day.dominantCategory;
   const categoryStyle = category ? CATEGORY_HEATMAP_COLORS[category] : null;
-  const hasVictory = victoryDates && day.dateKey && victoryDates.has(day.dateKey);
+  const hasProgress = progressDates && day.dateKey && progressDates.has(day.dateKey);
   
-  const isClickable = onDayClick && (hasExercise || hasVictory);
+  const isClickable = onDayClick && (hasExercise || hasProgress);
   
   const tooltipText = day.date 
     ? `${format(day.date, 'd MMMM', { locale: fr })}: ${day.count} exercice${day.count > 1 ? 's' : ''}` 
@@ -73,12 +73,12 @@ export function ActivityHeatmapCell({ day, victoryDates, onDayClick, showDate = 
         )}
         
         {/* Indicateur de victoire (étoile dorée) */}
-        {hasVictory && (
+        {hasProgress && (
           <span 
             className="absolute -top-2 -left-2 text-xl md:text-2xl drop-shadow-md"
-            title="Une victoire notée ce jour !"
+            title="Un progrès noté ce jour !"
           >
-            {VICTORY_EMOJIS.STAR}
+            {PROGRESS_EMOJIS.STAR}
           </span>
         )}
       </div>

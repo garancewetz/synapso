@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { VICTORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 
 type Props = {
   onClick: () => void;
@@ -24,13 +24,13 @@ const variantClasses = {
 };
 
 /**
- * Bouton "Noter une victoire" réutilisable
+ * Bouton "Noter un progrès" réutilisable
  * 
  * Variantes :
  * - `fixed` : Bouton flottant fixe en bas de l'écran
  * - `inline` : Bouton standard pour intégration dans une page
  */
-export default function VictoryButton({ 
+export default function ProgressButton({ 
   onClick, 
   variant = 'inline',
   position = 'right',
@@ -45,11 +45,11 @@ export default function VictoryButton({
     <button
       onClick={onClick}
       className={clsx(baseClasses, variantClasses[variant], positionClass)}
-      aria-label="Noter une victoire"
+      aria-label="Noter un progrès"
     >
-      <span className={isFixed ? 'text-xl' : 'text-lg'}>{VICTORY_EMOJIS.STAR_BRIGHT}</span>
+      <span className={isFixed ? 'text-xl' : 'text-lg'}>{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       <span className="hidden md:inline">
-        {isFixed ? 'Noter une victoire' : label}
+        {isFixed ? 'Noter un progrès' : label}
       </span>
     </button>
   );

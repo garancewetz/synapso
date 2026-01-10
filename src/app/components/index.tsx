@@ -21,10 +21,10 @@ import SiteProtection from './SiteProtection';
 import { SiteMapCard } from './SiteMapCard';
 import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
-import VictoryBottomSheet from './VictoryBottomSheet';
-import VictoryButton from './VictoryButton';
-import VictoryFAB from './VictoryFAB';
-import ViewVictoriesButton from './ViewVictoriesButton';
+import ProgressBottomSheet from './ProgressBottomSheet';
+import ProgressButton from './ProgressButton';
+import ProgressFAB from './ProgressFAB';
+import ViewProgressButton from './ViewProgressButton';
 import WelcomeHeader from './WelcomeHeader';
 import WelcomeHeaderWrapper from './WelcomeHeaderWrapper';
 import { TouchLink } from './TouchLink';
@@ -66,10 +66,10 @@ export {
   StatBadge,
   Textarea,
   TouchLink,
-  VictoryBottomSheet,
-  VictoryButton,
-  VictoryFAB,
-  ViewVictoriesButton,
+  ProgressBottomSheet,
+  ProgressButton,
+  ProgressFAB,
+  ViewProgressButton,
   WelcomeHeader,
   WelcomeHeaderWrapper,
 };

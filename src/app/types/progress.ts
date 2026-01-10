@@ -1,4 +1,4 @@
-export interface Victory {
+export interface Progress {
   id: number;
   content: string;
   emoji: string | null;
@@ -6,7 +6,7 @@ export interface Victory {
   createdAt: string;
 }
 
-export interface VictoryInput {
+export interface ProgressInput {
   content: string;
   emoji?: string;
 }

@@ -1,21 +1,21 @@
-import { VICTORY_TAGS, VICTORY_TAGS_WITH_EMOJI } from '@/app/constants/victory.constants';
+import { PROGRESS_TAGS, PROGRESS_TAGS_WITH_EMOJI } from '@/app/constants/progress.constants';
 import { CATEGORY_ICONS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT, CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
-import { ORTHOPHONIE_VICTORY_EMOJI } from '@/app/constants/emoji.constants';
+import { ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 /**
- * Extrait les victory tags du contenu et retourne le contenu nettoyé + les tags trouvés
+ * Extrait les progress tags du contenu et retourne le contenu nettoyé + les tags trouvés
  * 
- * @param content - Le contenu de la victoire
+ * @param content - Le contenu du progrès
  * @returns Un objet avec le contenu nettoyé et les tags trouvés
  */
-export function extractVictoryTags(content: string): { cleanContent: string; tags: Array<{ label: string; emoji: string }> } {
+export function extractProgressTags(content: string): { cleanContent: string; tags: Array<{ label: string; emoji: string }> } {
   let cleanContent = content;
   const foundTags: Array<{ label: string; emoji: string }> = [];
 
-  VICTORY_TAGS.forEach(({ label, emoji }) => {
-    if (VICTORY_TAGS_WITH_EMOJI.includes(label as typeof VICTORY_TAGS_WITH_EMOJI[number])) {
+  PROGRESS_TAGS.forEach(({ label, emoji }) => {
+    if (PROGRESS_TAGS_WITH_EMOJI.includes(label as typeof PROGRESS_TAGS_WITH_EMOJI[number])) {
       const tagPattern = `${emoji}${label}${emoji}`;
       // Créer une regex pour retirer le tag même s'il est entouré d'espaces
       const regex = new RegExp(`\\s*${tagPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`, 'g');
@@ -37,9 +37,9 @@ export function extractVictoryTags(content: string): { cleanContent: string; tag
 }
 
 /**
- * Extrait la catégorie d'exercice à partir de l'emoji d'une victoire
+ * Extrait la catégorie d'exercice à partir de l'emoji d'un progrès
  * 
- * @param emoji - L'emoji de la victoire (peut être null)
+ * @param emoji - L'emoji du progrès (peut être null)
  * @returns La catégorie d'exercice si trouvée, null sinon
  */
 export function getExerciceCategoryFromEmoji(emoji: string | null | undefined): ExerciceCategory | null {
@@ -51,23 +51,23 @@ export function getExerciceCategoryFromEmoji(emoji: string | null | undefined): 
 }
 
 /**
- * Détermine si une victoire est de type orthophonie
+ * Détermine si un progrès est de type orthophonie
  * 
- * @param emoji - L'emoji de la victoire (peut être null)
- * @returns true si c'est une victoire orthophonie
+ * @param emoji - L'emoji du progrès (peut être null)
+ * @returns true si c'est un progrès orthophonie
  */
-export function isOrthophonieVictory(emoji: string | null | undefined): boolean {
-  return emoji === ORTHOPHONIE_VICTORY_EMOJI;
+export function isOrthophonieProgress(emoji: string | null | undefined): boolean {
+  return emoji === ORTHOPHONIE_PROGRESS_EMOJI;
 }
 
 /**
- * Calcule les badges pour une victoire (type Ortho/Physique et catégorie d'exercice)
+ * Calcule les badges pour un progrès (type Ortho/Physique et catégorie d'exercice)
  * 
- * @param emoji - L'emoji de la victoire
+ * @param emoji - L'emoji du progrès
  * @returns Un objet contenant les informations des badges
  */
-export function getVictoryBadges(emoji: string | null | undefined) {
-  const isOrthophonie = isOrthophonieVictory(emoji);
+export function getProgressBadges(emoji: string | null | undefined) {
+  const isOrthophonie = isOrthophonieProgress(emoji);
   const exerciceCategory = getExerciceCategoryFromEmoji(emoji);
 
   const typeBadge = {

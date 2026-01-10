@@ -3,16 +3,16 @@
 // ============================================================================
 
 /**
- * Emojis pour les victoires et réussites
+ * Emojis pour les progrès
  */
-export const VICTORY_EMOJIS = {
-  /** Étoile simple - utilisée dans les cartes de victoire, heatmap, etc. */
+export const PROGRESS_EMOJIS = {
+  /** Étoile simple - utilisée dans les cartes de progrès, heatmap, etc. */
   STAR: '⭐',
-  /** Étoile brillante - utilisée dans les titres et boutons de victoire */
+  /** Étoile brillante - utilisée dans les titres et boutons de progrès */
   STAR_BRIGHT: '🌟',
-  /** Trophée - utilisée pour célébrer les grandes réussites */
+  /** Trophée - utilisée pour célébrer les grands progrès */
   TROPHY: '🏆',
-  /** Pouce levé - utilisée pour célébrer les réussites */
+  /** Pouce levé - utilisée pour célébrer les progrès */
   THUMBS_UP: '👍',
 } as const;
 
@@ -27,9 +27,9 @@ export const CATEGORY_EMOJIS = {
 } as const;
 
 /**
- * Emoji utilisé pour identifier les victoires orthophonie dans la base de données
+ * Emoji utilisé pour identifier les progrès orthophonie dans la base de données
  */
-export const ORTHOPHONIE_VICTORY_EMOJI = '🎯' as const;
+export const ORTHOPHONIE_PROGRESS_EMOJI = '🎯' as const;
 
 /**
  * Emojis pour la navigation et le parcours

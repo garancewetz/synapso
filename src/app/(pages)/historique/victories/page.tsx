@@ -3,23 +3,23 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
-import { useVictoryModal } from '@/app/hooks/useVictoryModal';
+import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useVictories } from '@/app/hooks/useVictories';
-import { VictoryTimeline } from '@/app/components/historique';
-import { VictoryBottomSheet, VictoryButton, ConfettiRain } from '@/app/components';
+import { useProgress } from '@/app/hooks/useProgress';
+import { ProgressTimeline } from '@/app/components/historique';
+import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
 import { BackButton } from '@/app/components/BackButton';
-import { VICTORY_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
-import { isOrthophonieVictory } from '@/app/utils/victory.utils';
+import { PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { isOrthophonieProgress } from '@/app/utils/progress.utils';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'orthophonie' | 'physique';
 
-export default function VictoriesPage() {
+export default function ProgressPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const { currentUser } = useUser();
-  const victoryModal = useVictoryModal();
+  const progressModal = useProgressModal();
   const searchParams = useSearchParams();
   const filterParam = searchParams.get('filter') as FilterType | null;
   const [filter, setFilter] = useState<FilterType>(filterParam && ['all', 'orthophonie', 'physique'].includes(filterParam) ? filterParam : 'all');
@@ -27,8 +27,8 @@ export default function VictoriesPage() {
   // Charger l'historique
   const { history } = useHistory();
 
-  // Charger les victoires
-  const { victories, loading, refetch: refetchVictories } = useVictories();
+  // Charger les progrès
+  const { progressList, loading, refetch: refetchProgress } = useProgress();
 
   // Synchroniser le filtre avec le paramètre d'URL
   useEffect(() => {
@@ -45,32 +45,32 @@ export default function VictoriesPage() {
     }
   }, [showConfetti]);
 
-  // Handler pour le succès d'une victoire avec confettis dorés
-  const handleVictorySuccess = () => {
+  // Handler pour le succès d'un progrès avec confettis dorés
+  const handleProgressSuccess = () => {
     setShowConfetti(true);
-    refetchVictories();
+    refetchProgress();
   };
 
-  // Filtrer les victoires selon le filtre sélectionné
-  // Si l'utilisateur n'est pas aphasique, on affiche toutes les victoires
-  const filteredVictories = useMemo(() => {
+  // Filtrer les progrès selon le filtre sélectionné
+  // Si l'utilisateur n'est pas aphasique, on affiche tous les progrès
+  const filteredProgress = useMemo(() => {
     const isAphasic = currentUser?.isAphasic ?? false;
     
-    // Si l'utilisateur n'est pas aphasique, toujours afficher toutes les victoires
+    // Si l'utilisateur n'est pas aphasique, toujours afficher tous les progrès
     if (!isAphasic) {
-      return victories;
+      return progressList;
     }
     
     // Sinon, appliquer le filtre sélectionné
     if (filter === 'all') {
-      return victories;
+      return progressList;
     }
     if (filter === 'orthophonie') {
-      return victories.filter(v => v.emoji === '🎯');
+      return progressList.filter(p => p.emoji === '🎯');
     }
     // filter === 'physique'
-    return victories.filter(v => v.emoji !== '🎯');
-  }, [victories, filter, currentUser?.isAphasic]);
+    return progressList.filter(p => p.emoji !== '🎯');
+  }, [progressList, filter, currentUser?.isAphasic]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
@@ -81,39 +81,39 @@ export default function VictoriesPage() {
         {/* Header */}
         <div className={clsx('flex items-center justify-between mb-6', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
-            {VICTORY_EMOJIS.STAR_BRIGHT} Toutes mes réussites
+            {PROGRESS_EMOJIS.STAR_BRIGHT} Tous mes progrès
           </h1>
           {currentUser && (
-            <VictoryButton 
-              onClick={victoryModal.openForCreate}
+            <ProgressButton 
+              onClick={progressModal.openForCreate}
               variant="inline"
               label="Ajouter"
             />
           )}
         </div>
 
-        {/* Filtre avec nombre de réussites - affiché uniquement pour les utilisateurs aphasiques */}
-        {!loading && victories.length > 0 && (currentUser?.isAphasic ?? false) && (
+        {/* Filtre avec nombre de progrès - affiché uniquement pour les utilisateurs aphasiques */}
+        {!loading && progressList.length > 0 && (currentUser?.isAphasic ?? false) && (
           <div className="mb-6">
             <SegmentedControl
               options={[
                 {
                   value: 'all',
-                  label: 'Toutes',
-                  icon: VICTORY_EMOJIS.STAR_BRIGHT,
-                  count: victories.length
+                  label: 'Tous',
+                  icon: PROGRESS_EMOJIS.STAR_BRIGHT,
+                  count: progressList.length
                 },
                 {
                   value: 'orthophonie',
                   label: 'Orthophonie',
                   icon: CATEGORY_EMOJIS.ORTHOPHONIE,
-                  count: victories.filter(v => isOrthophonieVictory(v.emoji)).length
+                  count: progressList.filter(p => isOrthophonieProgress(p.emoji)).length
                 },
                 {
                   value: 'physique',
                   label: 'Physique',
                   icon: '🏋️',
-                  count: victories.filter(v => !isOrthophonieVictory(v.emoji)).length
+                  count: progressList.filter(p => !isOrthophonieProgress(p.emoji)).length
                 }
               ]}
               value={filter}
@@ -125,23 +125,23 @@ export default function VictoriesPage() {
           </div>
         )}
 
-        {/* Liste des victoires */}
+        {/* Liste des progrès */}
         {loading ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-gray-500">Chargement...</div>
           </div>
         ) : (
-          <VictoryTimeline 
-            victories={filteredVictories}
-            allVictories={victories}
+          <ProgressTimeline 
+            progressList={filteredProgress}
+            allProgress={progressList}
             history={history}
-            onEdit={victoryModal.openForEdit}
+            onEdit={progressModal.openForEdit}
             hideChart={true}
           />
         )}
       </div>
 
-      {/* Pluie de confettis dorés pour célébrer la victoire */}
+      {/* Pluie de confettis dorés pour célébrer le progrès */}
       <ConfettiRain 
         show={showConfetti} 
         fromWindow 
@@ -150,14 +150,14 @@ export default function VictoriesPage() {
         confettiCount={35}
       />
 
-      {/* Modal de victoire */}
+      {/* Modal de progrès */}
       {currentUser && (
-        <VictoryBottomSheet
-          isOpen={victoryModal.isOpen}
-          onClose={victoryModal.close}
-          onSuccess={handleVictorySuccess}
+        <ProgressBottomSheet
+          isOpen={progressModal.isOpen}
+          onClose={progressModal.close}
+          onSuccess={handleProgressSuccess}
           userId={currentUser.id}
-          victoryToEdit={victoryModal.victoryToEdit}
+          progressToEdit={progressModal.progressToEdit}
         />
       )}
     </div>

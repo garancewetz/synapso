@@ -10,7 +10,7 @@ type Props = {
   currentStreak: number;
   showFullLink?: boolean;
   userName?: string;
-  victoryCountByDate?: Map<string, number>;
+  progressCountByDate?: Map<string, number>;
   onDayClick?: (day: HeatmapDay) => void;
 };
 
@@ -20,7 +20,7 @@ type TooltipData = {
   day: HeatmapDay;
 } | null;
 
-export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Props) {
+export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData>(null);
   
   // Ne jamais afficher "Aucune donnée" - toujours montrer le graphique avec une ligne à zéro
@@ -149,9 +149,9 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
               <div className="text-amber-300 font-bold mt-1">
                 {tooltip.day.count} exercice{tooltip.day.count > 1 ? 's' : ''}
               </div>
-              {victoryCountByDate?.get(tooltip.day.dateKey) && (
+              {progressCountByDate?.get(tooltip.day.dateKey) && (
                 <div className="text-yellow-300 text-xs mt-1">
-                  ⭐ {victoryCountByDate.get(tooltip.day.dateKey)} victoire{(victoryCountByDate.get(tooltip.day.dateKey) || 0) > 1 ? 's' : ''} physique{(victoryCountByDate.get(tooltip.day.dateKey) || 0) > 1 ? 's' : ''} 💪
+                  ⭐ {progressCountByDate.get(tooltip.day.dateKey)} progrès 💪
                 </div>
               )}
             </div>
@@ -343,11 +343,11 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
 
           {/* Étoiles sur les sommets (ou au niveau du sol si pas d'exercice) */}
           {points.map((point) => {
-            const victoryCount = victoryCountByDate?.get(point.day.dateKey) || 0;
-            if (victoryCount === 0) return null;
+            const progressCount = progressCountByDate?.get(point.day.dateKey) || 0;
+            if (progressCount === 0) return null;
 
-            // Créer plusieurs étoiles superposées en fonction du nombre de victoires
-            const stars = Array.from({ length: Math.min(victoryCount, 5) }, (_, i) => {
+            // Créer plusieurs étoiles superposées en fonction du nombre de progrès
+            const stars = Array.from({ length: Math.min(progressCount, 5) }, (_, i) => {
               // Décalages pour positionner les étoiles au-dessus du sommet (ou du sol)
               const offsetX = 2; // Léger décalage horizontal pour centrer l'étoile dans le halo
               const offsetY = i === 0 ? -15 : -32 - (i - 1) * 18; // 1ère à 15px au-dessus, autres empilées avec espacement de 18px
@@ -384,13 +384,13 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
 
             return (
               <g 
-                key={`victory-${point.index}`}
+                key={`progress-${point.index}`}
                 className="cursor-pointer"
                 onClick={() => onDayClick?.(point.day)}
               >
                 {stars}
-                {/* Badge numérique si plus de 5 victoires */}
-                {victoryCount > 5 && (
+                {/* Badge numérique si plus de 5 progrès */}
+                {progressCount > 5 && (
                   <g>
                     <circle
                       cx={point.x + 22}
@@ -409,7 +409,7 @@ export function ActivityLineChart({ data, victoryCountByDate, onDayClick }: Prop
                       fontWeight="bold"
                       fill="white"
                     >
-                      {victoryCount}
+                      {progressCount}
                     </text>
                   </g>
                 )}

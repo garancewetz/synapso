@@ -161,7 +161,7 @@ export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId
   return (
     <BottomSheetModal isOpen={isOpen} onClose={handleClose}>
       {/* Titre */}
-        <div className="text-center pb-3 md:pt-4">
+        <div className="text-center pb-3 md:pt-4 md:px-12">
           <h2 className="text-xl font-bold text-gray-900">
             {isEditMode ? 'Modifier ton progrès ✏️' : `Ton progrès ! ${PROGRESS_EMOJIS.STAR_BRIGHT}`}
           </h2>

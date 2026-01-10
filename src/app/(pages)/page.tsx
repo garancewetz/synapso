@@ -150,28 +150,11 @@ export default function Home() {
                 <SiteMapGroup
                   title="Journal d'aphasie"
                   icon={<ChatIcon className="w-5 h-5" />}
-                  description="Mes citations et mes exercices"
+                  description="Mes exercices et mes citations"
                   href="/aphasie"
                   iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
                   iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
                 >
-                  <SiteMapCard
-                    title="Mes citations"
-                    icon={<BookIcon className="w-5 h-5" />}
-                    description="Voir toutes"
-                    href="/aphasie/citations"
-                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                  />
-                  <SiteMapCard
-                    title="Ajouter citation"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    description="Créer une nouvelle"
-                    href="/aphasie/add"
-                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    isSecondary={true}
-                  />
                   <SiteMapCard
                     title="Exercices ortho"
                     icon={<PinIcon className="w-5 h-5" />}
@@ -185,6 +168,23 @@ export default function Home() {
                     icon={<PlusIcon className="w-5 h-5" />}
                     description="Créer un exercice"
                     href="/aphasie/exercices/add"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                    isSecondary={true}
+                  />
+                  <SiteMapCard
+                    title="Mes citations"
+                    icon={<BookIcon className="w-5 h-5" />}
+                    description="Voir toutes"
+                    href="/aphasie/citations"
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
+                  />
+                  <SiteMapCard
+                    title="Ajouter citation"
+                    icon={<PlusIcon className="w-5 h-5" />}
+                    description="Créer une nouvelle"
+                    href="/aphasie/add"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                     isSecondary={true}

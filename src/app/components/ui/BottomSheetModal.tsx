@@ -110,7 +110,7 @@ export default function BottomSheetModal({
             <button
               type="button"
               onClick={onClose}
-              className="hidden md:flex absolute top-3 right-3 w-8 h-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer z-10"
+              className="hidden md:flex absolute top-3 right-3 w-8 h-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer z-50"
               aria-label="Fermer"
             >
               <span className="text-gray-500 text-lg">✕</span>

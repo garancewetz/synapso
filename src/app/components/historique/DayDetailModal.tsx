@@ -38,7 +38,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
       closeLabel="Fermer"
     >
       {/* Header compact */}
-      <div className="px-5 py-4 flex items-center justify-between">
+      <div className="px-5 py-4 flex items-center justify-between md:pr-14">
         <h2 className="text-lg font-bold text-gray-900">{formattedDate}</h2>
         
         {/* Badges résumé */}

@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const [formData, setFormData] = useState({
     quote: '',
     meaning: '',
@@ -24,8 +24,8 @@ export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    if (itemId && currentUser) {
-      fetch(`/api/aphasie/${itemId}?userId=${currentUser.id}`, { credentials: 'include' })
+    if (itemId && effectiveUser) {
+      fetch(`/api/aphasie/${itemId}?userId=${effectiveUser.id}`, { credentials: 'include' })
         .then((res) => {
           if (!res.ok) {
             throw new Error(`Erreur HTTP: ${res.status}`);
@@ -54,14 +54,14 @@ export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
           setError('Erreur lors du chargement de l&apos;item');
         });
     }
-  }, [itemId, currentUser]);
+  }, [itemId, effectiveUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    if (!currentUser) {
+    if (!effectiveUser) {
       setError('Utilisateur non connecté');
       setLoading(false);
       return;
@@ -72,7 +72,7 @@ export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
       meaning: formData.meaning,
       date: formData.date || null,
       comment: formData.comment || null,
-      userId: currentUser.id,
+      userId: effectiveUser.id,
     };
 
     try {
@@ -109,7 +109,7 @@ export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
       return;
     }
 
-    if (!currentUser) {
+    if (!effectiveUser) {
       setError('Utilisateur non connecté');
       setShowDeleteConfirm(false);
       return;
@@ -119,7 +119,7 @@ export function AphasieForm({ itemId, onSuccess, onCancel }: Props) {
     setError('');
 
     try {
-      const response = await fetch(`/api/aphasie/${itemId}?userId=${currentUser.id}`, {
+      const response = await fetch(`/api/aphasie/${itemId}?userId=${effectiveUser.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });

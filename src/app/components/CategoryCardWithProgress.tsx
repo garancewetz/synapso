@@ -41,7 +41,7 @@ export function CategoryCardWithProgress({
       aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? `, ${completedCount - total} exercices bonus` : ''}`}
       aria-describedby={`progress-${category}`}
       className={clsx(
-        'group block border-2 rounded-xl transition-all duration-200',
+        'group block border-2 rounded-xl transition-all duration-200 cursor-pointer',
         'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         styles.bg,

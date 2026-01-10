@@ -16,7 +16,7 @@ type Props = {
 };
 
 export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -44,9 +44,9 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       })
       .catch(() => {});
 
-    if (exerciceId && currentUser) {
+    if (exerciceId && effectiveUser) {
       // Charger l'exercice existant
-      fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`, { credentials: 'include' })
+      fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -68,7 +68,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
           setInitialLoading(false);
         });
     }
-  }, [exerciceId, currentUser]);
+  }, [exerciceId, effectiveUser]);
 
   const toggleBodypart = (bodypart: string) => {
     setFormData((prev) => ({
@@ -101,7 +101,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
+    if (!effectiveUser) {
       setError('Utilisateur non défini');
       return;
     }
@@ -128,7 +128,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       category: formData.category,
       bodyparts: formData.bodyparts,
       equipments: formData.equipments,
-      userId: currentUser.id,
+      userId: effectiveUser.id,
     };
 
     try {
@@ -165,7 +165,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
       return;
     }
 
-    if (!currentUser) {
+    if (!effectiveUser) {
       setError('Utilisateur non défini');
       return;
     }
@@ -174,7 +174,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
     setError('');
 
     try {
-      const response = await fetch(`/api/exercices/${exerciceId}?userId=${currentUser.id}`, {
+      const response = await fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -225,7 +225,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                 type="button"
                 onClick={() => setFormData({ ...formData, category })}
                 className={`
-                  flex items-center justify-center p-4 rounded-lg 
+                  flex items-center justify-center p-4 rounded-lg cursor-pointer
                   transition-all duration-200
                   ${colors.bg} ${colors.text}
                   ${isSelected 
@@ -264,7 +264,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                 type="button"
                 onClick={() => toggleBodypart(bodypart)}
                 className={`
-                  px-3 py-2 rounded-lg text-sm transition-all duration-200
+                  px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer
                   ${colorClass}
                   ${isSelected 
                     ? 'border-2 border-gray-400 shadow-md font-semibold' 
@@ -346,7 +346,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
                 type="button"
                 onClick={() => toggleEquipment(equipment)}
                 className={`
-                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer
                   ${isSelected 
                     ? 'bg-purple-500 text-white' 
                     : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
@@ -371,7 +371,7 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
           <button
             type="button"
             onClick={addNewEquipment}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium sm:w-auto w-full"
+            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium sm:w-auto w-full cursor-pointer"
           >
             + Ajouter
           </button>

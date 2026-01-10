@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: Props) {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const [formData, setFormData] = useState({
     text: '',
   });
@@ -41,7 +41,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
     setLoading(true);
     setError('');
 
-    if (!currentUser) {
+    if (!effectiveUser) {
       setError('Utilisateur non connecté');
       setLoading(false);
       return;
@@ -49,7 +49,7 @@ export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel 
 
     const challengeData = {
       text: formData.text,
-      userId: currentUser.id,
+      userId: effectiveUser.id,
     };
 
     try {

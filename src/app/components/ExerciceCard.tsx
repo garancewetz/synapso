@@ -21,7 +21,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
     const [isPinning, setIsPinning] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const { currentUser } = useUser();
+    const { effectiveUser } = useUser();
 
     // Mémoriser le style de catégorie
     const categoryStyle = useMemo(
@@ -38,11 +38,11 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
 
     const handleComplete = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!currentUser) return;
+        if (!effectiveUser) return;
 
         setIsCompleting(true);
         try {
-            const response = await fetch(`/api/exercices/${exercice.id}/complete?userId=${currentUser.id}`, {
+            const response = await fetch(`/api/exercices/${exercice.id}/complete?userId=${effectiveUser.id}`, {
                 method: 'PATCH',
                 credentials: 'include',
             });
@@ -73,15 +73,15 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
         } finally {
             setIsCompleting(false);
         }
-    }, [currentUser, exercice, onCompleted]);
+    }, [effectiveUser, exercice, onCompleted]);
 
     const handlePin = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!currentUser) return;
+        if (!effectiveUser) return;
 
         setIsPinning(true);
         try {
-            const response = await fetch(`/api/exercices/${exercice.id}/pin?userId=${currentUser.id}`, {
+            const response = await fetch(`/api/exercices/${exercice.id}/pin?userId=${effectiveUser.id}`, {
                 method: 'PATCH',
                 credentials: 'include',
             });
@@ -102,7 +102,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
         } finally {
             setIsPinning(false);
         }
-    }, [currentUser, exercice, onCompleted]);
+    }, [effectiveUser, exercice, onCompleted]);
 
     const toggleExpand = useCallback(() => {
         setIsExpanded(prev => !prev);
@@ -142,7 +142,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                             {/* Badge complété OU indicateur hebdomadaire */}
                             <div className="flex items-center gap-2">
                                 {/* Si mode WEEKLY : afficher l'indicateur de jours */}
-                                {currentUser?.resetFrequency === 'WEEKLY' && exercice.weeklyCompletions && exercice.weeklyCompletions.length > 0 ? (
+                                {effectiveUser?.resetFrequency === 'WEEKLY' && exercice.weeklyCompletions && exercice.weeklyCompletions.length > 0 ? (
                                     <WeeklyCompletionIndicator 
                                         completions={exercice.weeklyCompletions}
                                     />
@@ -285,7 +285,7 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
                         isCompletedToday={exercice.completedToday}
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
-                        resetFrequency={currentUser?.resetFrequency}
+                        resetFrequency={effectiveUser?.resetFrequency}
                     />
                 </BaseCard.Footer>
             </BaseCard.Content>

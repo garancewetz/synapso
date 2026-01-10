@@ -10,7 +10,7 @@ import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
 export default function CategoryTabsWrapper() {
   const pathname = usePathname();
-  const { currentUser, loading } = useUser();
+  const { effectiveUser, loading } = useUser();
 
   // Pages où on ne veut pas afficher la navigation
   // Sur la page d'accueil, on masque car les CategoryCard font déjà le travail de navigation
@@ -22,13 +22,11 @@ export default function CategoryTabsWrapper() {
     pathname?.startsWith('/aphasie/edit') ||
     pathname === '/settings';
 
-  const { exercices } = useExercices({
-    userId: currentUser?.id,
-  });
+  const { exercices } = useExercices();
 
   // Calculer les counts par catégorie
   const counts = useMemo(() => {
-    if (shouldHide || !currentUser) {
+    if (shouldHide || !effectiveUser) {
       return CATEGORY_ORDER.reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {} as Record<ExerciceCategory, number>);
     }
 
@@ -36,10 +34,10 @@ export default function CategoryTabsWrapper() {
       ...acc,
       [cat]: exercices.filter(e => e.category === cat).length,
     }), {} as Record<ExerciceCategory, number>);
-  }, [exercices, shouldHide, currentUser]);
+  }, [exercices, shouldHide, effectiveUser]);
 
   // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
-  if (shouldHide || !currentUser || loading) {
+  if (shouldHide || !effectiveUser || loading) {
     return null;
   }
 

@@ -11,9 +11,6 @@ type Props = {
   item: AphasieItem;
 };
 
-// Couleur d'accent pour les citations d'aphasie (violet - orthophonie)
-const APHASIE_ACCENT_COLOR = 'bg-purple-500';
-
 /**
  * Formate une date pour l'affichage
  */
@@ -33,7 +30,7 @@ function formatDisplayDate(dateString: string | null): string | null {
 
 /**
  * Composant pour afficher une citation aphasie
- * Design harmonisé avec le reste de l'application
+ * Design neutre (sans couleur d'accent) harmonisé avec le reste de l'application
  */
 export function AphasieItemCard({ item }: Props) {
   const router = useRouter();
@@ -46,11 +43,10 @@ export function AphasieItemCard({ item }: Props) {
   return (
     <li>
       <BaseCard role="article" aria-label={`Citation: ${item.quote}`}>
-        <BaseCard.Accent color={APHASIE_ACCENT_COLOR} />
         <BaseCard.Content>
           <div className="p-4 md:p-5">
             {/* En-tête avec citation et date */}
-            <div className="flex flex-col gap-3 mb-3">
+            <div className="flex flex-col gap-3">
               {/* Citation principale */}
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -62,9 +58,9 @@ export function AphasieItemCard({ item }: Props) {
                   </p>
                 </div>
                 
-                {/* Badge de date */}
+                {/* Badge de date - style neutre */}
                 {displayDate && (
-                  <Badge className="bg-purple-100 text-purple-700 shrink-0 flex items-center gap-1.5">
+                  <Badge className="bg-gray-100 text-gray-600 shrink-0 flex items-center gap-1.5">
                     <CalendarIcon className="w-3 h-3" />
                     <span>{displayDate}</span>
                   </Badge>

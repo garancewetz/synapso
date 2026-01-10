@@ -15,22 +15,28 @@ type DominantHand = 'LEFT' | 'RIGHT';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { currentUser, updateCurrentUser } = useUser();
-  // Pré-remplir avec le nom de l'utilisateur courant immédiatement
-  const [name, setName] = useState(currentUser?.name || '');
+  const { effectiveUser, currentUser, isAdmin, updateEffectiveUser, logout } = useUser();
+  
+  // Déterminer quel utilisateur on modifie (effectiveUser pour admin en mode impersonation)
+  const userToEdit = effectiveUser;
+  const isImpersonating = isAdmin && effectiveUser && currentUser && effectiveUser.id !== currentUser.id;
+  
+  // Pré-remplir avec le nom de l'utilisateur effectif immédiatement
+  const [name, setName] = useState(userToEdit?.name || '');
   const [resetFrequency, setResetFrequency] = useState<ResetFrequency>(
-    (currentUser?.resetFrequency as ResetFrequency) || 'DAILY'
+    (userToEdit?.resetFrequency as ResetFrequency) || 'DAILY'
   );
   const [dominantHand, setDominantHand] = useState<DominantHand>(
-    (currentUser?.dominantHand as DominantHand) || 'RIGHT'
+    (userToEdit?.dominantHand as DominantHand) || 'RIGHT'
   );
   const [isAphasic, setIsAphasic] = useState<boolean>(
-    currentUser?.isAphasic ?? false
+    userToEdit?.isAphasic ?? false
   );
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   
   // Valeurs initiales pour détecter les changements
   const [initialValues, setInitialValues] = useState<{
@@ -41,12 +47,12 @@ export default function SettingsPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (currentUser) {
+    if (userToEdit) {
       // Utiliser directement les données du contexte (déjà chargées depuis l'API)
-      const loadedName = currentUser.name || '';
-      const loadedResetFrequency = (currentUser.resetFrequency as ResetFrequency) || 'DAILY';
-      const loadedDominantHand = (currentUser.dominantHand as DominantHand) || 'RIGHT';
-      const loadedIsAphasic = currentUser.isAphasic ?? false;
+      const loadedName = userToEdit.name || '';
+      const loadedResetFrequency = (userToEdit.resetFrequency as ResetFrequency) || 'DAILY';
+      const loadedDominantHand = (userToEdit.dominantHand as DominantHand) || 'RIGHT';
+      const loadedIsAphasic = userToEdit.isAphasic ?? false;
       
       setName(loadedName);
       setResetFrequency(loadedResetFrequency);
@@ -63,7 +69,7 @@ export default function SettingsPage() {
       
       setInitialLoading(false);
     }
-  }, [currentUser]);
+  }, [userToEdit]);
   
   // Détecter si des changements ont été faits
   const hasUnsavedChanges = initialValues && (
@@ -75,7 +81,7 @@ export default function SettingsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
+    if (!userToEdit) {
       setError('Utilisateur non défini');
       return;
     }
@@ -85,7 +91,7 @@ export default function SettingsPage() {
     setSuccess(false);
 
     try {
-      const response = await fetch(`/api/users/${currentUser.id}`, {
+      const response = await fetch(`/api/users/${userToEdit.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -101,8 +107,8 @@ export default function SettingsPage() {
 
       const updatedUser = await response.json();
       
-      // Optimistic update : met à jour immédiatement le contexte et la liste
-      updateCurrentUser(updatedUser);
+      // Met à jour l'utilisateur effectif dans le contexte
+      updateEffectiveUser(updatedUser);
       
       // Mettre à jour les valeurs initiales après sauvegarde
       setInitialValues({
@@ -124,6 +130,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    
+    const shouldLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+    if (!shouldLogout) return;
+    
+    setLoggingOut(true);
+    try {
+      await logout();
+      router.push('/');
+    } catch (err) {
+      console.error('Erreur lors de la déconnexion:', err);
+      setError('Erreur lors de la déconnexion');
+      setLoggingOut(false);
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="max-w-5xl mx-auto">
@@ -136,12 +159,12 @@ export default function SettingsPage() {
     );
   }
 
-  if (!currentUser) {
+  if (!userToEdit) {
     return (
       <div className="max-w-5xl mx-auto">
         <div className="px-3 md:px-4">
           <div className="text-center py-8">
-            <p className="text-gray-500">Veuillez sélectionner un utilisateur</p>
+            <p className="text-gray-500">Utilisateur non trouvé</p>
           </div>
         </div>
       </div>
@@ -156,6 +179,16 @@ export default function SettingsPage() {
 
         {/* Titre */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon profil</h1>
+        
+        {/* Avertissement admin si impersonation */}
+        {isImpersonating && (
+          <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-lg">
+            <p className="text-purple-700 text-sm font-medium flex items-center gap-2">
+              <span>👁️</span>
+              <span>Vous consultez le profil de <strong>{userToEdit.name}</strong></span>
+            </p>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <ErrorMessage message={error} />
@@ -203,7 +236,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setDominantHand('LEFT')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all cursor-pointer ${
                   dominantHand === 'LEFT'
                     ? 'bg-amber-400 text-amber-950 shadow-md'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -215,7 +248,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setDominantHand('RIGHT')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all cursor-pointer ${
                   dominantHand === 'RIGHT'
                     ? 'bg-amber-400 text-amber-950 shadow-md'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -240,7 +273,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setIsAphasic(true)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all cursor-pointer ${
                   isAphasic
                     ? 'bg-purple-500 text-white shadow-md'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -252,7 +285,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setIsAphasic(false)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all cursor-pointer ${
                   !isAphasic
                     ? 'bg-purple-500 text-white shadow-md'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -352,8 +385,33 @@ export default function SettingsPage() {
             </Button>
           </div>
         </form>
+
+        {/* Section Déconnexion (uniquement si pas en mode impersonation) */}
+        {!isImpersonating && (
+          <div className="mt-10 pt-6 border-t border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Session</h2>
+            <Button
+              type="button"
+              variant="danger-outline"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="w-full sm:w-auto"
+            >
+              {loggingOut ? (
+                <>
+                  <Loader size="small" />
+                  <span>Déconnexion...</span>
+                </>
+              ) : (
+                <>
+                  <span>🚪</span>
+                  <span>Se déconnecter</span>
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-

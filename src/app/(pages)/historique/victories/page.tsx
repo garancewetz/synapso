@@ -18,7 +18,7 @@ type FilterType = 'all' | 'orthophonie' | 'physique';
 
 export default function ProgressPage() {
   const [showConfetti, setShowConfetti] = useState(false);
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const progressModal = useProgressModal();
   const searchParams = useSearchParams();
   const filterParam = searchParams.get('filter') as FilterType | null;
@@ -54,7 +54,7 @@ export default function ProgressPage() {
   // Filtrer les progrès selon le filtre sélectionné
   // Si l'utilisateur n'est pas aphasique, on affiche tous les progrès
   const filteredProgress = useMemo(() => {
-    const isAphasic = currentUser?.isAphasic ?? false;
+    const isAphasic = effectiveUser?.isAphasic ?? false;
     
     // Si l'utilisateur n'est pas aphasique, toujours afficher tous les progrès
     if (!isAphasic) {
@@ -70,7 +70,7 @@ export default function ProgressPage() {
     }
     // filter === 'physique'
     return progressList.filter(p => p.emoji !== '🎯');
-  }, [progressList, filter, currentUser?.isAphasic]);
+  }, [progressList, filter, effectiveUser?.isAphasic]);
 
   return (
     <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
@@ -79,11 +79,11 @@ export default function ProgressPage() {
 
       <div className="px-3 sm:p-6">
         {/* Header */}
-        <div className={clsx('flex items-center justify-between mb-6', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+        <div className={clsx('flex items-center justify-between mb-6', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
             {PROGRESS_EMOJIS.STAR_BRIGHT} Tous mes progrès
           </h1>
-          {currentUser && (
+          {effectiveUser && (
             <ProgressButton 
               onClick={progressModal.openForCreate}
               variant="inline"
@@ -93,7 +93,7 @@ export default function ProgressPage() {
         </div>
 
         {/* Filtre avec nombre de progrès - affiché uniquement pour les utilisateurs aphasiques */}
-        {!loading && progressList.length > 0 && (currentUser?.isAphasic ?? false) && (
+        {!loading && progressList.length > 0 && (effectiveUser?.isAphasic ?? false) && (
           <div className="mb-6">
             <SegmentedControl
               options={[
@@ -151,12 +151,12 @@ export default function ProgressPage() {
       />
 
       {/* Modal de progrès */}
-      {currentUser && (
+      {effectiveUser && (
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
           onSuccess={handleProgressSuccess}
-          userId={currentUser.id}
+          userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />
       )}

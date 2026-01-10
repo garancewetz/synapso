@@ -22,10 +22,10 @@ export const dynamic = 'force-dynamic';
 export default function AphasiePage() {
   const { hasAccess } = useAphasieCheck();
   const { items } = useAphasieItems();
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const progressModal = useProgressModal();
   const [showConfetti, setShowConfetti] = useState(false);
-  const { progressList: orthoProgress, refetch: refetchProgress } = useOrthophonieProgress(currentUser?.id ?? null);
+  const { progressList: orthoProgress, refetch: refetchProgress } = useOrthophonieProgress(effectiveUser?.id ?? null);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -127,15 +127,15 @@ export default function AphasiePage() {
       </div>
 
       {/* Bouton flottant "Noter un progrès" avec catégorie orthophonie par défaut */}
-      {currentUser && <ProgressFAB onSuccess={handleProgressSuccess} defaultCategory="ORTHOPHONIE" />}
+      {effectiveUser && <ProgressFAB onSuccess={handleProgressSuccess} defaultCategory="ORTHOPHONIE" />}
 
       {/* Modal de progrès avec catégorie orthophonie par défaut */}
-      {currentUser && (
+      {effectiveUser && (
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
           onSuccess={handleProgressSuccess}
-          userId={currentUser.id}
+          userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
           defaultCategory={progressModal.progressToEdit ? undefined : 'ORTHOPHONIE'}
         />

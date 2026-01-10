@@ -2,7 +2,7 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { EmptyState, CreateUserCard, Loader, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
+import { EmptyState, Loader, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
 import { ProgressCard } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
@@ -19,19 +19,17 @@ type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
 
 export default function Home() {
   const pathname = usePathname();
-  const { currentUser, users, loading: userLoading } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
-  const isAphasic = currentUser?.isAphasic ?? false;
+  const isAphasic = effectiveUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
-  const { exercices, loading: loadingExercices, refetch: refetchExercices } = useExercices({
-    userId: userLoading ? undefined : currentUser?.id,
-  });
+  const { exercices, loading: loadingExercices, refetch: refetchExercices } = useExercices();
 
   // Charger les stats de progression par catégorie
   const { stats: categoryStats, loading: loadingStats } = useCategoryStats({
-    userId: currentUser?.id ?? null,
-    resetFrequency: currentUser?.resetFrequency || 'DAILY',
+    userId: effectiveUser?.id ?? null,
+    resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
   });
 
   // Charger les progrès (pour le dernier progrès)
@@ -81,13 +79,13 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-24 md:pb-8">
-          {userLoading || (currentUser && (loadingExercices || loadingStats)) ? (
+          {userLoading || (effectiveUser && (loadingExercices || loadingStats)) ? (
             <div className="flex items-center justify-center py-12">
               <Loader size="large" />
             </div>
-          ) : users.length === 0 ? (
-            <div className="max-w-md mx-auto py-8">
-              <CreateUserCard />
+          ) : !effectiveUser ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader size="large" />
             </div>
           ) : exercices.length === 0 ? (
             <EmptyState
@@ -265,10 +263,10 @@ export default function Home() {
       </div>
 
       {/* Bouton flottant "Noter un progrès" - visible sur toutes les pages */}
-      {currentUser && exercices.length > 0 && <ProgressFAB />}
+      {effectiveUser && exercices.length > 0 && <ProgressFAB />}
 
       {/* Modal d'édition de progrès */}
-      {currentUser && (
+      {effectiveUser && (
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
@@ -277,7 +275,7 @@ export default function Home() {
             // Rafraîchir aussi la liste des exercices au cas où un progrès orthophonie a été créé
             refetchExercices();
           }}
-          userId={currentUser.id}
+          userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />
       )}

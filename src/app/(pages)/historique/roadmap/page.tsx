@@ -22,7 +22,7 @@ import {
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 export default function RoadmapPage() {
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
   const { history } = useHistory();
@@ -103,7 +103,7 @@ export default function RoadmapPage() {
           <StatsCard
             value={totalProgress > 0 ? `${totalProgress} 🌟` : '—'}
             label={
-              totalProgress > 0 && currentUser?.isAphasic && totalOrthoProgress > 0
+              totalProgress > 0 && effectiveUser?.isAphasic && totalOrthoProgress > 0
                 ? `${totalPhysicalProgress}💪 ${totalOrthoProgress}💬`
                 : `progrès`
             }
@@ -143,12 +143,12 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      {currentUser && (
+      {effectiveUser && (
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
           onSuccess={handleProgressSuccess}
-          userId={currentUser.id}
+          userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />
       )}

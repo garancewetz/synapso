@@ -28,10 +28,10 @@ type BodypartPeriodFilter = 'week' | 'month' | 'all';
 export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('all');
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
-  const displayName = currentUser?.name || "";
+  const displayName = effectiveUser?.name || "";
 
   // Charger l'historique
   const { history } = useHistory();
@@ -87,14 +87,14 @@ export default function HistoriquePage() {
             />
           
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
-            <div className={clsx('flex items-center justify-between mb-2', currentUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+            <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                   {PROGRESS_EMOJIS.STAR_BRIGHT} Mes progrès
                 </h2>
                 {totalProgress > 0 && (
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                    {currentUser?.isAphasic ? (
+                    {effectiveUser?.isAphasic ? (
                       <>
                         <span className="text-xs font-medium text-gray-500">
                           {totalProgress} au total
@@ -116,7 +116,7 @@ export default function HistoriquePage() {
                   </div>
                 )}
               </div>
-              {currentUser && (
+              {effectiveUser && (
                 <ProgressButton 
                   onClick={progressModal.openForCreate}
                   variant="inline"
@@ -182,12 +182,12 @@ export default function HistoriquePage() {
         confettiCount={35}
       />
 
-      {currentUser && (
+      {effectiveUser && (
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
           onSuccess={handleProgressSuccess}
-          userId={currentUser.id}
+          userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />
       )}

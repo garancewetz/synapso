@@ -27,7 +27,7 @@ export default function CategoryPage() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const { currentUser, loading: userLoading } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
@@ -35,7 +35,6 @@ export default function CategoryPage() {
 
   // Ne charger les exercices que si le user est chargé et disponible
   const { exercices, loading: loadingExercices, updateExercice, refetch } = useExercices({
-    userId: userLoading ? undefined : currentUser?.id,
     category: isValidCategory ? categoryParam : undefined,
   });
   
@@ -76,8 +75,8 @@ export default function CategoryPage() {
         {/* Header */}
         {!userLoading && !loadingExercices && (
           <div className="px-4 mb-6">
-            <div className={`flex items-start gap-4 ${currentUser?.dominantHand === 'LEFT' ? 'justify-start md:justify-between' : 'justify-between'} md:justify-between`}>
-              {currentUser?.dominantHand === 'LEFT' ? (
+            <div className={`flex items-start gap-4 ${effectiveUser?.dominantHand === 'LEFT' ? 'justify-start md:justify-between' : 'justify-between'} md:justify-between`}>
+              {effectiveUser?.dominantHand === 'LEFT' ? (
                 <>
                   <AddButton 
                     href="/exercice/add" 

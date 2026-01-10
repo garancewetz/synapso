@@ -2,155 +2,235 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 type User = {
   id: number;
   name: string;
+  role: 'USER' | 'ADMIN';
   resetFrequency?: 'DAILY' | 'WEEKLY';
   dominantHand?: 'LEFT' | 'RIGHT';
   isAphasic?: boolean;
+  createdAt?: string;
+};
+
+type UserWithStats = User & {
+  _count?: {
+    exercices: number;
+    progress: number;
+    aphasieItems: number;
+    aphasieChallenges: number;
+  };
 };
 
 type UserContextType = {
+  /** L'utilisateur connecté (toujours l'admin s'il est connecté) */
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
-  /** Met à jour l'utilisateur courant ET la liste des utilisateurs (optimistic update) */
-  updateCurrentUser: (updatedUser: User) => void;
-  users: User[];
+  /** L'utilisateur effectif (impersonné si admin, sinon currentUser) */
+  effectiveUser: User | null;
+  /** Si l'utilisateur connecté est admin */
+  isAdmin: boolean;
+  /** Chargement en cours */
   loading: boolean;
-  changingUser: boolean;
-  refreshUsers: () => Promise<void>;
+  /** Met à jour l'utilisateur effectif (après modification de ses settings) */
+  updateEffectiveUser: (updatedUser: User) => void;
+  /** Déconnexion */
+  logout: () => Promise<void>;
+  /** Recharger les infos utilisateur */
+  refreshUser: () => Promise<void>;
+  // Admin only
+  /** Liste de tous les utilisateurs (admin only) */
+  allUsers: UserWithStats[];
+  /** Impersonner un utilisateur (admin only) */
+  impersonate: (userId: number) => Promise<void>;
+  /** Arrêter l'impersonation (admin only) */
+  stopImpersonation: () => Promise<void>;
+  /** Recharger la liste des utilisateurs (admin only) */
+  refreshAllUsers: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'synapso_current_user';
-const DEFAULT_USER_NAME = 'Calypso';
-
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUserState] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [changingUser, setChangingUser] = useState(false);
+  const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
 
-  // Fonction pour traiter les données utilisateurs (extrait pour éviter la duplication)
-  const processUsersData = useCallback((data: User[], skipCurrentUserUpdate = false) => {
-    if (Array.isArray(data)) {
-      setUsers(data);
-      
-      // Si on ne doit pas mettre à jour currentUser (ex: après un updateCurrentUser)
-      if (skipCurrentUserUpdate) return;
-      
-      // Charger l'utilisateur depuis localStorage
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const storedUser = JSON.parse(stored);
-          // Vérifier que l'utilisateur stocké existe toujours dans la liste
-          const foundUser = data.find(u => u.id === storedUser.id);
-          if (foundUser) {
-            setCurrentUserState(foundUser);
-          } else {
-            // Si l'utilisateur stocké n'existe plus, utiliser le défaut
-            const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
-            if (defaultUser) {
-              setCurrentUserState(defaultUser);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
-            }
-          }
-        } catch (error) {
-          console.error('Erreur lors du chargement de l\'utilisateur:', error);
-          const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
-          if (defaultUser) {
-            setCurrentUserState(defaultUser);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
-          }
-        }
-      } else {
-        // Par défaut, utiliser Calypso ou le premier utilisateur
-        const defaultUser = data.find(u => u.name === DEFAULT_USER_NAME) || data[0];
-        if (defaultUser) {
-          setCurrentUserState(defaultUser);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
-        }
-      }
-    }
-  }, []);
+  // L'utilisateur effectif est l'impersonné si présent, sinon le connecté
+  const effectiveUser = impersonatedUser || currentUser;
 
-  // Fonction pour charger les utilisateurs
-  const loadUsers = useCallback(async (skipCurrentUserUpdate = false) => {
+  // Charger les infos de l'utilisateur connecté
+  const loadUser = useCallback(async () => {
     try {
-      const res = await fetch('/api/users', { credentials: 'include' });
+      const res = await fetch('/api/auth/check', { credentials: 'include' });
       
       if (!res.ok) {
-        if (res.status === 401) {
-          console.error('Authentification requise pour charger les utilisateurs');
-          setUsers([]);
-          setCurrentUserState(null);
-          setLoading(false);
-          return;
-        }
-        throw new Error(`Erreur HTTP: ${res.status}`);
+        setCurrentUser(null);
+        setImpersonatedUser(null);
+        setIsAdmin(false);
+        setLoading(false);
+        return;
       }
 
-      const data: User[] = await res.json();
-      processUsersData(data, skipCurrentUserUpdate);
+      const data = await res.json();
+      
+      if (data.authenticated && data.user) {
+        setCurrentUser(data.user);
+        setIsAdmin(data.isAdmin);
+        setImpersonatedUser(data.impersonatedUser || null);
+      } else {
+        setCurrentUser(null);
+        setImpersonatedUser(null);
+        setIsAdmin(false);
+      }
+      
       setLoading(false);
     } catch (error) {
-      console.error('Erreur lors du chargement des utilisateurs:', error);
-      setUsers([]);
+      console.error('Erreur lors du chargement de l\'utilisateur:', error);
+      setCurrentUser(null);
+      setImpersonatedUser(null);
+      setIsAdmin(false);
       setLoading(false);
     }
-  }, [processUsersData]);
-
-  // Charger les utilisateurs au montage
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
-
-  // Fonction pour recharger les utilisateurs
-  const refreshUsers = async () => {
-    await loadUsers();
-  };
-
-  // Changer l'utilisateur courant (pour switcher entre utilisateurs)
-  const setCurrentUser = (user: User | null) => {
-    setChangingUser(true);
-    setCurrentUserState(user);
-    if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-    setTimeout(() => {
-      setChangingUser(false);
-    }, 500);
-  };
-
-  // Mettre à jour l'utilisateur courant (après modification de ses settings)
-  // Optimistic update : met à jour immédiatement le state local et la liste
-  const updateCurrentUser = useCallback((updatedUser: User) => {
-    // 1. Mettre à jour currentUser immédiatement
-    setCurrentUserState(updatedUser);
-    
-    // 2. Mettre à jour le localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-    
-    // 3. Mettre à jour la liste des utilisateurs (optimistic update)
-    setUsers(prevUsers => 
-      prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u)
-    );
   }, []);
+
+  // Charger la liste de tous les utilisateurs (admin only)
+  const loadAllUsers = useCallback(async () => {
+    if (!isAdmin) {
+      setAllUsers([]);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/users', { credentials: 'include' });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setAllUsers(data);
+      } else {
+        setAllUsers([]);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+      setAllUsers([]);
+    }
+  }, [isAdmin]);
+
+  // Charger l'utilisateur au montage
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  // Charger la liste des utilisateurs quand on devient admin
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllUsers();
+    }
+  }, [isAdmin, loadAllUsers]);
+
+  // Recharger les infos utilisateur
+  const refreshUser = async () => {
+    await loadUser();
+  };
+
+  // Recharger la liste des utilisateurs (admin only)
+  const refreshAllUsers = async () => {
+    await loadAllUsers();
+  };
+
+  // Mettre à jour l'utilisateur effectif (après modification de ses settings)
+  const updateEffectiveUser = useCallback((updatedUser: User) => {
+    if (impersonatedUser && impersonatedUser.id === updatedUser.id) {
+      // On modifie l'utilisateur impersonné
+      setImpersonatedUser(updatedUser);
+    } else if (currentUser && currentUser.id === updatedUser.id) {
+      // On modifie notre propre compte
+      setCurrentUser(updatedUser);
+    }
+    
+    // Mettre à jour dans la liste allUsers si admin
+    if (isAdmin) {
+      setAllUsers(prevUsers => 
+        prevUsers.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u)
+      );
+    }
+  }, [currentUser, impersonatedUser, isAdmin]);
+
+  // Déconnexion
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      setCurrentUser(null);
+      setImpersonatedUser(null);
+      setIsAdmin(false);
+      setAllUsers([]);
+      
+      // Recharger la page pour afficher l'écran de connexion
+      router.refresh();
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
+  // Impersonner un utilisateur (admin only)
+  const impersonate = async (userId: number) => {
+    if (!isAdmin) return;
+
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setImpersonatedUser(data.impersonatedUser);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'impersonation:', error);
+    }
+  };
+
+  // Arrêter l'impersonation (admin only)
+  const stopImpersonation = async () => {
+    if (!isAdmin) return;
+
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        setImpersonatedUser(null);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'arrêt de l\'impersonation:', error);
+    }
+  };
 
   return (
     <UserContext.Provider value={{ 
-      currentUser, 
-      setCurrentUser, 
-      updateCurrentUser,
-      users, 
-      loading, 
-      changingUser, 
-      refreshUsers 
+      currentUser,
+      effectiveUser,
+      isAdmin,
+      loading,
+      updateEffectiveUser,
+      logout,
+      refreshUser,
+      allUsers,
+      impersonate,
+      stopImpersonation,
+      refreshAllUsers,
     }}>
       {children}
     </UserContext.Provider>

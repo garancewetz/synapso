@@ -8,12 +8,21 @@ const AUTH_COOKIE_NAME = 'synapso_auth';
 const IMPERSONATE_COOKIE_NAME = 'synapso_impersonate';
 
 // 🔒 SÉCURITÉ: Le secret DOIT être défini en production
-const COOKIE_SECRET = process.env.COOKIE_SECRET;
-if (!COOKIE_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('COOKIE_SECRET environment variable is required in production');
+// En développement ou pendant le build, utiliser un secret par défaut
+function getSecret(): string {
+  const secret = process.env.COOKIE_SECRET;
+  if (secret) return secret;
+  
+  // En production réelle (pas pendant le build), le secret est obligatoire
+  // On vérifie via NEXT_PUBLIC_ENVIRONMENT car NODE_ENV=production aussi pendant le build
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'production') {
+    throw new Error('COOKIE_SECRET environment variable is required in production');
+  }
+  
+  return 'dev-only-secret-not-for-production';
 }
-// En développement, utiliser un secret par défaut (non sécurisé)
-const SECRET = COOKIE_SECRET || 'dev-only-secret-not-for-production';
+
+const SECRET = getSecret();
 
 // Configuration des cookies
 const COOKIE_OPTIONS = {

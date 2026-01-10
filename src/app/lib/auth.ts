@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import crypto, { timingSafeEqual } from 'crypto';
 import { prisma } from './prisma';
 
 // Constantes pour les cookies
 const AUTH_COOKIE_NAME = 'synapso_auth';
 const IMPERSONATE_COOKIE_NAME = 'synapso_impersonate';
-const COOKIE_SECRET = process.env.COOKIE_SECRET || 'synapso-secret-key-change-in-production';
+
+// 🔒 SÉCURITÉ: Le secret DOIT être défini en production
+const COOKIE_SECRET = process.env.COOKIE_SECRET;
+if (!COOKIE_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('COOKIE_SECRET environment variable is required in production');
+}
+// En développement, utiliser un secret par défaut (non sécurisé)
+const SECRET = COOKIE_SECRET || 'dev-only-secret-not-for-production';
 
 // Configuration des cookies
 const COOKIE_OPTIONS = {
@@ -18,30 +25,41 @@ const COOKIE_OPTIONS = {
 };
 
 /**
- * Crée une signature simple pour le cookie (HMAC-like)
- * En production, utiliser une vraie librairie de signature (jose, jsonwebtoken, etc.)
+ * Crée une signature HMAC pour le cookie
+ * Utilise SHA-256 complet pour une sécurité maximale
  */
 function signValue(value: string): string {
-  // Simple signature basée sur le secret
   const hmac = crypto
-    .createHmac('sha256', COOKIE_SECRET)
+    .createHmac('sha256', SECRET)
     .update(value)
-    .digest('hex')
-    .substring(0, 16);
+    .digest('hex');
   return `${value}.${hmac}`;
 }
 
 /**
  * Vérifie et extrait la valeur d'un cookie signé
+ * Utilise une comparaison timing-safe pour prévenir les timing attacks
  */
 function verifySignedValue(signedValue: string): string | null {
   const parts = signedValue.split('.');
   if (parts.length !== 2) return null;
   
-  const [value] = parts;
-  const expectedSigned = signValue(value);
+  const [value, signature] = parts;
+  const expectedSignature = crypto
+    .createHmac('sha256', SECRET)
+    .update(value)
+    .digest('hex');
   
-  if (expectedSigned === signedValue) {
+  // Comparaison timing-safe pour éviter les timing attacks
+  const sigBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  
+  // Les buffers doivent avoir la même longueur pour timingSafeEqual
+  if (sigBuffer.length !== expectedBuffer.length) {
+    return null;
+  }
+  
+  if (timingSafeEqual(sigBuffer, expectedBuffer)) {
     return value;
   }
   return null;

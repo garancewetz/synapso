@@ -22,8 +22,24 @@ const securityHeaders = [
     value: 'origin-when-cross-origin'
   },
   {
+    // 🔒 SÉCURITÉ: Autoriser le microphone pour la dictée vocale
     key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=()'
+    value: 'camera=(), microphone=(self), geolocation=()'
+  },
+  {
+    // 🔒 SÉCURITÉ: Content Security Policy pour prévenir les attaques XSS
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval nécessaire pour Next.js
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
   }
 ];
 

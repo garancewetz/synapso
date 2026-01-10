@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { hashPassword, setAuthCookie } from '@/app/lib/auth';
 
-const ADMIN_NAME = 'Garou';
-const MIN_PASSWORD_LENGTH = 6;
+// 🔒 SÉCURITÉ: Le nom admin est configurable via variable d'environnement
+const ADMIN_NAME = process.env.ADMIN_NAME;
+const MIN_PASSWORD_LENGTH = 4;
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,8 +50,9 @@ export async function POST(request: NextRequest) {
     // Hasher le mot de passe
     const passwordHash = await hashPassword(password);
 
-    // Déterminer le rôle (Garou = ADMIN, autres = USER)
-    const role = trimmedName === ADMIN_NAME ? 'ADMIN' : 'USER';
+    // 🔒 SÉCURITÉ: Seul le nom défini dans ADMIN_NAME peut devenir admin
+    // Si ADMIN_NAME n'est pas défini, tous les utilisateurs sont USER
+    const role = (ADMIN_NAME && trimmedName === ADMIN_NAME) ? 'ADMIN' : 'USER';
 
     // Créer l'utilisateur
     const user = await prisma.user.create({

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
-import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
 export async function PATCH(
@@ -14,8 +14,6 @@ export async function PATCH(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -24,25 +22,20 @@ export async function PATCH(
       );
     }
 
+    // 🔒 SÉCURITÉ: Récupérer l'userId depuis la session, PAS depuis le client
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
     const exercice = await prisma.exercice.findFirst({
       where: { 
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -55,7 +48,7 @@ export async function PATCH(
 
     // Récupérer les paramètres de l'utilisateur pour la réinitialisation
     const user = await prisma.user.findUnique({
-      where: { id: userIdNumber },
+      where: { id: userId },
       select: { resetFrequency: true },
     });
     
@@ -166,12 +159,10 @@ export async function PATCH(
       weeklyCompletions: weeklyCompletions,
     });
   } catch (error) {
+    // 🔒 SÉCURITÉ: Ne pas exposer les détails de l'erreur au client
     console.error('Erreur lors de la mise à jour:', error);
     return NextResponse.json(
-      { 
-        error: 'Erreur lors de la mise à jour de l\'exercice',
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: 'Erreur lors de la mise à jour de l\'exercice' },
       { status: 500 }
     );
   }

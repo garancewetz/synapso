@@ -55,7 +55,16 @@ self.addEventListener('activate', (event) => {
 });
 
 // Stratégie de cache : Network First, puis Cache
+// 🔒 SÉCURITÉ: Ne pas cacher les routes API (données sensibles)
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Exclure les routes API du cache pour éviter de stocker des données sensibles
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then((response) => {

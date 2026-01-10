@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AuthScreen } from '@/app/components/AuthScreen';
 import InitialLoader from '@/app/components/InitialLoader';
 import { useUser } from '@/app/contexts/UserContext';
@@ -12,10 +12,14 @@ type Props = {
 };
 
 export default function SiteProtection({ children, onAuthSuccess }: Props) {
-  const { currentUser, loading: userLoading } = useUser();
+  const { currentUser, loading: userLoading, refreshUser } = useUser();
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Ref pour tracker la valeur précédente de currentUser
+  // Permet de détecter une vraie déconnexion (passage de non-null à null)
+  const prevCurrentUserRef = useRef<typeof currentUser | undefined>(undefined);
 
   // Vérification initiale de l'authentification
   useEffect(() => {
@@ -42,19 +46,26 @@ export default function SiteProtection({ children, onAuthSuccess }: Props) {
     checkAuth();
   }, []);
 
-  // Synchroniser avec UserContext : si currentUser devient null (déconnexion), réinitialiser l'état
+  // Synchroniser avec UserContext : si currentUser passe de non-null à null → déconnexion
   useEffect(() => {
     // Ne pas agir pendant le chargement initial
     if (userLoading || isLoading) return;
     
-    // Si l'utilisateur était authentifié mais currentUser est maintenant null → déconnexion
-    if (isAuthenticated && currentUser === null) {
+    const prevUser = prevCurrentUserRef.current;
+    prevCurrentUserRef.current = currentUser;
+    
+    // Seulement si on avait un utilisateur et qu'il devient null → vraie déconnexion
+    // Ignorer le cas où prevUser est undefined (premier render) ou null (pas encore connecté)
+    if (prevUser !== undefined && prevUser !== null && currentUser === null) {
       setIsAuthenticated(false);
     }
-  }, [currentUser, userLoading, isLoading, isAuthenticated]);
+  }, [currentUser, userLoading, isLoading]);
 
   const handleAuthSuccess = async () => {
     try {
+      // Rafraîchir le contexte utilisateur pour synchroniser currentUser
+      await refreshUser();
+      
       const response = await fetch('/api/auth/check', {
         credentials: 'include',
       });

@@ -1,52 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { startOfWeek, addDays, startOfDay } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const category = searchParams.get('category') as ExerciceCategory | null;
+    // Récupérer l'userId effectif depuis le cookie (gère l'impersonation admin)
+    const userId = await getEffectiveUserId(request);
     
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
-    const userIdNumber = parseInt(userId);
-    
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category') as ExerciceCategory | null;
 
     // Vérifier que l'utilisateur existe et récupérer son resetFrequency
     const user = await prisma.user.findUnique({
-      where: { id: userIdNumber },
+      where: { id: userId },
       select: { id: true, resetFrequency: true },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: `User with id ${userIdNumber} not found` },
+        { error: `User with id ${userId} not found` },
         { status: 404 }
       );
     }
 
     // Construire le filtre
     const whereClause: { userId: number; category?: PrismaExerciceCategory } = {
-      userId: userIdNumber,
+      userId: userId,
     };
 
     if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
@@ -148,22 +141,17 @@ export async function POST(request: NextRequest) {
   if (authError) return authError;
 
   try {
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const data = await request.json();
-
-    if (!data.userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(data.userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
 
     // Valider le nom
     if (!data.name || !data.name.trim()) {
@@ -195,7 +183,7 @@ export async function POST(request: NextRequest) {
           workoutDuration: data.workout?.duration || null,
           equipments: JSON.stringify(data.equipments || []),
           category: category as PrismaExerciceCategory,
-          userId: userIdNumber,
+          userId: userId,
         },
       });
 

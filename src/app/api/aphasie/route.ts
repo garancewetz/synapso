@@ -1,33 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
     const items = await prisma.aphasieItem.findMany({
       where: {
-        userId: userIdNumber,
+        userId: userId,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -43,27 +35,26 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // Vérifier l'authentification
   const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
-    const data = await request.json();
-    const { quote, meaning, date, comment, userId } = data;
-
-    if (!quote || !meaning || !userId) {
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: 'quote, meaning and userId are required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
+    const data = await request.json();
+    const { quote, meaning, date, comment } = data;
+
+    if (!quote || !meaning) {
       return NextResponse.json(
-        { error: 'Invalid userId' },
+        { error: 'quote and meaning are required' },
         { status: 400 }
       );
     }
@@ -90,7 +81,7 @@ export async function POST(request: NextRequest) {
         meaning: meaning.trim(),
         date: dateValue,
         comment: comment ? comment.trim() : null,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -103,4 +94,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 interface HistoryEntry {
@@ -33,28 +33,20 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
     const history = await prisma.history.findMany({
       where: {
         exercice: {
-          userId: userIdNumber,
+          userId: userId,
         },
       },
       include: {
@@ -112,4 +104,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function PATCH(
   request: NextRequest,
@@ -20,13 +20,24 @@ export async function PATCH(
       );
     }
 
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { content, emoji } = body;
 
-    // Vérifier que le progrès existe
+    // Vérifier que le progrès existe ET appartient à l'utilisateur
     const existingProgress = await prisma.progress.findFirst({
       where: {
         id: progressId,
+        userId: userId,
       },
     });
 
@@ -80,10 +91,21 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que le progrès existe
-    const existingProgress = await prisma.progress.findUnique({
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
+    // Vérifier que le progrès existe ET appartient à l'utilisateur
+    const existingProgress = await prisma.progress.findFirst({
       where: {
         id: progressId,
+        userId: userId,
       },
     });
 
@@ -108,4 +130,3 @@ export async function DELETE(
     );
   }
 }
-

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -20,28 +20,20 @@ export async function GET(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
     
     const item = await prisma.aphasieItem.findFirst({
       where: { 
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
     
@@ -80,28 +72,23 @@ export async function PUT(
       );
     }
 
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const updatedData = await request.json();
-
-    if (!updatedData.userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(updatedData.userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
 
     // Vérifier que l'item appartient à l'utilisateur
     const existingItem = await prisma.aphasieItem.findFirst({
       where: {
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -174,21 +161,13 @@ export async function DELETE(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
@@ -196,7 +175,7 @@ export async function DELETE(
     const existingItem = await prisma.aphasieItem.findFirst({
       where: {
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -220,4 +199,3 @@ export async function DELETE(
     );
   }
 }
-

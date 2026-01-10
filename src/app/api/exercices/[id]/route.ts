@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
@@ -24,27 +24,19 @@ export async function GET(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
     
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
     // Récupérer l'utilisateur pour obtenir le resetFrequency
     const user = await prisma.user.findUnique({
-      where: { id: userIdNumber },
+      where: { id: userId },
       select: { resetFrequency: true },
     });
 
@@ -65,7 +57,7 @@ export async function GET(
     const exercice = await prisma.exercice.findFirst({
       where: { 
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
       include: {
         bodyparts: {
@@ -163,28 +155,23 @@ export async function PUT(
       );
     }
 
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const updatedData = await request.json();
-
-    if (!updatedData.userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(updatedData.userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
 
     // Vérifier que l'exercice appartient à l'utilisateur
     const existingExercice = await prisma.exercice.findFirst({
       where: { 
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -213,7 +200,7 @@ export async function PUT(
 
     // Récupérer l'utilisateur pour obtenir le resetFrequency
     const user = await prisma.user.findUnique({
-      where: { id: userIdNumber },
+      where: { id: userId },
       select: { resetFrequency: true },
     });
 
@@ -358,21 +345,13 @@ export async function DELETE(
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
     
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
@@ -380,7 +359,7 @@ export async function DELETE(
     const existingExercice = await prisma.exercice.findFirst({
       where: { 
         id,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 

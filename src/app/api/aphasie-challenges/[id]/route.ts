@@ -1,17 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID' },
+        { status: 400 }
+      );
+    }
+
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
     
-    const challenge = await prisma.aphasieChallenge.findUnique({
-      where: { id },
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+    
+    const challenge = await prisma.aphasieChallenge.findFirst({
+      where: { 
+        id,
+        userId: userId,
+      },
     });
     
     if (!challenge) {
@@ -36,17 +59,37 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID' },
+        { status: 400 }
+      );
+    }
+
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const updatedData = await request.json();
 
-    const challenge = await prisma.aphasieChallenge.findUnique({
-      where: { id },
+    // Vérifier que le challenge appartient à l'utilisateur
+    const challenge = await prisma.aphasieChallenge.findFirst({
+      where: { 
+        id,
+        userId: userId,
+      },
     });
 
     if (!challenge) {
@@ -79,17 +122,37 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID' },
+        { status: 400 }
+      );
+    }
+
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const { mastered } = await request.json();
 
-    const challenge = await prisma.aphasieChallenge.findUnique({
-      where: { id },
+    // Vérifier que le challenge appartient à l'utilisateur
+    const challenge = await prisma.aphasieChallenge.findFirst({
+      where: { 
+        id,
+        userId: userId,
+      },
     });
 
     if (!challenge) {
@@ -121,13 +184,43 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID' },
+        { status: 400 }
+      );
+    }
+
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
+    // Vérifier que le challenge appartient à l'utilisateur
+    const challenge = await prisma.aphasieChallenge.findFirst({
+      where: { 
+        id,
+        userId: userId,
+      },
+    });
+
+    if (!challenge) {
+      return NextResponse.json(
+        { error: 'Aphasie challenge not found' },
+        { status: 404 }
+      );
+    }
     
     await prisma.aphasieChallenge.delete({
       where: { id },
@@ -142,4 +235,3 @@ export async function DELETE(
     );
   }
 }
-

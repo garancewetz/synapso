@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
     const challenges = await prisma.aphasieChallenge.findMany({
       where: {
-        userId: parseInt(userId),
+        userId: userId,
       },
       orderBy: [
         { mastered: 'asc' },
@@ -39,17 +39,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const authError = await requireAuth(request);
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
-    const data = await request.json();
-    const { text, mastered, userId } = data;
-
-    if (!text || !userId) {
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: 'text and userId are required' },
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
+    const data = await request.json();
+    const { text, mastered } = data;
+
+    if (!text) {
+      return NextResponse.json(
+        { error: 'text is required' },
         { status: 400 }
       );
     }
@@ -58,7 +66,7 @@ export async function POST(request: NextRequest) {
       data: {
         text,
         mastered: mastered || false,
-        userId: parseInt(userId),
+        userId: userId,
       },
     });
 
@@ -71,4 +79,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

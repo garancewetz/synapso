@@ -1,34 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const limitParam = searchParams.get('limit');
-
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
+    const { searchParams } = new URL(request.url);
+    const limitParam = searchParams.get('limit');
 
     const progressList = await prisma.progress.findMany({
       where: {
-        userId: userIdNumber,
+        userId: userId,
       },
       orderBy: { createdAt: 'desc' },
       ...(limitParam && { take: parseInt(limitParam) }),
@@ -49,20 +43,22 @@ export async function POST(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const body = await request.json();
-    const { content, emoji, userId } = body;
-
-    if (!content || !userId) {
+    // Récupérer l'userId effectif depuis le cookie
+    const userId = await getEffectiveUserId(request);
+    
+    if (!userId) {
       return NextResponse.json(
-        { error: 'content and userId are required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
+    const body = await request.json();
+    const { content, emoji } = body;
+
+    if (!content) {
       return NextResponse.json(
-        { error: 'Invalid userId' },
+        { error: 'content is required' },
         { status: 400 }
       );
     }
@@ -71,7 +67,7 @@ export async function POST(request: NextRequest) {
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
-        userId: userIdNumber,
+        userId: userId,
       },
     });
 
@@ -84,4 +80,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

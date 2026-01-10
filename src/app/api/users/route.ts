@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
 
+/**
+ * GET /api/users
+ * Liste tous les utilisateurs - ADMIN ONLY
+ * Pour les utilisateurs normaux, utiliser /api/auth/check
+ */
 export async function GET(request: NextRequest) {
-  const authError = await requireAuth(request);
+  // Seuls les admins peuvent lister tous les utilisateurs
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   try {
@@ -12,9 +18,11 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        role: true,
         resetFrequency: true,
         dominantHand: true,
         isAphasic: true,
+        createdAt: true,
       },
     });
 
@@ -31,56 +39,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
-
-  try {
-    const data = await request.json();
-
-    if (!data.name || !data.name.trim()) {
-      return NextResponse.json(
-        { error: 'Le nom est obligatoire' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier si l'utilisateur existe déjà
-    const existingUser = await prisma.user.findUnique({
-      where: { name: data.name.trim() },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'Un utilisateur avec ce nom existe déjà' },
-        { status: 400 }
-      );
-    }
-
-    // Créer l'utilisateur
-    const user = await prisma.user.create({
-      data: {
-        name: data.name.trim(),
-      },
-      select: {
-        id: true,
-        name: true,
-        resetFrequency: true,
-        dominantHand: true,
-        isAphasic: true,
-      },
-    });
-
-    return NextResponse.json(user, { status: 201 });
-  } catch (error) {
-    console.error('Error creating user:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to create user',
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
-  }
-}
-
+// POST est supprimé - la création de compte passe maintenant par /api/auth/register

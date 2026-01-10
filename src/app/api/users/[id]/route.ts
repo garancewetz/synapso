@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId, isAdmin } from '@/app/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -11,23 +11,37 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const userId = parseInt(id);
+    const requestedUserId = parseInt(id);
 
-    if (isNaN(userId)) {
+    if (isNaN(requestedUserId)) {
       return NextResponse.json(
         { error: 'ID invalide' },
         { status: 400 }
       );
     }
 
+    // Récupérer l'userId effectif
+    const effectiveUserId = await getEffectiveUserId(request);
+    const adminStatus = await isAdmin(request);
+    
+    // Vérifier que l'utilisateur demande ses propres infos (ou est admin)
+    if (requestedUserId !== effectiveUserId && !adminStatus) {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: requestedUserId },
       select: {
         id: true,
         name: true,
+        role: true,
         resetFrequency: true,
         dominantHand: true,
         isAphasic: true,
+        createdAt: true,
       },
     });
 
@@ -57,13 +71,25 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const userId = parseInt(id);
+    const requestedUserId = parseInt(id);
     const data = await request.json();
 
-    if (isNaN(userId)) {
+    if (isNaN(requestedUserId)) {
       return NextResponse.json(
         { error: 'ID invalide' },
         { status: 400 }
+      );
+    }
+
+    // Récupérer l'userId effectif
+    const effectiveUserId = await getEffectiveUserId(request);
+    const adminStatus = await isAdmin(request);
+    
+    // Vérifier que l'utilisateur modifie ses propres infos (ou est admin)
+    if (requestedUserId !== effectiveUserId && !adminStatus) {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
       );
     }
 
@@ -96,7 +122,7 @@ export async function PATCH(
       const existingUser = await prisma.user.findFirst({
         where: {
           name: data.name.trim(),
-          id: { not: userId },
+          id: { not: requestedUserId },
         },
       });
       if (existingUser) {
@@ -108,7 +134,7 @@ export async function PATCH(
     }
 
     const user = await prisma.user.update({
-      where: { id: userId },
+      where: { id: requestedUserId },
       data: {
         ...(data.name && { name: data.name.trim() }),
         ...(data.resetFrequency && { resetFrequency: data.resetFrequency }),
@@ -118,9 +144,11 @@ export async function PATCH(
       select: {
         id: true,
         name: true,
+        role: true,
         resetFrequency: true,
         dominantHand: true,
         isAphasic: true,
+        createdAt: true,
       },
     });
 
@@ -133,4 +161,3 @@ export async function PATCH(
     );
   }
 }
-

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.17.1",
+    "bcryptjs": "^2.4.3",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "framer-motion": "12.23.24",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "3.1.0",
     "@tailwindcss/postcss": "4.1.18",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "20.17.10",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",

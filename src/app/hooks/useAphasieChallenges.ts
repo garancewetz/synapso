@@ -11,16 +11,21 @@ type UseAphasieChallengesReturn = {
 
 /**
  * Hook pour récupérer et gérer les challenges aphasie
- * Centralise la logique de récupération des challenges
+ * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useAphasieChallenges(): UseAphasieChallengesReturn {
-  const { currentUser } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
   const [challenges, setChallenges] = useState<AphasieChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchChallenges = useCallback(() => {
-    if (!currentUser) {
+    // Attendre que l'utilisateur soit chargé
+    if (userLoading) {
+      return;
+    }
+
+    if (!effectiveUser) {
       setLoading(false);
       setChallenges([]);
       setError(null);
@@ -30,7 +35,7 @@ export function useAphasieChallenges(): UseAphasieChallengesReturn {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/aphasie-challenges?userId=${currentUser.id}`, { credentials: 'include' })
+    fetch('/api/aphasie-challenges', { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
           throw new Error(`Erreur HTTP: ${res.status}`);
@@ -55,12 +60,11 @@ export function useAphasieChallenges(): UseAphasieChallengesReturn {
       .finally(() => {
         setLoading(false);
       });
-  }, [currentUser]);
+  }, [effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchChallenges();
   }, [fetchChallenges]);
 
-  return { challenges, loading, error, refetch: fetchChallenges };
+  return { challenges, loading: loading || userLoading, error, refetch: fetchChallenges };
 }
-

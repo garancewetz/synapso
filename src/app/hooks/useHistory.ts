@@ -11,16 +11,21 @@ type UseHistoryReturn = {
 
 /**
  * Hook pour récupérer et gérer l'historique des exercices
- * Centralise la logique de récupération de l'historique
+ * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useHistory(): UseHistoryReturn {
-  const { currentUser } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchHistory = useCallback(() => {
-    if (!currentUser) {
+    // Attendre que l'utilisateur soit chargé
+    if (userLoading) {
+      return;
+    }
+
+    if (!effectiveUser) {
       setLoading(false);
       setHistory([]);
       setError(null);
@@ -30,7 +35,7 @@ export function useHistory(): UseHistoryReturn {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/history?userId=${currentUser.id}`, { credentials: 'include' })
+    fetch('/api/history', { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
           throw new Error(`Erreur HTTP: ${res.status}`);
@@ -55,12 +60,11 @@ export function useHistory(): UseHistoryReturn {
       .finally(() => {
         setLoading(false);
       });
-  }, [currentUser]);
+  }, [effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
-  return { history, loading, error, refetch: fetchHistory };
+  return { history, loading: loading || userLoading, error, refetch: fetchHistory };
 }
-

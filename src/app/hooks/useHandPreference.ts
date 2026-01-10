@@ -8,8 +8,8 @@ import clsx from 'clsx';
  * @returns Helpers pour adapter les classes CSS selon la préférence de main
  */
 export function useHandPreference() {
-  const { currentUser } = useUser();
-  const isLeftHanded = currentUser?.dominantHand === 'LEFT';
+  const { effectiveUser } = useUser();
+  const isLeftHanded = effectiveUser?.dominantHand === 'LEFT';
 
   /**
    * Retourne les classes pour un flex container selon la préférence

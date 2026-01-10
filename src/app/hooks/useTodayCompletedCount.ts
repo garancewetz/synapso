@@ -6,16 +6,16 @@ const REFRESH_EVENT = 'exercice-completed-refresh';
 
 export function useTodayCompletedCount() {
   const [completedToday, setCompletedToday] = useState<number | null>(null);
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
 
   const fetchCompletedCount = useCallback(() => {
-    if (!currentUser) {
+    if (!effectiveUser) {
       setCompletedToday(null);
       return;
     }
 
     Promise.all([
-      fetch(`/api/exercices?userId=${currentUser.id}`, { credentials: 'include' }).then(res => res.json()),
+      fetch(`/api/exercices?userId=${effectiveUser.id}`, { credentials: 'include' }).then(res => res.json()),
     ])
       .then(([exercicesData]) => {
         if (Array.isArray(exercicesData)) {
@@ -33,7 +33,7 @@ export function useTodayCompletedCount() {
       .catch(() => {
         setCompletedToday(null);
       });
-  }, [currentUser]);
+  }, [effectiveUser]);
 
   useEffect(() => {
     fetchCompletedCount();

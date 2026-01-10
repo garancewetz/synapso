@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
+import { useUser } from '@/app/contexts/UserContext';
 
 interface UseExercicesOptions {
-  userId?: number;
   category?: ExerciceCategory;
 }
 
@@ -18,16 +18,22 @@ interface UseExercicesReturn {
 /**
  * Hook personnalisé pour gérer les exercices
  * Centralise la logique de récupération et de mise à jour des exercices
- * Les exercices ne sont chargés qu'une fois que le userId est disponible
+ * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
-export function useExercices({ userId, category }: UseExercicesOptions = {}): UseExercicesReturn {
+export function useExercices({ category }: UseExercicesOptions = {}): UseExercicesReturn {
+  const { effectiveUser, loading: userLoading } = useUser();
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchExercices = useCallback(async () => {
-    // Ne pas charger si userId n'est pas disponible
-    if (!userId) {
+    // Attendre que l'utilisateur soit chargé
+    if (userLoading) {
+      return;
+    }
+    
+    // Ne pas charger si pas d'utilisateur effectif
+    if (!effectiveUser) {
       setLoading(false);
       setExercices([]);
       setError(null);
@@ -39,8 +45,8 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
     
     try {
       const url = category 
-        ? `/api/exercices?userId=${userId}&category=${category}`
-        : `/api/exercices?userId=${userId}`;
+        ? `/api/exercices?category=${category}`
+        : `/api/exercices`;
       
       const res = await fetch(url, { credentials: 'include' });
       
@@ -64,7 +70,7 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
     } finally {
       setLoading(false);
     }
-  }, [userId, category]);
+  }, [category, effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchExercices();
@@ -78,7 +84,7 @@ export function useExercices({ userId, category }: UseExercicesOptions = {}): Us
 
   return {
     exercices,
-    loading,
+    loading: loading || userLoading,
     error,
     refetch: fetchExercices,
     updateExercice,

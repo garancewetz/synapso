@@ -4,19 +4,19 @@ import { useUser } from '@/app/contexts/UserContext';
 
 export function useAphasieCheck() {
   const router = useRouter();
-  const { currentUser } = useUser();
+  const { effectiveUser } = useUser();
 
-  const hasAccess = currentUser?.isAphasic ?? false;
+  const hasAccess = effectiveUser?.isAphasic ?? false;
 
   useEffect(() => {
-    if (currentUser && !hasAccess) {
+    if (effectiveUser && !hasAccess) {
       router.push('/');
     }
-  }, [currentUser, hasAccess, router]);
+  }, [effectiveUser, hasAccess, router]);
 
   return {
     hasAccess,
-    isLoading: !currentUser,
+    isLoading: !effectiveUser,
   };
 }
 

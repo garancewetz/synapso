@@ -4,23 +4,30 @@ import { useUser } from '@/app/contexts/UserContext';
 
 /**
  * Hook pour récupérer et gérer les items aphasie (citations)
+ * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useAphasieItems() {
-  const { currentUser } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
   const [items, setItems] = useState<AphasieItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchItems = useCallback(() => {
-    if (!currentUser) {
+    // Attendre que l'utilisateur soit chargé
+    if (userLoading) {
+      return;
+    }
+
+    if (!effectiveUser) {
       setLoading(false);
+      setItems([]);
       return;
     }
 
     setLoading(true);
     setError(null);
     
-    fetch(`/api/aphasie?userId=${currentUser.id}`, { credentials: 'include' })
+    fetch('/api/aphasie', { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
           throw new Error(`Erreur HTTP: ${res.status}`);
@@ -50,12 +57,11 @@ export function useAphasieItems() {
       .finally(() => {
         setLoading(false);
       });
-  }, [currentUser]);
+  }, [effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
 
-  return { items, loading, error, refetch: fetchItems };
+  return { items, loading: loading || userLoading, error, refetch: fetchItems };
 }
-

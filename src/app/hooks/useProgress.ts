@@ -16,17 +16,22 @@ type UseProgressReturn = {
 
 /**
  * Hook pour récupérer et gérer les progrès
- * Centralise la logique de récupération des progrès
+ * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useProgress(options: UseProgressOptions = {}): UseProgressReturn {
-  const { currentUser } = useUser();
+  const { effectiveUser, loading: userLoading } = useUser();
   const { limit } = options;
   const [progressList, setProgressList] = useState<Progress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchProgress = useCallback(() => {
-    if (!currentUser) {
+    // Attendre que l'utilisateur soit chargé
+    if (userLoading) {
+      return;
+    }
+
+    if (!effectiveUser) {
       setLoading(false);
       setProgressList([]);
       setError(null);
@@ -37,8 +42,8 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
     setError(null);
 
     const url = limit
-      ? `/api/progress?userId=${currentUser.id}&limit=${limit}`
-      : `/api/progress?userId=${currentUser.id}`;
+      ? `/api/progress?limit=${limit}`
+      : '/api/progress';
 
     fetch(url, { credentials: 'include' })
       .then(res => {
@@ -75,7 +80,7 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
       .finally(() => {
         setLoading(false);
       });
-  }, [currentUser, limit]);
+  }, [effectiveUser, userLoading, limit]);
 
   useEffect(() => {
     fetchProgress();
@@ -85,6 +90,5 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
     return progressList.length > 0 ? progressList[0] : null;
   }, [progressList]);
 
-  return { progressList, loading, error, refetch: fetchProgress, lastProgress };
+  return { progressList, loading: loading || userLoading, error, refetch: fetchProgress, lastProgress };
 }
-

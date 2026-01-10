@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -31,14 +32,15 @@ function formatDisplayDate(dateString: string | null): string | null {
 /**
  * Composant pour afficher une citation aphasie
  * Design neutre (sans couleur d'accent) harmonisé avec le reste de l'application
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
  */
-export function AphasieItemCard({ item }: Props) {
+export const AphasieItemCard = memo(function AphasieItemCard({ item }: Props) {
   const router = useRouter();
   const displayDate = formatDisplayDate(item.date || item.createdAt);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     router.push(`/aphasie/edit/${item.id}`);
-  };
+  }, [router, item.id]);
 
   return (
     <li>
@@ -90,5 +92,5 @@ export function AphasieItemCard({ item }: Props) {
       </BaseCard>
     </li>
   );
-}
+});
 

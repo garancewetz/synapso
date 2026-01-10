@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { Progress, HistoryEntry } from '@/app/types';
 import { ProgressCard } from './ProgressCard';
 import { ProgressTimelineEmpty } from './ProgressTimelineEmpty';
-import { ProgressStatsChart } from './ProgressStatsChart';
+import { LazyProgressStatsChart as ProgressStatsChart } from './LazyProgressStatsChart';
 
 type Props = {
   progressList: Progress[];

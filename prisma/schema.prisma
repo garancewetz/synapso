@@ -78,7 +78,9 @@ model History {
   createdAt   DateTime @default(now())
   exercice    Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
 
-  @@index([exerciceId])
+  // ⚡ PERFORMANCE: Index composite pour les requêtes filtrées par exercice ET date
+  // Utilisé notamment par useCategoryStats et l'API /exercices
+  @@index([exerciceId, completedAt])
   @@index([completedAt])
 }
 

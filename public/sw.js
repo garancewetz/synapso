@@ -1,5 +1,7 @@
-// Version du cache - mise à jour automatiquement à chaque déploiement
-const CACHE_VERSION = 'v' + Date.now();
+// Version du cache - À METTRE À JOUR MANUELLEMENT lors des déploiements importants
+// ⚡ PERFORMANCE: Version fixe pour éviter d'invalider le cache à chaque visite
+// Incrémenter ce numéro uniquement quand les assets statiques changent
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = 'synapso-' + CACHE_VERSION;
 const urlsToCache = [
   '/',

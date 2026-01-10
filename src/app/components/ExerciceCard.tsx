@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
@@ -16,7 +16,12 @@ type Props = {
     onCompleted?: (updatedExercice: Exercice) => void;
 };
 
-export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
+/**
+ * Carte d'exercice avec état de complétion
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
+ * quand la liste d'exercices change mais pas cet exercice spécifique
+ */
+const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
     const [isCompleting, setIsCompleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -291,4 +296,6 @@ export default function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
             </BaseCard.Content>
         </BaseCard>
     );
-}
+});
+
+export default ExerciceCard;

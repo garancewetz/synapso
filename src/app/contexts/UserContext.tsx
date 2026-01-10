@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -132,14 +132,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [isAdmin, loadAllUsers]);
 
   // Recharger les infos utilisateur
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     await loadUser();
-  };
+  }, [loadUser]);
 
   // Recharger la liste des utilisateurs (admin only)
-  const refreshAllUsers = async () => {
+  const refreshAllUsers = useCallback(async () => {
     await loadAllUsers();
-  };
+  }, [loadAllUsers]);
 
   // Mettre à jour l'utilisateur effectif (après modification de ses settings)
   const updateEffectiveUser = useCallback((updatedUser: User) => {
@@ -160,7 +160,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [currentUser, impersonatedUser, isAdmin]);
 
   // Déconnexion
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { 
         method: 'POST',
@@ -177,10 +177,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     }
-  };
+  }, [router]);
 
   // Impersonner un utilisateur (admin only)
-  const impersonate = async (userId: number) => {
+  const impersonate = useCallback(async (userId: number) => {
     if (!isAdmin) return;
 
     try {
@@ -198,10 +198,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Erreur lors de l\'impersonation:', error);
     }
-  };
+  }, [isAdmin]);
 
   // Arrêter l'impersonation (admin only)
-  const stopImpersonation = async () => {
+  const stopImpersonation = useCallback(async () => {
     if (!isAdmin) return;
 
     try {
@@ -216,22 +216,38 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Erreur lors de l\'arrêt de l\'impersonation:', error);
     }
-  };
+  }, [isAdmin]);
+
+  // ⚡ PERFORMANCE: Mémoriser la valeur du context pour éviter les re-renders inutiles
+  // Quand une valeur change, seuls les composants qui utilisent cette valeur se re-renderont
+  const contextValue = useMemo<UserContextType>(() => ({
+    currentUser,
+    effectiveUser,
+    isAdmin,
+    loading,
+    updateEffectiveUser,
+    logout,
+    refreshUser,
+    allUsers,
+    impersonate,
+    stopImpersonation,
+    refreshAllUsers,
+  }), [
+    currentUser,
+    effectiveUser,
+    isAdmin,
+    loading,
+    updateEffectiveUser,
+    logout,
+    refreshUser,
+    allUsers,
+    impersonate,
+    stopImpersonation,
+    refreshAllUsers,
+  ]);
 
   return (
-    <UserContext.Provider value={{ 
-      currentUser,
-      effectiveUser,
-      isAdmin,
-      loading,
-      updateEffectiveUser,
-      logout,
-      refreshUser,
-      allUsers,
-      impersonate,
-      stopImpersonation,
-      refreshAllUsers,
-    }}>
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

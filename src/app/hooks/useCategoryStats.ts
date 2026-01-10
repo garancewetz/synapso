@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { HistoryEntry } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { isAfter, isEqual } from 'date-fns';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 
@@ -27,6 +26,9 @@ const initialStats: Record<ExerciceCategory, number> = {
 /**
  * Hook pour charger les statistiques d'exercices complétés par catégorie
  * pour la période en cours (jour ou semaine selon resetFrequency)
+ * 
+ * ⚡ PERFORMANCE: Utilise le paramètre `since` côté serveur pour éviter
+ * de charger tout l'historique de l'utilisateur
  */
 export function useCategoryStats({ 
   userId, 
@@ -35,6 +37,11 @@ export function useCategoryStats({
   const [stats, setStats] = useState<Record<ExerciceCategory, number>>(initialStats);
   const [loading, setLoading] = useState(true);
 
+  // Calculer la date de début de période une seule fois
+  const startOfPeriod = useMemo(() => {
+    return getStartOfPeriod(resetFrequency, new Date());
+  }, [resetFrequency]);
+
   const fetchStats = useCallback(async () => {
     if (!userId) {
       setLoading(false);
@@ -42,23 +49,23 @@ export function useCategoryStats({
     }
 
     try {
-      const response = await fetch(`/api/history?userId=${userId}`, { credentials: 'include' });
+      // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since`
+      // Cela évite de charger tout l'historique de l'utilisateur
+      const sinceParam = startOfPeriod.toISOString();
+      const response = await fetch(
+        `/api/history?since=${encodeURIComponent(sinceParam)}`,
+        { credentials: 'include' }
+      );
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        const now = new Date();
-        const startOfPeriod = getStartOfPeriod(resetFrequency, now);
-        
         const newStats: Record<ExerciceCategory, number> = { ...initialStats };
         
+        // Les données sont déjà filtrées côté serveur, on compte simplement
         data.forEach((entry: HistoryEntry) => {
-          const entryDate = new Date(entry.completedAt);
-          
-          if (isAfter(entryDate, startOfPeriod) || isEqual(entryDate, startOfPeriod)) {
-            const category = entry.exercice.category;
-            if (category && category in newStats) {
-              newStats[category as ExerciceCategory]++;
-            }
+          const category = entry.exercice.category;
+          if (category && category in newStats) {
+            newStats[category as ExerciceCategory]++;
           }
         });
         
@@ -69,7 +76,7 @@ export function useCategoryStats({
     } finally {
       setLoading(false);
     }
-  }, [userId, resetFrequency]);
+  }, [userId, startOfPeriod]);
 
   useEffect(() => {
     fetchStats();

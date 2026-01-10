@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 type ConfettiVariant = 'default' | 'golden';
@@ -13,6 +13,20 @@ type Props = {
   emojis?: string[];
   colors?: string[];
   variant?: ConfettiVariant;
+};
+
+// ⚡ PERFORMANCE: Détecter si on est sur mobile pour réduire le nombre de particules
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
 };
 
 // Presets de variantes
@@ -70,13 +84,15 @@ const getFallValues = (fromWindow: boolean): (number | string)[] => {
 };
 
 // Composant Emoji qui tombe avec les confettis
+// ⚡ PERFORMANCE: Utilise will-change et transform pour l'accélération GPU
 function PopEmoji({ delay, x, emoji, fromWindow = false, swayAmount, swayDirection }: PopEmojiProps) {
   return (
     <motion.div
       className={fromWindow ? "fixed pointer-events-none text-3xl z-50" : "absolute pointer-events-none text-3xl"}
       style={{ 
         left: fromWindow ? `${x}vw` : `${x}%`, 
-        top: fromWindow ? '-5vh' : '-10%' 
+        top: fromWindow ? '-5vh' : '-10%',
+        willChange: 'transform, opacity', // ⚡ GPU acceleration
       }}
       initial={{ opacity: 0, scale: 0, y: 0 }}
       animate={{ 
@@ -107,6 +123,7 @@ function PopEmoji({ delay, x, emoji, fromWindow = false, swayAmount, swayDirecti
 }
 
 // Composant Confetti amélioré - chute fluide
+// ⚡ PERFORMANCE: Utilise will-change et transform pour l'accélération GPU
 function Confetti({ delay, startX, color, size, fromWindow = false, randomRotation, swayAmount, swayDirection }: ConfettiProps) {
   return (
     <motion.div
@@ -118,6 +135,7 @@ function Confetti({ delay, startX, color, size, fromWindow = false, randomRotati
         height: size * 1.8,
         backgroundColor: color,
         borderRadius: '1px',
+        willChange: 'transform, opacity', // ⚡ GPU acceleration
       }}
       initial={{ opacity: 0, y: 0, x: 0, rotate: 0, rotateX: 0 }}
       animate={{ 
@@ -154,6 +172,11 @@ const ConfettiRain = memo(function ConfettiRain({
   colors,
   variant = 'default',
 }: Props) {
+  // ⚡ PERFORMANCE: Réduire le nombre de particules sur mobile
+  const isMobile = useIsMobile();
+  const actualEmojiCount = isMobile ? Math.min(emojiCount, 3) : emojiCount;
+  const actualConfettiCount = isMobile ? Math.min(confettiCount, 12) : confettiCount;
+  
   // Utiliser les presets de la variante, avec possibilité de surcharger
   const preset = VARIANT_PRESETS[variant];
   const finalEmojis = emojis ?? preset.emojis;
@@ -162,7 +185,7 @@ const ConfettiRain = memo(function ConfettiRain({
   // On régénère uniquement quand show passe à true (nouvelle animation)
   const popEmojis = useMemo(() => {
     if (!show) return [];
-    return Array.from({ length: emojiCount }, (_, i) => {
+    return Array.from({ length: actualEmojiCount }, (_, i) => {
       const swayAmount = 20 + Math.random() * 30;
       const swayDirection = Math.random() > 0.5 ? 1 : -1;
       return {
@@ -175,12 +198,12 @@ const ConfettiRain = memo(function ConfettiRain({
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [show, emojiCount, fromWindow]);
+  }, [show, actualEmojiCount, fromWindow]);
 
   // Mémoriser les confettis de la même manière
   const confettis = useMemo(() => {
     if (!show) return [];
-    return Array.from({ length: confettiCount }, (_, i) => {
+    return Array.from({ length: actualConfettiCount }, (_, i) => {
       const randomRotation = Math.random() * 720;
       const swayAmount = 15 + Math.random() * 25;
       const swayDirection = Math.random() > 0.5 ? 1 : -1;
@@ -196,7 +219,7 @@ const ConfettiRain = memo(function ConfettiRain({
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [show, confettiCount, fromWindow]);
+  }, [show, actualConfettiCount, fromWindow]);
 
   if (!show) return null;
 

@@ -43,12 +43,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const history = await prisma.history.findMany({
-      where: {
-        exercice: {
-          userId: userId,
-        },
+    // Paramètres de filtrage optionnels pour optimiser les performances
+    const { searchParams } = new URL(request.url);
+    const sinceParam = searchParams.get('since'); // ISO date string - filtre les entrées depuis cette date
+    const limitParam = searchParams.get('limit'); // Nombre max d'entrées à retourner
+
+    // Construire le filtre
+    const whereClause: {
+      exercice: { userId: number };
+      completedAt?: { gte: Date };
+    } = {
+      exercice: {
+        userId: userId,
       },
+    };
+
+    // Ajouter le filtre de date si fourni
+    if (sinceParam) {
+      const sinceDate = new Date(sinceParam);
+      if (!isNaN(sinceDate.getTime())) {
+        whereClause.completedAt = { gte: sinceDate };
+      }
+    }
+
+    const history = await prisma.history.findMany({
+      where: whereClause,
       include: {
         exercice: {
           include: {
@@ -61,6 +80,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { completedAt: 'desc' },
+      ...(limitParam && !isNaN(parseInt(limitParam)) && { take: parseInt(limitParam) }),
     }) as HistoryEntry[];
 
     // Reformater les données

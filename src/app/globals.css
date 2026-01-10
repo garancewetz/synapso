@@ -50,7 +50,9 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* ⚡ PERFORMANCE: Utilise la variable CSS de next/font (Inter) */
+  /* Fallback sur les fonts système si next/font n'est pas chargée */
+  font-family: var(--font-inter, 'Inter'), 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
 }
 

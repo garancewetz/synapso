@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 import Link from 'next/link';
 import { BaseCard, CompleteButton, IconButton, MasteredBadge } from '@/app/components/ui';
 import { EditIcon } from '@/app/components/ui/icons';
@@ -16,8 +16,9 @@ type Props = {
 /**
  * Composant pour afficher un exercice aphasie
  * Bande jaune solaire par défaut, badge "Maîtrisé" en vert quand maîtrisé
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
  */
-export default function AphasieChallengeCard({ 
+const AphasieChallengeCard = memo(function AphasieChallengeCard({ 
   challenge, 
   onMasteredToggle, 
   isUpdating 
@@ -62,5 +63,7 @@ export default function AphasieChallengeCard({
       </BaseCard.Content>
     </BaseCard>
   );
-}
+});
+
+export default AphasieChallengeCard;
 

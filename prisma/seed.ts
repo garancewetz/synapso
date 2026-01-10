@@ -1,6 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Mot de passe par défaut pour le seed (à changer après le premier login)
+const DEFAULT_PASSWORD = 'Calypso123';
 
 // Données de démonstration avec les 3 catégories
 const mockExercices = [
@@ -190,13 +194,19 @@ const mockExercices = [
 async function main() {
   console.log('🌱 Début du seed avec les données de démonstration...\n');
 
-  // Créer l'utilisateur Calypso
+  // Créer l'utilisateur Calypso avec un mot de passe par défaut
+  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+  
   const calypso = await prisma.user.upsert({
     where: { name: 'Calypso' },
     update: {},
-    create: { name: 'Calypso' },
+    create: { 
+      name: 'Calypso',
+      passwordHash,
+      role: 'USER',
+    },
   });
-  console.log(`👤 Utilisateur créé : ${calypso.name}`);
+  console.log(`👤 Utilisateur créé : ${calypso.name} (mot de passe par défaut : ${DEFAULT_PASSWORD})`);
 
   // Supprimer les exercices existants
   await prisma.exerciceBodypart.deleteMany();

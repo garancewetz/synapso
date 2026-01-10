@@ -10,6 +10,8 @@ datasource db {
 model User {
   id             Int                @id @default(autoincrement())
   name           String             @unique
+  passwordHash   String
+  role           UserRole           @default(USER)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   resetFrequency ResetFrequency     @default(DAILY)
@@ -19,6 +21,8 @@ model User {
   progress       Progress[]
   aphasieItems   AphasieItem[]
   aphasieChallenges AphasieChallenge[]
+
+  @@index([role])
 }
 
 model Exercice {
@@ -135,4 +139,9 @@ enum ResetFrequency {
 enum DominantHand {
   LEFT
   RIGHT
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

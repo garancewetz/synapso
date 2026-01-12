@@ -39,7 +39,7 @@ export default function AphasieSectionHeader({
         {emoji && <span>{emoji}</span>}
         {title && <span>{title}</span>}
       </h2>
-      {!hideAddButton && <AddButton href={addHref} label={addLabel} />}
+      {!hideAddButton && <AddButton href={addHref} label={addLabel} showTextOnMobile />}
     </div>
   );
 }

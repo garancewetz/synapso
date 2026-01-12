@@ -38,6 +38,8 @@ type UserContextType = {
   logout: () => Promise<void>;
   /** Recharger les infos utilisateur */
   refreshUser: () => Promise<void>;
+  /** Supprimer un compte utilisateur */
+  deleteAccount: (userId: number) => Promise<void>;
   // Admin only
   /** Liste de tous les utilisateurs (admin only) */
   allUsers: UserWithStats[];
@@ -47,6 +49,8 @@ type UserContextType = {
   stopImpersonation: () => Promise<void>;
   /** Recharger la liste des utilisateurs (admin only) */
   refreshAllUsers: () => Promise<void>;
+  /** Supprimer un compte utilisateur (admin only) */
+  deleteUser: (userId: number) => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -218,6 +222,58 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [isAdmin]);
 
+  // Supprimer un compte utilisateur (pour supprimer son propre compte)
+  const deleteAccount = useCallback(async (userId: number) => {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erreur lors de la suppression');
+    }
+
+    // Nettoyer le localStorage
+    localStorage.removeItem('synapso_current_user');
+    
+    // Réinitialiser l'état
+    setCurrentUser(null);
+    setImpersonatedUser(null);
+    setIsAdmin(false);
+    setAllUsers([]);
+  }, []);
+
+  // Supprimer un compte utilisateur (admin only - pour supprimer n'importe quel compte)
+  const deleteUser = useCallback(async (userId: number) => {
+    if (!isAdmin) {
+      throw new Error('Accès refusé. Droits administrateur requis.');
+    }
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Erreur lors de la suppression');
+      }
+
+      // Si on supprimait l'utilisateur impersonné, arrêter l'impersonation
+      if (impersonatedUser && impersonatedUser.id === userId) {
+        await stopImpersonation();
+      }
+
+      // Recharger la liste des utilisateurs
+      await refreshAllUsers();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      throw error; // Propager l'erreur pour affichage dans le composant
+    }
+  }, [isAdmin, impersonatedUser, stopImpersonation, refreshAllUsers]);
+
   // ⚡ PERFORMANCE: Mémoriser la valeur du context pour éviter les re-renders inutiles
   // Quand une valeur change, seuls les composants qui utilisent cette valeur se re-renderont
   const contextValue = useMemo<UserContextType>(() => ({
@@ -228,10 +284,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     updateEffectiveUser,
     logout,
     refreshUser,
+    deleteAccount,
     allUsers,
     impersonate,
     stopImpersonation,
     refreshAllUsers,
+    deleteUser,
   }), [
     currentUser,
     effectiveUser,
@@ -240,10 +298,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     updateEffectiveUser,
     logout,
     refreshUser,
+    deleteAccount,
     allUsers,
     impersonate,
     stopImpersonation,
     refreshAllUsers,
+    deleteUser,
   ]);
 
   return (

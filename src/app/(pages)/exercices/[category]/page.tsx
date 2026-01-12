@@ -77,7 +77,7 @@ export default function CategoryPage() {
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
           <div className={clsx(
-            'flex items-start gap-4',
+            'flex items-start gap-3',
             effectiveUser?.dominantHand === 'LEFT' 
               ? 'justify-start md:justify-between' 
               : 'justify-between',
@@ -90,9 +90,9 @@ export default function CategoryPage() {
                   label="Ajouter un exercice"
                   queryParams={{ category: categoryParam.toLowerCase() }}
                   addFromParam
-                  className="md:order-last"
+                  className="md:order-last shrink-0"
                 />
-                <div>
+                <div className="min-w-0 flex-1">
                   <h1 className="text-2xl font-bold text-gray-800">
                     {CATEGORY_LABELS[categoryParam]}
                   </h1>
@@ -107,7 +107,7 @@ export default function CategoryPage() {
               </>
             ) : (
               <>
-                <div>
+                <div className="min-w-0 flex-1">
                   <h1 className="text-2xl font-bold text-gray-800">
                     {CATEGORY_LABELS[categoryParam]}
                   </h1>
@@ -124,6 +124,7 @@ export default function CategoryPage() {
                   label="Ajouter un exercice"
                   queryParams={{ category: categoryParam.toLowerCase() }}
                   addFromParam
+                  className="shrink-0"
                 />
               </>
             )}
@@ -137,6 +138,7 @@ export default function CategoryPage() {
               onChange={setFilter}
               fullWidth
               size="md"
+              variant="filter"
             />
           </div>
         </div>

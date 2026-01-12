@@ -39,5 +39,8 @@ export const FOCUSABLE_SELECTORS = [
 export const KEYBOARD_KEYS = {
   ESCAPE: 'Escape',
   TAB: 'Tab',
+  ARROW_LEFT: 'ArrowLeft',
+  ARROW_RIGHT: 'ArrowRight',
+  ENTER: 'Enter',
 } as const;
 

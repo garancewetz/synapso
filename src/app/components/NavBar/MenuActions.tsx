@@ -3,8 +3,9 @@
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon, ChatIcon, SettingsIcon, MapIcon } from '@/app/components/ui/icons';
+import { PlusIcon, ChatIcon, SettingsIcon, MapIcon, UserIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
+import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import type { User } from '@/app/types';
 
 type Props = {
@@ -17,6 +18,7 @@ type MenuAction = {
   href: (pathname: string) => string;
   icon: React.ReactNode;
   title: string;
+  description?: string;
   iconBgColor: string;
   iconTextColor: string;
   condition?: (user: User | null) => boolean;
@@ -49,11 +51,10 @@ const MENU_ACTIONS: MenuAction[] = [
   },
   {
     href: () => '/settings',
-    icon: <SettingsIcon />,
+    icon: <UserIcon className="w-5 h-5" />,
     title: 'Mon profil',
-    iconBgColor: 'bg-white',
-    iconTextColor: 'text-gray-900',
-    noCardStyle: true,
+    iconBgColor: SITEMAP_ICON_STYLES.primary.settings.bg,
+    iconTextColor: SITEMAP_ICON_STYLES.primary.settings.text,
   },
 
 ];
@@ -87,6 +88,7 @@ export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {
             onClick={onMenuClose}
             icon={action.icon}
             title={action.title}
+            description={action.description}
             iconBgColor={action.iconBgColor}
             iconTextColor={action.iconTextColor}
             tabIndex={tabIndex}

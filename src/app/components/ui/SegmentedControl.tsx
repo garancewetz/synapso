@@ -20,6 +20,8 @@ type Props<T extends string> = {
   fullWidth?: boolean;
   /** Taille du composant */
   size?: 'sm' | 'md';
+  /** Variante visuelle : 'navigation' pour navigation principale, 'filter' pour filtres */
+  variant?: 'navigation' | 'filter';
   className?: string;
   /** Couleur du ring pour l'onglet actif (ex: 'ring-blue-500') */
   activeRingColor?: string;
@@ -54,6 +56,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   fullWidth = false,
   size = 'sm',
+  variant = 'filter',
   className = '',
   activeRingColor,
   showCountBelow = false,
@@ -62,6 +65,15 @@ export function SegmentedControl<T extends string>({
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-3 py-2.5 text-sm',
   };
+
+  // Styles selon la variante
+  const containerClasses = clsx(
+    'relative flex rounded-lg p-1',
+    variant === 'navigation' ? 'bg-gray-100 shadow-sm' : 'bg-gray-100',
+    className
+  );
+
+  const indicatorShadow = variant === 'navigation' ? 'shadow-lg' : 'shadow-md';
 
   // Trouver l'index actif
   const activeIndex = options.findIndex((option) => option.value === value);
@@ -74,7 +86,7 @@ export function SegmentedControl<T extends string>({
   );
 
   return (
-    <div className={clsx('relative flex bg-gray-100 rounded-lg p-1', className)}>
+    <div className={containerClasses}>
       {/* Élément de fond qui glisse */}
       <span
         className="absolute flex overflow-hidden rounded-md transition-all duration-300 ease-out pointer-events-none"
@@ -87,7 +99,8 @@ export function SegmentedControl<T extends string>({
         }}
       >
         <span className={clsx(
-          'h-full w-full rounded-md bg-white shadow-lg',
+          'h-full w-full rounded-md bg-white',
+          indicatorShadow,
           activeRingColor && `ring-2 ring-offset-1 ${activeRingColor}`
         )} />
       </span>
@@ -111,7 +124,7 @@ export function SegmentedControl<T extends string>({
               'rounded-md transition-colors duration-200 relative z-10 cursor-pointer',
               isActive
                 ? 'text-gray-800 font-bold'
-                : 'font-medium text-gray-500 hover:text-gray-700',
+                : 'font-medium text-gray-600 hover:text-gray-800',
               // Disposition verticale pour icônes ou counts
               (hasIcon || showCountBelow) && 'flex flex-col items-center justify-center gap-0.5',
               !hasIcon && !showCountBelow && 'flex items-center justify-center'

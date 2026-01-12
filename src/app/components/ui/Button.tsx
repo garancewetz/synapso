@@ -15,7 +15,7 @@ export function Button({
   className = '',
   ...props
 }: Props) {
-  const baseStyles = 'cursor-pointer px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantStyles = {
     primary: 'bg-slate-800 text-white hover:bg-slate-900',

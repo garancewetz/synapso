@@ -16,13 +16,16 @@ import { useExercices } from '@/app/hooks/useExercices';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { useProgress } from '@/app/hooks/useProgress';
+import { useOnboarding } from '@/app/hooks/useOnboarding';
+import { OnboardingSlides } from '@/app/components/OnboardingSlides';
 
-type TabValue = 'corps' | 'aphasie' | 'parcours' | 'paramètres';
+type TabValue = 'corps' | 'aphasie' | 'parcours' | 'profil';
 
 export default function Home() {
   const pathname = usePathname();
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
+  const { openOnboarding, showOnboarding, closeOnboarding } = useOnboarding();
   const isAphasic = effectiveUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
@@ -62,8 +65,8 @@ export default function Home() {
       icon: <MapIcon className="w-5 h-5" />
     });
     options.push({ 
-      value: 'paramètres', 
-      label: 'Paramètres',
+      value: 'profil', 
+      label: 'Mon profil',
       icon: <SettingsIcon className="w-5 h-5" />
     });
     
@@ -105,23 +108,6 @@ export default function Home() {
               >
                 <div className="text-gray-500">Chargement...</div>
               </motion.div>
-            ) : exercices.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <EmptyState
-                  icon="+"
-                  title="Aucun exercice"
-                  message="Commencez par ajouter votre premier exercice."
-                  subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
-                  actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
-                  actionLabel="Créer mon premier exercice"
-                />
-              </motion.div>
             ) : (
               <motion.div
                 key="content"
@@ -140,6 +126,7 @@ export default function Home() {
                       onChange={setActiveTab}
                       fullWidth
                       size="md"
+                      variant="navigation"
                     />
                   </div>
                 )}
@@ -147,41 +134,54 @@ export default function Home() {
                 {/* Contenu selon l'onglet actif */}
                 {currentActiveTab === 'corps' && (
                   <div className="space-y-4">
-                    {/* Cartes de catégories avec progression intégrée */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                      {CATEGORY_ORDER.map((category, index) => {
-                        const categoryExercices = exercices.filter(e => e.category === category);
-                        if (categoryExercices.length === 0) return null;
+                    {exercices.length === 0 ? (
+                      <EmptyState
+                        icon="+"
+                        title="Aucun exercice"
+                        message="Commencez par ajouter votre premier exercice."
+                        subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
+                        actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
+                        actionLabel="Créer mon premier exercice"
+                      />
+                    ) : (
+                      <>
+                        {/* Cartes de catégories avec progression intégrée */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                          {CATEGORY_ORDER.map((category, index) => {
+                            const categoryExercices = exercices.filter(e => e.category === category);
+                            if (categoryExercices.length === 0) return null;
 
-                        return (
-                          <motion.div
-                            key={category}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.15, delay: index * 0.03 }}
-                          >
-                            <CategoryCardWithProgress
-                              category={category}
-                              total={categoryExercices.length}
-                              completedCount={categoryStats[category]}
-                            />
-                          </motion.div>
-                        );
-                      }).filter(Boolean)}
-                    </div>
+                            return (
+                              <motion.div
+                                key={category}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.15, delay: index * 0.03 }}
+                              >
+                                <CategoryCardWithProgress
+                                  category={category}
+                                  total={categoryExercices.length}
+                                  completedCount={categoryStats[category]}
+                                />
+                              </motion.div>
+                            );
+                          }).filter(Boolean)}
+                        </div>
 
-                  {/* Action secondaire : Ajouter un exercice */}
-                  <SiteMapCard
-                    title="Ajouter un exercice"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    description="Créer un nouvel exercice personnalisé"
-                    href="/exercice/add"
-                    iconBgColor={SITEMAP_ICON_STYLES.primary.addExercice.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.primary.addExercice.text}
-                    isSecondary={true}
-                  />
-                </div>
-              )}
+                        {/* Action secondaire : Ajouter un exercice */}
+                        <SiteMapCard
+                          title="Ajouter un exercice"
+                          icon={<PlusIcon className="w-5 h-5" />}
+                          description="Créer un nouvel exercice personnalisé"
+                          href="/exercice/add"
+                          iconBgColor={SITEMAP_ICON_STYLES.primary.addExercice.bg}
+                          iconTextColor={SITEMAP_ICON_STYLES.primary.addExercice.text}
+                          isSecondary={true}
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
 
               {currentActiveTab === 'aphasie' && isAphasic && (
                 <SiteMapGroup
@@ -283,15 +283,23 @@ export default function Home() {
                 </div>
               )}
 
-              {currentActiveTab === 'paramètres' && (
+              {currentActiveTab === 'profil' && (
                 <div className="space-y-3">
                   <SiteMapCard
                     title="Mon profil"
                     icon={<UserIcon className="w-5 h-5" />}
-                    description="Modifier mes réglages"
+                    description="Gérer mon profil et mes préférences"
                     href="/settings"
                     iconBgColor={SITEMAP_ICON_STYLES.primary.settings.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.settings.text}
+                  />
+                  <SiteMapCard
+                    title="Aide"
+                    icon={<BookIcon className="w-5 h-5" />}
+                    description="Voir le guide d'introduction"
+                    onClick={openOnboarding}
+                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
                 </div>
               )}
@@ -303,7 +311,7 @@ export default function Home() {
       </div>
 
       {/* Bouton flottant "Noter un progrès" - visible sur toutes les pages */}
-      {effectiveUser && exercices.length > 0 && <ProgressFAB />}
+      {effectiveUser && <ProgressFAB />}
 
       {/* Modal d'édition de progrès */}
       {effectiveUser && (
@@ -317,6 +325,15 @@ export default function Home() {
           }}
           userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
+        />
+      )}
+
+      {/* Onboarding pour réconsultation */}
+      {effectiveUser && (
+        <OnboardingSlides
+          isOpen={showOnboarding}
+          onClose={closeOnboarding}
+          markAsSeenOnClose={false}
         />
       )}
 

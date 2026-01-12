@@ -37,7 +37,7 @@ export function CompleteButton({
       if (weeklyCount > 1) {
         return `Fait (${weeklyCount}× cette semaine)`;
       }
-      return isCompletedToday ? 'Fait' : 'Fait cette semaine';
+      return isCompletedToday ? 'Fait aujourd\'hui' : 'Fait cette semaine';
     }
     // Quand pas complété, toujours "Fait aujourd'hui"
     return 'Fait aujourd\'hui';

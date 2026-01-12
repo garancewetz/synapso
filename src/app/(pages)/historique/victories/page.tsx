@@ -121,6 +121,7 @@ export default function ProgressPage() {
               onChange={(value) => setFilter(value as FilterType)}
               fullWidth
               size="md"
+              variant="filter"
               showCountBelow
             />
           </div>

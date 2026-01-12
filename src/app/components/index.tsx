@@ -29,6 +29,8 @@ import { WelcomeHeader } from './WelcomeHeader';
 import { WelcomeHeaderWrapper } from './WelcomeHeaderWrapper';
 import { TouchLink } from './TouchLink';
 import { UserBadge } from './UserBadge';
+import { OnboardingSlides } from './OnboardingSlides';
+import { UserSetup } from './UserSetup';
 
 // UI Components
 import { Badge, Button, CalendarIcon, Input, Loader, Logo, Textarea, PinIcon, SparklesIcon } from './ui';
@@ -74,4 +76,6 @@ export {
   ViewProgressButton,
   WelcomeHeader,
   WelcomeHeaderWrapper,
+  OnboardingSlides,
+  UserSetup,
 };

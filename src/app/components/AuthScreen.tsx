@@ -6,6 +6,9 @@ import { Button } from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Loader from '@/app/components/ui/Loader';
 import Logo from '@/app/components/ui/Logo';
+import { OnboardingSlides } from '@/app/components/OnboardingSlides';
+import { UserSetup } from '@/app/components/UserSetup';
+import { useOnboarding } from '@/app/hooks/useOnboarding';
 
 type Props = {
   onSuccess: () => void;
@@ -18,9 +21,15 @@ export function AuthScreen({ onSuccess }: Props) {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [invitationCode, setInvitationCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showUserSetup, setShowUserSetup] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [newUserId, setNewUserId] = useState<number | null>(null);
+  const onboarding = useOnboarding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +51,14 @@ export function AuthScreen({ onSuccess }: Props) {
 
     // En mode register, validations supplémentaires
     if (mode === 'register') {
-      if (password.length < 4) {
-        setError('Le mot de passe doit contenir au moins 4 caractères');
+      if (!invitationCode.trim()) {
+        setError('Le code d\'invitation est obligatoire');
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 8) {
+        setError('Le mot de passe doit contenir au moins 8 caractères');
         setLoading(false);
         return;
       }
@@ -65,6 +80,7 @@ export function AuthScreen({ onSuccess }: Props) {
         body: JSON.stringify({ 
           name: name.trim(), 
           password,
+          ...(mode === 'register' && { invitationCode: invitationCode.trim() }),
         }),
       });
 
@@ -74,7 +90,15 @@ export function AuthScreen({ onSuccess }: Props) {
         setName('');
         setPassword('');
         setConfirmPassword('');
-        onSuccess();
+        setInvitationCode('');
+        
+        // Si c'est une création de compte, afficher UserSetup puis onboarding
+        if (mode === 'register') {
+          setNewUserId(data.user.id);
+          setShowUserSetup(true);
+        } else {
+          onSuccess();
+        }
       } else {
         setError(data.error || 'Une erreur est survenue');
       }
@@ -90,7 +114,13 @@ export function AuthScreen({ onSuccess }: Props) {
     setError('');
     setPassword('');
     setConfirmPassword('');
+    setInvitationCode('');
   };
+
+  // Si UserSetup est affiché, ne pas afficher le formulaire d'auth
+  if (showUserSetup) {
+    return null; // UserSetup gère son propre affichage plein écran
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-amber-50 via-white to-orange-50 p-4">
@@ -152,8 +182,32 @@ export function AuthScreen({ onSuccess }: Props) {
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
               autoFocus
-              autoComplete="username"
+              autoComplete="name"
             />
+
+            {/* Code d'invitation (inscription uniquement) */}
+            {mode === 'register' && (
+              <div>
+                <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 mb-2">
+                  Code d'invitation
+                </label>
+                <input
+                  id="invitationCode"
+                  type="text"
+                  value={invitationCode}
+                  onChange={(e) => setInvitationCode(e.target.value)}
+                  placeholder="Entrez le code d'invitation"
+                  disabled={loading}
+                  required
+                  aria-required="true"
+                  aria-describedby="invitationCode-help"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
+                />
+                <p id="invitationCode-help" className="mt-1 text-sm text-gray-500">
+                  Ce code vous a été fourni par votre administrateur
+                </p>
+              </div>
+            )}
 
             {/* Mot de passe */}
             <div>
@@ -165,7 +219,7 @@ export function AuthScreen({ onSuccess }: Props) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === 'register' ? 'Minimum 4 caractères' : 'Votre mot de passe'}
+                  placeholder={mode === 'register' ? 'Minimum 8 caractères' : 'Votre mot de passe'}
                   disabled={loading}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
@@ -249,6 +303,46 @@ export function AuthScreen({ onSuccess }: Props) {
           Application de rééducation post-AVC
         </p>
       </div>
+
+      {/* UserSetup pour nouveaux utilisateurs */}
+      {showUserSetup && newUserId && (
+        <UserSetup
+          userId={newUserId}
+          onComplete={() => {
+            setShowUserSetup(false);
+            // Afficher l'onboarding après la configuration
+            if (onboarding.shouldShowOnboarding(true)) {
+              setIsNewUser(true);
+              setShowOnboarding(true);
+            } else {
+              onSuccess();
+            }
+          }}
+          onSkip={() => {
+            setShowUserSetup(false);
+            // Afficher l'onboarding même si on skip
+            if (onboarding.shouldShowOnboarding(true)) {
+              setIsNewUser(true);
+              setShowOnboarding(true);
+            } else {
+              onSuccess();
+            }
+          }}
+        />
+      )}
+
+      {/* Onboarding pour nouveaux utilisateurs */}
+      <OnboardingSlides
+        isOpen={showOnboarding}
+        onClose={() => {
+          setShowOnboarding(false);
+          if (isNewUser) {
+            onboarding.markAsSeen();
+            onSuccess();
+          }
+        }}
+        markAsSeenOnClose={isNewUser}
+      />
     </div>
   );
 }

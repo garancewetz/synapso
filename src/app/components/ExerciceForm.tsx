@@ -5,8 +5,9 @@ import { useUser } from '@/app/contexts/UserContext';
 import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_LABELS, CATEGORY_COLORS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
+import clsx from 'clsx';
 
 type Props = {
   exerciceId?: number;
@@ -214,32 +215,33 @@ export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialC
         <label className="block text-base font-semibold text-gray-800 mb-3">
           Catégorie *
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-md">
           {categories.map((category) => {
             const isSelected = formData.category === category;
             const colors = CATEGORY_COLORS[category];
+            const icon = CATEGORY_ICONS[category];
             
             return (
               <button
                 key={category}
                 type="button"
                 onClick={() => setFormData({ ...formData, category })}
-                className={`
-                  flex items-center justify-center p-4 rounded-lg cursor-pointer
-                  transition-all duration-200
-                  ${colors.bg} ${colors.text}
-                  ${isSelected 
-                    ? `border-2 ${colors.border} shadow-md scale-[1.02] font-bold` 
-                    : 'border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                  }
-                `}
+                className={clsx(
+                  'p-5 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center',
+                  colors.bg,
+                  colors.cardBorder,
+                  isSelected 
+                    ? `${colors.border} shadow-md scale-[1.02]` 
+                    : 'hover:shadow-sm'
+                )}
                 aria-pressed={isSelected}
               >
-                <span className={isSelected ? 'font-semibold text-sm' : 'font-medium text-sm'}>
-                  {CATEGORY_LABELS[category]}
-                </span>
+                <div className="text-3xl md:text-4xl mb-2">{icon}</div>
+                <div className={clsx('text-sm md:text-base font-medium', colors.text)}>
+                  {CATEGORY_LABELS_SHORT[category]}
+                </div>
                 {isSelected && (
-                  <CheckIcon className="w-4 h-4 ml-2" strokeWidth={2.5} />
+                  <CheckIcon className="w-5 h-5 mt-2" strokeWidth={2.5} />
                 )}
               </button>
             );

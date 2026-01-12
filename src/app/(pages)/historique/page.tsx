@@ -196,6 +196,7 @@ export default function HistoriquePage() {
                 onChange={(value) => setBodypartPeriod(value as BodypartPeriodFilter)}
                 fullWidth
                 size="sm"
+                variant="filter"
               />
             }
           />

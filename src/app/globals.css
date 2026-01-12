@@ -120,6 +120,64 @@ textarea {
   touch-action: auto;
 }
 
+/* Masquer les icônes du gestionnaire de mots de passe du navigateur qui peuvent apparaître comme des images cassées */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Pour Firefox */
+input[type="password"]::-moz-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Masquer les icônes d'autocomplétion du navigateur (petit carré avec icône de profil) */
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute;
+  right: -9999px;
+}
+
+/* Masquer les indicateurs de suggestion d'autocomplétion */
+input::-webkit-autofill-preview,
+input::-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+}
+
+/* Masquer les lignes de séparation ajoutées par le navigateur */
+input::after,
+input::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* S'assurer qu'il n'y a pas de bordures ou lignes supplémentaires sur les inputs */
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  border: 1px solid rgb(209, 213, 219) !important;
+  outline: none !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  border: 1px solid rgb(251, 191, 36) !important;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
+  outline: none !important;
+}
+
 /* Touch-friendly button sizes */
 /* @media (pointer: coarse) {
   button, a {

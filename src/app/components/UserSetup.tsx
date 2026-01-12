@@ -70,7 +70,7 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
             <Logo size={80} />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Personnalise ton espace</h1>
-          <p className="text-gray-600">Quelques questions pour adapter l'application à tes besoins</p>
+          <p className="text-gray-600">Quelques questions pour adapter l&apos;application à tes besoins</p>
         </div>
 
         {/* Formulaire */}

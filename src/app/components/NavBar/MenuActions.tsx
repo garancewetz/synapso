@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon, ChatIcon, SettingsIcon, MapIcon, UserIcon } from '@/app/components/ui/icons';
+import { PlusIcon, ChatIcon, MapIcon, UserIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import type { User } from '@/app/types';

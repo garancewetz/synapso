@@ -189,7 +189,7 @@ export function AuthScreen({ onSuccess }: Props) {
             {mode === 'register' && (
               <div>
                 <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 mb-2">
-                  Code d'invitation
+                  Code d&apos;invitation
                 </label>
                 <input
                   id="invitationCode"

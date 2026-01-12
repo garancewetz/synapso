@@ -3,8 +3,6 @@
  * Filtre les données sensibles et évite l'exposition d'informations critiques
  */
 
-type LogLevel = 'info' | 'warn' | 'error';
-
 /**
  * Liste des champs sensibles à ne jamais logger
  */

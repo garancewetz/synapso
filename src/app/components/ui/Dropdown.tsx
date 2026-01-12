@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
-import { ChevronIcon } from './icons';
 import clsx from 'clsx';
 
 type Props = {

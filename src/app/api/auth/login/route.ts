@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Préparer les données utilisateur (sans le hash)
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _unused, ...userWithoutPassword } = user;
 
     // Créer la réponse avec le cookie d'authentification
     const response = NextResponse.json({

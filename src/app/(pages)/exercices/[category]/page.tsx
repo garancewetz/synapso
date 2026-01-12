@@ -29,7 +29,7 @@ export default function CategoryPage() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const { effectiveUser, loading: userLoading } = useUser();
+  const { effectiveUser } = useUser();
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
@@ -39,8 +39,6 @@ export default function CategoryPage() {
   const { exercices, loading: loadingExercices, updateExercice, refetch } = useExercices({
     category: isValidCategory ? categoryParam : undefined,
   });
-  
-  const loading = userLoading || loadingExercices;
 
   useEffect(() => {
     if (!isValidCategory) {

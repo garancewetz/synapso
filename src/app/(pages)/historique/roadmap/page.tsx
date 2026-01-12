@@ -33,7 +33,7 @@ export default function RoadmapPage() {
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
   const { history, loading: loadingHistory } = useHistory();
-  const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
+  const { progressList, refetch: refetchProgress } = useProgress();
 
   const roadmapData = useMemo(() => getHeatmapData(history, ROADMAP_FULL_DAYS), [history]);
   const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);

@@ -42,7 +42,7 @@ export default function HistoriquePage() {
   const { history, loading: loadingHistory } = useHistory();
 
   // Charger les progrès
-  const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
+  const { progressList, refetch: refetchProgress } = useProgress();
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {

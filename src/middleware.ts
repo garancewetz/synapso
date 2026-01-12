@@ -98,8 +98,8 @@ function getClientIP(request: NextRequest): string {
     return realIP;
   }
 
-  // Fallback sur l'IP de la requête
-  return request.ip || 'unknown';
+  // Fallback si aucun header n'est disponible
+  return 'unknown';
 }
 
 export function middleware(request: NextRequest) {

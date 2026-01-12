@@ -11,6 +11,8 @@ export { WeekAccordionList } from './WeekAccordionNew';
 export { ProgressCard } from './ProgressCard';
 export { ProgressCardCompact } from './ProgressCardCompact';
 export { ProgressTimeline } from './ProgressTimeline';
+export { ActivityHeatmapSkeleton } from './ActivityHeatmapSkeleton';
+export { ActivityLineChartSkeleton } from './ActivityLineChartSkeleton';
 export { DayDetailModal } from './DayDetailModal';
 export { StatsCard } from './StatsCard';
 

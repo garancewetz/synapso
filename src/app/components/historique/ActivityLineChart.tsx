@@ -348,9 +348,9 @@ export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Pro
 
             // Créer plusieurs étoiles superposées en fonction du nombre de progrès
             const stars = Array.from({ length: Math.min(progressCount, 5) }, (_, i) => {
-              // Décalages pour positionner les étoiles au-dessus du sommet (ou du sol)
+              // Décalages pour positionner les étoiles au-dessus de la ligne de crête
               const offsetX = 2; // Léger décalage horizontal pour centrer l'étoile dans le halo
-              const offsetY = i === 0 ? -15 : -32 - (i - 1) * 18; // 1ère à 15px au-dessus, autres empilées avec espacement de 18px
+              const offsetY = i === 0 ? -25 : -42 - (i - 1) * 18; // 1ère à 25px au-dessus de la ligne, autres empilées avec espacement de 18px
               
               return (
                 <g key={`star-${i}`}>
@@ -359,9 +359,9 @@ export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Pro
                     <circle
                       cx={point.x + offsetX}
                       cy={point.y + offsetY}
-                      r="18"
+                      r="20"
                       fill="#fbbf24"
-                      opacity="0.2"
+                      opacity="0.25"
                     />
                   )}
                   {/* Étoile - première sur le sommet, autres au-dessus */}

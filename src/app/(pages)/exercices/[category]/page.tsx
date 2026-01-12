@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import ExerciceCard from '@/app/components/ExerciceCard';
 import EmptyState from '@/app/components/EmptyState';
-import { Loader, SegmentedControl } from '@/app/components/ui';
+import { SegmentedControl, Loader } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -13,6 +14,7 @@ import AddButton from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { ProgressFAB, ViewProgressButton } from '@/app/components';
+import clsx from 'clsx';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
 
@@ -72,105 +74,144 @@ export default function CategoryPage() {
   return (
     <section className="pb-4 md:pb-8">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
-        {/* Header */}
-        {!userLoading && !loadingExercices && (
-          <div className="px-4 mb-6">
-            <div className={`flex items-start gap-4 ${effectiveUser?.dominantHand === 'LEFT' ? 'justify-start md:justify-between' : 'justify-between'} md:justify-between`}>
-              {effectiveUser?.dominantHand === 'LEFT' ? (
-                <>
-                  <AddButton 
-                    href="/exercice/add" 
-                    label="Ajouter un exercice"
-                    queryParams={{ category: categoryParam.toLowerCase() }}
-                    addFromParam
-                    className="md:order-last"
-                  />
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-800">
-                      {CATEGORY_LABELS[categoryParam]}
-                    </h1>
+        {/* Header - toujours visible */}
+        <div className="px-4 mb-6">
+          <div className={clsx(
+            'flex items-start gap-4',
+            effectiveUser?.dominantHand === 'LEFT' 
+              ? 'justify-start md:justify-between' 
+              : 'justify-between',
+            'md:justify-between'
+          )}>
+            {effectiveUser?.dominantHand === 'LEFT' ? (
+              <>
+                <AddButton 
+                  href="/exercice/add" 
+                  label="Ajouter un exercice"
+                  queryParams={{ category: categoryParam.toLowerCase() }}
+                  addFromParam
+                  className="md:order-last"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {CATEGORY_LABELS[categoryParam]}
+                  </h1>
+                  {!loadingExercices && exercices.length > 0 ? (
                     <p className="text-gray-500 mt-1">
                       {completedCount}/{exercices.length} exercices complétés
                     </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-800">
-                      {CATEGORY_LABELS[categoryParam]}
-                    </h1>
+                  ) : (
+                    <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {CATEGORY_LABELS[categoryParam]}
+                  </h1>
+                  {!loadingExercices && exercices.length > 0 ? (
                     <p className="text-gray-500 mt-1">
                       {completedCount}/{exercices.length} exercices complétés
                     </p>
-                  </div>
-                  <AddButton 
-                    href="/exercice/add" 
-                    label="Ajouter un exercice"
-                    queryParams={{ category: categoryParam.toLowerCase() }}
-                    addFromParam
-                  />
-                </>
-              )}
-            </div>
-            
-            {/* Switch à trois parties */}
-            <div className="mt-4">
-              <SegmentedControl
-                options={FILTER_OPTIONS}
-                value={filter}
-                onChange={setFilter}
-                fullWidth
-                size="md"
-              />
-            </div>
+                  ) : (
+                    <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
+                  )}
+                </div>
+                <AddButton 
+                  href="/exercice/add" 
+                  label="Ajouter un exercice"
+                  queryParams={{ category: categoryParam.toLowerCase() }}
+                  addFromParam
+                />
+              </>
+            )}
           </div>
-        )}
+          
+          {/* Filtre - toujours visible */}
+          <div className="mt-4">
+            <SegmentedControl
+              options={FILTER_OPTIONS}
+              value={filter}
+              onChange={setFilter}
+              fullWidth
+              size="md"
+            />
+          </div>
+        </div>
 
         {/* Contenu principal */}
         <div className="px-4">
-          {loading ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <Loader size="large" />
-            </div>
-          ) : filteredExercices.length === 0 ? (
-            <EmptyState
-              icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
-              title={
-                filter === 'notCompleted'
-                  ? "Tous les exercices sont faits !"
-                  : filter === 'completed'
-                  ? "Aucun exercice fait"
-                  : `Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`
-              }
-              message={
-                filter === 'notCompleted'
-                  ? "Félicitations, vous avez complété tous les exercices de cette catégorie."
-                  : filter === 'completed'
-                  ? "Vous n'avez pas encore complété d'exercices dans cette catégorie."
-                  : "Cette catégorie est vide pour le moment."
-              }
-              subMessage={filter === 'all' ? "Ajoutez des exercices depuis le menu." : undefined}
-            />
-          ) : (
-            <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-              {filteredExercices.map((exercice) => (
-                <ExerciceCard
-                  key={exercice.id}
-                  exercice={exercice}
-                  onEdit={handleEditClick}
-                  onCompleted={handleCompleted}
+          <AnimatePresence mode="wait">
+            {loadingExercices ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center min-h-[400px] gap-4"
+              >
+                <Loader size="large" />
+                <p className="text-gray-600 font-medium">
+                  Chargement de tes exercices... 💪
+                </p>
+              </motion.div>
+            ) : filteredExercices.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <EmptyState
+                  icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
+                  title={
+                    filter === 'notCompleted'
+                      ? "Tous les exercices sont faits !"
+                      : filter === 'completed'
+                      ? "Aucun exercice fait"
+                      : `Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`
+                  }
+                  message={
+                    filter === 'notCompleted'
+                      ? "Félicitations, vous avez complété tous les exercices de cette catégorie."
+                      : filter === 'completed'
+                      ? "Vous n'avez pas encore complété d'exercices dans cette catégorie."
+                      : "Cette catégorie est vide pour le moment."
+                  }
+                  subMessage={filter === 'all' ? "Ajoutez des exercices depuis le menu." : undefined}
                 />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="grid gap-3 grid-cols-1 lg:grid-cols-2"
+              >
+                {filteredExercices.map((exercice) => (
+                  <div key={exercice.id}>
+                    <ExerciceCard
+                      exercice={exercice}
+                      onEdit={handleEditClick}
+                      onCompleted={handleCompleted}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Bouton "Voir mes réussites" */}
-          {!loading && filteredExercices.length > 0 && (
-            <ViewProgressButton />
+          {!loadingExercices && filteredExercices.length > 0 && (
+            <div className="mt-6">
+              <ViewProgressButton />
+            </div>
           )}
-          
-      
         </div>
       </div>
 

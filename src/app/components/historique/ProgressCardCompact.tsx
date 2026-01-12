@@ -1,9 +1,10 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatTime } from '@/app/utils/date.utils';
-import { useProgressBadges } from '@/app/hooks/useProgressBadges';
+import { extractProgressTags } from '@/app/utils/progress.utils';
 
 type Props = {
   progress: Progress;
@@ -11,10 +12,14 @@ type Props = {
 
 /**
  * Carte de progrès ultra-compacte pour la modale de détail du jour
- * Style similaire aux cartes d'exercices : une seule ligne, pas de modification
+ * Affiche uniquement : emoji, titre (clean content) et heure
  */
 export function ProgressCardCompact({ progress }: Props) {
-  const { typeBadge, categoryBadge } = useProgressBadges(progress);
+  // Extraire le clean content (sans les tags)
+  const { cleanContent } = useMemo(
+    () => extractProgressTags(progress.content),
+    [progress.content]
+  );
   
   return (
     <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-yellow-200">
@@ -24,26 +29,11 @@ export function ProgressCardCompact({ progress }: Props) {
           <span className="text-lg flex items-center justify-center">{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
         </div>
         
-        {/* Contenu du progrès */}
+        {/* Titre - clean content sans tags */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">
-            {progress.content}
+            {cleanContent}
           </p>
-          
-          {/* Badges discrets sous le contenu */}
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-[10px] font-medium text-amber-700">
-              {typeBadge.emoji}
-            </span>
-            {categoryBadge && (
-              <>
-                <span className="text-gray-300">•</span>
-                <span className="text-[10px] font-medium text-amber-700">
-                  {categoryBadge.emoji} {categoryBadge.label}
-                </span>
-              </>
-            )}
-          </div>
         </div>
         
         {/* Heure */}

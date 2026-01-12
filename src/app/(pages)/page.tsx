@@ -2,7 +2,9 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { EmptyState, Loader, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
+import { motion, AnimatePresence } from 'framer-motion';
+import { EmptyState, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
+import { Loader } from '@/app/components/ui';
 import { ProgressCard } from '@/app/components/historique';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
@@ -79,57 +81,94 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-24 md:pb-8">
-          {userLoading || (effectiveUser && (loadingExercices || loadingStats)) ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader size="large" />
-            </div>
-          ) : !effectiveUser ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader size="large" />
-            </div>
-          ) : exercices.length === 0 ? (
-            <EmptyState
-              icon="+"
-              title="Aucun exercice"
-              message="Commencez par ajouter votre premier exercice."
-              subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
-              actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
-              actionLabel="Créer mon premier exercice"
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Onglets */}
-              {tabOptions.length > 0 && (
-                <div>
-                  <SegmentedControl
-                    options={tabOptions}
-                    value={currentActiveTab}
-                    onChange={setActiveTab}
-                    fullWidth
-                    size="md"
-                  />
-                </div>
-              )}
-
-              {/* Contenu selon l'onglet actif */}
-              {currentActiveTab === 'corps' && (
-                <div className="space-y-4">
-                  {/* Cartes de catégories avec progression intégrée */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                    {CATEGORY_ORDER.map(category => {
-                      const categoryExercices = exercices.filter(e => e.category === category);
-                      if (categoryExercices.length === 0) return null;
-
-                      return (
-                        <CategoryCardWithProgress
-                          key={category}
-                          category={category}
-                          total={categoryExercices.length}
-                          completedCount={categoryStats[category]}
-                        />
-                      );
-                    }).filter(Boolean)}
+          <AnimatePresence mode="wait">
+            {userLoading || (effectiveUser && (loadingExercices || loadingStats)) ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center py-12 gap-4"
+              >
+                <Loader size="large" />
+                <p className="text-gray-600 font-medium">
+                  Préparation de ton espace... ✨
+                </p>
+              </motion.div>
+            ) : !effectiveUser ? (
+              <motion.div
+                key="no-user"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center py-12"
+              >
+                <div className="text-gray-500">Chargement...</div>
+              </motion.div>
+            ) : exercices.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <EmptyState
+                  icon="+"
+                  title="Aucun exercice"
+                  message="Commencez par ajouter votre premier exercice."
+                  subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
+                  actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
+                  actionLabel="Créer mon premier exercice"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="space-y-6"
+              >
+                {/* Onglets */}
+                {tabOptions.length > 0 && (
+                  <div>
+                    <SegmentedControl
+                      options={tabOptions}
+                      value={currentActiveTab}
+                      onChange={setActiveTab}
+                      fullWidth
+                      size="md"
+                    />
                   </div>
+                )}
+
+                {/* Contenu selon l'onglet actif */}
+                {currentActiveTab === 'corps' && (
+                  <div className="space-y-4">
+                    {/* Cartes de catégories avec progression intégrée */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                      {CATEGORY_ORDER.map((category, index) => {
+                        const categoryExercices = exercices.filter(e => e.category === category);
+                        if (categoryExercices.length === 0) return null;
+
+                        return (
+                          <motion.div
+                            key={category}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.15, delay: index * 0.03 }}
+                          >
+                            <CategoryCardWithProgress
+                              category={category}
+                              total={categoryExercices.length}
+                              completedCount={categoryStats[category]}
+                            />
+                          </motion.div>
+                        );
+                      }).filter(Boolean)}
+                    </div>
 
                   {/* Action secondaire : Ajouter un exercice */}
                   <SiteMapCard
@@ -257,8 +296,9 @@ export default function Home() {
                 </div>
               )}
 
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

@@ -81,8 +81,8 @@ export function AdminUserSwitcher() {
       <div 
         ref={dropdownRef}
         className={clsx(
-          'fixed z-50',
-          isImpersonating ? 'top-14 right-4' : 'top-4 right-4'
+          'fixed z-40',
+          isImpersonating ? 'top-14 left-1/2 -translate-x-1/2' : 'top-4 left-1/2 -translate-x-1/2'
         )}
       >
         <button
@@ -110,7 +110,7 @@ export function AdminUserSwitcher() {
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+          <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-30">
             <div className="p-3 bg-gray-50 border-b border-gray-100">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                 Voir comme...

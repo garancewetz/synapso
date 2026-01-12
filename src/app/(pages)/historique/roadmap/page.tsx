@@ -2,10 +2,17 @@
 
 import { useCallback, useMemo } from 'react';
 import { format, startOfDay } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { BackButton } from '@/app/components/BackButton';
-import { ActivityHeatmap, ActivityLineChart, StatsCard } from '@/app/components/historique';
+import { 
+  ActivityHeatmap, 
+  ActivityLineChart, 
+  StatsCard,
+  ActivityHeatmapSkeleton,
+  ActivityLineChartSkeleton
+} from '@/app/components/historique';
 import { ProgressBottomSheet } from '@/app/components';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
@@ -25,8 +32,8 @@ export default function RoadmapPage() {
   const { effectiveUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
-  const { history } = useHistory();
-  const { progressList, refetch: refetchProgress } = useProgress();
+  const { history, loading: loadingHistory } = useHistory();
+  const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
 
   const roadmapData = useMemo(() => getHeatmapData(history, ROADMAP_FULL_DAYS), [history]);
   const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);
@@ -35,6 +42,7 @@ export default function RoadmapPage() {
     totalProgress,
     totalPhysicalProgress,
     totalOrthoProgress,
+    progressCountByDate,
   } = useProgressStats(progressList);
 
   const {
@@ -115,13 +123,34 @@ export default function RoadmapPage() {
       </div>
 
       <div className="px-4 md:px-6 mb-6">
-        <ActivityHeatmap 
-          data={roadmapData} 
-          currentStreak={currentStreak} 
-          showFullLink={false}
-          progressDates={progressDates}
-          onDayClick={handleDayClick}
-        />
+        <AnimatePresence mode="wait">
+          {loadingHistory ? (
+            <motion.div
+              key="heatmap-skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ActivityHeatmapSkeleton />
+            </motion.div>
+            ) : (
+              <motion.div
+                key="heatmap"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+              <ActivityHeatmap 
+                data={roadmapData} 
+                currentStreak={currentStreak} 
+                showFullLink={false}
+                progressDates={progressDates}
+                onDayClick={handleDayClick}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="px-4 md:px-6">
@@ -134,12 +163,34 @@ export default function RoadmapPage() {
             canGoForward={canGoForward}
           />
 
-          <ActivityLineChart 
-            data={barChartData} 
-            currentStreak={currentStreak} 
-            onDayClick={handleDayClick}
-            showFullLink={false}
-          />
+          <AnimatePresence mode="wait">
+            {loadingHistory ? (
+              <motion.div
+                key="chart-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ActivityLineChartSkeleton />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="chart"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <ActivityLineChart 
+                  data={barChartData} 
+                  currentStreak={currentStreak} 
+                  onDayClick={handleDayClick}
+                  showFullLink={false}
+                  progressCountByDate={progressCountByDate}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress } from '@/app/hooks/useProgress';
 import { ProgressTimeline } from '@/app/components/historique';
 import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
-import { SegmentedControl } from '@/app/components/ui';
+import { SegmentedControl, Loader } from '@/app/components/ui';
 import { BackButton } from '@/app/components/BackButton';
 import { PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { isOrthophonieProgress } from '@/app/utils/progress.utils';
@@ -126,19 +127,38 @@ export default function ProgressPage() {
         )}
 
         {/* Liste des progrès */}
-        {loading ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-gray-500">Chargement...</div>
-          </div>
-        ) : (
-          <ProgressTimeline 
-            progressList={filteredProgress}
-            allProgress={progressList}
-            history={history}
-            onEdit={progressModal.openForEdit}
-            hideChart={true}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center min-h-[400px] gap-4"
+            >
+              <Loader size="large" />
+              <p className="text-gray-600 font-medium">
+                Chargement de tes progrès... 🌟
+              </p>
+            </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+              <ProgressTimeline 
+                progressList={filteredProgress}
+                allProgress={progressList}
+                history={history}
+                onEdit={progressModal.openForEdit}
+                hideChart={true}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Pluie de confettis dorés pour célébrer le progrès */}

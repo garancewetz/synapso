@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
@@ -8,18 +9,22 @@ import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress } from '@/app/hooks/useProgress';
 import { useProgressStats } from '@/app/hooks/useProgressStats';
-import { DonutChart, ActivityHeatmap, ProgressStatsChart } from '@/app/components/historique';
+import { 
+  DonutChart, 
+  ActivityHeatmap, 
+  ProgressStatsChart,
+  ActivityHeatmapSkeleton 
+} from '@/app/components/historique';
 import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
 import { BackButton } from '@/app/components/BackButton';
 import ViewAllLink from '@/app/components/ui/ViewAllLink';
 import { SegmentedControl } from '@/app/components/ui';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
-import { ROADMAP_PREVIEW_DAYS } from '@/app/constants/historique.constants';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
-  getHeatmapData,
+  getLast7DaysData,
   calculateCurrentStreak,
 } from '@/app/utils/historique.utils';
 
@@ -34,10 +39,10 @@ export default function HistoriquePage() {
   const displayName = effectiveUser?.name || "";
 
   // Charger l'historique
-  const { history } = useHistory();
+  const { history, loading: loadingHistory } = useHistory();
 
   // Charger les progrès
-  const { progressList, refetch: refetchProgress } = useProgress();
+  const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -64,7 +69,8 @@ export default function HistoriquePage() {
     return getDonutDataBodyparts(bodypartStats);
   }, [history, bodypartPeriod]);
 
-  const roadmapData = useMemo(() => getHeatmapData(history, ROADMAP_PREVIEW_DAYS), [history]);
+  // Pour la page historique, utiliser getLast7DaysData qui retourne les 7 jours sans jours vides
+  const roadmapData = useMemo(() => getLast7DaysData(history), [history]);
   const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);
   
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
@@ -78,13 +84,35 @@ export default function HistoriquePage() {
 
       <div className="px-3 sm:p-6">
         <div className="space-y-6 mb-6">
-            <ActivityHeatmap 
-              data={roadmapData} 
-              currentStreak={currentStreak} 
-              userName={displayName} 
-              progressDates={progressDates}
-              onDayClick={handleDayClick}
-            />
+          <AnimatePresence mode="wait">
+            {loadingHistory ? (
+              <motion.div
+                key="heatmap-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ActivityHeatmapSkeleton daysCount={7} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="heatmap"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <ActivityHeatmap 
+                  data={roadmapData} 
+                  currentStreak={currentStreak} 
+                  userName={displayName} 
+                  progressDates={progressDates}
+                  onDayClick={handleDayClick}
+                  showFullLink={true}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
             <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>

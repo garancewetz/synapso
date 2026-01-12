@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(bodyparts);
   } catch (error) {
-    console.error('Erreur lors de la récupération des bodyparts:', error);
+    logError('Erreur lors de la récupération des bodyparts', error);
     return NextResponse.json(
       { 
         error: 'Erreur lors de la récupération des bodyparts',
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(bodypart, { status: 201 });
   } catch (error) {
-    console.error('Erreur lors de la création du bodypart:', error);
+    logError('Erreur lors de la création du bodypart', error);
     return NextResponse.json(
       { 
         error: 'Erreur lors de la création du bodypart',

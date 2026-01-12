@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function PATCH(
   request: NextRequest,
@@ -61,7 +62,7 @@ export async function PATCH(
 
     return NextResponse.json({ pinned: updatedExercice.pinned });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du pin:', error);
+    logError('Erreur lors de la mise à jour du pin', error);
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour du pin' },
       { status: 500 }

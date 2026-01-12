@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAdmin, setImpersonateCookie, clearImpersonateCookie, getCurrentUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 /**
  * POST /api/admin/impersonate
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return setImpersonateCookie(response, userId);
   } catch (error) {
-    console.error('Erreur lors de l\'impersonation:', error);
+    logError('Erreur lors de l\'impersonation', error);
     return NextResponse.json(
       { error: 'Erreur lors de l\'impersonation' },
       { status: 500 }
@@ -91,7 +92,7 @@ export async function DELETE(request: NextRequest) {
 
     return clearImpersonateCookie(response);
   } catch (error) {
-    console.error('Erreur lors de l\'arrêt de l\'impersonation:', error);
+    logError('Erreur lors de l\'arrêt de l\'impersonation', error);
     return NextResponse.json(
       { error: 'Erreur lors de l\'arrêt de l\'impersonation' },
       { status: 500 }

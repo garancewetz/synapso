@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 interface HistoryEntry {
@@ -117,7 +118,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(formattedHistory);
   } catch (error) {
-    console.error('Error fetching history:', error);
+    logError('Error fetching history', error);
     return NextResponse.json(
       { error: 'Failed to fetch history' },
       { status: 500 }

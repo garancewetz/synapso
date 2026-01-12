@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getCurrentUserId, getImpersonatedUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   const userId = getCurrentUserId(request);
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
       impersonatedUser,
     });
   } catch (error) {
-    console.error('Erreur lors de la vérification de l\'authentification:', error);
+    logError('Erreur lors de la vérification de l\'authentification', error);
     return NextResponse.json({ 
       authenticated: false,
       user: null,

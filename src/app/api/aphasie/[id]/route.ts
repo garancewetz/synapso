@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -46,7 +47,7 @@ export async function GET(
 
     return NextResponse.json(item);
   } catch (error) {
-    console.error('Error fetching aphasie item:', error);
+    logError('Error fetching aphasie item', error);
     return NextResponse.json(
       { error: 'Failed to fetch aphasie item' },
       { status: 500 }
@@ -135,7 +136,7 @@ export async function PUT(
 
     return NextResponse.json(item);
   } catch (error) {
-    console.error('Error updating aphasie item:', error);
+    logError('Error updating aphasie item', error);
     return NextResponse.json(
       { error: 'Failed to update aphasie item' },
       { status: 500 }
@@ -192,7 +193,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting aphasie item:', error);
+    logError('Error deleting aphasie item', error);
     return NextResponse.json(
       { error: 'Failed to delete aphasie item' },
       { status: 500 }

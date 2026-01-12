@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
@@ -129,7 +130,7 @@ export async function GET(
 
     return NextResponse.json(formattedExercice);
   } catch (error) {
-    console.error('Error fetching exercice:', error);
+    logError('Error fetching exercice', error);
     return NextResponse.json(
       { error: 'Failed to fetch exercice' },
       { status: 500 }
@@ -319,7 +320,7 @@ export async function PUT(
 
     return NextResponse.json(formattedExercice);
   } catch (error) {
-    console.error('Error updating exercice:', error);
+    logError('Error updating exercice', error);
     return NextResponse.json(
       { error: 'Failed to update exercice' },
       { status: 500 }
@@ -376,7 +377,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting exercice:', error);
+    logError('Error deleting exercice', error);
     return NextResponse.json(
       { error: 'Failed to delete exercice' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -24,7 +25,7 @@ export async function GET(
 
     return NextResponse.json(bodypart);
   } catch (error) {
-    console.error('Erreur lors de la récupération du bodypart:', error);
+    logError('Erreur lors de la récupération du bodypart', error);
     return NextResponse.json(
       { 
         error: 'Erreur lors de la récupération du bodypart',
@@ -56,7 +57,7 @@ export async function PUT(
 
     return NextResponse.json(bodypart);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du bodypart:', error);
+    logError('Erreur lors de la mise à jour du bodypart', error);
     return NextResponse.json(
       { 
         error: 'Erreur lors de la mise à jour du bodypart',
@@ -82,7 +83,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Bodypart supprimé avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la suppression du bodypart:', error);
+    logError('Erreur lors de la suppression du bodypart', error);
     return NextResponse.json(
       { 
         error: 'Erreur lors de la suppression du bodypart',

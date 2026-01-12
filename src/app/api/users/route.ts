@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
+import { logError } from '@/app/lib/logger';
 
 /**
  * GET /api/users
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    logError('Error fetching users', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch users',

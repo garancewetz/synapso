@@ -1,14 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { prisma } from '@/app/lib/prisma';
 import { hashPassword, setAuthCookie } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 // 🔒 SÉCURITÉ: Le nom admin est configurable via variable d'environnement
 const ADMIN_NAME = process.env.ADMIN_NAME;
-const MIN_PASSWORD_LENGTH = 4;
+const MIN_PASSWORD_LENGTH = 8; // Minimum recommandé par OWASP
+const MAX_NAME_LENGTH = 100;
+const MAX_PASSWORD_LENGTH = 128;
+const INVITATION_CODE = process.env.INVITATION_CODE;
+
+/**
+ * Compare deux codes d'invitation de manière sécurisée (timing-safe)
+ * En mode développement, si INVITATION_CODE n'est pas défini, permet la création sans code
+ */
+function validateInvitationCode(provided: string | undefined): boolean {
+  // Si aucun code n'est requis en dev, permettre la création
+  if (!INVITATION_CODE) {
+    return process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev';
+  }
+
+  // Si le code est requis mais non fourni, refuser
+  if (!provided || typeof provided !== 'string') {
+    return false;
+  }
+
+  // Comparaison timing-safe pour éviter les timing attacks
+  if (provided.length !== INVITATION_CODE.length) {
+    return false;
+  }
+
+  const providedBuffer = Buffer.from(provided, 'utf8');
+  const expectedBuffer = Buffer.from(INVITATION_CODE, 'utf8');
+
+  try {
+    return timingSafeEqual(providedBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, password } = await request.json();
+    const { 
+      name, 
+      password, 
+      invitationCode,
+      resetFrequency, 
+      dominantHand, 
+      isAphasic 
+    } = await request.json();
+
+    // 🔒 SÉCURITÉ: Validation du code d'invitation en premier
+    // Cette validation doit se faire AVANT toute autre opération
+    if (!validateInvitationCode(invitationCode)) {
+      return NextResponse.json(
+        { error: 'Code d\'invitation invalide' },
+        { status: 403 }
+      );
+    }
 
     // Validation du nom
     if (!name || typeof name !== 'string' || !name.trim()) {
@@ -19,6 +70,14 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedName = name.trim();
+
+    // Validation de la longueur du nom
+    if (trimmedName.length > MAX_NAME_LENGTH) {
+      return NextResponse.json(
+        { error: `Le nom ne peut pas dépasser ${MAX_NAME_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
 
     // Validation du mot de passe
     if (!password || typeof password !== 'string') {
@@ -31,6 +90,13 @@ export async function POST(request: NextRequest) {
     if (password.length < MIN_PASSWORD_LENGTH) {
       return NextResponse.json(
         { error: `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      return NextResponse.json(
+        { error: `Le mot de passe ne peut pas dépasser ${MAX_PASSWORD_LENGTH} caractères` },
         { status: 400 }
       );
     }
@@ -54,12 +120,16 @@ export async function POST(request: NextRequest) {
     // Si ADMIN_NAME n'est pas défini, tous les utilisateurs sont USER
     const role = (ADMIN_NAME && trimmedName === ADMIN_NAME) ? 'ADMIN' : 'USER';
 
-    // Créer l'utilisateur
+    // Créer l'utilisateur avec les paramètres optionnels
     const user = await prisma.user.create({
       data: {
         name: trimmedName,
         passwordHash,
         role,
+        // Paramètres optionnels (utilisent les valeurs par défaut du schéma si non fournis)
+        ...(resetFrequency && { resetFrequency }),
+        ...(dominantHand && { dominantHand }),
+        ...(isAphasic !== undefined && { isAphasic }),
       },
       select: {
         id: true,
@@ -80,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     return setAuthCookie(response, user.id);
   } catch (error) {
-    console.error('Erreur lors de la création du compte:', error);
+    logError('Erreur lors de la création du compte', error);
     return NextResponse.json(
       { error: 'Erreur lors de la création du compte' },
       { status: 500 }

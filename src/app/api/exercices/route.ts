@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(formattedExercices);
   } catch (error) {
-    console.error('Error fetching exercices:', error);
+    logError('Error fetching exercices', error);
     return NextResponse.json(
       { error: 'Failed to fetch exercices' },
       { status: 500 }
@@ -153,10 +154,60 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
+    // Constantes de validation
+    const MAX_EXERCICE_NAME_LENGTH = 200;
+    const MAX_DESCRIPTION_LENGTH = 5000;
+    const MAX_WORKOUT_FIELD_LENGTH = 500;
+
     // Valider le nom
     if (!data.name || !data.name.trim()) {
       return NextResponse.json(
         { error: 'Le nom de l\'exercice est obligatoire' },
+        { status: 400 }
+      );
+    }
+
+    const trimmedName = data.name.trim();
+    if (trimmedName.length > MAX_EXERCICE_NAME_LENGTH) {
+      return NextResponse.json(
+        { error: `Le nom de l'exercice ne peut pas dépasser ${MAX_EXERCICE_NAME_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    // Valider la longueur de la description
+    if (data.description?.text && data.description.text.length > MAX_DESCRIPTION_LENGTH) {
+      return NextResponse.json(
+        { error: `La description ne peut pas dépasser ${MAX_DESCRIPTION_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    if (data.description?.comment && data.description.comment.length > MAX_DESCRIPTION_LENGTH) {
+      return NextResponse.json(
+        { error: `Le commentaire ne peut pas dépasser ${MAX_DESCRIPTION_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    // Valider les champs workout
+    if (data.workout?.repeat && data.workout.repeat.length > MAX_WORKOUT_FIELD_LENGTH) {
+      return NextResponse.json(
+        { error: `Le champ repeat ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    if (data.workout?.series && data.workout.series.length > MAX_WORKOUT_FIELD_LENGTH) {
+      return NextResponse.json(
+        { error: `Le champ series ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
+        { status: 400 }
+      );
+    }
+
+    if (data.workout?.duration && data.workout.duration.length > MAX_WORKOUT_FIELD_LENGTH) {
+      return NextResponse.json(
+        { error: `Le champ duration ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
         { status: 400 }
       );
     }
@@ -175,7 +226,7 @@ export async function POST(request: NextRequest) {
       // Créer l'exercice
       const exercice = await tx.exercice.create({
         data: {
-          name: data.name.trim(),
+          name: trimmedName,
           descriptionText: data.description?.text || '',
           descriptionComment: data.description?.comment || null,
           workoutRepeat: data.workout?.repeat || null,
@@ -233,7 +284,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(formattedExercice, { status: 201 });
   } catch (error) {
-    console.error('Error creating exercice:', error);
+    logError('Error creating exercice', error);
     return NextResponse.json(
       { error: 'Failed to create exercice' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
       equipments: Array.from(equipmentsSet).sort(),
     });
   } catch (error) {
-    console.error('Error fetching metadata:', error);
+    logError('Error fetching metadata', error);
     return NextResponse.json(
       { error: 'Failed to fetch metadata' },
       { status: 500 }

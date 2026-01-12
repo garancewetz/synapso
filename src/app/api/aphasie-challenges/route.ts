@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(challenges);
   } catch (error) {
-    console.error('Error fetching aphasie challenges:', error);
+    logError('Error fetching aphasie challenges', error);
     return NextResponse.json(
       { error: 'Failed to fetch aphasie challenges' },
       { status: 500 }
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(challenge, { status: 201 });
   } catch (error) {
-    console.error('Error creating aphasie challenge:', error);
+    logError('Error creating aphasie challenge', error);
     return NextResponse.json(
       { error: 'Failed to create aphasie challenge' },
       { status: 500 }

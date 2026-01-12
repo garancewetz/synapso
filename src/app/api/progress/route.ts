@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(progressList);
   } catch (error) {
-    console.error('Error fetching progress:', error);
+    logError('Error fetching progress', error);
     return NextResponse.json(
       { error: 'Failed to fetch progress' },
       { status: 500 }
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(progress, { status: 201 });
   } catch (error) {
-    console.error('Error creating progress:', error);
+    logError('Error creating progress', error);
     return NextResponse.json(
       { error: 'Failed to create progress' },
       { status: 500 }

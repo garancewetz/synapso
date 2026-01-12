@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -46,7 +47,7 @@ export async function GET(
 
     return NextResponse.json(challenge);
   } catch (error) {
-    console.error('Error fetching aphasie challenge:', error);
+    logError('Error fetching aphasie challenge', error);
     return NextResponse.json(
       { error: 'Failed to fetch aphasie challenge' },
       { status: 500 }
@@ -109,7 +110,7 @@ export async function PUT(
 
     return NextResponse.json(updatedChallenge);
   } catch (error) {
-    console.error('Error updating aphasie challenge:', error);
+    logError('Error updating aphasie challenge', error);
     return NextResponse.json(
       { error: 'Failed to update aphasie challenge' },
       { status: 500 }
@@ -171,7 +172,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedChallenge);
   } catch (error) {
-    console.error('Error updating aphasie challenge mastery:', error);
+    logError('Error updating aphasie challenge mastery', error);
     return NextResponse.json(
       { error: 'Failed to update aphasie challenge mastery' },
       { status: 500 }
@@ -228,7 +229,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting aphasie challenge:', error);
+    logError('Error deleting aphasie challenge', error);
     return NextResponse.json(
       { error: 'Failed to delete aphasie challenge' },
       { status: 500 }

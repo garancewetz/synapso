@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAdmin } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 /**
  * GET /api/admin/users
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    logError('Erreur lors de la récupération des utilisateurs', error);
     return NextResponse.json(
       { error: 'Erreur lors de la récupération des utilisateurs' },
       { status: 500 }

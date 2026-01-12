@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
@@ -160,7 +161,7 @@ export async function PATCH(
     });
   } catch (error) {
     // 🔒 SÉCURITÉ: Ne pas exposer les détails de l'erreur au client
-    console.error('Erreur lors de la mise à jour:', error);
+    logError('Erreur lors de la mise à jour', error);
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour de l\'exercice' },
       { status: 500 }

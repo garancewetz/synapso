@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth, getEffectiveUserId, isAdmin } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId, isAdmin, getImpersonatedUserId, clearImpersonateCookie } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -54,7 +55,7 @@ export async function GET(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    logError('Error fetching user', error);
     return NextResponse.json(
       { error: 'Failed to fetch user' },
       { status: 500 }
@@ -154,9 +155,90 @@ export async function PATCH(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Error updating user:', error);
+    logError('Error updating user', error);
     return NextResponse.json(
       { error: 'Failed to update user' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
+  try {
+    const { id } = await params;
+    const requestedUserId = parseInt(id);
+
+    if (isNaN(requestedUserId)) {
+      return NextResponse.json(
+        { error: 'ID invalide' },
+        { status: 400 }
+      );
+    }
+
+    const effectiveUserId = await getEffectiveUserId(request);
+    const adminStatus = await isAdmin(request);
+    
+    // Vérifier que l'utilisateur supprime son propre compte (ou est admin)
+    if (requestedUserId !== effectiveUserId && !adminStatus) {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+
+    // Vérifier que ce n'est pas le dernier utilisateur
+    const userCount = await prisma.user.count();
+    if (userCount <= 1) {
+      return NextResponse.json(
+        { error: 'Impossible de supprimer le dernier utilisateur' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que ce n'est pas le seul admin
+    const user = await prisma.user.findUnique({
+      where: { id: requestedUserId },
+      select: { role: true },
+    });
+
+    if (user?.role === 'ADMIN') {
+      const adminCount = await prisma.user.count({
+        where: { role: 'ADMIN' },
+      });
+      if (adminCount <= 1) {
+        return NextResponse.json(
+          { error: 'Impossible de supprimer le dernier administrateur' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Vérifier si l'utilisateur supprimé est celui qui est impersonné
+    const impersonatedUserId = getImpersonatedUserId(request);
+    const isDeletingImpersonatedUser = impersonatedUserId === requestedUserId;
+
+    // Supprimer l'utilisateur (cascade automatique)
+    await prisma.user.delete({
+      where: { id: requestedUserId },
+    });
+
+    // Si on supprimait l'utilisateur impersonné, supprimer le cookie d'impersonation
+    const response = NextResponse.json({ success: true });
+    if (isDeletingImpersonatedUser) {
+      return clearImpersonateCookie(response);
+    }
+
+    return response;
+  } catch (error) {
+    logError('Error deleting user', error);
+    return NextResponse.json(
+      { error: 'Failed to delete user' },
       { status: 500 }
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function PATCH(
   request: NextRequest,
@@ -65,7 +66,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedProgress);
   } catch (error) {
-    console.error('Error updating progress:', error);
+    logError('Error updating progress', error);
     return NextResponse.json(
       { error: 'Failed to update progress' },
       { status: 500 }
@@ -123,7 +124,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting progress:', error);
+    logError('Error deleting progress', error);
     return NextResponse.json(
       { error: 'Failed to delete progress' },
       { status: 500 }

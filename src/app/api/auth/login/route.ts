@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { verifyPassword, setAuthCookie } from '@/app/lib/auth';
+import { logError } from '@/app/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,19 +38,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 401 }
-      );
+    // 🔒 SÉCURITÉ: Toujours vérifier le mot de passe même si l'utilisateur n'existe pas
+    // pour éviter l'énumération d'utilisateurs (user enumeration)
+    let isValidPassword = false;
+    
+    if (user) {
+      isValidPassword = await verifyPassword(password, user.passwordHash);
+    } else {
+      // Simuler la vérification du mot de passe pour un temps constant
+      // Utiliser un hash bcrypt factice pour maintenir le temps de réponse constant
+      const dummyHash = '$2a$10$dummyhashforconstanttimeverification';
+      await verifyPassword(password, dummyHash);
     }
 
-    // Vérifier le mot de passe
-    const isValidPassword = await verifyPassword(password, user.passwordHash);
-
-    if (!isValidPassword) {
+    // Toujours retourner le même message pour éviter l'énumération
+    if (!user || !isValidPassword) {
       return NextResponse.json(
-        { error: 'Mot de passe incorrect' },
+        { error: 'Identifiants incorrects' },
         { status: 401 }
       );
     }
@@ -65,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     return setAuthCookie(response, user.id);
   } catch (error) {
-    console.error('Erreur lors de la connexion:', error);
+    logError('Erreur lors de la connexion', error);
     return NextResponse.json(
       { error: 'Erreur lors de la connexion' },
       { status: 500 }

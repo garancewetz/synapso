@@ -2,9 +2,9 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
+import { ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, MenuLink, SiteMapGroup } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
-import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
+import { MapIcon, ChatIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { MENU_COLORS } from '@/app/constants/card.constants';
@@ -13,15 +13,12 @@ import { useExercices } from '@/app/hooks/useExercices';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { useProgress } from '@/app/hooks/useProgress';
-import { useOnboarding } from '@/app/hooks/useOnboarding';
-import { OnboardingSlides } from '@/app/components/OnboardingSlides';
 
-type TabValue = 'corps' | 'aphasie' | 'parcours' | 'profil';
+type TabValue = 'corps' | 'aphasie' | 'parcours';
 
 export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
-  const { openOnboarding, showOnboarding, closeOnboarding } = useOnboarding();
   const isAphasic = effectiveUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
@@ -59,11 +56,6 @@ export default function Home() {
       value: 'parcours', 
       label: 'Parcours',
       icon: <MapIcon className="w-5 h-5" />
-    });
-    options.push({ 
-      value: 'profil', 
-      label: 'Mon profil',
-      icon: <SettingsIcon className="w-5 h-5" />
     });
     
     return options;
@@ -150,7 +142,7 @@ export default function Home() {
                     </div>
 
                     {/* Action secondaire : Ajouter un exercice */}
-                    <SiteMapCard
+                    <MenuLink
                       title="Ajouter un exercice"
                       icon={<PlusIcon className="w-5 h-5" />}
                       description="Créer un nouvel exercice personnalisé"
@@ -171,7 +163,7 @@ export default function Home() {
                   iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
                   iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
                 >
-                  <SiteMapCard
+                  <MenuLink
                     title="Exercices ortho"
                     icon={<PinIcon className="w-5 h-5" />}
                     description="Voir mes exercices"
@@ -179,7 +171,7 @@ export default function Home() {
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
-                  <SiteMapCard
+                  <MenuLink
                     title="Ajouter exercice"
                     icon={<PlusIcon className="w-5 h-5" />}
                     description="Créer un exercice"
@@ -188,7 +180,7 @@ export default function Home() {
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                     isSecondary={true}
                   />
-                  <SiteMapCard
+                  <MenuLink
                     title="Mes citations"
                     icon={<BookIcon className="w-5 h-5" />}
                     description="Voir toutes"
@@ -196,7 +188,7 @@ export default function Home() {
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
-                  <SiteMapCard
+                  <MenuLink
                     title="Ajouter citation"
                     icon={<PlusIcon className="w-5 h-5" />}
                     description="Créer une nouvelle"
@@ -210,42 +202,21 @@ export default function Home() {
 
               {currentActiveTab === 'parcours' && (
                 <div className="space-y-3">
-                  <SiteMapCard
+                  <MenuLink
                     title="Voir mes progrès"
                     icon={<SparklesIcon className="w-5 h-5" />}
                     description="Timeline et graphique de progression"
-                    href="/historique/progres"
+                    href="/historique#progres"
                     iconBgColor={MENU_COLORS.PROGRES.bg}
                     iconTextColor={MENU_COLORS.PROGRES.text}
                   />
-                  <SiteMapCard
-                    title="Voir mon parcours"
+                  <MenuLink
+                    title="Voir mes Statistiques"
                     icon={<MapIcon className="w-5 h-5" />}
                     description="Heatmap, graphique montagne et zones travaillées"
-                    href="/historique"
+                    href="/historique#statistiques"
                     iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
-                  />
-                </div>
-              )}
-
-              {currentActiveTab === 'profil' && (
-                <div className="space-y-3">
-                  <SiteMapCard
-                    title="Mon profil"
-                    icon={<UserIcon className="w-5 h-5" />}
-                    description="Gérer mon profil et mes préférences"
-                    href="/settings"
-                    iconBgColor={SITEMAP_ICON_STYLES.primary.settings.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.primary.settings.text}
-                  />
-                  <SiteMapCard
-                    title="Aide"
-                    icon={<BookIcon className="w-5 h-5" />}
-                    description="Voir le guide d'introduction"
-                    onClick={openOnboarding}
-                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
                 </div>
               )}
@@ -274,14 +245,6 @@ export default function Home() {
         />
       )}
 
-      {/* Onboarding pour réconsultation */}
-      {effectiveUser && (
-        <OnboardingSlides
-          isOpen={showOnboarding}
-          onClose={closeOnboarding}
-          markAsSeenOnClose={false}
-        />
-      )}
 
     </section>
   );

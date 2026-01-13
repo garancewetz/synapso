@@ -11,7 +11,7 @@ type Props = {
   backLabel?: string;
 };
 
-export default function FormPageWrapper({ children, title, backHref, backLabel }: Props) {
+export function FormPageWrapper({ children, title, backHref, backLabel }: Props) {
   // Placer le focus sur le premier élément focusable de la page (excluant le menu fermé)
   // Priorité aux inputs et textareas pour les pages de formulaire
   usePageFocus({

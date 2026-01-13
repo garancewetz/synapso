@@ -16,7 +16,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> &
  * Input avec bouton de dictée vocale intégré
  * Affiche le texte en temps réel pendant la parole
  */
-export default function InputWithSpeech({ 
+export function InputWithSpeech({ 
   label, 
   required, 
   className = '', 

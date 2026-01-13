@@ -15,6 +15,9 @@ type Props = Omit<ComponentPropsWithoutRef<typeof Link>, 'href' | 'prefetch'> & 
  * Composant Link optimisé pour les interactions tactiles sur mobile
  * Utilise touch-action: manipulation pour éviter le délai de 300ms
  * et le double-tap zoom sur les navigateurs mobiles
+ * 
+ * Note: Utilise `export const` avec forwardRef car c'est la convention React
+ * pour les composants qui nécessitent le forwardRef
  */
 export const TouchLink = forwardRef<HTMLAnchorElement, Props>(function TouchLink(
   { href, children, className, prefetch = true, ...props },

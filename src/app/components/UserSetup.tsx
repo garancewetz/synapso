@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/app/components/ui/Button';
-import Loader from '@/app/components/ui/Loader';
-import Logo from '@/app/components/ui/Logo';
+import { Loader } from '@/app/components/ui/Loader';
+import { Logo } from '@/app/components/ui/Logo';
 import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
 import { useUser } from '@/app/contexts/UserContext';
 import clsx from 'clsx';

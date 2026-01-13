@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import ViewAllLink from '@/app/components/ui/ViewAllLink';
-import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
+import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
+import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
 import { AphasieItemCard } from '@/app/components/AphasieItemCard';
-import AphasieChallengesList from '@/app/components/AphasieChallengesList';
+import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/BackButton';
-import ViewProgressButton from '@/app/components/ViewProgressButton';
+import { TouchLink } from '@/app/components/TouchLink';
+import { MapIcon } from '@/app/components/ui/icons';
 import { ProgressFAB, ProgressBottomSheet } from '@/app/components';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
@@ -108,11 +109,10 @@ export default function AphasiePage() {
             <ProgressTimeline 
               progressList={orthoProgress.slice(0, 3)} 
               onEdit={progressModal.openForEdit}
-              hideChart
             />
             {orthoProgress.length > 3 && (
               <ViewAllLink 
-                href="/historique/progres?filter=orthophonie"
+                href="/historique?filter=orthophonie#progres"
                 label="Voir tous les progrès"
                 emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               />
@@ -120,8 +120,18 @@ export default function AphasiePage() {
           </div>
 
           {/* Bouton "Mon parcours" */}
-          <div>
-            <ViewProgressButton />
+          <div className="flex justify-center mt-8">
+            <TouchLink
+              href="/historique"
+              className="max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
+                         bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
+                         shadow-[0_4px_10px_rgba(217,119,6,0.3)] 
+                         hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
+                         transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <MapIcon className="w-5 h-5" />
+              Mon parcours
+            </TouchLink>
           </div>
         </div>
       </div>

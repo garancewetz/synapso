@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import type { Progress } from '@/app/types';
 import { EditIcon } from '@/app/components/ui/icons';
-import { BaseCard, IconButton, ShareButton } from '@/app/components/ui';
+import { BaseCard, Button } from '@/app/components/ui';
+import { ShareIcon } from '@/app/components/ui/icons';
+import { useShareProgress } from '@/app/hooks/useShareProgress';
 import { formatVictoryDate } from '@/app/utils/date.utils';
 import { extractProgressTags } from '@/app/utils/progress.utils';
 import { GOLDEN_TEXT_STYLES } from '@/app/constants/card.constants';
@@ -24,6 +26,8 @@ type Props = {
  */
 export function ProgressCard({ progress, onEdit, onShare, compact = false }: Props) {
   const { effectiveUser } = useUser();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { handleShare } = useShareProgress(progress, cardRef);
   
   // Mémoriser l'extraction des tags (pour nettoyer le contenu)
   const { cleanContent } = useMemo(
@@ -38,10 +42,20 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
       onEdit(progress);
     }
   }, [onEdit, progress]);
+
+  // Handler de partage
+  const handleShareClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleShare();
+    if (onShare) {
+      onShare(progress);
+    }
+  }, [handleShare, onShare, progress]);
   
   
   return (
-    <BaseCard 
+    <div ref={cardRef}>
+      <BaseCard 
       isGolden 
       className={clsx(
         'relative',
@@ -89,22 +103,31 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
               effectiveUser?.dominantHand === 'LEFT' ? 'justify-start' : 'justify-end'
             )}>
               {onShare && (
-                <ShareButton progress={progress} />
+                <Button
+                  iconOnly
+                  onClick={handleShareClick}
+                  title="Partager sur WhatsApp"
+                  aria-label={`Partager ce progrès sur WhatsApp : ${progress.content}`}
+                >
+                  <ShareIcon className="w-4 h-4" />
+                </Button>
               )}
               {onEdit && (
-                <IconButton
+                <Button
+                  iconOnly
                   onClick={handleEdit}
                   title="Modifier"
                   aria-label="Modifier ce progrès"
                 >
                   <EditIcon className="w-4 h-4" />
-                </IconButton>
+                </Button>
               )}
             </div>
           </BaseCard.Footer>
         )}
       </BaseCard.Content>
     </BaseCard>
+    </div>
   );
 }
 

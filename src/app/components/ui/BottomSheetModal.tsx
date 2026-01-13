@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
+import { Button } from './Button';
 
 type Props = {
   isOpen: boolean;
@@ -25,7 +26,7 @@ const DRAG_CLOSE_THRESHOLD = 100;
  * Composant de base pour les bottom sheets (mobile) / modals (desktop)
  * Gère les animations, le backdrop, le drag-to-close et le body scroll lock
  */
-export default function BottomSheetModal({
+export function BottomSheetModal({
   isOpen,
   onClose,
   children,
@@ -115,24 +116,26 @@ export default function BottomSheetModal({
             style={{ touchAction: 'none' }}
           >
             {/* Poignée de glissement (mobile) */}
-            <button
+            <Button
               type="button"
+              iconOnly
               onClick={onClose}
-              className="w-full flex justify-center pt-3 pb-2 cursor-pointer hover:bg-gray-50 transition-colors md:hidden shrink-0"
+              className="w-full !p-0 !border-0 !bg-transparent !shadow-none flex justify-center pt-3 pb-2 hover:bg-gray-50 md:hidden shrink-0"
               aria-label="Fermer"
             >
               <div className="w-12 h-1.5 bg-gray-300 rounded-full hover:bg-gray-400 transition-colors" />
-            </button>
+            </Button>
 
             {/* Bouton fermer desktop */}
-            <button
+            <Button
               type="button"
+              iconOnly
               onClick={onClose}
-              className="hidden md:flex absolute top-3 right-3 w-8 h-8 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer z-50"
+              className="hidden md:flex absolute top-3 right-3 w-8 h-8 !p-0 !border-0 rounded-full bg-gray-100 hover:bg-gray-200 z-50"
               aria-label="Fermer"
             >
               <span className="text-gray-500 text-lg">✕</span>
-            </button>
+            </Button>
 
             {/* Contenu */}
             {children}
@@ -140,14 +143,15 @@ export default function BottomSheetModal({
             {/* Footer avec bouton fermer (mobile, optionnel) */}
             {showFooterClose && (
               <div className="px-5 py-4 bg-white border-t border-gray-100 md:hidden shrink-0">
-                <button
+                <Button
                   onClick={onClose}
-                  className="w-full py-4 px-4 rounded-2xl font-bold text-lg text-gray-700
-                             bg-gray-100 hover:bg-gray-200 active:bg-gray-300
-                             transition-all active:scale-[0.98] cursor-pointer"
+                  variant="secondary"
+                  size="lg"
+                  rounded="lg"
+                  className="w-full bg-gray-100 hover:bg-gray-200 active:scale-[0.98]"
                 >
                   {closeLabel}
-                </button>
+                </Button>
               </div>
             )}
           </motion.div>

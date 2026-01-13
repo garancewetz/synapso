@@ -16,7 +16,7 @@ type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
  * Textarea avec bouton de dictée vocale intégré
  * Affiche le texte en temps réel pendant la parole
  */
-export default function TextareaWithSpeech({ 
+export function TextareaWithSpeech({ 
   label, 
   required, 
   className = '', 

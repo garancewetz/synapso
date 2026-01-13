@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
@@ -55,7 +55,7 @@ export function UserBadge({ showName = true, size = 'md' }: Props) {
   const initial = effectiveUser.name.charAt(0).toUpperCase();
 
   return (
-    <Link
+    <TouchLink
       href="/settings"
       className={clsx(
         'group flex items-center gap-2.5 px-2 py-1.5 rounded-xl cursor-pointer',
@@ -111,7 +111,7 @@ export function UserBadge({ showName = true, size = 'md' }: Props) {
           </span>
         </div>
       )}
-    </Link>
+    </TouchLink>
   );
 }
 

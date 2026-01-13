@@ -4,7 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { AphasieForm } from '@/app/components/AphasieForm';
-import FormPageWrapper from '@/app/components/FormPageWrapper';
+import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 type AphasieEditPageProps = {

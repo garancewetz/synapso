@@ -1,5 +1,6 @@
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import { ChevronIcon } from './icons';
+import { Button } from './Button';
 
 type Props = {
   href: string;
@@ -11,15 +12,19 @@ type Props = {
  * Bouton de navigation réutilisable pour "Voir tout"
  * Style cohérent avec les autres boutons de navigation
  */
-export default function ViewAllLink({ href, label, emoji = '📜' }: Props) {
+export function ViewAllLink({ href, label, emoji = '📜' }: Props) {
   return (
-    <Link 
-      href={href}
-      className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-700 font-medium transition-colors cursor-pointer"
-    >
-      <span>{emoji} {label}</span>
-      <ChevronIcon direction="right" className="w-4 h-4" />
-    </Link>
+    <TouchLink href={href} className="mt-4 block">
+      <Button
+        variant="secondary"
+        size="md"
+        rounded="lg"
+        className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700"
+      >
+        <span>{emoji} {label}</span>
+        <ChevronIcon direction="right" className="w-4 h-4" />
+      </Button>
+    </TouchLink>
   );
 }
 

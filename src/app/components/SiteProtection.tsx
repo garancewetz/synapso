@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { AuthScreen } from '@/app/components/AuthScreen';
-import InitialLoader from '@/app/components/InitialLoader';
+import { InitialLoader } from '@/app/components/InitialLoader';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
 
@@ -11,7 +11,7 @@ type Props = {
   onAuthSuccess?: () => void;
 };
 
-export default function SiteProtection({ children, onAuthSuccess }: Props) {
+export function SiteProtection({ children, onAuthSuccess }: Props) {
   const { currentUser, loading: userLoading, refreshUser } = useUser();
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);

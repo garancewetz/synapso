@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import ViewAllLink from '@/app/components/ui/ViewAllLink';
+import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
 
 type Props = {

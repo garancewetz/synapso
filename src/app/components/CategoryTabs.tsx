@@ -16,7 +16,7 @@ type Props = {
   counts: Record<ExerciceCategory, number>;
 };
 
-export default function CategoryTabs({ counts }: Props) {
+export function CategoryTabs({ counts }: Props) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 

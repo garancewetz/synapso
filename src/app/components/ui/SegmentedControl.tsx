@@ -27,6 +27,8 @@ type Props<T extends string> = {
   activeRingColor?: string;
   /** Si true, affiche le count sur une ligne séparée (style Victory) */
   showCountBelow?: boolean;
+  /** Valeur de l'onglet à mettre en évidence avec un style doré (ex: 'parcours') */
+  highlightedValue?: T;
 };
 
 /**
@@ -60,6 +62,7 @@ export function SegmentedControl<T extends string>({
   className = '',
   activeRingColor,
   showCountBelow = false,
+  highlightedValue,
 }: Props<T>) {
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
@@ -108,6 +111,7 @@ export function SegmentedControl<T extends string>({
       {options.map((option, index) => {
         const { emoji, text } = parseLabel(option.label);
         const isActive = value === option.value;
+        const isHighlighted = highlightedValue === option.value && !isActive;
         const hasIcon = option.icon || emoji;
         const hasCount = option.count !== undefined;
         
@@ -125,6 +129,8 @@ export function SegmentedControl<T extends string>({
               isActive
                 ? 'text-gray-800 font-bold'
                 : 'font-medium text-gray-600 hover:text-gray-800',
+              // Style doré pour l'onglet mis en évidence (quand non actif)
+              isHighlighted && 'bg-amber-100/60 border border-amber-300/70',
               // Disposition verticale pour icônes ou counts
               (hasIcon || showCountBelow) && 'flex flex-col items-center justify-center gap-0.5',
               !hasIcon && !showCountBelow && 'flex items-center justify-center'

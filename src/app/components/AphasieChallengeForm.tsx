@@ -11,7 +11,7 @@ type Props = {
   onCancel?: () => void;
 };
 
-export default function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: Props) {
+export function AphasieChallengeForm({ challengeId, onSuccess, onCancel }: Props) {
   const { effectiveUser } = useUser();
   const [formData, setFormData] = useState({
     text: '',

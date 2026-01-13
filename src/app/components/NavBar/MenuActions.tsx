@@ -1,15 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon, ChatIcon, MapIcon, UserIcon, SparklesIcon } from '@/app/components/ui/icons';
+import { PlusIcon, SparklesIcon, SettingsIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
-import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
-import type { User } from '@/app/types';
 
 type Props = {
-  currentUser: User | null;
   onMenuClose: () => void;
   isMenuOpen: boolean;
 };
@@ -21,72 +17,50 @@ type MenuAction = {
   description?: string;
   iconBgColor: string;
   iconTextColor: string;
-  condition?: (user: User | null) => boolean;
-  noCardStyle?: boolean;
 }
 
-const MENU_ACTIONS: MenuAction[] = [
- 
-  {
-    href: () => '/aphasie',
-    icon: <ChatIcon />,
-    title: 'Journal d\'aphasie',
-    iconBgColor: MENU_COLORS.APHASIE.bg,
-    iconTextColor: MENU_COLORS.APHASIE.text,
-    condition: (user: User | null) => user?.isAphasic ?? false,
-  },
-  {
-    href: (pathname: string) => `/exercice/add?from=${encodeURIComponent(pathname)}`,
-    icon: <PlusIcon />,
-    title: 'Ajouter un exercice',
-    iconBgColor: MENU_COLORS.ADD_EXERCICE.bg,
-    iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
-  },
-  {
-    href: () => '/historique/progres',
-    icon: <SparklesIcon className="w-5 h-5" />,
-    title: 'Voir mes progrès',
-    iconBgColor: MENU_COLORS.PROGRES.bg,
-    iconTextColor: MENU_COLORS.PROGRES.text,
-  },
-  {
-    href: () => '/historique',
-    icon: <MapIcon className="w-5 h-5" />,
-    title: 'Mon parcours',
-    iconBgColor: MENU_COLORS.PARCOURS.bg,
-    iconTextColor: MENU_COLORS.PARCOURS.text,
-  },
-  {
-    href: () => '/settings',
-    icon: <UserIcon className="w-5 h-5" />,
-    title: 'Mon profil',
-    iconBgColor: SITEMAP_ICON_STYLES.primary.settings.bg,
-    iconTextColor: SITEMAP_ICON_STYLES.primary.settings.text,
-  },
+function getMenuActions(): MenuAction[] {
+  return [
+    {
+      href: (pathname: string) => `/exercice/add?from=${encodeURIComponent(pathname)}`,
+      icon: <PlusIcon />,
+      title: 'Ajouter un exercice',
+      iconBgColor: MENU_COLORS.ADD_EXERCICE.bg,
+      iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
+    },
+    {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      href: (_pathname: string) => '/historique#progres',
+      icon: <SparklesIcon className="w-5 h-5" />,
+      title: 'Voir mes progrès',
+      iconBgColor: MENU_COLORS.PROGRES.bg,
+      iconTextColor: MENU_COLORS.PROGRES.text,
+    },
+    {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      href: (_pathname: string) => '/settings',
+      icon: <SettingsIcon className="w-5 h-5" />,
+      title: 'Mon profil',
+      description: 'Gérer mon profil et mes préférences',
+      iconBgColor: MENU_COLORS.SETTINGS.bg,
+      iconTextColor: MENU_COLORS.SETTINGS.text,
+    },
+  ];
+}
 
-];
-
-export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {
+export function MenuActions({ onMenuClose, isMenuOpen }: Props) {
   const pathname = usePathname();
   const tabIndex = isMenuOpen ? 0 : -1;
 
-  // Filtrer les actions selon les conditions
-  const visibleActions = useMemo(() => {
-    return MENU_ACTIONS.filter((action) => {
-      if (action.condition) {
-        return action.condition(currentUser);
-      }
-      return true;
-    });
-  }, [currentUser]);
+  const menuActions = getMenuActions();
 
   return (
     <>
       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1 mt-2">
-        Activités principales
+        Actions rapides
       </h3>
-      {visibleActions.map((action) => {
-        const href = typeof action.href === 'function' ? action.href(pathname) : action.href;
+      {menuActions.map((action) => {
+        const href = action.href(pathname);
 
         return (
           <MenuLink
@@ -99,7 +73,6 @@ export function MenuActions({ currentUser, onMenuClose, isMenuOpen }: Props) {
             iconBgColor={action.iconBgColor}
             iconTextColor={action.iconTextColor}
             tabIndex={tabIndex}
-            noCardStyle={action.noCardStyle}
           />
         );
       })}

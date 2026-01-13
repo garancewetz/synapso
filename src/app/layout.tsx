@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/app/components/NavBar";
+import { NavBar } from "@/app/components/NavBar";
 import { BottomNavBar } from "@/app/components/BottomNavBar";
-import AuthWrapper from "@/app/components/AuthWrapper";
+import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { WelcomeHeaderWrapper } from "@/app/components/WelcomeHeaderWrapper";
-import CategoryTabsWrapper from "@/app/components/CategoryTabsWrapper";
-import DevBanner from "@/app/components/DevBanner";
-import PWARegister from "@/app/components/PWARegister";
+import { CategoryTabsWrapper } from "@/app/components/CategoryTabsWrapper";
+import { DevBanner } from "@/app/components/DevBanner";
+import { PWARegister } from "@/app/components/PWARegister";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
@@ -52,8 +52,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#ffffff",
   viewportFit: 'cover',
 };

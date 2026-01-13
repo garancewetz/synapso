@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import AphasieChallengeForm from '@/app/components/AphasieChallengeForm';
-import FormPageWrapper from '@/app/components/FormPageWrapper';
+import { AphasieChallengeForm } from '@/app/components/AphasieChallengeForm';
+import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 export default function AphasieChallengeAddPage() {

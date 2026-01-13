@@ -5,7 +5,7 @@ type Props = {
   className?: string;
 };
 
-export default function Loader({ size = 'medium', className = '' }: Props) {
+export function Loader({ size = 'medium', className = '' }: Props) {
   const sizeClasses = {
     small: 'w-4 h-4',
     medium: 'w-8 h-8',

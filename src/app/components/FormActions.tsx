@@ -12,7 +12,7 @@ type Props = {
   deleteConfirmLabel?: string;
 };
 
-export default function FormActions({
+export function FormActions({
   loading = false,
   onSubmitLabel = 'Enregistrer',
   onCancel,

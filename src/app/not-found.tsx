@@ -1,5 +1,6 @@
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { Button } from '@/app/components/ui/Button';
 
 export default function NotFound() {
   return (
@@ -27,13 +28,17 @@ export default function NotFound() {
 
         {/* Bouton d'action */}
         <div className="space-y-3">
-          <Link 
-            href="/" 
-            className="flex w-full bg-slate-800 text-white hover:bg-slate-900 px-6 py-4 rounded-lg font-semibold transition-colors items-center justify-center gap-3 text-lg shadow-md"
-          >
-            <span className="text-2xl" role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
-            <span className="text-white!">Retour à l&apos;accueil</span>
-          </Link>
+          <TouchLink href="/">
+            <Button
+              variant="primary"
+              size="lg"
+              rounded="lg"
+              className="w-full shadow-md"
+            >
+              <span className="text-2xl" role="img" aria-hidden="true">{NAVIGATION_EMOJIS.HOME}</span>
+              <span>Retour à l&apos;accueil</span>
+            </Button>
+          </TouchLink>
         </div>
       </div>
     </div>

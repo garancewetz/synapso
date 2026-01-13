@@ -3,17 +3,17 @@ import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 
-interface UseExercicesOptions {
+type UseExercicesOptions = {
   category?: ExerciceCategory;
-}
+};
 
-interface UseExercicesReturn {
+type UseExercicesReturn = {
   exercices: Exercice[];
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
   updateExercice: (updatedExercice: Exercice) => void;
-}
+};
 
 /**
  * Hook personnalisé pour gérer les exercices

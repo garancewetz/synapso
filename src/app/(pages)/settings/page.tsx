@@ -3,15 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
-import { useOnboarding } from '@/app/hooks/useOnboarding';
 
 import { Button } from '@/app/components/ui/Button';
-import Input from '@/app/components/ui/Input';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import Loader from '@/app/components/ui/Loader';
+import { Input } from '@/app/components/ui/Input';
+import { ErrorMessage } from '@/app/components/ErrorMessage';
+import { Loader } from '@/app/components/ui/Loader';
 import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
 import { BackButton } from '@/app/components/BackButton';
-import { OnboardingSlides } from '@/app/components/OnboardingSlides';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
@@ -19,7 +17,6 @@ type DominantHand = 'LEFT' | 'RIGHT';
 export default function SettingsPage() {
   const router = useRouter();
   const { effectiveUser, currentUser, isAdmin, updateEffectiveUser, logout, deleteAccount } = useUser();
-  const { openOnboarding, showOnboarding, closeOnboarding } = useOnboarding();
   
   // Déterminer quel utilisateur on modifie (effectiveUser pour admin en mode impersonation)
   const userToEdit = effectiveUser;
@@ -491,19 +488,6 @@ export default function SettingsPage() {
           </div>
         </form>
 
-        {/* Section Aide */}
-        <div className="mt-10 pt-6 border-t border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Aide</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={openOnboarding}
-            className="w-full sm:w-auto"
-          >
-            <span>📖</span>
-            <span>Voir le guide d&apos;introduction</span>
-          </Button>
-        </div>
 
         {/* Section Changement de mot de passe (uniquement si pas en mode impersonation) */}
         {!isImpersonating && (
@@ -700,12 +684,6 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Onboarding pour réconsultation */}
-      <OnboardingSlides
-        isOpen={showOnboarding}
-        onClose={closeOnboarding}
-        markAsSeenOnClose={false}
-      />
     </div>
   );
 }

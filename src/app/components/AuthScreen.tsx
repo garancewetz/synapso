@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import { Button } from '@/app/components/ui/Button';
-import Input from '@/app/components/ui/Input';
-import Loader from '@/app/components/ui/Loader';
-import Logo from '@/app/components/ui/Logo';
-import { OnboardingSlides } from '@/app/components/OnboardingSlides';
+import { Input } from '@/app/components/ui/Input';
+import { Loader } from '@/app/components/ui/Loader';
+import { Logo } from '@/app/components/ui/Logo';
 import { UserSetup } from '@/app/components/UserSetup';
-import { useOnboarding } from '@/app/hooks/useOnboarding';
 
 type Props = {
   onSuccess: () => void;
@@ -26,10 +24,7 @@ export function AuthScreen({ onSuccess }: Props) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showUserSetup, setShowUserSetup] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
   const [newUserId, setNewUserId] = useState<number | null>(null);
-  const onboarding = useOnboarding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +87,7 @@ export function AuthScreen({ onSuccess }: Props) {
         setConfirmPassword('');
         setInvitationCode('');
         
-        // Si c'est une création de compte, afficher UserSetup puis onboarding
+        // Si c'est une création de compte, afficher UserSetup
         if (mode === 'register') {
           setNewUserId(data.user.id);
           setShowUserSetup(true);
@@ -138,30 +133,32 @@ export function AuthScreen({ onSuccess }: Props) {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           {/* Tabs */}
           <div className="flex border-b border-gray-100">
-            <button
+            <Button
               type="button"
               onClick={() => setMode('login')}
+              variant="secondary"
               className={clsx(
-                'flex-1 py-4 text-sm font-medium transition-colors cursor-pointer',
+                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors',
                 mode === 'login'
-                  ? 'text-amber-600 border-b-2 border-amber-500 bg-amber-50/50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-amber-600 border-amber-500 bg-amber-50/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
               )}
             >
               Se connecter
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setMode('register')}
+              variant="secondary"
               className={clsx(
-                'flex-1 py-4 text-sm font-medium transition-colors cursor-pointer',
+                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors',
                 mode === 'register'
-                  ? 'text-amber-600 border-b-2 border-amber-500 bg-amber-50/50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-amber-600 border-amber-500 bg-amber-50/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
               )}
             >
               Créer un compte
-            </button>
+            </Button>
           </div>
 
           {/* Formulaire */}
@@ -224,14 +221,15 @@ export function AuthScreen({ onSuccess }: Props) {
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
                 />
-                <button
+                <Button
                   type="button"
+                  iconOnly
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 !border-0 !bg-transparent !shadow-none text-gray-400 hover:text-gray-600"
                   aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 >
                   {showPassword ? '🙈' : '👁️'}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -256,8 +254,11 @@ export function AuthScreen({ onSuccess }: Props) {
             {/* Bouton de soumission */}
             <Button
               type="submit"
+              variant="action"
+              size="lg"
+              rounded="lg"
               disabled={loading}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors"
+              className="w-full bg-amber-500 hover:bg-amber-600"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -274,24 +275,26 @@ export function AuthScreen({ onSuccess }: Props) {
               {mode === 'login' ? (
                 <>
                   Pas encore de compte ?{' '}
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={switchMode}
-                    className="text-amber-600 hover:text-amber-700 font-medium cursor-pointer"
+                    className="!p-0 !bg-transparent !border-0 !shadow-none text-amber-600 hover:text-amber-700 font-medium inline"
                   >
                     Créer un compte
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
                   Déjà un compte ?{' '}
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={switchMode}
-                    className="text-amber-600 hover:text-amber-700 font-medium cursor-pointer"
+                    className="!p-0 !bg-transparent !border-0 !shadow-none text-amber-600 hover:text-amber-700 font-medium inline"
                   >
                     Se connecter
-                  </button>
+                  </Button>
                 </>
               )}
             </p>
@@ -310,39 +313,14 @@ export function AuthScreen({ onSuccess }: Props) {
           userId={newUserId}
           onComplete={() => {
             setShowUserSetup(false);
-            // Afficher l'onboarding après la configuration
-            if (onboarding.shouldShowOnboarding(true)) {
-              setIsNewUser(true);
-              setShowOnboarding(true);
-            } else {
-              onSuccess();
-            }
+            onSuccess();
           }}
           onSkip={() => {
             setShowUserSetup(false);
-            // Afficher l'onboarding même si on skip
-            if (onboarding.shouldShowOnboarding(true)) {
-              setIsNewUser(true);
-              setShowOnboarding(true);
-            } else {
-              onSuccess();
-            }
+            onSuccess();
           }}
         />
       )}
-
-      {/* Onboarding pour nouveaux utilisateurs */}
-      <OnboardingSlides
-        isOpen={showOnboarding}
-        onClose={() => {
-          setShowOnboarding(false);
-          if (isNewUser) {
-            onboarding.markAsSeen();
-            onSuccess();
-          }
-        }}
-        markAsSeenOnClose={isNewUser}
-      />
     </div>
   );
 }

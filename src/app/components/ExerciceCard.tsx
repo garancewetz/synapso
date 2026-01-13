@@ -8,7 +8,7 @@ import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/app/hooks/useTodayCompletedCount';
 import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
-import { Badge, IconButton, CompleteButton, CompletedBadge, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
+import { Badge, Button, CompleteButton, CompletedBadge, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
 
 type Props = {
     exercice: Exercice;
@@ -264,7 +264,8 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                     </div>
                 <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
                     {/* Bouton Favori */}
-                    <IconButton
+                    <Button
+                        iconOnly
                         onClick={handlePin}
                         disabled={isPinning}
                         isActive={exercice.pinned}
@@ -272,16 +273,17 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                     >
                         <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
-                    </IconButton>
+                    </Button>
 
                     {/* Bouton Modifier */}
-                    <IconButton
+                    <Button
+                        iconOnly
                         onClick={handleEdit}
                         title="Modifier"
                         aria-label="Modifier l'exercice"
                     >
                         <EditIcon className="w-4 h-4" />
-                    </IconButton>
+                    </Button>
 
                     {/* Bouton Fait - principal */}
                     <CompleteButton
@@ -298,4 +300,4 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
     );
 });
 
-export default ExerciceCard;
+export { ExerciceCard };

@@ -1,6 +1,6 @@
 import { WarningIcon } from '@/app/components/ui/icons';
 
-export default function DevBanner() {
+export function DevBanner() {
   const environment = process.env.NEXT_PUBLIC_ENVIRONMENT;
   const isDev = environment === 'dev';
 

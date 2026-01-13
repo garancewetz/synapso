@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import ViewAllLink from '@/app/components/ui/ViewAllLink';
-import ConfettiRain from '@/app/components/ConfettiRain';
-import AphasieChallengeCard from '@/app/components/AphasieChallengeCard';
+import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
+import { ConfettiRain } from '@/app/components/ConfettiRain';
+import { AphasieChallengeCard } from '@/app/components/AphasieChallengeCard';
 import { useAphasieChallenges } from '@/app/hooks/useAphasieChallenges';
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   showViewAll?: boolean;
 };
 
-export default function AphasieChallengesList({ onMasteredChange, limit }: Props) {
+export function AphasieChallengesList({ onMasteredChange, limit }: Props) {
   const { challenges, refetch: refetchChallenges } = useAphasieChallenges();
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);

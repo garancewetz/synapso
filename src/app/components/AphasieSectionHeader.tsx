@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import AddButton from '@/app/components/ui/AddButton';
+import { AddButton } from '@/app/components/ui/AddButton';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 /**
  * En-tête de section pour les pages aphasie avec titre et bouton d'ajout
  */
-export default function AphasieSectionHeader({ 
+export function AphasieSectionHeader({ 
   title, 
   emoji, 
   addHref, 

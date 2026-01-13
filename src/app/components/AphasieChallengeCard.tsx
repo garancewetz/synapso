@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, memo } from 'react';
-import Link from 'next/link';
-import { BaseCard, CompleteButton, IconButton, MasteredBadge } from '@/app/components/ui';
+import { TouchLink } from '@/app/components/TouchLink';
+import { BaseCard, CompleteButton, Button, MasteredBadge } from '@/app/components/ui';
 import { EditIcon } from '@/app/components/ui/icons';
 import { APHASIE_COLORS } from '@/app/constants/card.constants';
 import type { AphasieChallenge } from '@/app/types';
@@ -45,14 +45,15 @@ const AphasieChallengeCard = memo(function AphasieChallengeCard({
           </div>
         </div>
         <BaseCard.Footer>
-          <Link href={`/aphasie/exercices/edit/${challenge.id}`}>
-            <IconButton
+          <TouchLink href={`/aphasie/exercices/edit/${challenge.id}`}>
+            <Button
+              iconOnly
               title="Modifier"
               aria-label="Modifier l'exercice"
             >
               <EditIcon className="w-4 h-4" />
-            </IconButton>
-          </Link>
+            </Button>
+          </TouchLink>
           <CompleteButton
             onClick={handleMasteredClick}
             isCompleted={challenge.mastered}
@@ -65,5 +66,5 @@ const AphasieChallengeCard = memo(function AphasieChallengeCard({
   );
 });
 
-export default AphasieChallengeCard;
+export { AphasieChallengeCard };
 

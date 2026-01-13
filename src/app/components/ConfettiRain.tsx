@@ -256,5 +256,5 @@ const ConfettiRain = memo(function ConfettiRain({
   );
 });
 
-export default ConfettiRain;
+export { ConfettiRain };
 

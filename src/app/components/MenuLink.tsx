@@ -96,10 +96,9 @@ export function MenuLink({
     </div>
   );
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Si onClick est fourni, empêcher la navigation par défaut et appeler onClick
+  const handleClick = () => {
+    // Si onClick est fourni, l'appeler pour fermer le menu (sans bloquer la navigation)
     if (onClick) {
-      e.preventDefault();
       onClick();
     }
   };

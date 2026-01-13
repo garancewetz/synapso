@@ -3,33 +3,30 @@ import { AphasieForm } from './AphasieForm';
 import { AuthScreen } from './AuthScreen';
 import { BottomNavBar } from './BottomNavBar';
 import { CategoryCardWithProgress } from './CategoryCardWithProgress';
-import CategoryTabs from './CategoryTabs';
-import CategoryTabsWrapper from './CategoryTabsWrapper';
-import ConfettiRain from './ConfettiRain';
-import DevBanner from './DevBanner';
-import EmptyState from './EmptyState';
-import ErrorMessage from './ErrorMessage';
-import ExerciceCard from './ExerciceCard';
+import { CategoryTabs } from './CategoryTabs';
+import { CategoryTabsWrapper } from './CategoryTabsWrapper';
+import { ConfettiRain } from './ConfettiRain';
+import { DevBanner } from './DevBanner';
+import { EmptyState } from './EmptyState';
+import { ErrorMessage } from './ErrorMessage';
+import { ExerciceCard } from './ExerciceCard';
 import { ExerciceTags } from './ExerciceTags';
-import ExerciceForm from './ExerciceForm';
-import FormActions from './FormActions';
-import FormPageWrapper from './FormPageWrapper';
+import { ExerciceForm } from './ExerciceForm';
+import { FormActions } from './FormActions';
+import { FormPageWrapper } from './FormPageWrapper';
 import { MenuLink } from './MenuLink';
-import NavBar from './NavBar';
-import PWARegister from './PWARegister';
-import SiteProtection from './SiteProtection';
-import { SiteMapCard } from './SiteMapCard';
+import { NavBar } from './NavBar';
+import { PWARegister } from './PWARegister';
+import { SiteProtection } from './SiteProtection';
 import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
-import ProgressBottomSheet from './ProgressBottomSheet';
+import { ProgressBottomSheet } from './ProgressBottomSheet';
 import { ProgressButton } from './ProgressButton';
-import ProgressFAB from './ProgressFAB';
-import ViewProgressButton from './ViewProgressButton';
+import { ProgressFAB } from './ProgressFAB';
 import { WelcomeHeader } from './WelcomeHeader';
 import { WelcomeHeaderWrapper } from './WelcomeHeaderWrapper';
 import { TouchLink } from './TouchLink';
 import { UserBadge } from './UserBadge';
-import { OnboardingSlides } from './OnboardingSlides';
 import { UserSetup } from './UserSetup';
 
 // UI Components
@@ -64,7 +61,6 @@ export {
   SparklesIcon,
   PWARegister,
   SiteProtection,
-  SiteMapCard,
   SiteMapGroup,
   StatBadge,
   Textarea,
@@ -73,9 +69,7 @@ export {
   ProgressBottomSheet,
   ProgressButton,
   ProgressFAB,
-  ViewProgressButton,
   WelcomeHeader,
   WelcomeHeaderWrapper,
-  OnboardingSlides,
   UserSetup,
 };

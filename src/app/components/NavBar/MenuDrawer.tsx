@@ -3,11 +3,13 @@
 import { useRef } from 'react';
 import { Logo } from '@/app/components';
 import { CloseIcon } from '@/app/components/ui/icons';
+import { Button } from '@/app/components/ui/Button';
 import { useFocusTrap } from '@/app/hooks/useFocusTrap';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import clsx from 'clsx';
 import { UserSection } from './UserSection';
 import { MenuActions } from './MenuActions';
+import { AdminUserSelector } from './AdminUserSelector';
 import type { User } from '@/app/types';
 import type { RefObject } from 'react';
 
@@ -91,15 +93,16 @@ export function MenuDrawer({
               Menu
             </h2>
           </div>
-          <button
+          <Button
+            iconOnly
             onClick={onClose}
             tabIndex={isOpen ? 0 : -1}
             data-menu-item="true"
-            className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 cursor-pointer"
+            className="!p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95"
             aria-label="Fermer le menu"
           >
             <CloseIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Contenu du menu */}
@@ -107,8 +110,11 @@ export function MenuDrawer({
           {/* Carte du user sélectionné */}
           <UserSection effectiveUser={effectiveUser} />
 
-          {/* Activités principales */}
-          <MenuActions currentUser={effectiveUser} onMenuClose={onClose} isMenuOpen={isOpen} />
+          {/* Sélecteur d'utilisateur admin */}
+          <AdminUserSelector onMenuClose={onClose} isMenuOpen={isOpen} />
+
+          {/* Actions rapides */}
+          <MenuActions onMenuClose={onClose} isMenuOpen={isOpen} />
         </div>
       </div>
     </>

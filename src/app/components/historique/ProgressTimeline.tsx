@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import type { Progress, HistoryEntry } from '@/app/types';
 import { ProgressCard } from './ProgressCard';
 import { ProgressTimelineEmpty } from './ProgressTimelineEmpty';
-import { LazyProgressStatsChart as ProgressStatsChart } from './LazyProgressStatsChart';
 
 type Props = {
   progressList: Progress[];
@@ -12,18 +11,13 @@ type Props = {
   history?: HistoryEntry[];
   onEdit?: (progress: Progress) => void;
   onShare?: (progress: Progress) => void;
-  hideChart?: boolean;
 };
 
 /**
  * Liste chronologique des progrès
  * Utilise ProgressCard pour afficher chaque progrès
- * Affiche un graphique encourageant avant les deux dernières cards
- * Le graphique utilise tous les progrès (allProgress) si fourni, sinon les progrès filtrés
  */
-export function ProgressTimeline({ progressList, allProgress, onEdit, onShare, hideChart = false }: Props) {
-  // Utiliser tous les progrès pour le graphique si fourni, sinon les progrès filtrés
-  const progressForChart = allProgress ?? progressList;
+export function ProgressTimeline({ progressList, onEdit, onShare }: Props) {
 
   // Calculer tous les numéros de victoire une seule fois (avant le return conditionnel)
   const progressWithNumbers = useMemo(() => {
@@ -35,17 +29,6 @@ export function ProgressTimeline({ progressList, allProgress, onEdit, onShare, h
       const victoryNumber = progressList.length - index;
       return { progress, victoryNumber };
     });
-  }, [progressList]);
-
-  // Séparer les progrès : les deux derniers vs les autres
-  const { firstProgress, lastTwoProgress } = useMemo(() => {
-    if (progressList.length <= 2) {
-      return { firstProgress: [], lastTwoProgress: progressList };
-    }
-    return {
-      firstProgress: progressList.slice(0, -2),
-      lastTwoProgress: progressList.slice(-2),
-    };
   }, [progressList]);
 
   if (progressList.length === 0) {
@@ -63,42 +46,8 @@ export function ProgressTimeline({ progressList, allProgress, onEdit, onShare, h
       
       {/* Liste verticale des progrès avec points numérotés */}
       <div className="flex flex-col gap-8 md:gap-12 relative z-20 pl-12 md:pl-16">
-        {/* Premiers progrès (tous sauf les 2 derniers) */}
-        {firstProgress.map((progress) => {
-          const { victoryNumber } = progressWithNumbers.find(p => p.progress.id === progress.id) || { victoryNumber: 0 };
-          
-          return (
-            <div key={progress.id} className="relative z-20 flex items-start">
-              {/* Point numéroté sur le fil - aligné avec le centre vertical de la card */}
-              <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 border-2 border-white shadow-md flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">
-                    {victoryNumber}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Card de progrès */}
-              <div className="flex-1">
-                <ProgressCard
-                  progress={progress}
-                  onEdit={onEdit}
-                  onShare={onShare}
-                />
-              </div>
-            </div>
-          );
-        })}
-        
-        {/* Graphique encourageant avant les deux dernières cards */}
-        {!hideChart && progressForChart.length >= 2 && (
-          <div className="relative z-20">
-            <ProgressStatsChart progressList={progressForChart} />
-          </div>
-        )}
-        
-        {/* Les deux derniers progrès */}
-        {lastTwoProgress.map((progress) => {
+        {/* Tous les progrès dans l'ordre chronologique */}
+        {progressList.map((progress) => {
           const { victoryNumber } = progressWithNumbers.find(p => p.progress.id === progress.id) || { victoryNumber: 0 };
           
           return (

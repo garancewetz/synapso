@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import ProgressBottomSheet from './ProgressBottomSheet';
+import { ProgressBottomSheet } from './ProgressBottomSheet';
 import { ProgressButton } from './ProgressButton';
-import ConfettiRain from './ConfettiRain';
+import { ConfettiRain } from './ConfettiRain';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
@@ -23,7 +23,7 @@ type Props = {
  * Ouvre le ProgressBottomSheet pour noter un petit progrès.
  * Déclenche une pluie de confettis dorés lors d'un progrès ajouté.
  */
-export default function ProgressFAB({ onSuccess, defaultCategory }: Props) {
+export function ProgressFAB({ onSuccess, defaultCategory }: Props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { effectiveUser } = useUser();

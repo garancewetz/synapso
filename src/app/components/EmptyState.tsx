@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import { Button } from '@/app/components/ui';
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   actionLabel?: string;
 };
 
-export default function EmptyState({ icon = '🔍', title, message, subMessage, actionHref, actionLabel }: Props) {
+export function EmptyState({ icon = '🔍', title, message, subMessage, actionHref, actionLabel }: Props) {
   return (
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
@@ -28,14 +28,14 @@ export default function EmptyState({ icon = '🔍', title, message, subMessage, 
         )}
         {actionHref && actionLabel && (
           <div className="mt-6">
-            <Link href={actionHref}>
+            <TouchLink href={actionHref}>
               <Button
                 variant="action"
                 className="px-6 py-3"
               >
                 {actionLabel}
               </Button>
-            </Link>
+            </TouchLink>
           </div>
         )}
       </div>

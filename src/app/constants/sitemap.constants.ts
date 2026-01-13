@@ -42,6 +42,5 @@ export const TAB_RING_COLORS = {
   corps: 'ring-blue-500',
   aphasie: 'ring-yellow-400',
   parcours: 'ring-amber-500',
-  profil: 'ring-gray-400',
 } as const;
 

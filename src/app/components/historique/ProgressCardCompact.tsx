@@ -5,6 +5,7 @@ import type { Progress } from '@/app/types';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatTime } from '@/app/utils/date.utils';
 import { extractProgressTags } from '@/app/utils/progress.utils';
+import { Card } from '@/app/components/ui/Card';
 
 type Props = {
   progress: Progress;
@@ -13,6 +14,7 @@ type Props = {
 /**
  * Carte de progrès ultra-compacte pour la modale de détail du jour
  * Affiche uniquement : emoji, titre (clean content) et heure
+ * Utilise Card pour la cohérence du système de design
  */
 export function ProgressCardCompact({ progress }: Props) {
   // Extraire le clean content (sans les tags)
@@ -22,7 +24,11 @@ export function ProgressCardCompact({ progress }: Props) {
   );
   
   return (
-    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-yellow-200">
+    <Card
+      variant="subtle"
+      padding="none"
+      className="bg-gradient-to-r from-amber-50 to-yellow-50 border-yellow-200"
+    >
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Badge icône doré */}
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-amber-400 to-yellow-500">
@@ -41,7 +47,7 @@ export function ProgressCardCompact({ progress }: Props) {
           {formatTime(progress.createdAt)}
         </span>
       </div>
-    </div>
+    </Card>
   );
 }
 

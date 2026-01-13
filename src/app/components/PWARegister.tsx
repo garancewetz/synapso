@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-export default function PWARegister() {
+export function PWARegister() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       const registerServiceWorker = () => {

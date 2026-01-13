@@ -16,7 +16,7 @@ type Props = {
   initialCategory?: ExerciceCategory;
 };
 
-export default function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
+export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
   const [formData, setFormData] = useState({
     name: '',

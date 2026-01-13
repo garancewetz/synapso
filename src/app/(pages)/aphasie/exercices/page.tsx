@@ -1,7 +1,7 @@
 'use client';
 
-import AphasieSectionHeader from '@/app/components/AphasieSectionHeader';
-import AphasieChallengesList from '@/app/components/AphasieChallengesList';
+import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
+import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/BackButton';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 

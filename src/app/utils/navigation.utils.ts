@@ -23,10 +23,6 @@ export function getCurrentPageName(pathname: string): string | null {
     return 'Mon parcours';
   }
 
-  if (pathname === '/historique/progres') {
-    return 'Mes progrès';
-  }
-
   // Aphasie
   if (pathname === '/aphasie') {
     return 'Journal d\'aphasie';

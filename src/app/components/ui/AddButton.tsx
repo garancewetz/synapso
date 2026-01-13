@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import { usePathname } from 'next/navigation';
 import { PlusIcon } from './icons';
+import { Button } from './Button';
 import clsx from 'clsx';
 
 type Props = {
@@ -18,7 +19,7 @@ type Props = {
  * Bouton rond avec plus pour ajouter des éléments
  * S'adapte automatiquement à la préférence de main de l'utilisateur
  */
-export default function AddButton({ 
+export function AddButton({ 
   href, 
   label, 
   className = '',
@@ -48,29 +49,28 @@ export default function AddButton({
   }
 
   return (
-    <Link 
+    <TouchLink 
       href={finalHref}
-      className={clsx(
-        'inline-flex items-center justify-center gap-2',
-        'w-auto h-12 md:h-14 px-4 md:px-5',
-        'bg-gray-800 hover:bg-gray-700',
-        'rounded-full shadow-md',
-        'cursor-pointer',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
-        className
-      )}
+      className={clsx('inline-block', className)}
       aria-label={label || 'Ajouter'}
     >
-      <PlusIcon 
-        className="text-white w-6 h-6 md:w-7 md:h-7 shrink-0" 
-        strokeWidth={3} 
-      />
-      {label && (
-        <span className="text-white font-medium text-sm md:text-base whitespace-nowrap">
-          Ajouter
-        </span>
-      )}
-    </Link>
+      <Button
+        variant="primary"
+        icon={<PlusIcon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={3} />}
+        rounded="full"
+        size="md"
+        className={clsx(
+          'w-auto h-12 md:h-14 px-4 md:px-5 bg-gray-800 hover:bg-gray-700 shadow-md',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
+        )}
+      >
+        {label && (
+          <span className="whitespace-nowrap">
+            Ajouter
+          </span>
+        )}
+      </Button>
+    </TouchLink>
   );
 }
 

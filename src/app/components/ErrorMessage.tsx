@@ -4,7 +4,7 @@ type Props = {
   id?: string;
 };
 
-export default function ErrorMessage({ message, className = '', id }: Props) {
+export function ErrorMessage({ message, className = '', id }: Props) {
   if (!message) return null;
   
   return (

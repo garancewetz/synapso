@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { TouchLink } from '@/app/components/TouchLink';
 import { useRouter } from 'next/navigation';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -76,13 +76,13 @@ export function BackButton({
   return (
     <div className={wrapperClasses}>
       {backHref ? (
-        <Link
+        <TouchLink
           href={backHref}
           className={buttonClasses}
           aria-label={label}
         >
           {buttonContent}
-        </Link>
+        </TouchLink>
       ) : (
         <button
           onClick={handleBack}

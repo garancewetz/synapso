@@ -6,6 +6,7 @@ import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
 import { UserBadge } from '@/app/components/UserBadge';
 import { MenuIcon, PinIcon } from '@/app/components/ui/icons';
+import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
@@ -23,7 +24,7 @@ import { TouchLink } from '@/app/components/TouchLink';
  * - Navigation vers les différentes sections
  * - Support de la préférence de main (gauche/droite)
  */
-export default function NavBar() {
+export function NavBar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
@@ -85,11 +86,12 @@ export default function NavBar() {
             {effectiveUser && (
               <UserBadge showName size="md" />
             )}
-            <button
+            <Button
+              iconOnly
               ref={menuButtonRef}
               onClick={openMenu}
               disabled={loading}
-              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 cursor-pointer"
+              className="!p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               aria-label="Ouvrir le menu"
               aria-expanded={isOpen}
               aria-controls="main-menu"
@@ -99,7 +101,7 @@ export default function NavBar() {
               ) : (
                 <MenuIcon className="w-6 h-6 flex items-center justify-center" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </header>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { AphasieItem } from '@/app/types';
-import { BaseCard, Badge, IconButton } from '@/app/components/ui';
+import { BaseCard, Badge, Button } from '@/app/components/ui';
 import { EditIcon, CalendarIcon } from '@/app/components/ui/icons';
 
 type Props = {
@@ -81,13 +81,14 @@ export const AphasieItemCard = memo(function AphasieItemCard({ item }: Props) {
         </BaseCard.Content>
         
         <BaseCard.Footer>
-          <IconButton
+          <Button
+            iconOnly
             onClick={handleEdit}
             title="Modifier la citation"
             aria-label="Modifier la citation"
           >
             <EditIcon className="w-4 h-4" />
-          </IconButton>
+          </Button>
         </BaseCard.Footer>
       </BaseCard>
     </li>

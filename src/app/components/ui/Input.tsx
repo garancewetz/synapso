@@ -5,7 +5,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
   required?: boolean;
 };
 
-export default function Input({ label, required, className = '', id, ...props }: Props) {
+export function Input({ label, required, className = '', id, ...props }: Props) {
   const inputId = id || (label ? `input-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined);
   const inputClasses = `w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`;
   

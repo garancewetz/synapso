@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import SiteProtection from '@/app/components/SiteProtection';
+import { SiteProtection } from '@/app/components/SiteProtection';
 import { AdminUserSwitcher } from '@/app/components/AdminUserSwitcher';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
@@ -14,7 +14,7 @@ type Props = {
  * Wrapper qui connecte SiteProtection et UserContext
  * Permet une communication sécurisée sans événements window
  */
-export default function AuthWrapper({ children }: Props) {
+export function AuthWrapper({ children }: Props) {
   const { refreshUser } = useUser();
 
   const handleAuthSuccess = useCallback(() => {

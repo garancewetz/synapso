@@ -3,7 +3,7 @@
 import { Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import ExerciceForm from '@/app/components/ExerciceForm';
+import { ExerciceForm } from '@/app/components/ExerciceForm';
 import { BackButton } from '@/app/components/BackButton';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
 import { Loader } from '@/app/components/ui';

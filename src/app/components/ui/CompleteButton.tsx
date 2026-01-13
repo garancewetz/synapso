@@ -3,6 +3,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
 import { CheckIcon, SparklesIcon } from '@/app/components/ui/icons';
+import { Button } from './Button';
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isCompleted: boolean;
@@ -54,18 +55,18 @@ export function CompleteButton({
     return 'Marquer comme fait aujourd\'hui';
   };
 
-  const getStyles = () => {
+  const getCustomStyles = () => {
     if (variant === 'challenge') {
       if (isCompleted) {
-        return 'bg-emerald-500 text-white hover:bg-emerald-600';
+        return 'bg-emerald-500 text-white hover:bg-emerald-600 border-0';
       }
       return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
     }
     
     if (isCompleted) {
       return isCompletedToday
-        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-        : 'bg-emerald-400 text-white hover:bg-emerald-500';
+        ? 'bg-emerald-500 text-white hover:bg-emerald-600 border-0'
+        : 'bg-emerald-400 text-white hover:bg-emerald-500 border-0';
     }
     return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
   };
@@ -78,11 +79,14 @@ export function CompleteButton({
   };
 
   return (
-    <button
+    <Button
+      variant="secondary"
+      icon={isLoading ? undefined : getIcon()}
+      size="sm"
+      rounded="lg"
       className={clsx(
-        'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer',
-        'font-semibold text-sm transition-all duration-200 shadow-sm whitespace-nowrap',
-        getStyles(),
+        'flex-1 whitespace-nowrap shadow-sm font-semibold text-sm',
+        getCustomStyles(),
         className
       )}
       title={getTitle()}
@@ -96,12 +100,9 @@ export function CompleteButton({
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
       ) : (
-        <>
-          {getIcon()}
-          {getLabel()}
-        </>
+        getLabel()
       )}
-    </button>
+    </Button>
   );
 }
 

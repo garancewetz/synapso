@@ -6,8 +6,9 @@ import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, PROGRESS_TAGS_WITH_EMOJI, ORTH
 import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
-import { BottomSheetModal, DeleteButton } from '@/app/components/ui';
-import ErrorMessage from '@/app/components/ErrorMessage';
+import { BottomSheetModal, Button } from '@/app/components/ui';
+import { useDeleteConfirmation } from '@/app/hooks/useDeleteConfirmation';
+import { ErrorMessage } from '@/app/components/ErrorMessage';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Progress } from '@/app/types';
@@ -23,12 +24,13 @@ type Props = {
 
 type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
 
-export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
+export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
   const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProgressCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const deleteConfirmation = useDeleteConfirmation();
   
   const isEditMode = !!progressToEdit;
 
@@ -337,12 +339,23 @@ export default function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId
 
         {/* Bouton supprimer (mode édition uniquement) */}
         {isEditMode && (
-          <DeleteButton
-            onDelete={handleDelete}
-            label="🗑️ Supprimer ce progrès"
-            disabled={isSubmitting}
-            className="mt-3"
-          />
+          <Button
+            type="button"
+            onClick={() => deleteConfirmation.handleClick(handleDelete)}
+            disabled={isSubmitting || deleteConfirmation.isDeleting}
+            variant={deleteConfirmation.showConfirm ? 'danger' : 'danger-outline'}
+            size="md"
+            rounded="lg"
+            className="mt-3 w-full"
+          >
+            {deleteConfirmation.isDeleting ? (
+              <span className="animate-spin">⏳</span>
+            ) : deleteConfirmation.showConfirm ? (
+              '⚠️ Confirmer la suppression'
+            ) : (
+              '🗑️ Supprimer ce progrès'
+            )}
+          </Button>
         )}
         </form>
     </BottomSheetModal>

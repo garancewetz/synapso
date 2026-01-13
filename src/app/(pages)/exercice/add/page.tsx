@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ExerciceForm from '@/app/components/ExerciceForm';
-import FormPageWrapper from '@/app/components/FormPageWrapper';
+import { ExerciceForm } from '@/app/components/ExerciceForm';
+import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { Loader } from '@/app/components/ui';

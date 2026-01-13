@@ -2,13 +2,13 @@
 
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import CategoryTabs from '@/app/components/CategoryTabs';
+import { CategoryTabs } from '@/app/components/CategoryTabs';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
-export default function CategoryTabsWrapper() {
+export function CategoryTabsWrapper() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
 

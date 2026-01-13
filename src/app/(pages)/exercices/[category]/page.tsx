@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import ExerciceCard from '@/app/components/ExerciceCard';
-import EmptyState from '@/app/components/EmptyState';
+import { ExerciceCard } from '@/app/components/ExerciceCard';
+import { EmptyState } from '@/app/components/EmptyState';
 import { SegmentedControl } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import AddButton from '@/app/components/ui/AddButton';
+import { AddButton } from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { ProgressFAB } from '@/app/components';

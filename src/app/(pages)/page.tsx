@@ -1,16 +1,13 @@
 'use client';
 
 import { useState, useMemo, type ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EmptyState, ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
-import { Loader } from '@/app/components/ui';
-import { ProgressCard } from '@/app/components/historique';
+import { ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, SiteMapCard, SiteMapGroup } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, SettingsIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
-import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
+import { MENU_COLORS } from '@/app/constants/card.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
@@ -22,14 +19,13 @@ import { OnboardingSlides } from '@/app/components/OnboardingSlides';
 type TabValue = 'corps' | 'aphasie' | 'parcours' | 'profil';
 
 export default function Home() {
-  const pathname = usePathname();
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
   const { openOnboarding, showOnboarding, closeOnboarding } = useOnboarding();
   const isAphasic = effectiveUser?.isAphasic ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
-  const { exercices, loading: loadingExercices, refetch: refetchExercices } = useExercices();
+  const { exercices, refetch: refetchExercices } = useExercices();
 
   // Charger les stats de progression par catégorie
   const { stats: categoryStats, loading: loadingStats } = useCategoryStats({
@@ -37,8 +33,8 @@ export default function Home() {
     resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
   });
 
-  // Charger les progrès (pour le dernier progrès)
-  const { lastProgress, refetch: refetchProgress } = useProgress();
+  // Charger les progrès
+  const { refetch: refetchProgress } = useProgress();
 
 
   // Options des onglets
@@ -85,18 +81,15 @@ export default function Home() {
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-24 md:pb-8">
           <AnimatePresence mode="wait">
-            {userLoading || (effectiveUser && (loadingExercices || loadingStats)) ? (
+            {!effectiveUser && userLoading ? (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-12 gap-4"
+                className="flex items-center justify-center py-12"
               >
-                <Loader size="large" />
-                <p className="text-gray-600 font-medium">
-                  Préparation de ton espace... ✨
-                </p>
+                <div className="text-gray-500">Chargement...</div>
               </motion.div>
             ) : !effectiveUser ? (
               <motion.div
@@ -134,52 +127,38 @@ export default function Home() {
                 {/* Contenu selon l'onglet actif */}
                 {currentActiveTab === 'corps' && (
                   <div className="space-y-4">
-                    {exercices.length === 0 ? (
-                      <EmptyState
-                        icon="+"
-                        title="Aucun exercice"
-                        message="Commencez par ajouter votre premier exercice."
-                        subMessage="Cliquez sur le bouton ci-dessous pour créer un exercice."
-                        actionHref={`/exercice/add?from=${encodeURIComponent(pathname)}`}
-                        actionLabel="Créer mon premier exercice"
-                      />
-                    ) : (
-                      <>
-                        {/* Cartes de catégories avec progression intégrée */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                          {CATEGORY_ORDER.map((category, index) => {
-                            const categoryExercices = exercices.filter(e => e.category === category);
-                            if (categoryExercices.length === 0) return null;
+                    {/* Cartes de catégories avec progression intégrée - toujours afficher les 4 catégories */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                      {CATEGORY_ORDER.map((category, index) => {
+                        const categoryExercices = exercices.filter(e => e.category === category);
 
-                            return (
-                              <motion.div
-                                key={category}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.15, delay: index * 0.03 }}
-                              >
-                                <CategoryCardWithProgress
-                                  category={category}
-                                  total={categoryExercices.length}
-                                  completedCount={categoryStats[category]}
-                                />
-                              </motion.div>
-                            );
-                          }).filter(Boolean)}
-                        </div>
+                        return (
+                          <motion.div
+                            key={category}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.15, delay: index * 0.03 }}
+                          >
+                            <CategoryCardWithProgress
+                              category={category}
+                              total={categoryExercices.length}
+                              completedCount={loadingStats ? 0 : categoryStats[category]}
+                            />
+                          </motion.div>
+                        );
+                      })}
+                    </div>
 
-                        {/* Action secondaire : Ajouter un exercice */}
-                        <SiteMapCard
-                          title="Ajouter un exercice"
-                          icon={<PlusIcon className="w-5 h-5" />}
-                          description="Créer un nouvel exercice personnalisé"
-                          href="/exercice/add"
-                          iconBgColor={SITEMAP_ICON_STYLES.primary.addExercice.bg}
-                          iconTextColor={SITEMAP_ICON_STYLES.primary.addExercice.text}
-                          isSecondary={true}
-                        />
-                      </>
-                    )}
+                    {/* Action secondaire : Ajouter un exercice */}
+                    <SiteMapCard
+                      title="Ajouter un exercice"
+                      icon={<PlusIcon className="w-5 h-5" />}
+                      description="Créer un nouvel exercice personnalisé"
+                      href="/exercice/add"
+                      iconBgColor={SITEMAP_ICON_STYLES.primary.addExercice.bg}
+                      iconTextColor={SITEMAP_ICON_STYLES.primary.addExercice.text}
+                      isSecondary={true}
+                    />
                   </div>
                 )}
 
@@ -231,55 +210,22 @@ export default function Home() {
 
               {currentActiveTab === 'parcours' && (
                 <div className="space-y-3">
-                  <SiteMapGroup
-                    title="Mon parcours"
+                  <SiteMapCard
+                    title="Voir mes progrès"
+                    icon={<SparklesIcon className="w-5 h-5" />}
+                    description="Timeline et graphique de progression"
+                    href="/historique/progres"
+                    iconBgColor={MENU_COLORS.PROGRES.bg}
+                    iconTextColor={MENU_COLORS.PROGRES.text}
+                  />
+                  <SiteMapCard
+                    title="Voir mon parcours"
                     icon={<MapIcon className="w-5 h-5" />}
-                    description="Voir mon historique et mes statistiques"
+                    description="Heatmap, graphique montagne et zones travaillées"
                     href="/historique"
                     iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
-                  >
-                    <SiteMapCard
-                      title="Chemin parcouru"
-                      icon={<MapIcon className="w-5 h-5" />}
-                      description="40 derniers jours"
-                      href="/historique/roadmap"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    />
-                    <SiteMapCard
-                      title="Mes réussites"
-                      icon={<SparklesIcon className="w-5 h-5" />}
-                      description="Toutes mes victoires"
-                      href="/historique/victories"
-                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    />
-                  </SiteMapGroup>
-
-                  <SiteMapCard
-                    title="Noter une réussite"
-                    icon={<SparklesIcon className="w-5 h-5" />}
-                    description="Célébrez un moment important de votre parcours"
-                    onClick={() => progressModal.openForCreate()}
-                    iconBgColor={SITEMAP_ICON_STYLES.primary.victory.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.primary.victory.text}
                   />
-                  
-                  {/* Section dernier progrès */}
-                  {lastProgress && (
-                    <div className="mt-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <span>{PROGRESS_EMOJIS.STAR_BRIGHT}</span> Mon dernier progrès
-                        </h2>
-                      </div>
-                      <ProgressCard 
-                        progress={lastProgress} 
-                        onEdit={progressModal.openForEdit}
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 

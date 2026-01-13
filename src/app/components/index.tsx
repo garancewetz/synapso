@@ -22,7 +22,7 @@ import { SiteMapCard } from './SiteMapCard';
 import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
 import ProgressBottomSheet from './ProgressBottomSheet';
-import ProgressButton from './ProgressButton';
+import { ProgressButton } from './ProgressButton';
 import ProgressFAB from './ProgressFAB';
 import ViewProgressButton from './ViewProgressButton';
 import { WelcomeHeader } from './WelcomeHeader';

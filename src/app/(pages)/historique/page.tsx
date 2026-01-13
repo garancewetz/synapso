@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
@@ -9,26 +9,30 @@ import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress } from '@/app/hooks/useProgress';
 import { useProgressStats } from '@/app/hooks/useProgressStats';
+import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
 import { 
   DonutChart, 
-  ActivityHeatmap, 
-  ProgressStatsChart,
-  ActivityHeatmapSkeleton 
+  ActivityHeatmap,
+  ActivityLineChart,
 } from '@/app/components/historique';
-import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
+import { ProgressBottomSheet, ConfettiRain } from '@/app/components';
 import { BackButton } from '@/app/components/BackButton';
-import ViewAllLink from '@/app/components/ui/ViewAllLink';
-import { SegmentedControl } from '@/app/components/ui';
+import { SegmentedControl, Loader } from '@/app/components/ui';
+import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
+import { TouchLink } from '@/app/components/TouchLink';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
-  getLast7DaysData,
+  getHeatmapData,
   calculateCurrentStreak,
 } from '@/app/utils/historique.utils';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
+
+// 30 jours pour le heatmap du mois
+const MONTH_HEATMAP_DAYS = 30;
 
 export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -52,16 +56,14 @@ export default function HistoriquePage() {
     }
   }, [showConfetti]);
 
-  const handleProgressSuccess = () => {
+  const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
     refetchProgress();
-  };
+  }, [refetchProgress]);
 
   const {
     progressDates,
-    totalProgress,
-    totalPhysicalProgress,
-    totalOrthoProgress,
+    progressCountByDate,
   } = useProgressStats(progressList);
 
   const donutDataBodyparts = useMemo(() => {
@@ -69,10 +71,20 @@ export default function HistoriquePage() {
     return getDonutDataBodyparts(bodypartStats);
   }, [history, bodypartPeriod]);
 
-  // Pour la page historique, utiliser getLast7DaysData qui retourne les 7 jours sans jours vides
-  const roadmapData = useMemo(() => getLast7DaysData(history), [history]);
-  const currentStreak = useMemo(() => calculateCurrentStreak(roadmapData), [roadmapData]);
+  // Heatmap de 30 jours
+  const heatmapData = useMemo(() => getHeatmapData(history, MONTH_HEATMAP_DAYS), [history]);
+  const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData), [heatmapData]);
   
+  // Navigation par période pour le graphique montagne
+  const {
+    barChartData,
+    selectedMonthLabel,
+    canGoBack,
+    canGoForward,
+    goToPreviousPeriod,
+    goToNextPeriod,
+  } = usePeriodNavigation(history, 15);
+
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
 
   return (
@@ -83,101 +95,78 @@ export default function HistoriquePage() {
       />
 
       <div className="px-3 sm:p-6">
-        <div className="space-y-6 mb-6">
-          <AnimatePresence mode="wait">
-            {loadingHistory ? (
-              <motion.div
-                key="heatmap-skeleton"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <ActivityHeatmapSkeleton daysCount={7} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="heatmap"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <ActivityHeatmap 
-                  data={roadmapData} 
-                  currentStreak={currentStreak} 
-                  userName={displayName} 
-                  progressDates={progressDates}
-                  onDayClick={handleDayClick}
-                  showFullLink={true}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 w-full">
-            <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-                  {PROGRESS_EMOJIS.STAR_BRIGHT} Mes progrès
-                </h2>
-                {totalProgress > 0 && (
-                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                    {effectiveUser?.isAphasic ? (
-                      <>
-                        <span className="text-xs font-medium text-gray-500">
-                          {totalProgress} au total
-                        </span>
-                        <span className="text-gray-300">•</span>
-                        <span className="text-xs font-medium text-orange-600">
-                          {totalPhysicalProgress} 💪
-                        </span>
-                        <span className="text-gray-300">•</span>
-                        <span className="text-xs font-medium text-yellow-600">
-                          {totalOrthoProgress} 💬
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-xs font-medium text-gray-500">
-                        {totalProgress} progrès
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              {effectiveUser && (
-                <ProgressButton 
-                  onClick={progressModal.openForCreate}
-                  variant="inline"
-                  label="Ajouter"
-                />
-              )}
+        <div className="mb-6">
+          <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+                {NAVIGATION_EMOJIS.MAP} Mon parcours
+              </h1>
+              <p className="text-gray-500 mt-2">
+                Les {MONTH_HEATMAP_DAYS} derniers jours de ton parcours
+              </p>
             </div>
-            {progressList.length >= 2 ? (
-              <ProgressStatsChart 
-                progressList={progressList}
-                hideTitle={true}
+          </div>
+        </div>
+
+        {loadingHistory ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
+            <Loader size="large" />
+            <p className="text-gray-600 font-medium">
+              Chargement de ton historique... 📊
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6 mb-6">
+          {/* Section 1 : Heatmap d'activité du mois (30 jours) */}
+          {!loadingHistory && (
+            <motion.div
+              key="heatmap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+            >
+              <ActivityHeatmap 
+                data={heatmapData} 
+                currentStreak={currentStreak} 
+                userName={displayName} 
+                progressDates={progressDates}
+                onDayClick={handleDayClick}
+                showFullLink={false}
               />
-            ) : progressList.length === 1 ? (
-              <div className="text-center py-8">
-                <span className="text-3xl mb-2 block">🌟</span>
-                <p className="text-gray-700 font-medium mb-1">Ton premier progrès est enregistré !</p>
-                <p className="text-gray-500 text-sm">Continue pour voir ton graphique de progression.</p>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <span className="text-3xl mb-2 block">🌟</span>
-                <p className="text-gray-500">Tes progrès apparaîtront ici !</p>
-              </div>
-            )}
-            {progressList.length > 0 && (
-              <ViewAllLink 
-                href="/historique/victories"
-                label="Voir tous les progrès"
-                emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
-              />
+            </motion.div>
+          )}
+
+          {/* Section 2 : Graphique montagne (ActivityLineChart) */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+            <PeriodNavigation
+              label={selectedMonthLabel}
+              onPrevious={goToPreviousPeriod}
+              onNext={goToNextPeriod}
+              canGoBack={canGoBack}
+              canGoForward={canGoForward}
+            />
+
+            {!loadingHistory && (
+              <motion.div
+                key="chart"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+              >
+                <ActivityLineChart 
+                  data={barChartData} 
+                  currentStreak={currentStreak} 
+                  onDayClick={handleDayClick}
+                  showFullLink={false}
+                  progressCountByDate={progressCountByDate}
+                />
+              </motion.div>
             )}
           </div>
 
+          {/* Section 3 : Graphique des zones travaillées */}
           <DonutChart
             title="🦴 Zones travaillées"
             data={donutDataBodyparts}
@@ -200,6 +189,26 @@ export default function HistoriquePage() {
               />
             }
           />
+          </div>
+        )}
+
+        {/* Bouton "Voir mes progrès" */}
+        <div className={clsx('mt-8', effectiveUser?.dominantHand === 'LEFT' ? 'flex justify-start' : 'flex justify-end')}>
+          <TouchLink
+            href="/historique/progres"
+            className={clsx(
+              'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500',
+              'border-2 border-amber-300',
+              'rounded-full shadow-md hover:shadow-lg hover:scale-105',
+              'transition-all duration-200',
+              'flex items-center justify-center gap-2',
+              'text-amber-950 active:scale-95',
+              'px-6 py-3 font-bold text-sm md:text-base'
+            )}
+          >
+            <span className="text-lg">{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
+            <span>Voir mes progrès</span>
+          </TouchLink>
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/app/components/ui/Button';
-import ProgressButton from '@/app/components/ProgressButton';
+import { ProgressButton } from '@/app/components/ProgressButton';
 import AddButton from '@/app/components/ui/AddButton';
 import { MenuLink } from '@/app/components/MenuLink';
 import { ChevronIcon, PlusIcon, UserIcon, MapIcon } from '@/app/components/ui/icons';

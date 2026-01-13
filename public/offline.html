@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#ffffff">
+  <title>Hors ligne - Synapso</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background: #F8FAFB;
+      color: #1F2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .container {
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .emoji {
+      font-size: 64px;
+      margin-bottom: 24px;
+      display: block;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #111827;
+    }
+    
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #6B7280;
+      margin-bottom: 32px;
+    }
+    
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    button:hover {
+      background: #4338CA;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      button {
+        transition: none;
+      }
+      
+      button:active {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="emoji" role="img" aria-label="Hors ligne">📡</span>
+    <h1>Vous êtes hors ligne</h1>
+    <p>Vérifiez votre connexion Internet et réessayez.</p>
+    <button onclick="window.location.reload()">Réessayer</button>
+  </div>
+  
+  <script>
+    // Réessayer automatiquement quand la connexion revient
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+    
+    // Détecter si on revient en ligne
+    if (navigator.onLine) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
+

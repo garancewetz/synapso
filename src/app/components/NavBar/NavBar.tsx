@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
@@ -13,6 +12,7 @@ import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { getCurrentPageName } from '@/app/utils/navigation.utils';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
+import { TouchLink } from '@/app/components/TouchLink';
 
 /**
  * Composant NavBar - Barre de navigation principale avec menu latéral
@@ -51,7 +51,7 @@ export default function NavBar() {
             'flex items-center gap-3 flex-1 min-w-0',
             isLeftHanded && 'flex-row-reverse'
           )}>
-            <Link
+            <TouchLink
               href="/"
               className={clsx(
                 'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0 cursor-pointer',
@@ -61,7 +61,7 @@ export default function NavBar() {
             >
               <Logo size={36} className="md:scale-110" />
               <span className="text-lg font-semibold text-gray-800">Synapso</span>
-            </Link>
+            </TouchLink>
 
             {/* Indicateur "Où suis-je ?" - Masqué sur mobile */}
             {currentPageName && (

@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
+import type { MutableRefObject } from 'react';
 
 type Direction = 'horizontal' | 'vertical';
 
 type UseSlidingIndicatorReturn = {
-  itemsRef: React.MutableRefObject<(HTMLElement | null)[]>;
+  itemsRef: MutableRefObject<(HTMLElement | null)[]>;
   indicatorStyle: {
     left?: number;
     top?: number;
@@ -63,6 +64,8 @@ export function useSlidingIndicator(
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', setPosition);
     };
+    // Les dépendances dynamiques sont intentionnelles ici pour permettre des dépendances personnalisées
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, direction, ...dependencies]);
 
   const indicatorStyle =

@@ -78,6 +78,10 @@ export const MENU_COLORS = {
     bg: 'bg-gradient-to-br from-amber-400 to-amber-600',
     text: 'text-white',
   },
+  PROGRES: {
+    bg: 'bg-gradient-to-br from-amber-500 to-yellow-500',
+    text: 'text-white',
+  },
   ADD_EXERCICE: {
     bg: 'bg-gradient-to-br from-gray-700 to-gray-900',
     text: 'text-white',

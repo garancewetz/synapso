@@ -14,6 +14,7 @@ export { MenuIcon } from './MenuIcon';
 export { PinIcon } from './PinIcon';
 export { PlusIcon } from './PlusIcon';
 export { SettingsIcon } from './SettingsIcon';
+export { ShareIcon } from './ShareIcon';
 export { SparklesIcon } from './SparklesIcon';
 export { UserIcon } from './UserIcon';
 export { WarningIcon } from './WarningIcon';

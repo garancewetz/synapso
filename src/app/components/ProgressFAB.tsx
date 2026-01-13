@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import ProgressBottomSheet from './ProgressBottomSheet';
-import ProgressButton from './ProgressButton';
+import { ProgressButton } from './ProgressButton';
 import ConfettiRain from './ConfettiRain';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 

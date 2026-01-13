@@ -23,12 +23,8 @@ export function getCurrentPageName(pathname: string): string | null {
     return 'Mon parcours';
   }
 
-  if (pathname === '/historique/victories') {
-    return 'Mes réussites';
-  }
-
-  if (pathname === '/historique/roadmap') {
-    return 'Mon parcours détaillé';
+  if (pathname === '/historique/progres') {
+    return 'Mes progrès';
   }
 
   // Aphasie

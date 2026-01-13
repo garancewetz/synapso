@@ -112,7 +112,7 @@ export default function AphasiePage() {
             />
             {orthoProgress.length > 3 && (
               <ViewAllLink 
-                href="/historique/victories?filter=orthophonie"
+                href="/historique/progres?filter=orthophonie"
                 label="Voir tous les progrès"
                 emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               />

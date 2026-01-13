@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import clsx from 'clsx';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
+import { TouchLink } from '@/app/components/TouchLink';
 
 type Props = {
   category: ExerciceCategory;
@@ -36,7 +36,7 @@ export function CategoryCardWithProgress({
   const hasBonus = completedCount > total;
 
   return (
-    <Link 
+    <TouchLink 
       href={href}
       aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? `, ${completedCount - total} exercices bonus` : ''}`}
       aria-describedby={`progress-${category}`}
@@ -119,7 +119,7 @@ export function CategoryCardWithProgress({
           </div>
         </div>
       </div>
-    </Link>
+    </TouchLink>
   );
 }
 

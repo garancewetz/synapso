@@ -25,6 +25,7 @@ export function MenuDrawer({
   menuButtonRef,
 }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const touchHandledRef = useRef(false);
   const { getMenuPositionClasses } = useHandPreference();
 
   // Trap focus dans le menu avec gestion de la touche Escape
@@ -41,11 +42,25 @@ export function MenuDrawer({
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 transition-opacity"
-          onClick={onClose}
-          onTouchStart={(e) => {
-            // Empêcher le double-tap zoom sur l'overlay
-            e.preventDefault();
+          onClick={() => {
+            // Si on a déjà géré un événement tactile, ignorer le click
+            // pour éviter le double déclenchement sur mobile
+            if (touchHandledRef.current) {
+              touchHandledRef.current = false;
+              return;
+            }
             onClose();
+          }}
+          onTouchStart={(e) => {
+            // Empêcher le double-tap zoom et le double déclenchement
+            // On utilise preventDefault pour éviter que le click se déclenche aussi
+            e.preventDefault();
+            touchHandledRef.current = true;
+            onClose();
+            // Réinitialiser le flag après un court délai
+            setTimeout(() => {
+              touchHandledRef.current = false;
+            }, 300);
           }}
           aria-hidden="true"
           role="presentation"

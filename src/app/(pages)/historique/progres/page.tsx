@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
@@ -11,8 +11,10 @@ import { ProgressTimeline } from '@/app/components/historique';
 import { ProgressBottomSheet, ProgressButton, ConfettiRain } from '@/app/components';
 import { SegmentedControl, Loader } from '@/app/components/ui';
 import { BackButton } from '@/app/components/BackButton';
-import { PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { TouchLink } from '@/app/components/TouchLink';
+import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { isOrthophonieProgress } from '@/app/utils/progress.utils';
+import { formatProgressForWhatsApp, shareOnWhatsApp } from '@/app/utils/share.utils';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'orthophonie' | 'physique';
@@ -47,10 +49,16 @@ export default function ProgressPage() {
   }, [showConfetti]);
 
   // Handler pour le succès d'un progrès avec confettis dorés
-  const handleProgressSuccess = () => {
+  const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
     refetchProgress();
-  };
+  }, [refetchProgress]);
+
+  // Handler pour le partage WhatsApp
+  const handleShare = useCallback((progress: typeof progressList[0]) => {
+    const message = formatProgressForWhatsApp(progress);
+    shareOnWhatsApp(message);
+  }, []);
 
   // Filtrer les progrès selon le filtre sélectionné
   // Si l'utilisateur n'est pas aphasique, on affiche tous les progrès
@@ -82,13 +90,13 @@ export default function ProgressPage() {
         {/* Header */}
         <div className={clsx('flex items-center justify-between mb-6', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
-            {PROGRESS_EMOJIS.STAR_BRIGHT} Tous mes progrès
+            {PROGRESS_EMOJIS.STAR_BRIGHT} Mes progrès
           </h1>
           {effectiveUser && (
             <ProgressButton 
               onClick={progressModal.openForCreate}
               variant="inline"
-              label="Ajouter"
+              label="Noter un progrès"
             />
           )}
         </div>
@@ -148,18 +156,38 @@ export default function ProgressPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
               >
               <ProgressTimeline 
                 progressList={filteredProgress}
                 allProgress={progressList}
                 history={history}
                 onEdit={progressModal.openForEdit}
-                hideChart={true}
+                onShare={handleShare}
+                hideChart={false}
               />
             </motion.div>
           )}
         </AnimatePresence>
+
+      </div>
+
+      {/* Bouton "Voir mon parcours" */}
+      <div className={clsx('px-3 sm:p-6 mt-8', effectiveUser?.dominantHand === 'LEFT' ? 'flex justify-start' : 'flex justify-end')}>
+        <TouchLink
+          href="/historique"
+          className={clsx(
+            'bg-white border-2 border-gray-300',
+            'rounded-full shadow-md hover:shadow-lg hover:scale-105',
+            'transition-all duration-200',
+            'flex items-center justify-center gap-2',
+            'text-gray-800 active:scale-95',
+            'px-6 py-3 font-bold text-sm md:text-base'
+          )}
+        >
+          <span className="text-lg">{NAVIGATION_EMOJIS.MAP}</span>
+          <span>Voir mon parcours</span>
+        </TouchLink>
       </div>
 
       {/* Pluie de confettis dorés pour célébrer le progrès */}

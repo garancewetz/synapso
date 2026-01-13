@@ -51,7 +51,8 @@ export default function AddButton({
     <Link 
       href={finalHref}
       className={clsx(
-        'inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14',
+        'inline-flex items-center justify-center gap-2',
+        'w-auto h-12 md:h-14 px-4 md:px-5',
         'bg-gray-800 hover:bg-gray-700',
         'rounded-full shadow-md',
         'cursor-pointer',
@@ -61,9 +62,14 @@ export default function AddButton({
       aria-label={label || 'Ajouter'}
     >
       <PlusIcon 
-        className="text-white w-6 h-6 md:w-7 md:h-7" 
+        className="text-white w-6 h-6 md:w-7 md:h-7 shrink-0" 
         strokeWidth={3} 
       />
+      {label && (
+        <span className="text-white font-medium text-sm md:text-base whitespace-nowrap">
+          Ajouter
+        </span>
+      )}
     </Link>
   );
 }

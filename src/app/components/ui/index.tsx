@@ -16,6 +16,7 @@ export { default as Loader } from './Loader';
 export { default as Logo } from './Logo';
 export { SegmentedControl } from './SegmentedControl';
 export { SettingsSection } from './SettingsSection';
+export { ShareButton } from './ShareButton';
 export { default as Textarea } from './Textarea';
 export { default as TextareaWithSpeech } from './TextareaWithSpeech';
 export { default as InputWithSpeech } from './InputWithSpeech';

@@ -1,11 +1,16 @@
 // Version du cache - À METTRE À JOUR MANUELLEMENT lors des déploiements importants
 // ⚡ PERFORMANCE: Version fixe pour éviter d'invalider le cache à chaque visite
 // Incrémenter ce numéro uniquement quand les assets statiques changent
-const CACHE_VERSION = 'v1.2.0';
+const CACHE_VERSION = 'v1.3.0';
 const CACHE_NAME = 'synapso-' + CACHE_VERSION;
+const OFFLINE_PAGE = '/offline.html';
 const urlsToCache = [
   '/',
+  '/offline.html',
   '/icon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
   '/logoBrain.png',
   '/manifest.json'
 ];
@@ -56,38 +61,111 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Stratégie de cache : Network First, puis Cache
+// Stratégie de cache : Network First avec fallback Cache
 // 🔒 SÉCURITÉ: Ne pas cacher les routes API (données sensibles)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const request = event.request;
   
   // Exclure les routes API du cache pour éviter de stocker des données sensibles
+  // Les requêtes API doivent toujours passer par le réseau
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(request).catch(() => {
+        // Retourner une réponse d'erreur pour les API en mode offline
+        return new Response(
+          JSON.stringify({ error: 'Vous êtes hors ligne. Veuillez vérifier votre connexion.' }),
+          {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      })
+    );
     return;
   }
   
+  // Pour les pages HTML : Network First avec fallback sur cache, puis page offline
+  if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Si la réponse est valide, la mettre en cache
+          if (response && response.status === 200 && response.type === 'basic') {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Essayer le cache d'abord
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // Si pas de cache, retourner la page offline
+            return caches.match(OFFLINE_PAGE);
+          });
+        })
+    );
+    return;
+  }
+  
+  // Pour les assets statiques (images, fonts, etc.) : Cache First avec fallback Network
+  if (request.destination === 'image' || 
+      request.destination === 'font' || 
+      request.destination === 'style' ||
+      url.pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|eot|css|js)$/i)) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        
+        return fetch(request)
+          .then((response) => {
+            // Vérifier si la réponse est valide avant de la mettre en cache
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+            
+            return response;
+          });
+      })
+    );
+    return;
+  }
+  
+  // Stratégie par défaut : Network First avec fallback Cache
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
         // Vérifier si la réponse est valide
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
 
-        // Cloner la réponse
+        // Cloner la réponse pour la mettre en cache
         const responseToCache = response.clone();
 
         caches.open(CACHE_NAME)
           .then((cache) => {
-            cache.put(event.request, responseToCache);
+            cache.put(request, responseToCache);
           });
 
         return response;
       })
       .catch(() => {
         // Si le réseau échoue, essayer le cache
-        return caches.match(event.request);
+        return caches.match(request);
       })
   );
 });

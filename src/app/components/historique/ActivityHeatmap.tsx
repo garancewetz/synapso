@@ -144,8 +144,8 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
       {/* Bouton voir tout le parcours */}
       {showFullLink && (
         <ViewAllLink 
-          href="/historique/roadmap"
-          label="Voir tout le chemin parcouru"
+          href="/historique"
+          label="Voir tout le parcours"
           emoji={NAVIGATION_EMOJIS.MAP}
         />
       )}

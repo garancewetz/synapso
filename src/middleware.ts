@@ -106,8 +106,16 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const ip = getClientIP(request);
 
+  // Désactiver le rate limiting en environnement local
+  const isLocal = process.env.NODE_ENV === 'development';
+
   // Rate limiting pour les routes d'authentification
   if (path.startsWith('/api/auth/login') || path.startsWith('/api/auth/register')) {
+    // Ignorer le rate limiting en local
+    if (isLocal) {
+      return NextResponse.next();
+    }
+
     const result = checkRateLimit(ip, RATE_LIMIT_CONFIG.auth);
 
     if (!result.allowed) {
@@ -140,6 +148,11 @@ export function middleware(request: NextRequest) {
 
   // Rate limiting général pour toutes les routes API
   if (path.startsWith('/api/')) {
+    // Ignorer le rate limiting en local
+    if (isLocal) {
+      return NextResponse.next();
+    }
+
     const result = checkRateLimit(ip, RATE_LIMIT_CONFIG.api);
 
     if (!result.allowed) {

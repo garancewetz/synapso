@@ -3,15 +3,17 @@
 import { useMemo, useCallback } from 'react';
 import type { Progress } from '@/app/types';
 import { EditIcon } from '@/app/components/ui/icons';
-import { BaseCard, IconButton } from '@/app/components/ui';
+import { BaseCard, IconButton, ShareButton } from '@/app/components/ui';
 import { formatVictoryDate } from '@/app/utils/date.utils';
 import { extractProgressTags } from '@/app/utils/progress.utils';
 import { GOLDEN_TEXT_STYLES } from '@/app/constants/card.constants';
 import clsx from 'clsx';
+import { useUser } from '@/app/contexts/UserContext';
 
 type Props = {
   progress: Progress;
   onEdit?: (progress: Progress) => void;
+  onShare?: (progress: Progress) => void;
   compact?: boolean;
 };
 
@@ -20,7 +22,9 @@ type Props = {
  * Style doré avec étoile, affichage minimaliste pour vue d'ensemble rapide
  * Principe : minimiser la charge cognitive, maximiser l'encouragement
  */
-export function ProgressCard({ progress, onEdit, compact = false }: Props) {
+export function ProgressCard({ progress, onEdit, onShare, compact = false }: Props) {
+  const { effectiveUser } = useUser();
+  
   // Mémoriser l'extraction des tags (pour nettoyer le contenu)
   const { cleanContent } = useMemo(
     () => extractProgressTags(progress.content),
@@ -34,6 +38,7 @@ export function ProgressCard({ progress, onEdit, compact = false }: Props) {
       onEdit(progress);
     }
   }, [onEdit, progress]);
+  
   
   return (
     <BaseCard 
@@ -75,16 +80,26 @@ export function ProgressCard({ progress, onEdit, compact = false }: Props) {
           </div>
         </div>
         
-        {/* Footer avec bouton éditer en bas - comme ExerciceCard */}
-        {onEdit && (
-          <BaseCard.Footer onClick={handleEdit}>
-            <div className="flex justify-end">
-              <IconButton
-                title="Modifier"
-                aria-label="Modifier ce progrès"
-              >
-                <EditIcon className="w-4 h-4" />
-              </IconButton>
+        {/* Footer avec boutons d'action en bas */}
+        {(onEdit || onShare) && (
+          <BaseCard.Footer>
+            <div className={clsx(
+              'flex gap-2',
+              effectiveUser?.dominantHand === 'LEFT' ? 'flex-row-reverse' : 'flex-row',
+              effectiveUser?.dominantHand === 'LEFT' ? 'justify-start' : 'justify-end'
+            )}>
+              {onShare && (
+                <ShareButton progress={progress} />
+              )}
+              {onEdit && (
+                <IconButton
+                  onClick={handleEdit}
+                  title="Modifier"
+                  aria-label="Modifier ce progrès"
+                >
+                  <EditIcon className="w-4 h-4" />
+                </IconButton>
+              )}
             </div>
           </BaseCard.Footer>
         )}

@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon, ChatIcon, MapIcon, UserIcon } from '@/app/components/ui/icons';
+import { PlusIcon, ChatIcon, MapIcon, UserIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import type { User } from '@/app/types';
@@ -41,6 +41,13 @@ const MENU_ACTIONS: MenuAction[] = [
     title: 'Ajouter un exercice',
     iconBgColor: MENU_COLORS.ADD_EXERCICE.bg,
     iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
+  },
+  {
+    href: () => '/historique/progres',
+    icon: <SparklesIcon className="w-5 h-5" />,
+    title: 'Voir mes progrès',
+    iconBgColor: MENU_COLORS.PROGRES.bg,
+    iconTextColor: MENU_COLORS.PROGRES.text,
   },
   {
     href: () => '/historique',

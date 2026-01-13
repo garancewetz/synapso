@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
@@ -33,6 +33,10 @@ export default function BottomSheetModal({
   showFooterClose = false,
   closeLabel = 'Fermer',
 }: Props) {
+  // Ref pour suivre si on a déjà géré un événement tactile
+  // Cela évite le double déclenchement (touchstart + click)
+  const touchHandledRef = useRef(false);
+
   // Bloquer le scroll du body quand la modale est ouverte
   useBodyScrollLock(isOpen);
 
@@ -74,11 +78,25 @@ export default function BottomSheetModal({
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/30 md:bg-black/50"
-            onClick={onClose}
-            onTouchStart={(e) => {
-              // Empêcher le double-tap zoom et améliorer la réactivité sur mobile
-              e.preventDefault();
+            onClick={() => {
+              // Si on a déjà géré un événement tactile, ignorer le click
+              // pour éviter le double déclenchement sur mobile
+              if (touchHandledRef.current) {
+                touchHandledRef.current = false;
+                return;
+              }
               onClose();
+            }}
+            onTouchStart={(e) => {
+              // Empêcher le double-tap zoom et le double déclenchement
+              // On utilise preventDefault pour éviter que le click se déclenche aussi
+              e.preventDefault();
+              touchHandledRef.current = true;
+              onClose();
+              // Réinitialiser le flag après un court délai
+              setTimeout(() => {
+                touchHandledRef.current = false;
+              }, 300);
             }}
             style={{ touchAction: 'manipulation' }}
           />

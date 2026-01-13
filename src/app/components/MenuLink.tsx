@@ -96,11 +96,19 @@ export function MenuLink({
     </div>
   );
 
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Si onClick est fourni, empêcher la navigation par défaut et appeler onClick
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div className={clsx(isSecondary && 'opacity-90')}>
       <TouchLink
         href={href}
-        onClick={onClick}
+        onClick={handleClick}
         tabIndex={tabIndex}
         className={clsx(
           'group transition-all duration-200',

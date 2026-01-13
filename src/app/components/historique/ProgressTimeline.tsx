@@ -11,6 +11,7 @@ type Props = {
   allProgress?: Progress[];
   history?: HistoryEntry[];
   onEdit?: (progress: Progress) => void;
+  onShare?: (progress: Progress) => void;
   hideChart?: boolean;
 };
 
@@ -20,7 +21,7 @@ type Props = {
  * Affiche un graphique encourageant avant les deux dernières cards
  * Le graphique utilise tous les progrès (allProgress) si fourni, sinon les progrès filtrés
  */
-export function ProgressTimeline({ progressList, allProgress, onEdit, hideChart = false }: Props) {
+export function ProgressTimeline({ progressList, allProgress, onEdit, onShare, hideChart = false }: Props) {
   // Utiliser tous les progrès pour le graphique si fourni, sinon les progrès filtrés
   const progressForChart = allProgress ?? progressList;
 
@@ -82,6 +83,7 @@ export function ProgressTimeline({ progressList, allProgress, onEdit, hideChart 
                 <ProgressCard
                   progress={progress}
                   onEdit={onEdit}
+                  onShare={onShare}
                 />
               </div>
             </div>
@@ -115,6 +117,7 @@ export function ProgressTimeline({ progressList, allProgress, onEdit, hideChart 
                 <ProgressCard
                   progress={progress}
                   onEdit={onEdit}
+                  onShare={onShare}
                 />
               </div>
             </div>

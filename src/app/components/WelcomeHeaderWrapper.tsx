@@ -7,8 +7,8 @@ import { format, startOfDay } from 'date-fns';
 import { WelcomeHeader } from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
+import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
-import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress } from '@/app/hooks/useProgress';
 import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
@@ -25,7 +25,7 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
   const resetFrequency = effectiveUser?.resetFrequency || null;
   
   // Charger l'historique et les victoires pour le calendrier
-  const { history } = useHistory();
+  const { history } = useHistoryContext();
   const { progressList } = useProgress();
 
   // Données selon le rythme de l'utilisateur

@@ -20,11 +20,14 @@ type UseHistoryReturn = {
 };
 
 /**
- * Hook pour récupérer et gérer l'historique des exercices
+ * Hook pour récupérer et gérer l'historique des exercices avec des options personnalisées
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  * 
  * ⚡ PERFORMANCE: Par défaut, charge seulement les 40 derniers jours pour réduire
  * le transfert de données. Passer days={null} pour charger tout l'historique.
+ * 
+ * 💡 Pour le heatmap de la page d'accueil, préférer useHistoryContext() qui
+ * se met à jour automatiquement quand un exercice est complété.
  */
 export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
   const { days = 40 } = options;

@@ -77,6 +77,19 @@ class ApiCache {
   }
 
   /**
+   * Invalide toutes les entrées dont la clé commence par le préfixe donné
+   * Utile pour invalider toutes les variantes d'une même ressource API
+   * @param prefix - Préfixe de la clé (ex: '/api/history' pour invalider toutes les entrées d'historique)
+   */
+  invalidateByPrefix(prefix: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /**
    * Vérifie si une clé existe dans le cache et n'est pas expirée
    */
   has(key: string): boolean {

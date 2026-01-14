@@ -7,6 +7,7 @@ import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/app/hooks/useTodayCompletedCount';
+import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
 import { Badge, Button, CompleteButton, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
 import { CheckIcon } from '@/app/components/ui/icons';
@@ -29,6 +30,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const { effectiveUser } = useUser();
+    const { refreshHistory } = useHistoryContext();
 
     // Mémoriser le style de catégorie
     const categoryStyle = useMemo(
@@ -72,15 +74,16 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                 if (onCompleted) {
                     onCompleted(updatedExercice);
                 }
-                // Déclencher le rafraîchissement du compteur
+                // Déclencher le rafraîchissement du compteur et de l'historique (heatmap)
                 triggerCompletedCountRefresh();
+                refreshHistory();
             }
         } catch (error) {
             console.error('Erreur lors de la mise à jour:', error);
         } finally {
             setIsCompleting(false);
         }
-    }, [effectiveUser, exercice, onCompleted]);
+    }, [effectiveUser, exercice, onCompleted, refreshHistory]);
 
     const handlePin = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();

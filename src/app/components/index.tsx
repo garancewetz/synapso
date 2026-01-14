@@ -3,8 +3,6 @@ import { AphasieForm } from './AphasieForm';
 import { AuthScreen } from './AuthScreen';
 import { BottomNavBar } from './BottomNavBar';
 import { CategoryCardWithProgress } from './CategoryCardWithProgress';
-import { CategoryTabs } from './CategoryTabs';
-import { CategoryTabsWrapper } from './CategoryTabsWrapper';
 import { ConfettiRain } from './ConfettiRain';
 import { DevBanner } from './DevBanner';
 import { EmptyState } from './EmptyState';
@@ -42,8 +40,6 @@ export {
   Button,
   CalendarIcon,
   CategoryCardWithProgress,
-  CategoryTabs,
-  CategoryTabsWrapper,
   ConfettiRain,
   DevBanner,
   EmptyState,

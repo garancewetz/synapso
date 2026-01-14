@@ -5,24 +5,28 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
 import { UserBadge } from '@/app/components/UserBadge';
-import { MenuIcon, PinIcon } from '@/app/components/ui/icons';
+import { MenuIcon } from '@/app/components/ui/icons';
 import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { getCurrentPageName } from '@/app/utils/navigation.utils';
-import { NAVIGATION_COLORS } from '@/app/constants/ui.constants';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
+import { 
+  CATEGORY_ORDER, 
+  CATEGORY_HREFS,
+  CATEGORY_LABELS,
+  CATEGORY_COLORS
+} from '@/app/constants/exercice.constants';
 
 /**
  * Composant NavBar - Barre de navigation principale avec menu latéral
  * 
  * Fonctionnalités :
+ * - Navigation horizontale sur desktop (Accueil + catégories)
  * - Menu latéral avec trap focus pour l'accessibilité
  * - Affichage de l'utilisateur actuel
- * - Navigation vers les différentes sections
  * - Support de la préférence de main (gauche/droite)
  */
 export function NavBar() {
@@ -35,8 +39,8 @@ export function NavBar() {
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
 
-  // Obtenir le nom de la page actuelle
-  const currentPageName = getCurrentPageName(pathname);
+  const categories = CATEGORY_ORDER;
+  const isHomeActive = pathname === '/';
 
   return (
     <>
@@ -50,7 +54,7 @@ export function NavBar() {
         >
           {/* Logo et nom */}
           <div className={clsx(
-            'flex items-center gap-3 flex-1 min-w-0',
+            'flex items-center gap-3 flex-shrink-0',
             isLeftHanded && 'flex-row-reverse'
           )}>
             <TouchLink
@@ -64,20 +68,63 @@ export function NavBar() {
               <Logo size={36} className="md:scale-110" />
               <span className="text-lg font-semibold text-gray-800">Synapso</span>
             </TouchLink>
-
-            {/* Indicateur "Où suis-je ?" - Masqué sur mobile */}
-            {currentPageName && (
-              <div className={clsx(
-                `hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg ${NAVIGATION_COLORS.indicator.bg} border ${NAVIGATION_COLORS.indicator.border} flex-shrink-0`,
-                isLeftHanded && 'flex-row-reverse'
-              )}>
-                <PinIcon className={`w-4 h-4 ${NAVIGATION_COLORS.indicator.text} flex-shrink-0`} />
-                <span className={`text-sm font-medium ${NAVIGATION_COLORS.indicator.textStrong} whitespace-nowrap`}>
-                  {currentPageName}
-                </span>
-              </div>
-            )}
           </div>
+
+          {/* Navigation desktop - Masquée sur mobile */}
+          <nav 
+            className="hidden md:flex items-center gap-1 flex-1 justify-center px-4"
+            aria-label="Navigation principale"
+          >
+            {/* Lien Accueil */}
+            <TouchLink
+              href="/"
+              className={clsx(
+                'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
+                'hover:text-gray-900',
+                isHomeActive
+                  ? 'text-gray-900'
+                  : 'text-gray-600'
+              )}
+              aria-label="Accueil"
+              aria-current={isHomeActive ? 'page' : undefined}
+            >
+              Accueil
+              {isHomeActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
+              )}
+            </TouchLink>
+
+            {/* Catégories */}
+            {categories.map((category) => {
+              const colors = CATEGORY_COLORS[category];
+              const label = CATEGORY_LABELS[category];
+              const href = CATEGORY_HREFS[category];
+              const isActive = pathname === href;
+
+              return (
+                <TouchLink
+                  key={category}
+                  href={href}
+                  className={clsx(
+                    'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
+                    isActive ? colors.text : 'text-gray-600 hover:text-gray-900'
+                  )}
+                  aria-label={label}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {label}
+                  {isActive && (
+                    <span 
+                      className={clsx(
+                        'absolute bottom-0 left-0 right-0 h-0.5 rounded-full',
+                        colors.accent
+                      )} 
+                    />
+                  )}
+                </TouchLink>
+              );
+            })}
+          </nav>
 
           {/* Badge utilisateur et bouton menu */}
           <div className={clsx(

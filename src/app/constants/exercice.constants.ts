@@ -233,6 +233,13 @@ export const CATEGORY_CHART_COLORS = Object.fromEntries(
   Object.entries(CATEGORY_CONFIG).map(([key, config]) => [key, TAILWIND_COLOR_MAP[config.color].hex])
 ) as Record<ExerciceCategory, string>;
 
+// Couleurs HEX pour l'orthophonie (jaune/amber)
+// Utilisées dans les graphiques de progression
+export const ORTHOPHONIE_CHART_COLORS = {
+  primary: '#FBBF24',    // yellow-400 / amber-400
+  gradient: '#EAB308',   // yellow-500 / amber-500
+} as const;
+
 // Couleurs pour le heatmap d'activité (version plus vive -400)
 const HEATMAP_COLOR_MAP: Record<keyof typeof TAILWIND_COLOR_MAP, { bg: string; border: string }> = {
   orange: { bg: 'bg-orange-400', border: 'border-orange-500' },

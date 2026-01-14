@@ -41,15 +41,18 @@ function validateInvitationCode(provided: string | undefined): boolean {
     return false;
   }
 
+  // Nettoyer le code fourni (trim pour enlever les espaces)
+  const trimmedProvided = provided.trim();
+
   // Vérifier si le code fourni correspond à l'un des codes valides
   // Utiliser une comparaison timing-safe pour chaque code
   for (const validCode of validCodes) {
     // Comparaison timing-safe pour éviter les timing attacks
-    if (provided.length !== validCode.length) {
+    if (trimmedProvided.length !== validCode.length) {
       continue;
     }
 
-    const providedBuffer = Buffer.from(provided, 'utf8');
+    const providedBuffer = Buffer.from(trimmedProvided, 'utf8');
     const expectedBuffer = Buffer.from(validCode, 'utf8');
 
     try {

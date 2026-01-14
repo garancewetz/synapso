@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, PROGRESS_TAGS_WITH_EMOJI, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
+import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
 import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';

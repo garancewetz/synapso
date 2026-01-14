@@ -117,31 +117,45 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 }
 
 /**
- * Formate un progrès pour le partage WhatsApp (fallback texte)
- * Format avec texte d'introduction, emoji, contenu et date
+ * Formate un progrès pour le partage (Mail, Messages, WhatsApp, etc.)
+ * Format clair et motivant avec emoji, contenu et date
  */
-export function formatProgressForWhatsApp(progress: Progress): string {
+export function formatProgressForShare(progress: Progress): string {
   const emoji = progress.emoji || '🌟';
   const date = format(new Date(progress.createdAt), 'd MMMM yyyy', { locale: fr });
-  return `🌟 Synapso 🌟\n\n
+  return `J'ai fait un nouveau progrès ! 🎉
 
-J'ai fait un nouveau progrès:
 ${emoji} ${progress.content}
 ${date}`;
 }
 
 /**
- * Formate un progrès pour le partage WhatsApp (sans date)
- * Format : [Emoji] [Contenu]
- * Exemple : 🌟 J'ai réussi à marcher 10 minutes sans aide
+ * Formate un progrès pour le partage (version simple, sans date)
+ * Format : [Contenu]
+ * Exemple : J'ai réussi à marcher 10 minutes sans aide
  */
-export function formatProgressCleanForWhatsApp(progress: Progress): string {
+export function formatProgressCleanForShare(progress: Progress): string {
   return `${progress.content}`;
 }
 
 /**
+ * @deprecated Utiliser formatProgressForShare à la place
+ */
+export function formatProgressForWhatsApp(progress: Progress): string {
+  return formatProgressForShare(progress);
+}
+
+/**
+ * @deprecated Utiliser formatProgressCleanForShare à la place
+ */
+export function formatProgressCleanForWhatsApp(progress: Progress): string {
+  return formatProgressCleanForShare(progress);
+}
+
+/**
  * Ouvre WhatsApp avec un message pré-rempli
- * @param text - Le texte à partager (sera encodé en URI)
+ * @deprecated Cette fonction n'est plus utilisée pour éviter les problèmes de navigation dans les PWA
+ * Utiliser l'API Web Share à la place
  */
 export function shareOnWhatsApp(text: string): void {
   const encodedText = encodeURIComponent(text);
@@ -203,19 +217,13 @@ export async function shareProgressWithImage(progress: Progress): Promise<void> 
  */
 export async function shareProgressImage(element: HTMLElement, progress: Progress): Promise<void> {
   try {
-    // Essayer d'abord de créer une image composite avec le logo
-    await shareProgressWithImage(progress);
-    return;
-  } catch (error) {
-    console.warn('Impossible de créer l\'image composite, tentative de capture de la card', error);
-  }
-
-  try {
-    // Fallback : capturer l'élément en canvas
+    // Capturer la card avec html2canvas pour une meilleure qualité visuelle
     const canvas = await html2canvas(element, {
-      backgroundColor: null,
+      backgroundColor: '#ffffff',
       scale: 2, // Meilleure qualité sur les écrans haute résolution
       logging: false,
+      useCORS: true,
+      allowTaint: true,
     });
 
     // Convertir le canvas en blob avec Promise
@@ -230,40 +238,59 @@ export async function shareProgressImage(element: HTMLElement, progress: Progres
     });
 
     // Vérifier si l'API Web Share avec fichiers est disponible
+    // L'API Web Share permet de choisir entre Mail, Messages, WhatsApp, etc.
     if (navigator.share) {
       try {
-        const file = new File([blob], 'progres.png', { type: 'image/png' });
+        const file = new File([blob], 'progres-synapso.png', { type: 'image/png' });
+        
+        // Vérifier si on peut partager ce type de fichier
+        if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+          throw new Error('Partage de fichiers non supporté');
+        }
+        
         await navigator.share({
           files: [file],
-          title: 'Mon progrès',
+          title: 'Mon progrès sur Synapso',
         });
-        return; // Partage réussi
-      } catch {
-        // Si le partage échoue (par exemple sur desktop), utiliser le fallback
-        // Ne pas throw, continuer avec le fallback
+        return; // Partage réussi - l'utilisateur a choisi l'application (Mail, Messages, WhatsApp, etc.)
+      } catch (error) {
+        // Si l'utilisateur annule, ne rien faire
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
+        // Sinon, continuer avec le fallback
+        // Ne pas logger d'erreur si c'est juste que le partage de fichiers n'est pas supporté
       }
     }
 
-    // Fallback : créer un lien de téléchargement et ouvrir WhatsApp Web
+    // Fallback pour desktop : télécharger l'image
+    // Sur mobile, si l'API Web Share n'est pas disponible, on télécharge juste l'image
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `progres-${format(new Date(progress.createdAt), 'yyyy-MM-dd')}.png`;
+    link.download = `progres-synapso-${format(new Date(progress.createdAt), 'yyyy-MM-dd')}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
-    // Ouvrir WhatsApp Web après un court délai
-    const message = formatProgressForWhatsApp(progress);
-    setTimeout(() => {
-      shareOnWhatsApp(`${message}\n\n(Image téléchargée)`);
-    }, 500);
+    
+    // Ne pas ouvrir WhatsApp automatiquement pour éviter les problèmes de navigation dans les PWA
   } catch (error) {
     console.error('Erreur lors de la capture:', error);
-    // Fallback vers le partage texte formaté si la capture échoue
-    const message = formatProgressForWhatsApp(progress);
-    shareOnWhatsApp(message);
+    // Si la capture échoue, essayer de partager le texte via l'API Web Share
+    // L'API Web Share permet de choisir entre Mail, Messages, WhatsApp, etc.
+    if (navigator.share) {
+      try {
+        const message = formatProgressForShare(progress);
+        await navigator.share({
+          text: message,
+          title: 'Mon progrès sur Synapso',
+        });
+        return;
+      } catch {
+        // Si le partage échoue, ne rien faire
+      }
+    }
   }
 }
 

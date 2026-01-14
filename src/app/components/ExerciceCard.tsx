@@ -297,7 +297,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         isCompletedToday={exercice.completedToday}
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
-                        resetFrequency={effectiveUser?.resetFrequency}
                     />
                 </BaseCard.Footer>
             </BaseCard.Content>

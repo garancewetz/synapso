@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { format, startOfDay } from 'date-fns';
-import { useHistory } from '@/app/hooks/useHistory';
+import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { useProgress } from '@/app/hooks/useProgress';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import type { ExerciceCategory } from '@/app/types/exercice';
@@ -24,7 +24,7 @@ type UseDayDetailDataReturn = {
  * pour éviter les décalages dus aux fuseaux horaires
  */
 export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDataReturn {
-  const { history } = useHistory();
+  const { history } = useHistoryContext();
   const { progressList: allProgress } = useProgress();
 
   const exercises = useMemo(() => {

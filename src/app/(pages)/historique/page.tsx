@@ -26,7 +26,7 @@ import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { isOrthophonieProgress } from '@/app/utils/progress.utils';
-import { formatProgressForWhatsApp, shareOnWhatsApp } from '@/app/utils/share.utils';
+import { formatProgressForWhatsApp } from '@/app/utils/share.utils';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
@@ -96,10 +96,21 @@ export default function HistoriquePage() {
     refetchProgress();
   }, [refetchProgress]);
 
-  // Handler pour le partage WhatsApp
-  const handleShare = useCallback((progress: typeof progressList[0]) => {
-    const message = formatProgressForWhatsApp(progress);
-    shareOnWhatsApp(message);
+  // Handler pour le partage (optionnel, le partage est déjà géré par useShareProgress dans ProgressCard)
+  const handleShare = useCallback(async (progress: typeof progressList[0]) => {
+    // L'API Web Share permet de choisir entre Mail, Messages, WhatsApp, etc.
+    if (navigator.share) {
+      try {
+        const message = formatProgressForWhatsApp(progress);
+        await navigator.share({
+          text: message,
+          title: 'Mon progrès sur Synapso',
+        });
+      } catch {
+        // Si l'utilisateur annule ou si le partage échoue, ne rien faire
+      }
+    }
+    // Sinon, le partage est déjà géré par useShareProgress dans ProgressCard
   }, []);
 
   const {

@@ -2,13 +2,13 @@
 
 import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
-import { PROGRESS_TAGS, PROGRESS_DISPLAY_COLORS, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
+import { PROGRESS_TAGS } from '@/app/constants/progress.constants';
 import { CATEGORY_LABELS_SHORT, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
-import type { ExerciceCategory } from '@/app/types/exercice';
 import { Card } from '@/app/components/ui/Card';
-import clsx from 'clsx';
+import { Accordion } from '@/app/components/ui/Accordion';
+import { Badge } from '@/app/components/ui/Badge';
 
 type Props = {
   progressList: Progress[];
@@ -16,8 +16,7 @@ type Props = {
 
 /**
  * Composant affichant les statistiques de progression par tags et catégories
- * Affiche de manière encourageante le nombre de progrès par tag (Force, Souplesse, etc.)
- * et par catégorie (Haut du corps, Bas du corps, etc.)
+ * Design minimaliste : affichage simple et épuré pour éviter la surcharge cognitive
  */
 export function ProgressStatsByTags({ progressList }: Props) {
   // Calculer les stats par tags
@@ -102,86 +101,59 @@ export function ProgressStatsByTags({ progressList }: Props) {
     return categoryStats;
   }, [progressList]);
 
-  // Combiner tous les badges en une seule liste
-  const allBadges = useMemo(() => {
-    const badges: Array<{
-      key: string;
-      label: string;
-      emoji: string;
-      count: number;
-      className: string;
-    }> = [];
-
-    // Ajouter les tags
-    statsByTags.forEach(({ label, emoji, count }) => {
-      badges.push({
-        key: `tag-${label}`,
-        label,
-        emoji,
-        count,
-        className: clsx(
-          'flex items-center gap-1.5 px-3 py-2 rounded-lg border',
-          'bg-gray-50 border-gray-200 text-gray-700',
-          'font-semibold text-sm'
-        ),
-      });
-    });
-
-    // Ajouter les catégories
-    statsByCategories.forEach(({ key, label, emoji, count }) => {
-      const isOrtho = key === 'ORTHOPHONIE';
-      const colors = isOrtho
-        ? {
-            bg: ORTHOPHONIE_COLORS.inactive,
-            border: 'border-yellow-200',
-            text: 'text-yellow-700',
-          }
-        : PROGRESS_DISPLAY_COLORS[key as ExerciceCategory];
-
-      badges.push({
-        key: `category-${key}`,
-        label,
-        emoji,
-        count,
-        className: clsx(
-          'flex items-center gap-1.5 px-3 py-2 rounded-lg border',
-          'font-semibold text-sm',
-          colors.bg,
-          colors.border,
-          colors.text
-        ),
-      });
-    });
-
-    return badges;
-  }, [statsByTags, statsByCategories]);
-
-  // Ne rien afficher si pas de stats
-  if (allBadges.length === 0) {
+  // Ne rien afficher si pas de données
+  if (statsByTags.length === 0 && statsByCategories.length === 0) {
     return null;
   }
 
   return (
-    <Card variant="default" padding="md" className="mb-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <span>📊</span>
-        <span>Mes progressions</span>
-      </h3>
-
-      <div className="flex flex-wrap gap-2">
-        {allBadges.map(({ key, label, emoji, count, className }) => {
-          const isTag = key.startsWith('tag-');
-          const countColor = isTag ? 'text-gray-600' : 'opacity-80';
-
-          return (
-            <div key={key} className={className}>
-              <span className="text-base">{emoji}</span>
-              <span>{label}</span>
-              <span className={countColor}>+{count}</span>
+    <Card variant="default" padding="md">
+      <Accordion>
+        <Accordion.Item value="progress-detail">
+          <Accordion.Trigger className="py-2">
+            <span className="text-sm font-medium text-gray-700">Détail des gains</span>
+          </Accordion.Trigger>
+          <Accordion.Content className="pt-3">
+            <div className="space-y-4">
+              {/* Catégories */}
+              {statsByCategories.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Par zone</p>
+                  <div className="flex flex-wrap gap-2">
+                    {statsByCategories.map(({ label, emoji, count }) => (
+                      <Badge
+                        key={label}
+                        icon={emoji}
+                        className="text-xs"
+                      >
+                        {label} <span className="font-semibold ml-1">+{count}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Tags */}
+              {statsByTags.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Par type</p>
+                  <div className="flex flex-wrap gap-2">
+                    {statsByTags.map(({ label, emoji, count }) => (
+                      <Badge
+                        key={label}
+                        icon={emoji}
+                        className="text-xs"
+                      >
+                        {label} <span className="font-semibold ml-1">+{count}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+          </Accordion.Content>
+        </Accordion.Item>
+      </Accordion>
     </Card>
   );
 }

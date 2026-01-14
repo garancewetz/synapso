@@ -50,7 +50,7 @@ export function ProgressTimeline({ progressList, onEdit, onShare }: Props) {
             <div key={progress.id} className="relative z-20">
               {/* Numéro centré au-dessus de la card, aligné sur la ligne */}
               <div className="absolute left-1/2 -translate-x-1/2 -top-9 z-30 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 border-2 border-white shadow-md flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gray-800 border-2 border-white shadow-md flex items-center justify-center">
                   <span className="text-xs font-bold text-white">
                     {victoryNumber}
                   </span>

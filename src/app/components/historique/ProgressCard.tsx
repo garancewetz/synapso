@@ -116,12 +116,13 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
             )}>
               {onShare && (
                 <Button
-                  iconOnly
+                  variant="golden"
+                  size="sm"
+                  icon={<ShareIcon className="w-4 h-4" />}
                   onClick={handleShareClick}
-                  title="Partager sur WhatsApp"
-                  aria-label={`Partager ce progrès sur WhatsApp : ${progress.content}`}
+                  aria-label={`Partager ce progrès : ${progress.content}`}
                 >
-                  <ShareIcon className="w-4 h-4" />
+                  Partager
                 </Button>
               )}
               {onEdit && (

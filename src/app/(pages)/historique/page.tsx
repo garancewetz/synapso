@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
@@ -18,7 +18,27 @@ import {
   ProgressTimeline,
   ProgressStatsChart,
 } from '@/app/components/historique';
-import { ProgressBottomSheet, ConfettiRain } from '@/app/components';
+
+// ⚡ PERFORMANCE: Charger dynamiquement les composants lourds
+const ProgressBottomSheet = dynamic(
+  () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
+  { ssr: false }
+);
+
+const ConfettiRain = dynamic(
+  () => import('@/app/components/ConfettiRain').then(mod => ({ default: mod.ConfettiRain })),
+  { ssr: false }
+);
+
+const AnimatePresence = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
+  { ssr: false }
+);
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false }
+);
 import { ProgressButton } from '@/app/components/ui/ProgressButton';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { SegmentedControl, Loader, Card } from '@/app/components/ui';
@@ -223,7 +243,7 @@ export default function HistoriquePage() {
         ) : (
           <AnimatePresence mode="wait">
             {activeTab === 'statistiques' ? (
-              <motion.div
+              <MotionDiv
                 key="statistiques"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -236,7 +256,7 @@ export default function HistoriquePage() {
 
               {/* Heatmap d'activité du mois (30 jours) */}
               {!loadingHistory && (
-                <motion.div
+                <MotionDiv
                   key="heatmap"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -251,7 +271,7 @@ export default function HistoriquePage() {
                     onDayClick={handleDayClick}
                     showFullLink={false}
                   />
-                </motion.div>
+                </MotionDiv>
               )}
 
               {/* Graphique montagne (ActivityLineChart) */}
@@ -265,7 +285,7 @@ export default function HistoriquePage() {
                 />
 
                 {!loadingHistory && (
-                  <motion.div
+                  <MotionDiv
                     key="chart"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -279,7 +299,7 @@ export default function HistoriquePage() {
                       showFullLink={false}
                       progressCountByDate={progressCountByDate}
                     />
-                  </motion.div>
+                  </MotionDiv>
                 )}
               </Card>
 
@@ -307,9 +327,9 @@ export default function HistoriquePage() {
                 }
               />
                 </section>
-              </motion.div>
+              </MotionDiv>
             ) : (
-              <motion.div
+              <MotionDiv
                 key="progres"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -377,7 +397,7 @@ export default function HistoriquePage() {
               {/* Timeline des progrès */}
               <AnimatePresence mode="wait">
                 {loadingProgress ? (
-                  <motion.div
+                  <MotionDiv
                     key="loading"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -388,9 +408,9 @@ export default function HistoriquePage() {
                     <p className="text-gray-600 font-medium">
                       Chargement de tes progrès... 🌟
                     </p>
-                  </motion.div>
+                  </MotionDiv>
                 ) : (
-                  <motion.div
+                  <MotionDiv
                     key="content"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -403,11 +423,11 @@ export default function HistoriquePage() {
                       onEdit={progressModal.openForEdit}
                       onShare={handleShare}
                     />
-                  </motion.div>
+                  </MotionDiv>
                 )}
                 </AnimatePresence>
                 </section>
-              </motion.div>
+              </MotionDiv>
             )}
           </AnimatePresence>
         )}

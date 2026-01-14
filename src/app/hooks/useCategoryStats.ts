@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { HistoryEntry } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 
@@ -52,11 +53,32 @@ export function useCategoryStats({
       // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since`
       // Cela évite de charger tout l'historique de l'utilisateur
       const sinceParam = startOfPeriod.toISOString();
-      const response = await fetch(
-        `/api/history?since=${encodeURIComponent(sinceParam)}`,
-        { credentials: 'include' }
-      );
+      const url = `/api/history?since=${encodeURIComponent(sinceParam)}`;
+      
+      // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
+      const cacheKey = generateCacheKey(url, { userId, resetFrequency, since: sinceParam });
+      const cachedData = apiCache.get<HistoryEntry[]>(cacheKey);
+
+      if (cachedData) {
+        const newStats: Record<ExerciceCategory, number> = { ...initialStats };
+        cachedData.forEach((entry: HistoryEntry) => {
+          const category = entry.exercice.category;
+          if (category && category in newStats) {
+            newStats[category as ExerciceCategory]++;
+          }
+        });
+        setStats(newStats);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(url, { credentials: 'include' });
       const data = await response.json();
+      
+      // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
+      if (Array.isArray(data)) {
+        apiCache.set(cacheKey, data, 30000);
+      }
       
       if (Array.isArray(data)) {
         const newStats: Record<ExerciceCategory, number> = { ...initialStats };

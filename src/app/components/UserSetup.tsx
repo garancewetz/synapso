@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { Button } from '@/app/components/ui/Button';
 import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
@@ -12,13 +12,15 @@ import clsx from 'clsx';
 type Props = {
   userId: number;
   onComplete: () => void;
-  onSkip: () => void;
 };
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
 
-export function UserSetup({ userId, onComplete, onSkip }: Props) {
+/**
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
+ */
+export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) {
   const { refreshUser } = useUser();
   const [resetFrequency, setResetFrequency] = useState<ResetFrequency>('DAILY');
   const [dominantHand, setDominantHand] = useState<DominantHand>('RIGHT');
@@ -26,8 +28,7 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveAndStart = useCallback(async () => {
     setError('');
     setLoading(true);
 
@@ -53,17 +54,17 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
       // Recharger l'utilisateur pour avoir les nouvelles valeurs
       await refreshUser();
       
+      // Rediriger vers l'application
       onComplete();
     } catch (err) {
       console.error('Erreur:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de la configuration');
-    } finally {
       setLoading(false);
     }
-  };
+  }, [userId, resetFrequency, dominantHand, isAphasic, refreshUser, onComplete]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-amber-50 via-white to-orange-50 p-4">
       <div className="w-full max-w-2xl">
         {/* Logo et titre */}
         <div className="text-center mb-8">
@@ -75,7 +76,7 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
         </div>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-700 text-sm">{error}</p>
@@ -186,35 +187,25 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
             />
           </Card>
 
-          {/* Boutons */}
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-3 rounded-xl"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader size="small" />
-                  <span>Configuration...</span>
-                </span>
-              ) : (
-                'Continuer'
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onSkip}
-              disabled={loading}
-              className="px-6"
-            >
-              Passer
-            </Button>
-          </div>
-        </form>
+          {/* Bouton */}
+          <Button
+            type="button"
+            onClick={handleSaveAndStart}
+            disabled={loading}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-3 rounded-xl"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader size="small" />
+                <span>Sauvegarde...</span>
+              </span>
+            ) : (
+              'Sauvegarder et commencer'
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
-}
+});
 

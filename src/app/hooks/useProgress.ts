@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
+import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
 
 type UseProgressOptions = {
   limit?: number;
@@ -38,12 +39,23 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     const url = limit
       ? `/api/progress?limit=${limit}`
       : '/api/progress';
+
+    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
+    const cacheKey = generateCacheKey(url, { userId: effectiveUser.id, limit });
+    const cachedData = apiCache.get<Progress[]>(cacheKey);
+
+    if (cachedData) {
+      setProgressList(cachedData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     fetch(url, { credentials: 'include' })
       .then(res => {
@@ -64,6 +76,8 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
         if (data === null) return; // Cas 404 géré ci-dessus
         
         if (Array.isArray(data)) {
+          // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
+          apiCache.set(cacheKey, data, 30000);
           setProgressList(data);
         } else {
           console.error('API error:', data);

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { 
@@ -13,7 +14,11 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useUser } from '@/app/contexts/UserContext';
 
-export function BottomNavBar() {
+/**
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
+ * quand le pathname ou l'utilisateur changent mais que le composant n'a pas besoin de se mettre à jour
+ */
+export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
   
@@ -113,4 +118,4 @@ export function BottomNavBar() {
       </div>
     </nav>
   );
-}
+});

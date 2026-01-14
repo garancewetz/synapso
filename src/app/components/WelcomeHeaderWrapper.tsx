@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
 import { format, startOfDay } from 'date-fns';
@@ -12,7 +13,10 @@ import { useProgress } from '@/app/hooks/useProgress';
 import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 
-export function WelcomeHeaderWrapper() {
+/**
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
+ */
+export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
   const { openDayDetail } = useDayDetailModal();
@@ -69,4 +73,4 @@ export function WelcomeHeaderWrapper() {
       />
     </div>
   );
-}
+});

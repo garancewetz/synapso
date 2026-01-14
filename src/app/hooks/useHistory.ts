@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { subDays } from 'date-fns';
 import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
+import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
 
 type UseHistoryOptions = {
   /**
@@ -45,14 +46,25 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since` pour réduire le transfert
     // Par défaut, charger seulement les 40 derniers jours
     const url = days !== null 
       ? `/api/history?since=${encodeURIComponent(subDays(new Date(), days).toISOString())}`
       : '/api/history';
+
+    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
+    const cacheKey = generateCacheKey(url, { userId: effectiveUser.id, days });
+    const cachedData = apiCache.get<HistoryEntry[]>(cacheKey);
+
+    if (cachedData) {
+      setHistory(cachedData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     fetch(url, { credentials: 'include' })
       .then(res => {
@@ -63,6 +75,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       })
       .then(data => {
         if (Array.isArray(data)) {
+          // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
+          apiCache.set(cacheKey, data, 30000);
           setHistory(data);
         } else {
           console.error('API error:', data);

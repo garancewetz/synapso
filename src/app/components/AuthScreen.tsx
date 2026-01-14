@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import clsx from 'clsx';
 import { Button } from '@/app/components/ui/Button';
 import { Input } from '@/app/components/ui/Input';
@@ -15,7 +15,10 @@ type Props = {
 
 type AuthMode = 'login' | 'register';
 
-export function AuthScreen({ onSuccess }: Props) {
+/**
+ * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
+ */
+export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +31,7 @@ export function AuthScreen({ onSuccess }: Props) {
   const [newUserId, setNewUserId] = useState<number | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -114,15 +117,15 @@ export function AuthScreen({ onSuccess }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mode, name, password, confirmPassword, invitationCode, onSuccess]);
 
-  const switchMode = () => {
-    setMode(mode === 'login' ? 'register' : 'login');
+  const switchMode = useCallback(() => {
+    setMode((prevMode) => prevMode === 'login' ? 'register' : 'login');
     setError('');
     setPassword('');
     setConfirmPassword('');
     setInvitationCode('');
-  };
+  }, []);
 
   // Si on est en train d'authentifier (login), afficher le loader
   if (isAuthenticating) {
@@ -135,17 +138,6 @@ export function AuthScreen({ onSuccess }: Props) {
       <UserSetup
         userId={newUserId}
         onComplete={async () => {
-          setShowUserSetup(false);
-          setIsAuthenticating(true);
-          try {
-            await onSuccess();
-          } catch (err) {
-            console.error('Erreur lors de l\'authentification:', err);
-            setIsAuthenticating(false);
-            setError('Erreur lors de la connexion');
-          }
-        }}
-        onSkip={async () => {
           setShowUserSetup(false);
           setIsAuthenticating(true);
           try {
@@ -351,4 +343,4 @@ export function AuthScreen({ onSuccess }: Props) {
       </div>
     </div>
   );
-}
+});

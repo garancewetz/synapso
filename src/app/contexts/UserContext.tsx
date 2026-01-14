@@ -63,8 +63,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
 
+  // ⚡ PERFORMANCE: Mémoriser effectiveUser pour éviter les recalculs inutiles
   // L'utilisateur effectif est l'impersonné si présent, sinon le connecté
-  const effectiveUser = impersonatedUser || currentUser;
+  const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
 
   // Charger les infos de l'utilisateur connecté
   const loadUser = useCallback(async () => {

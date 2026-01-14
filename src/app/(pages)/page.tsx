@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, type ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ProgressFAB, ProgressBottomSheet, CategoryCardWithProgress, MenuLink, SiteMapGroup } from '@/app/components';
+import { useState, useMemo, useCallback, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+import { CategoryCardWithProgress, MenuLink, SiteMapGroup } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
 import { MapIcon, ChatIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -13,6 +13,27 @@ import { useExercices } from '@/app/hooks/useExercices';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { useProgress } from '@/app/hooks/useProgress';
+
+// ⚡ PERFORMANCE: Charger dynamiquement les composants lourds
+const AnimatePresence = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
+  { ssr: false }
+);
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false }
+);
+
+const ProgressFAB = dynamic(
+  () => import('@/app/components/ProgressFAB').then(mod => ({ default: mod.ProgressFAB })),
+  { ssr: false }
+);
+
+const ProgressBottomSheet = dynamic(
+  () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
+  { ssr: false }
+);
 
 type TabValue = 'corps' | 'aphasie' | 'parcours';
 
@@ -33,6 +54,12 @@ export default function Home() {
   // Charger les progrès
   const { refetch: refetchProgress } = useProgress();
 
+  // ⚡ PERFORMANCE: Mémoriser le callback de succès pour éviter les re-renders
+  const handleProgressSuccess = useCallback(() => {
+    refetchProgress();
+    // Rafraîchir aussi la liste des exercices au cas où un progrès orthophonie a été créé
+    refetchExercices();
+  }, [refetchProgress, refetchExercices]);
 
   // Options des onglets
   const tabOptions = useMemo(() => {
@@ -74,7 +101,7 @@ export default function Home() {
         <div className="px-3 md:px-4 pb-24 md:pb-8">
           <AnimatePresence mode="wait">
             {!effectiveUser && userLoading ? (
-              <motion.div
+              <MotionDiv
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -82,9 +109,9 @@ export default function Home() {
                 className="flex items-center justify-center py-12"
               >
                 <div className="text-gray-500">Chargement...</div>
-              </motion.div>
+              </MotionDiv>
             ) : !effectiveUser ? (
-              <motion.div
+              <MotionDiv
                 key="no-user"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -92,9 +119,9 @@ export default function Home() {
                 className="flex items-center justify-center py-12"
               >
                 <div className="text-gray-500">Chargement...</div>
-              </motion.div>
+              </MotionDiv>
             ) : (
-              <motion.div
+              <MotionDiv
                 key="content"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -125,7 +152,7 @@ export default function Home() {
                         const categoryExercices = exercices.filter(e => e.category === category);
 
                         return (
-                          <motion.div
+                          <MotionDiv
                             key={category}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -136,7 +163,7 @@ export default function Home() {
                               total={categoryExercices.length}
                               completedCount={loadingStats ? 0 : categoryStats[category]}
                             />
-                          </motion.div>
+                          </MotionDiv>
                         );
                       })}
                     </div>
@@ -203,7 +230,7 @@ export default function Home() {
                 </div>
               )}
 
-              </motion.div>
+              </MotionDiv>
             )}
           </AnimatePresence>
         </div>
@@ -217,11 +244,7 @@ export default function Home() {
         <ProgressBottomSheet
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
-          onSuccess={() => {
-            refetchProgress();
-            // Rafraîchir aussi la liste des exercices au cas où un progrès orthophonie a été créé
-            refetchExercices();
-          }}
+          onSuccess={handleProgressSuccess}
           userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />

@@ -30,7 +30,6 @@ export function FormActions({
           type="submit"
           variant="action"
           disabled={loading}
-          className="flex-1"
         >
           {loading ? 'Enregistrement...' : onSubmitLabel}
         </Button>
@@ -40,7 +39,6 @@ export function FormActions({
             variant="secondary"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1"
           >
             {onCancelLabel}
           </Button>

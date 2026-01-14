@@ -17,14 +17,47 @@ interface UseSpeechRecognitionReturn {
 }
 
 /**
+ * Détecte la locale du navigateur pour la reconnaissance vocale
+ * Retourne 'fr-FR' par défaut si non détectée
+ */
+function getBrowserLocale(): string {
+  if (typeof window === 'undefined') {
+    return 'fr-FR';
+  }
+  
+  // Utiliser navigator.languages (première préférence) ou navigator.language
+  const browserLang = navigator.languages?.[0] || navigator.language || 'fr-FR';
+  
+  // Si la locale est déjà au format complet (ex: 'fr-FR'), la retourner telle quelle
+  if (browserLang.includes('-')) {
+    return browserLang;
+  }
+  
+  // Sinon, essayer de trouver une correspondance (ex: 'fr' -> 'fr-FR')
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  
+  // Pour le français, retourner 'fr-FR'
+  if (langCode === 'fr') {
+    return 'fr-FR';
+  }
+  
+  // Pour d'autres langues, retourner la locale du navigateur avec une variante par défaut
+  // (ex: 'en' -> 'en-US', 'es' -> 'es-ES')
+  return `${langCode}-${langCode.toUpperCase()}`;
+}
+
+/**
  * Hook pour la reconnaissance vocale (dictée)
  * Affiche le texte en temps réel pendant la parole
+ * Détecte automatiquement la locale de l'appareil pour la reconnaissance vocale
  */
 export function useSpeechRecognition({
   onResult,
   onError,
-  lang = 'fr-FR',
+  lang,
 }: UseSpeechRecognitionOptions = {}): UseSpeechRecognitionReturn {
+  // Utiliser la langue fournie, sinon détecter automatiquement la locale du navigateur
+  const detectedLang = lang || getBrowserLocale();
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -49,7 +82,7 @@ export function useSpeechRecognition({
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
-    recognition.lang = lang;
+    recognition.lang = detectedLang;
     recognition.continuous = true;      // Continuer d'écouter
     recognition.interimResults = true;  // Résultats en temps réel
 
@@ -101,7 +134,7 @@ export function useSpeechRecognition({
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [lang, onResult, onError]);
+  }, [detectedLang, onResult, onError]);
 
   const toggleListening = useCallback(() => {
     if (isListening) {

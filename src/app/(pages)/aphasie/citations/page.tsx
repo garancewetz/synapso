@@ -2,7 +2,7 @@
 
 import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
 import { AphasieItemCard } from '@/app/components/AphasieItemCard';
-import { BackButton } from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/ui/BackButton';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';

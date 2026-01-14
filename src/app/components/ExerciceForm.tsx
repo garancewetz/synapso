@@ -6,6 +6,7 @@ import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { FORM_COLORS } from '@/app/constants/ui.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
 import clsx from 'clsx';
 
@@ -347,13 +348,12 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
                 key={equipment}
                 type="button"
                 onClick={() => toggleEquipment(equipment)}
-                className={`
-                  px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer
-                  ${isSelected 
-                    ? 'bg-purple-500 text-white' 
-                    : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
-                  }
-                `}
+                className={clsx(
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer',
+                  isSelected 
+                    ? FORM_COLORS.equipment.selected
+                    : FORM_COLORS.equipment.unselected
+                )}
               >
                 {equipment}
                 {isSelected && ' ✓'}
@@ -368,12 +368,15 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
             value={newEquipment}
             onChange={(e) => setNewEquipment(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
-            className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
           <button
             type="button"
             onClick={addNewEquipment}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium sm:w-auto w-full cursor-pointer"
+            className={clsx(
+              'px-4 py-2 rounded-lg transition-colors font-medium sm:w-auto w-full cursor-pointer',
+              FORM_COLORS.equipment.addButton
+            )}
           >
             + Ajouter
           </button>

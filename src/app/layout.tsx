@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { NavBar } from "@/app/components/NavBar";
@@ -12,6 +13,7 @@ import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
+import { WebVitals } from "@/app/components/WebVitals";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -52,8 +54,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5, // ♿ ACCESSIBILITÉ: Permettre le zoom jusqu'à 500% (WCAG 2.1 - niveau AA)
+  userScalable: true, // ♿ ACCESSIBILITÉ: Permettre le zoom pour les utilisateurs malvoyants
   themeColor: "#ffffff",
   viewportFit: 'cover',
 };
@@ -61,11 +63,12 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
+        <WebVitals />
         <PWARegister />
         <UserProvider>
           <CategoryProvider>

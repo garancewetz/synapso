@@ -3,17 +3,16 @@ export { CalendarIcon, HeartIcon, PinIcon, SparklesIcon } from './icons';
 
 // UI Components
 export { Accordion } from './Accordion';
+export { ActionButton } from './ActionButton';
 export { Badge } from './Badge';
 export { Button } from './Button';
+export { LinkButton } from './LinkButton';
 export { CompleteButton } from './CompleteButton';
-export { CompletedBadge } from './CompletedBadge';
-export { MasteredBadge } from './MasteredBadge';
-export { Dropdown } from './Dropdown';
 export { Input } from './Input';
 export { Loader } from './Loader';
 export { Logo } from './Logo';
+export { PeriodNavigation } from './PeriodNavigation';
 export { SegmentedControl } from './SegmentedControl';
-export { SettingsSection } from './SettingsSection';
 export { Textarea } from './Textarea';
 export { TextareaWithSpeech } from './TextareaWithSpeech';
 export { InputWithSpeech } from './InputWithSpeech';
@@ -24,3 +23,6 @@ export { AddButton } from './AddButton';
 export { Card } from './Card';
 export { BaseCard } from './BaseCard';
 export { WeeklyCompletionIndicator } from './WeeklyCompletionIndicator';
+export { ProgressButton } from './ProgressButton';
+export { BackButton } from './BackButton';
+export { SpeechButton } from './SpeechButton';

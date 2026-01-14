@@ -2,7 +2,8 @@
 
 import { useCallback, memo } from 'react';
 import { TouchLink } from '@/app/components/TouchLink';
-import { BaseCard, CompleteButton, Button, MasteredBadge } from '@/app/components/ui';
+import { BaseCard, CompleteButton, Button, Badge } from '@/app/components/ui';
+import { SparklesIcon } from '@/app/components/ui/icons';
 import { EditIcon } from '@/app/components/ui/icons';
 import { APHASIE_COLORS } from '@/app/constants/card.constants';
 import type { AphasieChallenge } from '@/app/types';
@@ -41,7 +42,14 @@ const AphasieChallengeCard = memo(function AphasieChallengeCard({
               </div>
             </div>
             {/* Badge maîtrisé */}
-            {isMastered && <MasteredBadge />}
+            {isMastered && (
+              <Badge 
+                variant="mastered"
+                icon={<SparklesIcon className="w-3.5 h-3.5" />}
+              >
+                Maîtrisé
+              </Badge>
+            )}
           </div>
         </div>
         <BaseCard.Footer>

@@ -32,7 +32,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { content, emoji } = body;
+    const { content, emoji, tags } = body;
 
     // Vérifier que le progrès existe ET appartient à l'utilisateur
     const existingProgress = await prisma.progress.findFirst({
@@ -61,6 +61,7 @@ export async function PATCH(
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
+        tags: Array.isArray(tags) ? tags : existingProgress.tags || [],
       },
     });
 

@@ -5,7 +5,7 @@ import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
 import { AphasieItemCard } from '@/app/components/AphasieItemCard';
 import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
-import { BackButton } from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/ui/BackButton';
 import { TouchLink } from '@/app/components/TouchLink';
 import { MapIcon } from '@/app/components/ui/icons';
 import { ProgressFAB, ProgressBottomSheet } from '@/app/components';
@@ -17,6 +17,7 @@ import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useOrthophonieProgress } from '@/app/hooks/useOrthophonieProgress';
 import { ProgressTimeline } from '@/app/components/historique';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { Card } from '@/app/components/ui/Card';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +55,7 @@ export default function AphasiePage() {
       <div className="px-3 sm:p-6">
         <div className="space-y-6">
           {/* Section Exercices */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <AphasieSectionHeader
               title="Exercices"
               emoji="🎯"
@@ -65,10 +66,10 @@ export default function AphasiePage() {
               limit={3} 
               onMasteredChange={refetchProgress}
             />
-          </div>
+          </Card>
 
           {/* Section Citations */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <AphasieSectionHeader
               title="Citations"
               emoji={CATEGORY_EMOJIS.ORTHOPHONIE}
@@ -95,10 +96,10 @@ export default function AphasiePage() {
                 )}
               </>
             )}
-          </div>
+          </Card>
 
           {/* Section Progrès */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <AphasieSectionHeader
               title="Mes progrès"
               emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
@@ -117,7 +118,7 @@ export default function AphasiePage() {
                 emoji={PROGRESS_EMOJIS.STAR_BRIGHT}
               />
             )}
-          </div>
+          </Card>
 
           {/* Bouton "Mon parcours" */}
           <div className="flex justify-center mt-8">

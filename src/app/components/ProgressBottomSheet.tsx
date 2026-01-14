@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, PROGRESS_TAGS_WITH_EMOJI, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
 import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
@@ -27,10 +27,12 @@ type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
 export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
   const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ProgressCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const deleteConfirmation = useDeleteConfirmation();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const isEditMode = !!progressToEdit;
 
@@ -47,10 +49,20 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     ? (content ? `${content} ${interimTranscript}` : interimTranscript)
     : content;
 
+  // Auto-resize du textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [displayContent]);
+
   // Pré-remplir les champs en mode édition ou avec defaultCategory
   useEffect(() => {
     if (isOpen && progressToEdit) {
       setContent(progressToEdit.content);
+      setSelectedTags(progressToEdit.tags || []);
       // Utiliser les utilitaires factorisés pour déterminer la catégorie
       if (isOrthophonieProgress(progressToEdit.emoji)) {
         setSelectedCategory('ORTHOPHONIE');
@@ -61,8 +73,10 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     } else if (isOpen && defaultCategory) {
       // Pré-sélectionner la catégorie par défaut si fournie
       setSelectedCategory(defaultCategory);
+      setSelectedTags([]);
     } else if (!isOpen) {
       setContent('');
+      setSelectedTags([]);
       setSelectedCategory(null);
     }
   }, [isOpen, progressToEdit, defaultCategory]);
@@ -71,7 +85,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     e.preventDefault();
     
     if (!content.trim()) {
-      setError('Clique sur un tag ou écris quelque chose !');
+      setError('Le texte est obligatoire !');
       return;
     }
 
@@ -95,6 +109,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
         body: JSON.stringify({
           content: content.trim(),
           emoji: categoryEmoji,
+          tags: selectedTags,
           ...(isEditMode ? {} : { userId }),
         }),
       });
@@ -136,6 +151,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
 
   const resetForm = () => {
     setContent('');
+    setSelectedTags([]);
     setSelectedCategory(null);
     setError('');
   };
@@ -145,19 +161,14 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     onClose();
   };
 
-  const handleTagClick = (label: string, emoji: string) => {
-    // Pour Force, Souplesse, Équilibre : format "emoji+label+emoji"
-    // Pour Confort : juste le label sans emoji
-    const shouldUseEmojiFormat = PROGRESS_TAGS_WITH_EMOJI.includes(label as typeof PROGRESS_TAGS_WITH_EMOJI[number]);
-    
-    const textToAdd = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
-    const isActive = content.includes(textToAdd);
-    
-    if (isActive) {
-      setContent(prev => prev.replace(textToAdd, '').replace(/\s+/g, ' ').trim());
-    } else {
-      setContent(prev => prev ? `${prev} ${textToAdd}` : textToAdd);
-    }
+  const handleTagClick = (label: string) => {
+    setSelectedTags(prev => {
+      if (prev.includes(label)) {
+        return prev.filter(tag => tag !== label);
+      } else {
+        return [...prev, label];
+      }
+    });
   };
 
   return (
@@ -170,48 +181,25 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
         </div>
 
         <form onSubmit={handleSubmit} className="px-5 pb-8">
-        {/* Tags de progrès */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {PROGRESS_TAGS.map(({ label, emoji }) => {
-            // Pour Force, Souplesse, Équilibre : vérifier avec format emoji+label+emoji
-            // Pour Confort : vérifier juste le label
-            const shouldUseEmojiFormat = PROGRESS_TAGS_WITH_EMOJI.includes(label as typeof PROGRESS_TAGS_WITH_EMOJI[number]);
-            const textToCheck = shouldUseEmojiFormat ? `${emoji}${label}${emoji}` : label;
-            const isActive = content.includes(textToCheck);
-            
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => handleTagClick(label, emoji)}
-                className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl cursor-pointer
-                           transition-all duration-150 active:scale-95
-                           ${isActive 
-                             ? 'bg-emerald-500 text-white shadow-lg scale-[1.02]' 
-                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                           }`}
-              >
-                <span className="text-2xl">{emoji}</span>
-                <span className="text-xs font-semibold">{label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Zone de texte avec micro */}
+        {/* Zone de texte avec micro - OBLIGATOIRE */}
         <div className="mb-4">
+          <label htmlFor="progress-content" className="block text-sm font-medium text-gray-700 mb-2">
+            Ton progrès *
+          </label>
           <div className="relative">
             <textarea
               id="progress-content"
+              ref={textareaRef}
               value={displayContent}
               onChange={(e) => setContent(e.target.value)}
-              className={`w-full px-4 py-3 pr-12 border-2 rounded-2xl 
-                         focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 
-                         resize-none text-gray-800 placeholder:text-gray-400 transition-all
-                         ${isListening ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
-              placeholder="Ajoute des détails (optionnel)..."
-              rows={2}
+              className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-2 focus:ring-amber-400 
+                         overflow-hidden resize-none text-gray-800 placeholder:text-gray-400 transition-all
+                         ${isListening ? 'border-red-400 bg-red-50' : ''}`}
+              placeholder="Décris ton progrès..."
+              rows={3}
               maxLength={500}
+              required
             />
             {speechSupported && (
               <button
@@ -233,6 +221,33 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               🔴 Écoute en cours...{interimTranscript && ` "${interimTranscript}"`}
             </p>
           )}
+        </div>
+
+        {/* Tags de progrès - moins proéminents */}
+        <div className="mb-4">
+          <p className="text-xs text-gray-500 text-center mb-2">Tags (optionnel)</p>
+          <div className="flex justify-center gap-2 flex-wrap">
+            {PROGRESS_TAGS.map(({ label, emoji }) => {
+              const isActive = selectedTags.includes(label);
+              
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleTagClick(label)}
+                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-lg cursor-pointer
+                             transition-all duration-150 active:scale-95 text-xs
+                             ${isActive 
+                               ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' 
+                               : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                             }`}
+                >
+                  <span className="text-sm">{emoji}</span>
+                  <span className="font-medium">{label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Catégories */}

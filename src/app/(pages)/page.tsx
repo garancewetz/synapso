@@ -172,30 +172,12 @@ export default function Home() {
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
                   <MenuLink
-                    title="Ajouter exercice"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    description="Créer un exercice"
-                    href="/aphasie/exercices/add"
-                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    isSecondary={true}
-                  />
-                  <MenuLink
                     title="Mes citations"
                     icon={<BookIcon className="w-5 h-5" />}
                     description="Voir toutes"
                     href="/aphasie/citations"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                  />
-                  <MenuLink
-                    title="Ajouter citation"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    description="Créer une nouvelle"
-                    href="/aphasie/add"
-                    iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-                    iconTextColor={SITEMAP_ICON_STYLES.default.text}
-                    isSecondary={true}
                   />
                 </SiteMapGroup>
               )}

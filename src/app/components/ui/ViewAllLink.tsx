@@ -1,6 +1,5 @@
-import { TouchLink } from '@/app/components/TouchLink';
+import { LinkButton } from './LinkButton';
 import { ChevronIcon } from './icons';
-import { Button } from './Button';
 
 type Props = {
   href: string;
@@ -9,22 +8,25 @@ type Props = {
 };
 
 /**
- * Bouton de navigation réutilisable pour "Voir tout"
+ * Lien de navigation réutilisable pour "Voir tout"
  * Style cohérent avec les autres boutons de navigation
+ * 
+ * Utilise LinkButton pour un lien stylé comme un bouton (sémantiquement correct, mobile-first)
  */
 export function ViewAllLink({ href, label, emoji = '📜' }: Props) {
   return (
-    <TouchLink href={href} className="mt-4 block">
-      <Button
+    <div className="mt-4">
+      <LinkButton
+        href={href}
         variant="secondary"
         size="md"
         rounded="lg"
-        className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700"
+        className="w-full flex items-center justify-center gap-2"
       >
         <span>{emoji} {label}</span>
         <ChevronIcon direction="right" className="w-4 h-4" />
-      </Button>
-    </TouchLink>
+      </LinkButton>
+    </div>
   );
 }
 

@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { subDays } from 'date-fns';
 import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
+
+type UseHistoryOptions = {
+  /**
+   * Nombre de jours à charger depuis aujourd'hui (par défaut: 40 jours)
+   * Passer null pour charger tout l'historique
+   */
+  days?: number | null;
+};
 
 type UseHistoryReturn = {
   history: HistoryEntry[];
@@ -12,8 +21,12 @@ type UseHistoryReturn = {
 /**
  * Hook pour récupérer et gérer l'historique des exercices
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
+ * 
+ * ⚡ PERFORMANCE: Par défaut, charge seulement les 40 derniers jours pour réduire
+ * le transfert de données. Passer days={null} pour charger tout l'historique.
  */
-export function useHistory(): UseHistoryReturn {
+export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
+  const { days = 40 } = options;
   const { effectiveUser, loading: userLoading } = useUser();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +48,13 @@ export function useHistory(): UseHistoryReturn {
     setLoading(true);
     setError(null);
 
-    fetch('/api/history', { credentials: 'include' })
+    // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since` pour réduire le transfert
+    // Par défaut, charger seulement les 40 derniers jours
+    const url = days !== null 
+      ? `/api/history?since=${encodeURIComponent(subDays(new Date(), days).toISOString())}`
+      : '/api/history';
+
+    fetch(url, { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
           throw new Error(`Erreur HTTP: ${res.status}`);
@@ -60,7 +79,7 @@ export function useHistory(): UseHistoryReturn {
       .finally(() => {
         setLoading(false);
       });
-  }, [effectiveUser, userLoading]);
+  }, [effectiveUser, userLoading, days]);
 
   useEffect(() => {
     fetchHistory();

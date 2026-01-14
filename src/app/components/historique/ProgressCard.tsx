@@ -7,7 +7,8 @@ import { BaseCard, Button } from '@/app/components/ui';
 import { ShareIcon } from '@/app/components/ui/icons';
 import { useShareProgress } from '@/app/hooks/useShareProgress';
 import { formatVictoryDate } from '@/app/utils/date.utils';
-import { extractProgressTags } from '@/app/utils/progress.utils';
+import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
+import { CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { GOLDEN_TEXT_STYLES } from '@/app/constants/card.constants';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
@@ -29,11 +30,14 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
   const cardRef = useRef<HTMLDivElement>(null);
   const { handleShare } = useShareProgress(progress, cardRef);
   
-  // Mémoriser l'extraction des tags (pour nettoyer le contenu)
-  const { cleanContent } = useMemo(
-    () => extractProgressTags(progress.content),
-    [progress.content]
-  );
+  // Déterminer la catégorie à partir de l'emoji
+  const categoryLabel = useMemo(() => {
+    if (isOrthophonieProgress(progress.emoji)) {
+      return 'Orthophonie';
+    }
+    const category = getExerciceCategoryFromEmoji(progress.emoji);
+    return category ? CATEGORY_LABELS_SHORT[category] : null;
+  }, [progress.emoji]);
   
   // Mémoriser le handler d'édition
   const handleEdit = useCallback((e: React.MouseEvent) => {
@@ -82,12 +86,20 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
               compact ? 'text-base sm:text-lg' : 'text-lg sm:text-xl',
               'font-bold leading-tight tracking-tight'
             )}>
-              {cleanContent}
+              {progress.content}
             </h3>
           </div>
           
-          {/* Date - discrète et élégante */}
-          <div className="text-left">
+          {/* Catégorie et Date */}
+          <div className="text-left flex items-center gap-2">
+            {categoryLabel && (
+              <span className="text-xs text-amber-600 font-medium">
+                {categoryLabel}
+              </span>
+            )}
+            {categoryLabel && (
+              <span className="text-xs text-amber-700/60">•</span>
+            )}
             <p className="text-xs text-amber-700/80 font-medium tracking-wide">
               {formatVictoryDate(progress.createdAt)}
             </p>

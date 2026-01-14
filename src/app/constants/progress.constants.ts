@@ -1,5 +1,14 @@
-import { CATEGORY_ICONS } from './exercice.constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER } from './exercice.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
+
+// Mapping couleur de base par catégorie (dérivé de CATEGORY_CONFIG dans exercice.constants.ts)
+// Source unique de vérité : exercice.constants.ts
+const CATEGORY_COLOR_MAP: Record<ExerciceCategory, string> = {
+  UPPER_BODY: 'orange',
+  CORE: 'teal',
+  LOWER_BODY: 'blue',
+  STRETCHING: 'purple',
+};
 
 // ============================================================================
 // TAGS DE PROGRÈS - Raccourcis pour noter rapidement un progrès
@@ -45,42 +54,37 @@ export const PROGRESS_CATEGORY_COLORS: Record<ExerciceCategory, {
 };
 
 // Couleurs pour l'affichage des progrès (cartes, modale de détail)
+// Dérivées de CATEGORY_COLORS avec des variantes spécifiques pour les progrès :
+// - border-300 au lieu de border-200 (bordure plus visible pour les progrès)
+// - text-800 au lieu de text-700 (texte plus foncé pour meilleure lisibilité)
+// - accent et gradient pour les graphiques et animations
+// Source unique de vérité : CATEGORY_COLORS dans exercice.constants.ts
 export const PROGRESS_DISPLAY_COLORS: Record<ExerciceCategory, {
   bg: string;
   border: string;
   text: string;
   accent: string;
   gradient: string;
-}> = {
-  UPPER_BODY: {
-    bg: 'bg-orange-50',
-    border: 'border-orange-300',
-    text: 'text-orange-800',
-    accent: 'bg-orange-400',
-    gradient: 'from-orange-400 to-orange-500',
-  },
-  CORE: {
-    bg: 'bg-teal-50',
-    border: 'border-teal-300',
-    text: 'text-teal-800',
-    accent: 'bg-teal-400',
-    gradient: 'from-teal-400 to-teal-500',
-  },
-  LOWER_BODY: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-300',
-    text: 'text-blue-800',
-    accent: 'bg-blue-400',
-    gradient: 'from-blue-400 to-blue-500',
-  },
-  STRETCHING: {
-    bg: 'bg-purple-50',
-    border: 'border-purple-300',
-    text: 'text-purple-800',
-    accent: 'bg-purple-400',
-    gradient: 'from-purple-400 to-purple-500',
-  },
-};
+}> = Object.fromEntries(
+  CATEGORY_ORDER.map((category) => {
+    const colors = CATEGORY_COLORS[category];
+    const colorName = CATEGORY_COLOR_MAP[category]; // Utilise le mapping de couleur de base
+    
+    return [category, {
+      bg: colors.bg, // Utilise directement bg de CATEGORY_COLORS
+      border: `border-${colorName}-300`, // Variante plus visible pour les progrès
+      text: colors.text.includes('800') ? colors.text : `text-${colorName}-800`, // text-800 pour meilleure lisibilité
+      accent: `bg-${colorName}-400`, // Accent pour les graphiques
+      gradient: `from-${colorName}-400 to-${colorName}-500`, // Gradient pour les animations
+    }];
+  })
+) as Record<ExerciceCategory, {
+  bg: string;
+  border: string;
+  text: string;
+  accent: string;
+  gradient: string;
+}>;
 
 // Couleur par défaut pour les progrès sans catégorie
 export const PROGRESS_DEFAULT_GRADIENT = 'from-amber-400 to-yellow-500';

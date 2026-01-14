@@ -8,7 +8,9 @@ import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { triggerCompletedCountRefresh } from '@/app/hooks/useTodayCompletedCount';
 import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
-import { Badge, Button, CompleteButton, CompletedBadge, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
+import { Badge, Button, CompleteButton, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
+import { CheckIcon } from '@/app/components/ui/icons';
+import { getDayName } from '@/app/utils/date.utils';
 
 type Props = {
     exercice: Exercice;
@@ -123,9 +125,10 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
     return (
         <BaseCard
             className={clsx(
-                'exercise-card',
+                'exercise-card h-full',
                 showSuccess && 'success-animation'
             )}
+            fullHeight
             onClick={toggleExpand}
             onKeyDown={handleKeyDown}
             role="button"
@@ -134,9 +137,9 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
             ariaLabel={`${exercice.name} - ${exercice.completedToday ? 'Fait aujourd\'hui' : 'À faire'}`}
         >
             <BaseCard.Accent color={categoryStyle.accent} />
-            <BaseCard.Content>
+            <BaseCard.Content className="flex flex-col">
                 {/* Header avec titre */}
-                <div className="p-4 md:p-5">
+                <div className="flex-1 p-4 md:p-5">
                         <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="flex-1 min-w-0">
                                 <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight">
@@ -154,10 +157,12 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                                 ) : (
                                     /* Si mode DAILY : badge classique */
                                     exercice.completedToday && (
-                                        <CompletedBadge 
-                                            isCompletedToday={exercice.completedToday}
-                                            completedAt={exercice.completedAt}
-                                        />
+                                        <Badge 
+                                            variant="completed"
+                                            icon={<CheckIcon className="w-3.5 h-3.5" />}
+                                        >
+                                            {exercice.completedToday ? 'Fait' : getDayName(exercice.completedAt)}
+                                        </Badge>
                                     )
                                 )}
                             </div>
@@ -288,7 +293,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                     {/* Bouton Fait - principal */}
                     <CompleteButton
                         onClick={handleComplete}
-                        isCompleted={exercice.completedToday}
+                        isCompleted={exercice.completed}
                         isCompletedToday={exercice.completedToday}
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}

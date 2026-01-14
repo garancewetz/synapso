@@ -30,7 +30,7 @@ export default function NotFound() {
         <div className="space-y-3">
           <TouchLink href="/">
             <Button
-              variant="primary"
+              variant="action"
               size="lg"
               rounded="lg"
               className="w-full shadow-md"

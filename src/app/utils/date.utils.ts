@@ -38,3 +38,24 @@ export function formatTime(dateString: string): string {
   return format(new Date(dateString), 'HH:mm', { locale: fr });
 }
 
+/**
+ * Obtient le nom du jour de la semaine en français
+ * @param date Date ou string ISO
+ * @returns Nom du jour capitalisé (ex: "Lundi") ou "Cette semaine" si date invalide
+ */
+export function getDayName(date: Date | string | null): string {
+  if (!date) return 'Cette semaine';
+  
+  const completedDate = date instanceof Date ? date : new Date(date);
+  
+  if (isNaN(completedDate.getTime())) {
+    return 'Cette semaine';
+  }
+  
+  const dayNames = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const dayIndex = completedDate.getDay();
+  const dayName = dayNames[dayIndex];
+  
+  return dayName.charAt(0).toUpperCase() + dayName.slice(1);
+}
+

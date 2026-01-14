@@ -65,7 +65,7 @@ export function CompleteButton({
     
     if (isCompleted) {
       return isCompletedToday
-        ? 'bg-emerald-500 text-white hover:bg-emerald-600 border-0'
+        ? '!bg-emerald-500 text-white hover:bg-emerald-600 border-0'
         : 'bg-emerald-400 text-white hover:bg-emerald-500 border-0';
     }
     return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
@@ -82,7 +82,7 @@ export function CompleteButton({
     <Button
       variant="secondary"
       icon={isLoading ? undefined : getIcon()}
-      size="sm"
+      size="md"
       rounded="lg"
       className={clsx(
         'flex-1 whitespace-nowrap shadow-sm font-semibold text-sm',

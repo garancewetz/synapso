@@ -21,13 +21,14 @@ import { SiteProtection } from './SiteProtection';
 import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
 import { ProgressBottomSheet } from './ProgressBottomSheet';
-import { ProgressButton } from './ProgressButton';
+import { ProgressButton } from './ui/ProgressButton';
 import { ProgressFAB } from './ProgressFAB';
 import { WelcomeHeader } from './WelcomeHeader';
 import { WelcomeHeaderWrapper } from './WelcomeHeaderWrapper';
 import { TouchLink } from './TouchLink';
 import { UserBadge } from './UserBadge';
 import { UserSetup } from './UserSetup';
+import { WebVitals } from './WebVitals';
 
 // UI Components
 import { Badge, Button, CalendarIcon, Input, Loader, Logo, Textarea, PinIcon, SparklesIcon } from './ui';
@@ -72,4 +73,5 @@ export {
   WelcomeHeader,
   WelcomeHeaderWrapper,
   UserSetup,
+  WebVitals,
 };

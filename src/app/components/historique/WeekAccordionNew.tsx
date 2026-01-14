@@ -8,8 +8,8 @@ import type { HistoryEntry, Progress } from '@/app/types';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { Accordion } from '@/app/components/ui';
-import { extractProgressTags } from '@/app/utils/progress.utils';
-import { useProgressBadges } from '@/app/hooks/useProgressBadges';
+import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '@/app/utils/progress.utils';
+import { CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 
 type WeekData = {
   weekKey: string;
@@ -141,8 +141,13 @@ type ProgressCardCompactProps = {
 };
 
 function ProgressCardCompact({ progress }: ProgressCardCompactProps) {
-  const { cleanContent } = useMemo(() => extractProgressTags(progress.content), [progress.content]);
-  const { typeBadge, categoryBadge } = useProgressBadges(progress);
+  const categoryLabel = useMemo(() => {
+    if (isOrthophonieProgress(progress.emoji)) {
+      return 'Orthophonie';
+    }
+    const category = getExerciceCategoryFromEmoji(progress.emoji);
+    return category ? CATEGORY_LABELS_SHORT[category] : null;
+  }, [progress.emoji]);
 
   const formattedDate = format(new Date(progress.createdAt), 'EEE d MMM', { locale: fr });
 
@@ -150,15 +155,25 @@ function ProgressCardCompact({ progress }: ProgressCardCompactProps) {
     <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
       <div className="flex items-start gap-2">
         <span className="text-2xl shrink-0">
-          {categoryBadge?.emoji || typeBadge.emoji || progress.emoji || PROGRESS_EMOJIS.STAR}
+          {progress.emoji || PROGRESS_EMOJIS.STAR}
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-amber-900 mb-1 line-clamp-2">
-            {cleanContent}
+            {progress.content}
           </p>
-          <p className="text-xs text-amber-700 opacity-75">
-            {formattedDate}
-          </p>
+          <div className="flex items-center gap-2">
+            {categoryLabel && (
+              <p className="text-xs text-amber-600 font-medium">
+                {categoryLabel}
+              </p>
+            )}
+            {categoryLabel && (
+              <span className="text-xs text-amber-700/60">•</span>
+            )}
+            <p className="text-xs text-amber-700 opacity-75">
+              {formattedDate}
+            </p>
+          </div>
         </div>
       </div>
     </div>

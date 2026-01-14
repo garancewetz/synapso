@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'danger' | 'action' | 'danger-outline';
+  variant?: 'secondary' | 'danger' | 'action' | 'danger-outline' | 'golden' | 'simple';
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
@@ -23,7 +23,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   children,
   onClick,
-  variant = 'primary',
+  variant = 'action',
   type = 'button',
   disabled = false,
   className = '',
@@ -38,7 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
 }, ref) {
   // Styles pour iconOnly (ancien IconButton)
   if (iconOnly) {
-    const baseStyles = 'flex items-center justify-center p-2.5 rounded-lg transition-all duration-200 border cursor-pointer';
+    const baseStyles = 'flex items-center justify-center h-12 w-12 rounded-lg transition-all duration-200 border cursor-pointer';
     const inactiveStyles = 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700';
     
     return (
@@ -63,9 +63,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-5 py-3 text-lg',
+    sm: 'px-3 h-10 text-sm',
+    md: 'px-4 h-12 text-base',
+    lg: 'px-5 h-14 text-lg',
   };
 
   const roundedStyles = {
@@ -75,11 +75,12 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   };
   
   const variantStyles = {
-    primary: 'bg-slate-800 text-white hover:bg-slate-900',
     secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300',
     danger: 'bg-red-600 text-white hover:bg-red-700',
     action: 'bg-blue-600 text-white hover:bg-blue-700',
     'danger-outline': 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-300',
+    golden: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-lg hover:shadow-xl',
+    simple: 'bg-gray-800 text-white hover:bg-gray-700',
   };
 
   const iconElement = icon && (

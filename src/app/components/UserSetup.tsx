@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/Button';
 import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
 import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
+import { Card } from '@/app/components/ui/Card';
 import { useUser } from '@/app/contexts/UserContext';
 import clsx from 'clsx';
 
@@ -82,7 +83,7 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
           )}
 
           {/* Section Préférence de main */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <Card variant="default" padding="lg">
             <label className="block text-lg font-semibold text-gray-800 mb-2">
               Quelle est ta main dominante ?
             </label>
@@ -103,10 +104,10 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
               className="bg-gray-50 border-2 border-gray-200"
               activeRingColor="ring-amber-400"
             />
-          </div>
+          </Card>
 
           {/* Section Rythme */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <Card variant="default" padding="lg">
             <label className="block text-lg font-semibold text-gray-800 mb-2">
               À quel rythme veux-tu faire tes exercices ?
             </label>
@@ -159,10 +160,10 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
                 </div>
               </label>
             </div>
-          </div>
+          </Card>
 
           {/* Section Aphasie */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <Card variant="default" padding="lg">
             <label className="block text-lg font-semibold text-gray-800 mb-2">
               Souhaites-tu accéder au journal d&apos;aphasie ?
             </label>
@@ -183,7 +184,7 @@ export function UserSetup({ userId, onComplete, onSkip }: Props) {
               className="bg-gray-50 border-2 border-gray-200"
               activeRingColor="ring-purple-500"
             />
-          </div>
+          </Card>
 
           {/* Boutons */}
           <div className="flex gap-3">

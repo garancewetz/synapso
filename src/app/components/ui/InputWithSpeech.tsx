@@ -3,6 +3,7 @@
 import type { InputHTMLAttributes } from 'react';
 import clsx from 'clsx';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
+import { SpeechButton } from './SpeechButton';
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> & {
   label?: string;
@@ -52,28 +53,19 @@ export function InputWithSpeech({
           value={displayValue}
           onChange={(e) => onValueChange(e.target.value)}
           className={clsx(
-            'w-full px-4 py-3 pr-12 border-2 rounded-2xl',
-            'focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400',
+            'w-full px-3 py-2 pr-12 border border-gray-300 rounded-md',
+            'focus:outline-none focus:ring-2 focus:ring-blue-500',
             'text-gray-800 placeholder:text-gray-400 transition-all',
-            isListening ? 'border-red-400 bg-red-50' : 'border-gray-200',
+            isListening ? 'border-red-400 bg-red-50' : '',
             className
           )}
         />
         {isSupported && (
-          <button
-            type="button"
+          <SpeechButton
+            isListening={isListening}
             onClick={toggleListening}
-            className={clsx(
-              'absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full',
-              'flex items-center justify-center transition-all cursor-pointer',
-              isListening 
-                ? 'bg-red-500 text-white animate-pulse shadow-lg' 
-                : 'bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-700'
-            )}
-            aria-label={isListening ? 'Arrêter la dictée' : 'Dicter'}
-          >
-            <span className="text-base">{isListening ? '⏹️' : '🎤'}</span>
-          </button>
+            position="input"
+          />
         )}
       </div>
       {isListening && (

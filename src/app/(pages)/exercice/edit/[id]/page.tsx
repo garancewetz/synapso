@@ -4,9 +4,9 @@ import { Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { ExerciceForm } from '@/app/components/ExerciceForm';
-import { BackButton } from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/ui/BackButton';
 import { usePageFocus } from '@/app/hooks/usePageFocus';
-import { Loader } from '@/app/components/ui';
+import { Loader, Card } from '@/app/components/ui';
 
 type EditPageContentProps = {
   exerciceId: number;
@@ -52,12 +52,10 @@ function EditPageWrapper({ exerciceId }: EditPageWrapperProps) {
         buttonClassName="py-3"
       />
       <div className="px-3 sm:p-6 bg-gray-50">
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-4 sm:p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier l&apos;exercice</h1>
-            <EditPageContent exerciceId={exerciceId} onNavigateBack={navigateBack} />
-          </div>
-        </div>
+        <Card variant="default" padding="md">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier l&apos;exercice</h1>
+          <EditPageContent exerciceId={exerciceId} onNavigateBack={navigateBack} />
+        </Card>
       </div>
     </div>
   );

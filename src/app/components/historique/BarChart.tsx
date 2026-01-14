@@ -4,6 +4,7 @@ import { memo, type ReactNode } from 'react';
 import { ComposedChart, Bar, Scatter, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { format } from 'date-fns';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { Card } from '@/app/components/ui/Card';
 
 type Props = {
   data: HeatmapDay[];
@@ -46,7 +47,7 @@ export const BarChart = memo(function BarChart({ data, currentStreak, progressCo
   })();
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+    <Card variant="default" padding="md">
       <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         📅 Ta régularité
         {currentStreak >= 3 && (
@@ -155,7 +156,7 @@ export const BarChart = memo(function BarChart({ data, currentStreak, progressCo
           <span>Victoire (empilées si plusieurs)</span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 });
 

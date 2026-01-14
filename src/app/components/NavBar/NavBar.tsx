@@ -11,6 +11,7 @@ import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { getCurrentPageName } from '@/app/utils/navigation.utils';
+import { NAVIGATION_COLORS } from '@/app/constants/ui.constants';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
@@ -67,11 +68,11 @@ export function NavBar() {
             {/* Indicateur "Où suis-je ?" - Masqué sur mobile */}
             {currentPageName && (
               <div className={clsx(
-                'hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 flex-shrink-0',
+                `hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg ${NAVIGATION_COLORS.indicator.bg} border ${NAVIGATION_COLORS.indicator.border} flex-shrink-0`,
                 isLeftHanded && 'flex-row-reverse'
               )}>
-                <PinIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-blue-800 whitespace-nowrap">
+                <PinIcon className={`w-4 h-4 ${NAVIGATION_COLORS.indicator.text} flex-shrink-0`} />
+                <span className={`text-sm font-medium ${NAVIGATION_COLORS.indicator.textStrong} whitespace-nowrap`}>
                   {currentPageName}
                 </span>
               </div>

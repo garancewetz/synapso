@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 import { TouchLink } from '@/app/components/TouchLink';
+import { Card } from '@/app/components/ui/Card';
 
 type Props = {
   category: ExerciceCategory;
@@ -40,16 +41,20 @@ export function CategoryCardWithProgress({
       href={href}
       aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? `, ${completedCount - total} exercices bonus` : ''}`}
       aria-describedby={`progress-${category}`}
-      className={clsx(
-        'group block border-2 rounded-xl transition-all duration-200 cursor-pointer',
-        'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        styles.bg,
-        styles.cardBorder,
-        styles.focusRing
-      )}
+      className="block group"
     >
-      <div className="p-4">
+      <Card
+        variant="default"
+        padding="md"
+        bgColor={styles.bg}
+        className={clsx(
+          'transition-all duration-200 cursor-pointer',
+          'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
+          'focus-within:ring-2 focus-within:ring-offset-2',
+          styles.cardBorder,
+          styles.focusRing
+        )}
+      >
         <div className="flex items-center gap-3">
           {/* Icône */}
           <div className={clsx(
@@ -118,7 +123,7 @@ export function CategoryCardWithProgress({
             />
           </div>
         </div>
-      </div>
+      </Card>
     </TouchLink>
   );
 }

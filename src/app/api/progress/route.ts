@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, emoji } = body;
+    const { content, emoji, tags } = body;
 
-    if (!content) {
+    if (!content || !content.trim()) {
       return NextResponse.json(
         { error: 'content is required' },
         { status: 400 }
@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
+        tags: Array.isArray(tags) ? tags : [],
         userId: userId,
       },
     });

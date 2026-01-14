@@ -62,13 +62,6 @@ export function InitialLoader() {
           <h1 className="text-2xl font-semibold tracking-wide text-gray-800 animate-[fadeIn_1s_ease-out]">
             Synapso
           </h1>
-          
-          {/* Indicateur de chargement subtil */}
-          <div className="flex gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-[bounce_1.4s_ease-in-out_infinite]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-[bounce_1.4s_ease-in-out_infinite_0.2s]" style={{ animationDelay: '0.2s' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-[bounce_1.4s_ease-in-out_infinite_0.4s]" style={{ animationDelay: '0.4s' }} />
-          </div>
         </div>
       </div>
 

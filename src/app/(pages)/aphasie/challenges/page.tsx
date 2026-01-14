@@ -2,7 +2,7 @@
 
 import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
 import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
-import { BackButton } from '@/app/components/BackButton';
+import { BackButton } from '@/app/components/ui/BackButton';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
 export const dynamic = 'force-dynamic';

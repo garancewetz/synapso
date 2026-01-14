@@ -4,6 +4,7 @@ import { isToday, isYesterday, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { Card } from '@/app/components/ui/Card';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
 
 type Props = {
@@ -44,7 +45,7 @@ export function WeekHeatmap({ weekData, progressDates, onDayClick, resetFrequenc
     : WEEKDAY_NAMES;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+    <Card variant="default" padding="md">
       {/* En-têtes des jours */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {labels.map((label, index) => {
@@ -77,7 +78,7 @@ export function WeekHeatmap({ weekData, progressDates, onDayClick, resetFrequenc
           />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 

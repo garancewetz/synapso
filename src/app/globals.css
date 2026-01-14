@@ -179,12 +179,16 @@ input[type="email"]:focus {
 }
 
 /* Touch-friendly button sizes */
-/* @media (pointer: coarse) {
-  button, a {
-    min-height: 48px;
-    min-width: 48px;
+/* ♿ ACCESSIBILITÉ: Garantir des zones de touch minimum 44x44px (Apple HIG, WCAG) */
+/* Note: La plupart des boutons utilisent déjà h-12 (48px) via les composants Button */
+/* Cette règle garantit un minimum même pour les boutons custom */
+@media (pointer: coarse) {
+  button:not([class*="h-"]):not([class*="min-h-"]),
+  a[role="button"]:not([class*="h-"]):not([class*="min-h-"]) {
+    min-height: 44px;
+    min-width: 44px;
   }
-} */
+}
 
 /* Respect de la préférence reduced-motion pour l'accessibilité */
 @media (prefers-reduced-motion: reduce) {

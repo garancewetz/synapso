@@ -19,9 +19,9 @@ import {
   ProgressStatsChart,
 } from '@/app/components/historique';
 import { ProgressBottomSheet, ConfettiRain } from '@/app/components';
-import { ProgressButton } from '@/app/components/ProgressButton';
-import { BackButton } from '@/app/components/BackButton';
-import { SegmentedControl, Loader } from '@/app/components/ui';
+import { ProgressButton } from '@/app/components/ui/ProgressButton';
+import { BackButton } from '@/app/components/ui/BackButton';
+import { SegmentedControl, Loader, Card } from '@/app/components/ui';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
@@ -244,7 +244,7 @@ export default function HistoriquePage() {
               )}
 
               {/* Graphique montagne (ActivityLineChart) */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+              <Card variant="default" padding="md">
                 <PeriodNavigation
                   label={selectedMonthLabel}
                   onPrevious={goToPreviousPeriod}
@@ -270,7 +270,7 @@ export default function HistoriquePage() {
                     />
                   </motion.div>
                 )}
-              </div>
+              </Card>
 
               {/* Graphique des zones travaillées */}
               <DonutChart

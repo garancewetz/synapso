@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
@@ -17,12 +17,6 @@ import { ProgressFAB } from '@/app/components';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
-
-const FILTER_OPTIONS: { value: FilterType; label: string }[] = [
-  { value: 'all', label: 'Tous' },
-  { value: 'notCompleted', label: 'À faire' },
-  { value: 'completed', label: 'Faits' },
-];
 
 export default function CategoryPage() {
   const [filter, setFilter] = useState<FilterType>('all');
@@ -64,6 +58,19 @@ export default function CategoryPage() {
   // Les favoris sont déjà en haut grâce au tri dans l'API
   // (orderBy: [{ pinned: 'desc' }, { id: 'desc' }])
   const completedCount = exercices.filter(e => e.completed).length;
+
+  // Calculer les counts pour chaque état
+  const filterOptionsWithCounts = useMemo(() => {
+    const allCount = exercices.length;
+    const notCompletedCount = exercices.filter(e => !e.completed).length;
+    const completedCount = exercices.filter(e => e.completed).length;
+
+    return [
+      { value: 'all' as FilterType, label: 'Tous', count: allCount },
+      { value: 'notCompleted' as FilterType, label: 'À faire', count: notCompletedCount },
+      { value: 'completed' as FilterType, label: 'Faits', count: completedCount },
+    ];
+  }, [exercices]);
 
   if (!isValidCategory) {
     return null;
@@ -131,12 +138,13 @@ export default function CategoryPage() {
           {/* Filtre - toujours visible */}
           <div className="mt-4">
             <SegmentedControl
-              options={FILTER_OPTIONS}
+              options={filterOptionsWithCounts}
               value={filter}
               onChange={setFilter}
               fullWidth
               size="md"
               variant="filter"
+              showCountBelow
             />
           </div>
         </div>
@@ -176,7 +184,7 @@ export default function CategoryPage() {
               className="grid gap-3 grid-cols-1 lg:grid-cols-2"
             >
               {filteredExercices.map((exercice) => (
-                <div key={exercice.id}>
+                <div key={exercice.id} className="h-full">
                   <ExerciceCard
                     exercice={exercice}
                     onEdit={handleEditClick}

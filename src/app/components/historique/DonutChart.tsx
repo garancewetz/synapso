@@ -2,6 +2,8 @@
 
 import { memo, type ReactNode } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Card } from '@/app/components/ui/Card';
+import clsx from 'clsx';
 
 type DonutChartItem = {
   name: string;
@@ -24,7 +26,7 @@ type Props = {
 export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emptyMessage, fullWidth = false, legendPosition = 'bottom', filterSlot }: Props) {
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+      <Card variant="default" padding="md">
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           {title}
         </h2>
@@ -33,14 +35,14 @@ export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emp
           <span className="text-3xl mb-2 block">{emptyIcon}</span>
           <p className="text-gray-500">{emptyMessage}</p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   const isHorizontalLayout = legendPosition === 'right';
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 ${fullWidth ? 'w-full' : ''}`}>
+    <Card variant="default" padding="md" className={clsx(fullWidth && 'w-full')}>
       <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         {title}
       </h2>
@@ -100,7 +102,7 @@ export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emp
           ))}
         </div>
       </div>
-    </div>
+    </Card>
   );
 });
 

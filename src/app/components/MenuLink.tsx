@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
+import { Card } from '@/app/components/ui/Card';
 
 type Props = {
   href: string;
@@ -109,22 +110,39 @@ export function MenuLink({
         href={href}
         onClick={handleClick}
         tabIndex={tabIndex}
-        className={clsx(
-          'group transition-all duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400',
-          isVertical
-            ? 'flex flex-col items-center gap-2 px-3 py-4 text-center'
-            : 'flex items-center gap-3 px-4 py-3.5',
-          noCardStyle
-            ? 'bg-white border-2 border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] rounded-xl'
-            : clsx(
-                'bg-white border-2 border-gray-100 rounded-xl text-gray-800 hover:border-gray-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
-                isSecondary && 'border-dashed'
-              )
-        )}
+        className="block group"
       >
-        {iconElement}
-        {textElement}
+        {noCardStyle ? (
+          <div className={clsx(
+            'transition-all duration-200',
+            'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400',
+            isVertical
+              ? 'flex flex-col items-center gap-2 px-3 py-4 text-center'
+              : 'flex items-center gap-3 px-4 py-3.5',
+            'bg-white border-2 border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] rounded-xl'
+          )}>
+            {iconElement}
+            {textElement}
+          </div>
+        ) : (
+          <Card
+            variant="outlined"
+            padding="none"
+            className={clsx(
+              'transition-all duration-200',
+              'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
+              'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-400',
+              isVertical
+                ? 'flex flex-col items-center gap-2 px-3 py-4 text-center'
+                : 'flex items-center gap-3 px-4 py-3.5',
+              'text-gray-800',
+              isSecondary && 'border-dashed'
+            )}
+          >
+            {iconElement}
+            {textElement}
+          </Card>
+        )}
       </TouchLink>
     </div>
   );

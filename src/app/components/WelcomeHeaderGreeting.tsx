@@ -3,6 +3,7 @@
 import { TouchLink } from '@/app/components/TouchLink';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { RESET_FREQUENCY_COLORS } from '@/app/constants/ui.constants';
 import clsx from 'clsx';
 
 type Props = {
@@ -32,8 +33,8 @@ export function WelcomeHeaderGreeting({ userName, resetFrequency }: Props) {
             <span className={clsx(
               'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium',
               resetFrequency === 'DAILY' 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'bg-purple-100 text-purple-700'
+                ? `${RESET_FREQUENCY_COLORS.DAILY.bg} ${RESET_FREQUENCY_COLORS.DAILY.text}` 
+                : `${RESET_FREQUENCY_COLORS.WEEKLY.bg} ${RESET_FREQUENCY_COLORS.WEEKLY.text}`
             )}>
               {resetFrequency === 'DAILY' ? (
                 <>

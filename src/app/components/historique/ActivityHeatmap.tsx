@@ -7,6 +7,7 @@ import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.consta
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
+import { Card } from '@/app/components/ui/Card';
 
 type Props = {
   data: HeatmapDay[];
@@ -60,7 +61,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
   const displayDays = isWeekMode ? getWeekAlignedDays() : realDays;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+    <Card variant="default" padding="md">
       {/* Header avec titre et streak */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -149,7 +150,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           emoji={NAVIGATION_EMOJIS.MAP}
         />
       )}
-    </div>
+    </Card>
   );
 }
 

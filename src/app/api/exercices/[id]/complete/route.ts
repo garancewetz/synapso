@@ -128,8 +128,18 @@ export async function PATCH(
       }
     });
     
-    // Calculer completedToday pour la réponse : vérifier s'il y a une entrée pour aujourd'hui
-    const completedToday = isCompleting;
+    // Calculer completedToday pour la réponse : vérifier directement l'historique d'aujourd'hui
+    // (plus fiable que d'utiliser completedAt qui peut être une date ancienne)
+    const hasTodayHistoryAfterUpdate = await prisma.history.findFirst({
+      where: {
+        exerciceId: id,
+        completedAt: {
+          gte: startOfToday,
+          lt: endOfToday,
+        },
+      },
+    });
+    const completedToday = !!hasTodayHistoryAfterUpdate;
 
     // Récupérer toutes les complétions de la période pour weeklyCompletions
     const startOfPeriod = getStartOfPeriod(resetFrequency, now);

@@ -19,9 +19,9 @@ export function StatsCard({ value, label, bgColor, textColor, borderColor }: Pro
     <Card
       variant="outlined"
       padding="sm"
+      bgColor={bgColor}
       className={clsx(
         'flex flex-col items-center justify-center text-center min-h-[90px]',
-        bgColor,
         borderColor
       )}
     >

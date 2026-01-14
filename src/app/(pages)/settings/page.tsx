@@ -8,8 +8,9 @@ import { Button } from '@/app/components/ui/Button';
 import { Input } from '@/app/components/ui/Input';
 import { ErrorMessage } from '@/app/components/ErrorMessage';
 import { Loader } from '@/app/components/ui/Loader';
-import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
-import { BackButton } from '@/app/components/BackButton';
+import { ToggleButtonGroup } from '@/app/components/ui/ToggleButtonGroup';
+import { BackButton } from '@/app/components/ui/BackButton';
+import { Card } from '@/app/components/ui/Card';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 type DominantHand = 'LEFT' | 'RIGHT';
@@ -339,7 +340,7 @@ export default function SettingsPage() {
           )}
 
           {/* Section Nom */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <Input
               label="Nom de l'utilisateur"
               type="text"
@@ -349,10 +350,10 @@ export default function SettingsPage() {
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
             />
-          </div>
+          </Card>
 
           {/* Section Préférence de main */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <label className="block text-base font-semibold text-gray-800 mb-2">
               Préférence de main
             </label>
@@ -360,23 +361,19 @@ export default function SettingsPage() {
               Choisissez votre préférence de main pour positionner les boutons principaux (menu, victoire, etc.) du bon côté
             </p>
             
-            <SegmentedControl
+            <ToggleButtonGroup
               options={[
-                { value: 'LEFT', label: '🤚 Gauche' },
-                { value: 'RIGHT', label: '✋ Droite' },
+                { value: 'LEFT', label: 'Gauche', icon: '🤚' },
+                { value: 'RIGHT', label: 'Droite', icon: '✋' },
               ]}
               value={dominantHand}
               onChange={(value) => setDominantHand(value as DominantHand)}
-              fullWidth
-              size="md"
-              variant="filter"
-              className="bg-gray-50 border-2 border-gray-200"
-              activeRingColor="ring-amber-400"
+              activeColor="amber"
             />
-          </div>
+          </Card>
 
           {/* Section Aphasie */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <label className="block text-base font-semibold text-gray-800 mb-2">
               Journal d&apos;aphasie
             </label>
@@ -384,23 +381,19 @@ export default function SettingsPage() {
               Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et exercices
             </p>
             
-            <SegmentedControl
+            <ToggleButtonGroup
               options={[
-                { value: 'YES', label: '✓ Oui' },
-                { value: 'NO', label: '✗ Non' },
+                { value: true, label: 'Oui', icon: '✓' },
+                { value: false, label: 'Non', icon: '✗' },
               ]}
-              value={isAphasic ? 'YES' : 'NO'}
-              onChange={(value) => setIsAphasic(value === 'YES')}
-              fullWidth
-              size="md"
-              variant="filter"
-              className="bg-gray-50 border-2 border-gray-200"
-              activeRingColor="ring-purple-500"
+              value={isAphasic}
+              onChange={(value) => setIsAphasic(value as boolean)}
+              activeColor="purple"
             />
-          </div>
+          </Card>
 
           {/* Section Réinitialisation */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
+          <Card variant="default" padding="md">
             <label className="block text-base font-semibold text-gray-800 mb-2">
               Réinitialisation des exercices
             </label>
@@ -408,50 +401,24 @@ export default function SettingsPage() {
               Choisissez la fréquence de réinitialisation des exercices complétés
             </p>
             
-            <div className="space-y-3">
-              <label className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all ${
-                resetFrequency === 'DAILY' 
-                  ? 'border-amber-400 bg-amber-50' 
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}>
-                <input
-                  type="radio"
-                  name="resetFrequency"
-                  value="DAILY"
-                  checked={resetFrequency === 'DAILY'}
-                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">Tous les jours</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Les exercices complétés sont réinitialisés chaque jour à minuit
-                  </div>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all ${
-                resetFrequency === 'WEEKLY' 
-                  ? 'border-amber-400 bg-amber-50' 
-                  : 'border-gray-200 hover:border-amber-300'
-              }`}>
-                <input
-                  type="radio"
-                  name="resetFrequency"
-                  value="WEEKLY"
-                  checked={resetFrequency === 'WEEKLY'}
-                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">Une fois par semaine</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Les exercices complétés sont réinitialisés chaque dimanche à minuit
-                  </div>
-                </div>
-              </label>
+            <ToggleButtonGroup
+              options={[
+                { value: 'DAILY', label: 'Tous les jours' },
+                { value: 'WEEKLY', label: 'Une fois par semaine' },
+              ]}
+              value={resetFrequency}
+              onChange={(value) => setResetFrequency(value as ResetFrequency)}
+              activeColor="amber"
+            />
+            <div className="mt-3 text-sm text-gray-500 space-y-1">
+              {resetFrequency === 'DAILY' && (
+                <p>Les exercices complétés sont réinitialisés chaque jour à minuit</p>
+              )}
+              {resetFrequency === 'WEEKLY' && (
+                <p>Les exercices complétés sont réinitialisés chaque lundi à minuit</p>
+              )}
             </div>
-          </div>
+          </Card>
 
           <div className="flex gap-3">
             <Button
@@ -514,7 +481,8 @@ export default function SettingsPage() {
                 <span>Changer mon mot de passe</span>
               </Button>
             ) : (
-              <form onSubmit={handleChangePassword} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 space-y-4">
+              <Card variant="default" padding="md">
+                <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-semibold text-gray-800">Changer mon mot de passe</h3>
                   <button
@@ -634,6 +602,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </form>
+              </Card>
             )}
           </div>
         )}

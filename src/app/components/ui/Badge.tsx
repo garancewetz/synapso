@@ -1,20 +1,20 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
 
-type BadgeVariant = 'default' | 'workout' | 'equipment';
+type BadgeVariant = 'default' | 'workout' | 'equipment' | 'completed' | 'mastered';
 
 type Props = {
   children: ReactNode;
-  /** Variante du badge : default (catégorie), workout (séries/répétitions), equipment (matériel) */
+  /** Variante du badge : default (catégorie), workout (séries/répétitions), equipment (matériel), completed (exercice fait), mastered (exercice maîtrisé) */
   variant?: BadgeVariant;
-  /** Icône optionnelle affichée avant le texte */
-  icon?: string;
+  /** Icône optionnelle affichée avant le texte (string emoji ou composant React) */
+  icon?: string | ReactNode;
   /** Classes CSS additionnelles (peuvent surcharger les couleurs par défaut) */
   className?: string;
 };
 
 // Classes de base communes à tous les badges
-const baseClasses = 'text-xs px-2.5 py-1 rounded-md font-medium';
+const baseClasses = 'text-xs px-2.5 py-1 rounded-md font-medium flex items-center gap-1';
 
 // Styles par variante
 const variantStyles: Record<BadgeVariant, string> = {
@@ -24,6 +24,10 @@ const variantStyles: Record<BadgeVariant, string> = {
   workout: 'bg-slate-100 text-slate-700',
   // Equipment : gris pour le matériel nécessaire
   equipment: 'bg-gray-100 text-gray-700 border border-gray-200',
+  // Completed : vert émeraude pour exercice complété
+  completed: 'bg-emerald-500/90 text-white border border-emerald-400/50',
+  // Mastered : vert émeraude pour exercice maîtrisé
+  mastered: 'bg-emerald-500 text-white',
 };
 
 export function Badge({ 
@@ -38,7 +42,11 @@ export function Badge({
   
   return (
     <span className={clsx(baseClasses, colorClasses, className)}>
-      {icon && <span>{icon} </span>}
+      {icon && (
+        <span className="shrink-0">
+          {typeof icon === 'string' ? icon : icon}
+        </span>
+      )}
       {children}
     </span>
   );

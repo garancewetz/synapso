@@ -1,8 +1,10 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import type { TextareaHTMLAttributes } from 'react';
 import clsx from 'clsx';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
+import { SpeechButton } from './SpeechButton';
 
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label?: string;
@@ -25,6 +27,7 @@ export function TextareaWithSpeech({
   onSpeechError,
   ...props 
 }: Props) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isListening, isSupported, interimTranscript, toggleListening } = useSpeechRecognition({
     onResult: (transcript) => {
       onValueChange(value ? `${value} ${transcript}` : transcript);
@@ -37,6 +40,16 @@ export function TextareaWithSpeech({
     ? (value ? `${value} ${interimTranscript}` : interimTranscript)
     : value;
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Réinitialiser la hauteur pour obtenir la hauteur réelle du contenu
+    textarea.style.height = 'auto';
+    // Ajuster la hauteur en fonction du scrollHeight
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [displayValue]);
+
   return (
     <div>
       {label && (
@@ -47,32 +60,24 @@ export function TextareaWithSpeech({
       <div className="relative">
         <textarea
           {...props}
+          ref={textareaRef}
           required={required}
           value={displayValue}
           onChange={(e) => onValueChange(e.target.value)}
           className={clsx(
-            'w-full px-4 py-3 pr-12 border-2 rounded-2xl',
-            'focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400',
-            'resize-none text-gray-800 placeholder:text-gray-400 transition-all',
-            isListening ? 'border-red-400 bg-red-50' : 'border-gray-200',
+            'w-full px-3 py-2 pr-12 border border-gray-300 rounded-md',
+            'focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'overflow-hidden resize-none text-gray-800 placeholder:text-gray-400 transition-all',
+            isListening ? 'border-red-400 bg-red-50' : '',
             className
           )}
         />
         {isSupported && (
-          <button
-            type="button"
+          <SpeechButton
+            isListening={isListening}
             onClick={toggleListening}
-            className={clsx(
-              'absolute right-2 top-2 w-9 h-9 rounded-full',
-              'flex items-center justify-center transition-all cursor-pointer',
-              isListening 
-                ? 'bg-red-500 text-white animate-pulse shadow-lg' 
-                : 'bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-700'
-            )}
-            aria-label={isListening ? 'Arrêter la dictée' : 'Dicter'}
-          >
-            <span className="text-base">{isListening ? '⏹️' : '🎤'}</span>
-          </button>
+            position="textarea"
+          />
         )}
       </div>
       {isListening && (

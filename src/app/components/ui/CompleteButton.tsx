@@ -11,7 +11,6 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isLoading?: boolean;
   variant?: 'exercice' | 'challenge';
   weeklyCount?: number; // Nombre de fois fait cette semaine
-  resetFrequency?: 'DAILY' | 'WEEKLY'; // Mode de réinitialisation
 };
 
 export function CompleteButton({ 
@@ -20,7 +19,6 @@ export function CompleteButton({
   isLoading = false,
   variant = 'exercice',
   weeklyCount = 0,
-  resetFrequency = 'DAILY',
   className = '',
   ...props 
 }: Props) {
@@ -29,18 +27,12 @@ export function CompleteButton({
       return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
     }
     
-    if (isCompleted) {
-      // En mode hebdomadaire, toujours afficher "Fait aujourd'hui" si complété
-      if (resetFrequency === 'WEEKLY') {
-        return isCompletedToday ? 'Fait aujourd\'hui' : 'Fait aujourd\'hui';
-      }
-      // En mode quotidien, afficher le compteur si fait plusieurs fois
-      if (weeklyCount > 1) {
-        return `Fait (${weeklyCount}× cette semaine)`;
-      }
-      return isCompletedToday ? 'Fait aujourd\'hui' : 'Fait cette semaine';
+    // Afficher le compteur hebdomadaire si fait plusieurs fois cette semaine
+    if (weeklyCount > 1) {
+      return `Fait (${weeklyCount}× cette semaine)`;
     }
-    // Quand pas complété, toujours "Fait aujourd'hui"
+    
+    // Sinon, toujours "Fait aujourd'hui" (le style indique si c'est fait aujourd'hui ou non)
     return 'Fait aujourd\'hui';
   };
 
@@ -49,8 +41,8 @@ export function CompleteButton({
       return isCompleted ? 'Annuler maîtrise' : 'Marquer comme maîtrisé';
     }
     
-    if (isCompleted) {
-      return isCompletedToday ? 'Démarquer' : 'Fait cette semaine - Démarquer';
+    if (isCompletedToday) {
+      return 'Démarquer';
     }
     return 'Marquer comme fait aujourd\'hui';
   };
@@ -63,10 +55,9 @@ export function CompleteButton({
       return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
     }
     
-    if (isCompleted) {
-      return isCompletedToday
-        ? '!bg-emerald-500 text-white hover:bg-emerald-600 border-0'
-        : 'bg-emerald-400 text-white hover:bg-emerald-500 border-0';
+    // Pour les exercices : vert uniquement si fait aujourd'hui, sinon gris
+    if (isCompletedToday) {
+      return '!bg-emerald-500 text-white hover:bg-emerald-600 border-0';
     }
     return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
   };
@@ -90,7 +81,7 @@ export function CompleteButton({
         className
       )}
       title={getTitle()}
-      aria-label={isCompleted ? (variant === 'challenge' ? 'Annuler maîtrise' : 'Démarquer') : (variant === 'challenge' ? 'Marquer comme maîtrisé' : 'Marquer comme fait')}
+      aria-label={isCompletedToday ? (variant === 'challenge' ? 'Annuler maîtrise' : 'Démarquer') : (variant === 'challenge' ? 'Marquer comme maîtrisé' : 'Marquer comme fait aujourd\'hui')}
       disabled={isLoading}
       {...props}
     >

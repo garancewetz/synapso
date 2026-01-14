@@ -38,7 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
 }, ref) {
   // Styles pour iconOnly (ancien IconButton)
   if (iconOnly) {
-    const baseStyles = 'flex items-center justify-center h-12 w-12 rounded-lg transition-all duration-200 border cursor-pointer';
+    const baseStyles = 'flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 border cursor-pointer';
     const inactiveStyles = 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700';
     
     return (
@@ -64,7 +64,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   
   const sizeStyles = {
     sm: 'px-3 h-10 text-sm',
-    md: 'px-4 h-12 text-base',
+    md: 'px-4 h-10 text-base',
     lg: 'px-5 h-14 text-lg',
   };
 

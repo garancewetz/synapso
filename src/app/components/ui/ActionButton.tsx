@@ -77,7 +77,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
 
   const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-full';
   
-  const sizeStyles = 'px-5 h-10 text-base' 
+  const sizeStyles = 'px-5 h-14 text-base' 
 
   const variantStyles = variant === 'golden'
     ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-lg hover:shadow-xl'

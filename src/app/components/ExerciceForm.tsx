@@ -368,13 +368,13 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
             value={newEquipment}
             onChange={(e) => setNewEquipment(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
-            className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="flex-1 px-4 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
           <button
             type="button"
             onClick={addNewEquipment}
             className={clsx(
-              'px-4 py-2 rounded-lg transition-colors font-medium sm:w-auto w-full cursor-pointer',
+              'px-4 h-10 rounded-lg transition-colors font-medium sm:w-auto w-full cursor-pointer',
               FORM_COLORS.equipment.addButton
             )}
           >

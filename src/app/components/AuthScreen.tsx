@@ -7,9 +7,10 @@ import { Input } from '@/app/components/ui/Input';
 import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
 import { UserSetup } from '@/app/components/UserSetup';
+import { InitialLoader } from '@/app/components/InitialLoader';
 
 type Props = {
-  onSuccess: () => void;
+  onSuccess: () => Promise<void>;
 };
 
 type AuthMode = 'login' | 'register';
@@ -25,6 +26,7 @@ export function AuthScreen({ onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [showUserSetup, setShowUserSetup] = useState(false);
   const [newUserId, setNewUserId] = useState<number | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +94,17 @@ export function AuthScreen({ onSuccess }: Props) {
           setNewUserId(data.user.id);
           setShowUserSetup(true);
         } else {
-          onSuccess();
+          // Pour un login, afficher le loader pendant le chargement du compte
+          setIsAuthenticating(true);
+          try {
+            await onSuccess();
+            // Si onSuccess réussit, le composant sera démonté par SiteProtection
+            // donc on ne remet pas isAuthenticating à false ici
+          } catch (err) {
+            console.error('Erreur lors de l\'authentification:', err);
+            setIsAuthenticating(false);
+            setError('Erreur lors de la connexion');
+          }
         }
       } else {
         setError(data.error || 'Une erreur est survenue');
@@ -112,9 +124,40 @@ export function AuthScreen({ onSuccess }: Props) {
     setInvitationCode('');
   };
 
-  // Si UserSetup est affiché, ne pas afficher le formulaire d'auth
-  if (showUserSetup) {
-    return null; // UserSetup gère son propre affichage plein écran
+  // Si on est en train d'authentifier (login), afficher le loader
+  if (isAuthenticating) {
+    return <InitialLoader />;
+  }
+
+  // Si UserSetup est affiché, rendre UserSetup directement
+  if (showUserSetup && newUserId) {
+    return (
+      <UserSetup
+        userId={newUserId}
+        onComplete={async () => {
+          setShowUserSetup(false);
+          setIsAuthenticating(true);
+          try {
+            await onSuccess();
+          } catch (err) {
+            console.error('Erreur lors de l\'authentification:', err);
+            setIsAuthenticating(false);
+            setError('Erreur lors de la connexion');
+          }
+        }}
+        onSkip={async () => {
+          setShowUserSetup(false);
+          setIsAuthenticating(true);
+          try {
+            await onSuccess();
+          } catch (err) {
+            console.error('Erreur lors de l\'authentification:', err);
+            setIsAuthenticating(false);
+            setError('Erreur lors de la connexion');
+          }
+        }}
+      />
+    );
   }
 
   return (
@@ -138,9 +181,9 @@ export function AuthScreen({ onSuccess }: Props) {
               onClick={() => setMode('login')}
               variant="secondary"
               className={clsx(
-                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors !bg-white',
+                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors bg-white!',
                 mode === 'login'
-                  ? 'text-amber-600 border-amber-500 !bg-amber-50/50'
+                  ? 'text-amber-600 border-amber-500 bg-amber-50/50!'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
               )}
             >
@@ -151,9 +194,9 @@ export function AuthScreen({ onSuccess }: Props) {
               onClick={() => setMode('register')}
               variant="secondary"
               className={clsx(
-                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors !bg-white',
+                'flex-1 py-4 text-sm font-medium rounded-none border-0 border-b-2 transition-colors bg-white!',
                 mode === 'register'
-                  ? 'text-amber-600 border-amber-500 !bg-amber-50/50'
+                  ? 'text-amber-600 border-amber-500 bg-amber-50/50!'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
               )}
             >
@@ -225,7 +268,7 @@ export function AuthScreen({ onSuccess }: Props) {
                   type="button"
                   iconOnly
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 !border-0 !bg-transparent !shadow-none text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 border-0! bg-transparent! shadow-none! text-gray-400 hover:text-gray-600"
                   aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 >
                   {showPassword ? '🙈' : '👁️'}
@@ -279,7 +322,7 @@ export function AuthScreen({ onSuccess }: Props) {
                     type="button"
                     variant="secondary"
                     onClick={switchMode}
-                    className="!p-0 !bg-transparent !border-0 !shadow-none text-amber-600 hover:text-amber-700 font-medium inline"
+                    className="p-0! bg-transparent! border-0! shadow-none! text-amber-600 hover:text-amber-700 font-medium inline"
                   >
                     Créer un compte
                   </Button>
@@ -291,7 +334,7 @@ export function AuthScreen({ onSuccess }: Props) {
                     type="button"
                     variant="secondary"
                     onClick={switchMode}
-                    className="!p-0 !bg-transparent !border-0 !shadow-none text-amber-600 hover:text-amber-700 font-medium inline"
+                    className="p-0! bg-transparent! border-0! shadow-none! text-amber-600 hover:text-amber-700 font-medium inline"
                   >
                     Se connecter
                   </Button>
@@ -306,21 +349,6 @@ export function AuthScreen({ onSuccess }: Props) {
           Application de rééducation post-AVC
         </p>
       </div>
-
-      {/* UserSetup pour nouveaux utilisateurs */}
-      {showUserSetup && newUserId && (
-        <UserSetup
-          userId={newUserId}
-          onComplete={() => {
-            setShowUserSetup(false);
-            onSuccess();
-          }}
-          onSkip={() => {
-            setShowUserSetup(false);
-            onSuccess();
-          }}
-        />
-      )}
     </div>
   );
 }

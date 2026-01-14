@@ -98,7 +98,7 @@ export function useCategoryStats({
     } finally {
       setLoading(false);
     }
-  }, [userId, startOfPeriod]);
+  }, [userId, startOfPeriod, resetFrequency]);
 
   useEffect(() => {
     fetchStats();

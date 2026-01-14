@@ -12,12 +12,27 @@ const MAX_PASSWORD_LENGTH = 128;
 const INVITATION_CODE = process.env.INVITATION_CODE;
 
 /**
+ * Récupère la liste des codes d'invitation valides depuis la variable d'environnement
+ * Les codes peuvent être séparés par des virgules (ex: "coucou2025,avcsalut")
+ */
+function getValidInvitationCodes(): string[] {
+  if (!INVITATION_CODE) {
+    return [];
+  }
+  // Séparer par virgule et nettoyer les espaces
+  return INVITATION_CODE.split(',').map(code => code.trim()).filter(code => code.length > 0);
+}
+
+/**
  * Compare deux codes d'invitation de manière sécurisée (timing-safe)
  * En mode développement, si INVITATION_CODE n'est pas défini, permet la création sans code
+ * Supporte plusieurs codes d'invitation séparés par des virgules
  */
 function validateInvitationCode(provided: string | undefined): boolean {
+  const validCodes = getValidInvitationCodes();
+
   // Si aucun code n'est requis en dev, permettre la création
-  if (!INVITATION_CODE) {
+  if (validCodes.length === 0) {
     return process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev';
   }
 
@@ -26,19 +41,28 @@ function validateInvitationCode(provided: string | undefined): boolean {
     return false;
   }
 
-  // Comparaison timing-safe pour éviter les timing attacks
-  if (provided.length !== INVITATION_CODE.length) {
-    return false;
+  // Vérifier si le code fourni correspond à l'un des codes valides
+  // Utiliser une comparaison timing-safe pour chaque code
+  for (const validCode of validCodes) {
+    // Comparaison timing-safe pour éviter les timing attacks
+    if (provided.length !== validCode.length) {
+      continue;
+    }
+
+    const providedBuffer = Buffer.from(provided, 'utf8');
+    const expectedBuffer = Buffer.from(validCode, 'utf8');
+
+    try {
+      if (timingSafeEqual(providedBuffer, expectedBuffer)) {
+        return true;
+      }
+    } catch {
+      // Continuer avec le code suivant
+      continue;
+    }
   }
 
-  const providedBuffer = Buffer.from(provided, 'utf8');
-  const expectedBuffer = Buffer.from(INVITATION_CODE, 'utf8');
-
-  try {
-    return timingSafeEqual(providedBuffer, expectedBuffer);
-  } catch {
-    return false;
-  }
+  return false;
 }
 
 export async function POST(request: NextRequest) {

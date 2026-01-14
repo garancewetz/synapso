@@ -9,7 +9,7 @@ import { BackButton } from '@/app/components/ui/BackButton';
 import { ToggleButtonGroup } from '@/app/components/ui/ToggleButtonGroup';
 import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
 import { FormActions } from '@/app/components/FormActions';
-import { ShareIcon, EditIcon, CheckIcon, SparklesIcon, ChevronIcon } from '@/app/components/ui/icons';
+import { EditIcon, CheckIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { useDeleteConfirmation } from '@/app/hooks/useDeleteConfirmation';
 import { 
   BaseCard, 
@@ -26,19 +26,7 @@ import {
   ViewAllLink,
   WeeklyCompletionIndicator
 } from '@/app/components/ui';
-import { getDayName } from '@/app/utils/date.utils';
-import { CategoryCardWithProgress } from '@/app/components/CategoryCardWithProgress';
-import { StatsCard } from '@/app/components/historique/StatsCard';
-import { MenuLink } from '@/app/components/MenuLink';
-import { ProgressCard } from '@/app/components/historique/ProgressCard';
-import { ProgressCardCompact } from '@/app/components/historique/ProgressCardCompact';
-import { ExerciceCard } from '@/app/components/ExerciceCard';
-import { AphasieItemCard } from '@/app/components/AphasieItemCard';
-import { AphasieChallengeCard } from '@/app/components/AphasieChallengeCard';
-import { UserBadge } from '@/app/components/UserBadge';
-import { StatBadge } from '@/app/components/StatBadge';
 import { WelcomeHeader } from '@/app/components/WelcomeHeader';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
 
 /**
  * Composant de carte pour afficher un composant UI dans le styleguide
@@ -70,7 +58,6 @@ export default function StyleguidePage() {
   const deleteConfirmation = useDeleteConfirmation();
   const [completeState, setCompleteState] = useState(false);
   const [completeToday, setCompleteToday] = useState(false);
-  const [inputValue, setInputValue] = useState('');
   const [textareaValue, setTextareaValue] = useState('');
   const [inputSpeechValue, setInputSpeechValue] = useState('');
   const [textareaSpeechValue, setTextareaSpeechValue] = useState('');

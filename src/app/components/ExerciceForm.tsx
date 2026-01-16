@@ -368,7 +368,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
             value={newEquipment}
             onChange={(e) => setNewEquipment(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
-            className="flex-1 px-4 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className=" px-4 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
           <button
             type="button"

@@ -4,10 +4,9 @@ import { useState, memo, useCallback } from 'react';
 import { Button } from '@/app/components/ui/Button';
 import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
-import { SegmentedControl } from '@/app/components/ui/SegmentedControl';
+import { ToggleButtonGroup } from '@/app/components/ui/ToggleButtonGroup';
 import { Card } from '@/app/components/ui/Card';
 import { useUser } from '@/app/contexts/UserContext';
-import clsx from 'clsx';
 
 type Props = {
   userId: number;
@@ -85,105 +84,69 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
 
           {/* Section Préférence de main */}
           <Card variant="default" padding="lg">
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
-              Quelle est ta main dominante ?
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Préférence de main
             </label>
             <p className="text-sm text-gray-500 mb-4">
               On positionnera les boutons principaux du bon côté pour toi
             </p>
-            
-            <SegmentedControl
+
+            <ToggleButtonGroup
               options={[
-                { value: 'LEFT', label: '🤚 Gauche' },
-                { value: 'RIGHT', label: '✋ Droite' },
+                { value: 'LEFT', label: 'Gauche', icon: '🤚' },
+                { value: 'RIGHT', label: 'Droite', icon: '✋' },
               ]}
               value={dominantHand}
               onChange={(value) => setDominantHand(value as DominantHand)}
-              fullWidth
-              size="md"
-              variant="filter"
-              className="bg-gray-50 border-2 border-gray-200"
-              activeRingColor="ring-amber-400"
+              activeColor="amber"
             />
           </Card>
 
           {/* Section Rythme */}
           <Card variant="default" padding="lg">
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
-              À quel rythme veux-tu faire tes exercices ?
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Réinitialisation des exercices
             </label>
             <p className="text-sm text-gray-500 mb-4">
               Les exercices complétés seront réinitialisés selon ce rythme
             </p>
-            
-            <div className="space-y-3">
-              <label className={clsx(
-                'flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all',
-                resetFrequency === 'DAILY' 
-                  ? 'border-amber-400 bg-amber-50' 
-                  : 'border-gray-200 hover:border-amber-300'
-              )}>
-                <input
-                  type="radio"
-                  name="resetFrequency"
-                  value="DAILY"
-                  checked={resetFrequency === 'DAILY'}
-                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">Tous les jours</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Les exercices se réinitialisent chaque jour à minuit
-                  </div>
-                </div>
-              </label>
 
-              <label className={clsx(
-                'flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 cursor-pointer transition-all',
-                resetFrequency === 'WEEKLY' 
-                  ? 'border-amber-400 bg-amber-50' 
-                  : 'border-gray-200 hover:border-amber-300'
-              )}>
-                <input
-                  type="radio"
-                  name="resetFrequency"
-                  value="WEEKLY"
-                  checked={resetFrequency === 'WEEKLY'}
-                  onChange={(e) => setResetFrequency(e.target.value as ResetFrequency)}
-                  className="mt-1 w-5 h-5 text-amber-600 focus:ring-amber-500"
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">Une fois par semaine</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Les exercices se réinitialisent chaque dimanche à minuit
-                  </div>
-                </div>
-              </label>
+            <ToggleButtonGroup
+              options={[
+                { value: 'DAILY', label: 'Tous les jours' },
+                { value: 'WEEKLY', label: 'Une fois par semaine' },
+              ]}
+              value={resetFrequency}
+              onChange={(value) => setResetFrequency(value as ResetFrequency)}
+              activeColor="amber"
+            />
+            <div className="mt-3 text-sm text-gray-500">
+              {resetFrequency === 'DAILY' && (
+                <p>Les exercices complétés sont réinitialisés chaque jour à minuit</p>
+              )}
+              {resetFrequency === 'WEEKLY' && (
+                <p>Les exercices complétés sont réinitialisés chaque lundi à minuit</p>
+              )}
             </div>
           </Card>
 
           {/* Section Aphasie */}
           <Card variant="default" padding="lg">
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
-              Souhaites-tu accéder au journal d&apos;aphasie ?
+            <label className="block text-base font-semibold text-gray-800 mb-2">
+              Journal d&apos;aphasie
             </label>
             <p className="text-sm text-gray-500 mb-4">
               Pour suivre tes citations et pratiquer des exercices d&apos;orthophonie
             </p>
-            
-            <SegmentedControl
+
+            <ToggleButtonGroup
               options={[
-                { value: 'YES', label: '✓ Oui' },
-                { value: 'NO', label: '✗ Non' },
+                { value: true, label: 'Oui', icon: '✓' },
+                { value: false, label: 'Non', icon: '✗' },
               ]}
-              value={isAphasic ? 'YES' : 'NO'}
-              onChange={(value) => setIsAphasic(value === 'YES')}
-              fullWidth
-              size="md"
-              variant="filter"
-              className="bg-gray-50 border-2 border-gray-200"
-              activeRingColor="ring-purple-500"
+              value={isAphasic}
+              onChange={(value) => setIsAphasic(value as boolean)}
+              activeColor="purple"
             />
           </Card>
 

@@ -168,13 +168,16 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={clsx(
-                          'font-medium truncate',
-                          isSelected ? 'text-amber-800' : 'text-gray-800'
-                        )}>
-                          {user.name}
-                        </span>
+                      {/* Nom */}
+                      <span className={clsx(
+                        'font-medium block',
+                        isSelected ? 'text-amber-800' : 'text-gray-800'
+                      )}>
+                        {user.name}
+                      </span>
+
+                      {/* Badges */}
+                      <div className="flex items-center gap-1.5 mt-1">
                         {isCurrentUser && (
                           <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                             Vous
@@ -186,11 +189,12 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
                           </span>
                         )}
                       </div>
-                      
+
+                      {/* Stats */}
                       {user._count && (
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                          <span>{user._count.exercices} exercices</span>
-                          <span>{user._count.progress} progrès</span>
+                        <div className="text-xs text-gray-500 mt-1.5 space-y-0.5">
+                          <div>{user._count.exercices} exercices</div>
+                          <div>{user._count.progress} progrès</div>
                         </div>
                       )}
                     </div>

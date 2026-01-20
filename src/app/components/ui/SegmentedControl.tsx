@@ -152,8 +152,13 @@ export function SegmentedControl<T extends string>({
               </span>
             ) : null}
             
-            {/* Label */}
-            <span className="text-xs md:text-sm leading-tight">{text}</span>
+            {/* Label avec count à côté si présent */}
+            <span className="text-xs md:text-sm leading-tight flex items-center gap-1.5">
+              {text}
+              {hasCount && !showCountBelow && (
+                <span className="text-[10px] font-bold opacity-75">({option.count})</span>
+              )}
+            </span>
             
             {/* Count (si présent et showCountBelow activé) */}
             {hasCount && showCountBelow && (

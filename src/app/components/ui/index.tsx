@@ -26,3 +26,4 @@ export { WeeklyCompletionIndicator } from './WeeklyCompletionIndicator';
 export { ProgressButton } from './ProgressButton';
 export { BackButton } from './BackButton';
 export { SpeechButton } from './SpeechButton';
+export { FilterBadge } from './FilterBadge';

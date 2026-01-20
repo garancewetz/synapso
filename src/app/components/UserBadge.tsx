@@ -6,7 +6,6 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
-  showName?: boolean;
   size?: 'sm' | 'md' | 'lg';
 };
 
@@ -15,7 +14,7 @@ type Props = {
  * Affiche l'avatar avec l'initiale, un indicateur de connexion,
  * et le nom de l'utilisateur (optionnel)
  */
-export function UserBadge({ showName = true, size = 'md' }: Props) {
+export function UserBadge({ size = 'md' }: Props) {
   const { effectiveUser, isAdmin, currentUser } = useUser();
   const { isLeftHanded } = useHandPreference();
 
@@ -55,7 +54,7 @@ export function UserBadge({ showName = true, size = 'md' }: Props) {
     <TouchLink
       href="/settings"
       className={clsx(
-        'group flex items-center gap-2.5 px-2 py-1.5 rounded-xl cursor-pointer',
+        'group flex items-center px-2 py-1 rounded-xl cursor-pointer',
         'hover:bg-gray-50 transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-400',
         isLeftHanded && 'flex-row-reverse'
@@ -75,18 +74,6 @@ export function UserBadge({ showName = true, size = 'md' }: Props) {
       >
         {initial}
       </div>
-
-      {/* Nom */}
-      {showName && (
-        <span
-          className={clsx(
-            sizes.name,
-            'font-medium text-gray-700 group-hover:text-gray-900 transition-colors'
-          )}
-        >
-          {effectiveUser.name}
-        </span>
-      )}
     </TouchLink>
   );
 }

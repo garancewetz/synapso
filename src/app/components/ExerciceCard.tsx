@@ -271,17 +271,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         )}
                     </div>
                 <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
-                    {/* Bouton Favori */}
-                    <Button
-                        iconOnly
-                        onClick={handlePin}
-                        disabled={isPinning}
-                        isActive={exercice.pinned}
-                        title={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                        aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                    >
-                        <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
-                    </Button>
+                 
 
                     {/* Bouton Modifier */}
                     <Button
@@ -301,6 +291,17 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
                     />
+                       {/* Bouton Favori */}
+                       <Button
+                        iconOnly
+                        onClick={handlePin}
+                        disabled={isPinning}
+                        isActive={exercice.pinned}
+                        title={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                        aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                    >
+                        <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
+                    </Button> 
                 </BaseCard.Footer>
             </BaseCard.Content>
         </BaseCard>

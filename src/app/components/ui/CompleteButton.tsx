@@ -73,7 +73,7 @@ export function CompleteButton({
     <Button
       variant="secondary"
       icon={isLoading ? undefined : getIcon()}
-      size="md"
+      size="sm"
       rounded="lg"
       className={clsx(
         'flex-1 whitespace-nowrap shadow-sm font-semibold text-sm',

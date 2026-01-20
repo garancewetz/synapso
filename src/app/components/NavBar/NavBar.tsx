@@ -66,7 +66,7 @@ export function NavBar() {
               aria-label="Retour à l'accueil Synapso"
             >
               <Logo size={36} className="md:scale-110" />
-              <span className="text-lg font-semibold text-gray-800">Synapso</span>
+              <span className="text-lg text-gray-800 max-lg:hidden">Synapso</span>
             </TouchLink>
           </div>
 
@@ -132,7 +132,7 @@ export function NavBar() {
             isLeftHanded && 'flex-row-reverse'
           )}>
             {effectiveUser && (
-              <UserBadge showName size="md" />
+              <UserBadge size="sm" />
             )}
             <Button
               iconOnly

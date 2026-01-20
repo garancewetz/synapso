@@ -33,12 +33,18 @@ export default function EquipmentsPage() {
   const { equipmentsWithCounts, equipmentIconsMap, loading: loadingMetadata } = useEquipmentMetadata();
 
   // Mémoriser les options pour éviter les re-renders inutiles du hook
-  const exercicesOptions = useMemo(() => ({
-    equipments: selectedEquipments.length > 0 ? selectedEquipments : undefined,
-  }), [selectedEquipments]);
+  // Si aucun équipement n'est sélectionné, on charge tous les exercices (undefined = pas de filtre)
+  // Sinon, on filtre par les équipements sélectionnés
+  const exercicesOptions = useMemo(() => {
+    if (selectedEquipments.length === 0) {
+      return undefined; // Pas de filtre = tous les exercices
+    }
+    return {
+      equipments: selectedEquipments,
+    };
+  }, [selectedEquipments]);
 
   // Charger les exercices via hook personnalisé avec filtrage par équipements côté serveur
-  // Ne charger que si au moins un équipement est sélectionné (pour optimiser les requêtes)
   const { exercices, loading: loadingExercices, updateExercice } = useExercices(exercicesOptions);
 
   // Fonction pour toggle un équipement dans la sélection
@@ -54,14 +60,24 @@ export default function EquipmentsPage() {
 
   // Mettre à jour l'URL quand les équipements changent
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedEquipments.length > 0) {
-      params.set('equipments', selectedEquipments.map(eq => encodeURIComponent(eq)).join(','));
-    } else {
-      params.delete('equipments');
+    const currentEquipments = searchParams.get('equipments');
+    const expectedEquipments = selectedEquipments.length > 0 
+      ? selectedEquipments.map(eq => encodeURIComponent(eq)).join(',')
+      : null;
+    
+    // Ne mettre à jour l'URL que si elle est différente de l'état actuel
+    if (currentEquipments !== expectedEquipments) {
+      const params = new URLSearchParams();
+      if (selectedEquipments.length > 0) {
+        params.set('equipments', selectedEquipments.map(eq => encodeURIComponent(eq)).join(','));
+      }
+      const newUrl = params.toString() 
+        ? `/exercices/equipments?${params.toString()}`
+        : '/exercices/equipments';
+      router.replace(newUrl, { scroll: false });
     }
-    router.replace(`/exercices/equipments?${params.toString()}`, { scroll: false });
-  }, [selectedEquipments, router, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEquipments, router]);
 
   const handleEditClick = useCallback((id: number) => {
     router.push(`/exercice/edit/${id}?from=${encodeURIComponent('/exercices/equipments')}`);
@@ -72,12 +88,11 @@ export default function EquipmentsPage() {
   }, [updateExercice]);
 
   // Les exercices sont déjà filtrés côté serveur par équipements sélectionnés
-  // Plus besoin de filtrer côté client, sauf si aucun équipement n'est sélectionné
+  // Si aucun équipement n'est sélectionné, on affiche tous les exercices
   const filteredExercices = useMemo(() => {
-    if (selectedEquipments.length === 0) return [];
     // Les exercices sont déjà filtrés par le serveur, on les utilise directement
     return exercices;
-  }, [exercices, selectedEquipments]);
+  }, [exercices]);
 
   // Grouper par catégorie
   const exercicesByCategory = useMemo(() => {
@@ -112,17 +127,15 @@ export default function EquipmentsPage() {
               <h1 className="text-2xl font-bold text-gray-800">
                 Exercices par équipement
               </h1>
-              {selectedEquipments.length > 0 ? (
-                loadingExercices ? (
-                  <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
-                ) : (
-                  <p className="text-gray-500 mt-1">
-                    {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} avec {selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}
-                  </p>
-                )
+              {loadingExercices ? (
+                <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
+              ) : selectedEquipments.length > 0 ? (
+                <p className="text-gray-500 mt-1">
+                  {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} avec {selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}
+                </p>
               ) : (
                 <p className="text-gray-500 mt-1">
-                  Sélectionnez un ou plusieurs équipements pour voir les exercices
+                  {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} disponible{filteredExercices.length > 1 ? 's' : ''}. Sélectionnez un équipement pour filtrer.
                 </p>
               )}
             </div>
@@ -188,14 +201,13 @@ export default function EquipmentsPage() {
           </div>
         </div>
 
-        {/* Exercices - affichés seulement si au moins un équipement est sélectionné */}
-        {selectedEquipments.length > 0 && (
-          <div className="px-4">
-            {loadingExercices ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-              </div>
-            ) : filteredExercices.length === 0 ? (
+        {/* Exercices - toujours affichés, filtrés par équipements si sélectionnés */}
+        <div className="px-4">
+          {loadingExercices ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ) : filteredExercices.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -216,7 +228,7 @@ export default function EquipmentsPage() {
               />
             </motion.div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-10 md:space-y-8">
               {CATEGORY_ORDER.map((category) => {
                 const categoryExercices = exercicesByCategory[category];
                 const categoryIcon = CATEGORY_ICONS[category];
@@ -232,9 +244,10 @@ export default function EquipmentsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
+                    className="pb-6 md:pb-0"
                   >
-                    <div className="mb-4">
-                      <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                    <div className="mb-4 md:mb-4">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-1 mt-8 flex items-center gap-2">
                         <span>{categoryIcon}</span>
                         <span>{CATEGORY_LABELS[category]}</span>
                       </h2>
@@ -258,8 +271,7 @@ export default function EquipmentsPage() {
               })}
             </div>
           )}
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

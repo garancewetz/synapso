@@ -26,18 +26,13 @@ export function InitialLoader() {
                 <stop offset="0%" stopColor="#1F2937" />
                 <stop offset="100%" stopColor="#374151" />
               </linearGradient>
-              
-     
             </defs>
 
             {/* Moitié gauche */}
             <g clipPath="url(#clipBrain)">
               <rect x="0" y="0" width="50" height="100" fill="url(#leftGradient)" />
-              
               {/* Moitié droite avec effet subtil */}
               <rect x="50" y="0" width="50" height="100" fill="#F3F4F6" />
-              
-         
             </g>
 
             {/* Contour avec effet de dessin progressif */}
@@ -47,7 +42,7 @@ export function InitialLoader() {
               stroke="#1F2937" 
               strokeWidth="1.5"
               strokeLinecap="round"
-              className="animate-[drawPath_3s_ease-in-out_infinite]"
+              className="animate-[drawPath_2s_linear_infinite]"
               style={{
                 strokeDasharray: 280,
                 strokeDashoffset: 0,
@@ -78,21 +73,6 @@ export function InitialLoader() {
           }
         }
 
-        @keyframes scan {
-          0% {
-            transform: translateY(-100%);
-          }
-          50% {
-            transform: translateY(100%);
-          }
-          50.01% {
-            transform: translateY(-100%);
-          }
-          100% {
-            transform: translateY(-100%);
-          }
-        }
-
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -104,21 +84,9 @@ export function InitialLoader() {
           }
         }
 
-        @keyframes bounce {
-          0%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-4px);
-          }
-        }
-
         @keyframes drawPath {
           0% {
             stroke-dashoffset: 280;
-          }
-          50% {
-            stroke-dashoffset: 0;
           }
           100% {
             stroke-dashoffset: -280;

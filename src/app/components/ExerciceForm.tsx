@@ -216,7 +216,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <label className="block text-base font-semibold text-gray-800 mb-3">
           Catégorie *
         </label>
-        <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-md">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-full">
           {categories.map((category) => {
             const isSelected = formData.category === category;
             const colors = CATEGORY_COLORS[category];
@@ -251,7 +251,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       </div>
 
       {/* Sélection des parties du corps */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-lg p-4 md:p-6">
         <label className="block text-base font-semibold text-gray-800 mb-2">
           Parties du corps ciblées
         </label>
@@ -308,11 +308,11 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         onValueChange={(value) => setFormData({ ...formData, descriptionComment: value })}
       />
 
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-lg p-4 md:p-6">
         <label className="block text-base font-semibold text-gray-800 mb-4">
           Paramètres de l&apos;exercice (optionnel)
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl">
           <InputWithSpeech
             label="Répétitions"
             placeholder="Ex: 10"
@@ -336,7 +336,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         </div>
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-lg p-4 md:p-6">
         <label className="block text-base font-semibold text-gray-800 mb-4">
           Équipements (optionnel)
         </label>

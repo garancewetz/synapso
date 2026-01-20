@@ -62,24 +62,26 @@ export default function CategoryPage() {
 
   // Calculer les bodyparts disponibles pour cette catégorie avec leurs compteurs
   const bodypartsWithCounts = useMemo(() => {
-    // Obtenir les bodyparts qui appartiennent à cette catégorie
-    const categoryBodyparts = AVAILABLE_BODYPARTS.filter(
-      bp => BODYPART_TO_CATEGORY[bp] === categoryParam
-    );
+    // Pour STRETCHING, on prend tous les bodyparts présents dans les exercices
+    // Pour les autres catégories, on filtre par BODYPART_TO_CATEGORY
+    const isStretching = categoryParam === 'STRETCHING';
 
     // Compter les exercices par bodypart
     const counts: Record<string, number> = {};
     exercices.forEach(ex => {
       ex.bodyparts.forEach(bp => {
-        if (categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number])) {
+        if (isStretching || BODYPART_TO_CATEGORY[bp] === categoryParam) {
           counts[bp] = (counts[bp] || 0) + 1;
         }
       });
     });
 
     // Retourner uniquement les bodyparts qui ont au moins un exercice
-    return categoryBodyparts
-      .filter(bp => counts[bp] > 0)
+    const bodypartsToShow = isStretching
+      ? AVAILABLE_BODYPARTS.filter(bp => counts[bp] > 0)
+      : AVAILABLE_BODYPARTS.filter(bp => BODYPART_TO_CATEGORY[bp] === categoryParam && counts[bp] > 0);
+
+    return bodypartsToShow
       .map(bp => ({
         value: bp,
         label: bp,
@@ -119,10 +121,19 @@ export default function CategoryPage() {
     );
 
     // Filtrer les étirements qui ciblent au moins un bodypart de cette catégorie
-    return stretchingExercices.filter(ex =>
+    let filtered = stretchingExercices.filter(ex =>
       ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
     );
-  }, [categoryParam, stretchingExercices]);
+
+    // Filtrer par bodypart si sélectionné
+    if (selectedBodypart) {
+      filtered = filtered.filter(ex =>
+        ex.bodyparts.includes(selectedBodypart)
+      );
+    }
+
+    return filtered;
+  }, [categoryParam, stretchingExercices, selectedBodypart]);
 
   // Les favoris sont déjà en haut grâce au tri dans l'API
   // (orderBy: [{ pinned: 'desc' }, { id: 'desc' }])

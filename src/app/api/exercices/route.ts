@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category') as ExerciceCategory | null;
+    const equipmentsParam = searchParams.get('equipments');
+    
+    // Parser les équipements depuis le paramètre URL (format: "Lit,Chaise" ou "Lit")
+    const selectedEquipments = equipmentsParam
+      ? equipmentsParam.split(',').map(eq => decodeURIComponent(eq).trim()).filter(Boolean)
+      : [];
 
     // Vérifier que l'utilisateur existe et récupérer son resetFrequency
     const user = await prisma.user.findUnique({
@@ -81,55 +87,64 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Reformater les données
-    const formattedExercices = exercices.map((exercice) => {
-      // Extraire les dates de complétion de la période (pour mode WEEKLY)
-      const weeklyCompletions = exercice.history.map((h) => h.completedAt);
-      
-      // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
-      const completedInPeriod = weeklyCompletions.length > 0;
-      
-      // Un exercice est complété aujourd'hui si il y a une entrée dans l'historique pour aujourd'hui
-      const startOfToday = startOfDay(now);
-      const endOfToday = startOfDay(addDays(now, 1));
-      const hasTodayHistory = exercice.history.some(
-        (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
-      );
-      const completedToday = hasTodayHistory;
+    // Reformater les données et filtrer par équipements si nécessaire
+    const formattedExercices = exercices
+      .map((exercice) => {
+        // Extraire les dates de complétion de la période (pour mode WEEKLY)
+        const weeklyCompletions = exercice.history.map((h) => h.completedAt);
+        
+        // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
+        const completedInPeriod = weeklyCompletions.length > 0;
+        
+        // Un exercice est complété aujourd'hui si il y a une entrée dans l'historique pour aujourd'hui
+        const startOfToday = startOfDay(now);
+        const endOfToday = startOfDay(addDays(now, 1));
+        const hasTodayHistory = exercice.history.some(
+          (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
+        );
+        const completedToday = hasTodayHistory;
 
-      // Parser les équipements
-      let equipmentsParsed: string[] = [];
-      try {
-        equipmentsParsed = JSON.parse(exercice.equipments || '[]');
-      } catch {
-        equipmentsParsed = [];
-      }
+        // Parser les équipements
+        let equipmentsParsed: string[] = [];
+        try {
+          equipmentsParsed = JSON.parse(exercice.equipments || '[]');
+        } catch {
+          equipmentsParsed = [];
+        }
 
-      // Extraire les noms des bodyparts
-      const bodypartsNames = exercice.bodyparts.map((eb) => eb.bodypart.name);
+        // Extraire les noms des bodyparts
+        const bodypartsNames = exercice.bodyparts.map((eb) => eb.bodypart.name);
 
-      return {
-        id: exercice.id,
-        name: exercice.name,
-        description: {
-          text: exercice.descriptionText,
-          comment: exercice.descriptionComment,
-        },
-        workout: {
-          repeat: exercice.workoutRepeat,
-          series: exercice.workoutSeries,
-          duration: exercice.workoutDuration,
-        },
-        equipments: equipmentsParsed,
-        bodyparts: bodypartsNames,
-        category: exercice.category as ExerciceCategory,
-        completed: completedInPeriod,
-        completedToday: completedToday,
-        completedAt: exercice.completedAt,
-        pinned: exercice.pinned ?? false,
-        weeklyCompletions: weeklyCompletions,
-      };
-    });
+        return {
+          id: exercice.id,
+          name: exercice.name,
+          description: {
+            text: exercice.descriptionText,
+            comment: exercice.descriptionComment,
+          },
+          workout: {
+            repeat: exercice.workoutRepeat,
+            series: exercice.workoutSeries,
+            duration: exercice.workoutDuration,
+          },
+          equipments: equipmentsParsed,
+          bodyparts: bodypartsNames,
+          category: exercice.category as ExerciceCategory,
+          completed: completedInPeriod,
+          completedToday: completedToday,
+          completedAt: exercice.completedAt,
+          pinned: exercice.pinned ?? false,
+          weeklyCompletions: weeklyCompletions,
+        };
+      })
+      // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
+      .filter((exercice) => {
+        if (selectedEquipments.length === 0) {
+          return true;
+        }
+        // Vérifier si l'exercice contient au moins un des équipements sélectionnés
+        return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
+      });
     
     return NextResponse.json(formattedExercices);
   } catch (error) {

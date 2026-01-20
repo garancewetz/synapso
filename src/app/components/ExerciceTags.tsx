@@ -1,4 +1,5 @@
 import { Badge } from '@/app/components/ui';
+import { TouchLink } from '@/app/components/TouchLink';
 import type { Exercice } from '@/app/types';
 
 type Props = {
@@ -41,12 +42,19 @@ export function ExerciceTags({ exercice, categoryStyle }: Props) {
         </Badge>
       )}
       
-      {/* Équipements */}
+      {/* Équipements - cliquables */}
       {exercice.equipments?.length > 0 &&
         exercice.equipments.map((equipment) => (
-          <Badge key={equipment} variant="equipment" icon="🏋️">
-            {equipment}
-          </Badge>
+          <TouchLink
+            key={equipment}
+            href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
+            className="inline-block"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Badge variant="equipment" icon="🏋️">
+              {equipment}
+            </Badge>
+          </TouchLink>
         ))
       }
     </div>

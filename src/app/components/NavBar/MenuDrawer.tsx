@@ -9,6 +9,7 @@ import { useHandPreference } from '@/app/hooks/useHandPreference';
 import clsx from 'clsx';
 import { UserSection } from './UserSection';
 import { MenuActions } from './MenuActions';
+import { MenuSections } from './MenuSections';
 import { AdminUserSelector } from './AdminUserSelector';
 import type { User } from '@/app/types';
 import type { RefObject } from 'react';
@@ -112,6 +113,9 @@ export function MenuDrawer({
 
           {/* Sélecteur d'utilisateur admin */}
           <AdminUserSelector onMenuClose={onClose} isMenuOpen={isOpen} />
+
+          {/* Sections principales (Aphasie et Parcours) */}
+          <MenuSections onMenuClose={onClose} isMenuOpen={isOpen} />
 
           {/* Actions rapides */}
           <MenuActions onMenuClose={onClose} isMenuOpen={isOpen} />

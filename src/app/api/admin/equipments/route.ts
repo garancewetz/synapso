@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { requireAuth } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
@@ -8,78 +8,71 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    // Récupérer l'userId effectif depuis le cookie (gère l'impersonation admin)
-    const userId = await getEffectiveUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
-
-    // Récupérer tous les bodyparts depuis la table Bodypart
-    const bodyparts = await prisma.bodypart.findMany({
-      orderBy: { name: 'asc' },
-      select: { name: true },
-    });
-
-    // Récupérer tous les équipements depuis les exercices de l'utilisateur
+    // Récupérer tous les exercices avec leurs équipements (tous les utilisateurs)
     const exercices = await prisma.exercice.findMany({
-      where: {
-        userId: userId,
-      },
       select: {
+        id: true,
+        name: true,
         equipments: true,
+        userId: true,
       },
     });
 
     const equipmentsSet = new Set<string>();
     const equipmentsCounts: Record<string, number> = {};
-    
+    const equipmentsByExercice: Array<{
+      exerciceId: number;
+      exerciceName: string;
+      userId: number;
+      equipments: string[];
+    }> = [];
+
     exercices.forEach((exercice) => {
       try {
         const equipments = JSON.parse(exercice.equipments || '[]') as string[];
         if (Array.isArray(equipments)) {
+          const validEquipments: string[] = [];
           equipments.forEach((eq: string) => {
             if (typeof eq === 'string' && eq.trim()) {
               const trimmed = eq.trim();
+              validEquipments.push(trimmed);
               equipmentsSet.add(trimmed);
               equipmentsCounts[trimmed] = (equipmentsCounts[trimmed] || 0) + 1;
             }
           });
+          if (validEquipments.length > 0) {
+            equipmentsByExercice.push({
+              exerciceId: exercice.id,
+              exerciceName: exercice.name,
+              userId: exercice.userId,
+              equipments: validEquipments,
+            });
+          }
         }
       } catch {
-        // Ignorer les erreurs de parsing, continuer avec les autres exercices
+        // Ignorer les erreurs de parsing
       }
     });
 
-    // Créer un tableau d'équipements avec leurs compteurs
-    // Ne pas filtrer par count > 0 pour afficher tous les équipements
+    // Trier les équipements par nombre d'occurrences (décroissant)
     const equipmentsWithCounts = Array.from(equipmentsSet)
       .map(eq => ({
         name: eq,
         count: equipmentsCounts[eq] || 0,
       }))
-      .sort((a, b) => {
-        // Trier d'abord par count décroissant, puis par nom alphabétique
-        if (b.count !== a.count) {
-          return b.count - a.count;
-        }
-        return a.name.localeCompare(b.name);
-      });
+      .sort((a, b) => b.count - a.count);
 
     return NextResponse.json({
-      bodyparts: bodyparts.map((bp) => bp.name),
-      equipments: Array.from(equipmentsSet).sort(),
+      totalUnique: equipmentsSet.size,
+      equipmentsList: Array.from(equipmentsSet).sort(),
       equipmentsWithCounts: equipmentsWithCounts,
+      equipmentsByExercice: equipmentsByExercice,
     });
   } catch (error) {
-    logError('Error fetching metadata', error);
+    logError('Error extracting equipments', error);
     return NextResponse.json(
-      { error: 'Failed to fetch metadata' },
+      { error: 'Failed to extract equipments' },
       { status: 500 }
     );
   }
 }
-

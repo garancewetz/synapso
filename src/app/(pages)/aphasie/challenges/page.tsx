@@ -5,8 +5,6 @@ import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 
-export const dynamic = 'force-dynamic';
-
 export default function AphasieChallengesPage() {
   const { hasAccess } = useAphasieCheck();
 

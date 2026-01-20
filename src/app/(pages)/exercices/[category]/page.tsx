@@ -19,7 +19,6 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import { ProgressFAB } from '@/app/components';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
@@ -37,7 +36,7 @@ export default function CategoryPage() {
   const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
 
   // Ne charger les exercices que si le user est chargé et disponible
-  const { exercices, loading: loadingExercices, updateExercice, refetch } = useExercices({
+  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
     category: isValidCategory ? categoryParam : undefined,
   });
 
@@ -157,7 +156,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="pb-40 md:pb-8">
+    <section className="pb-12 md:pb-8">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
@@ -356,11 +355,6 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Bouton flottant "Noter un progrès" */}
-      <ProgressFAB onSuccess={() => {
-        // Rafraîchir la liste des exercices au cas où un progrès orthophonie a été créé
-        refetch();
-      }} />
     </section>
   );
 }

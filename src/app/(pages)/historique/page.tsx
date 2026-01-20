@@ -25,6 +25,11 @@ const ProgressBottomSheet = dynamic(
   { ssr: false }
 );
 
+const ProgressFAB = dynamic(
+  () => import('@/app/components/ProgressFAB').then(mod => ({ default: mod.ProgressFAB })),
+  { ssr: false }
+);
+
 const ConfettiRain = dynamic(
   () => import('@/app/components/ConfettiRain').then(mod => ({ default: mod.ConfettiRain })),
   { ssr: false }
@@ -432,6 +437,11 @@ export default function HistoriquePage() {
           </AnimatePresence>
         )}
       </div>
+
+      {/* Bouton flottant "Noter un progrès" - uniquement sur l'onglet progrès */}
+      {effectiveUser && activeTab === 'progres' && (
+        <ProgressFAB onSuccess={handleProgressSuccess} />
+      )}
 
       {/* Pluie de confettis dorés */}
       <ConfettiRain 

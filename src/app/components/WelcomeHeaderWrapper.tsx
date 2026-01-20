@@ -52,12 +52,11 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
     openDayDetail(day);
   }, [openDayDetail]);
 
-  // Ne pas afficher sur les pages d'ajout/édition d'exercice, sur l'historique, sur les paramètres et sur toutes les pages aphasie
-  const hideOnPages = ['/exercice/add', '/exercice/edit', '/aphasie', '/historique', '/settings'];
-  const shouldHide = hideOnPages.some(path => pathname?.startsWith(path));
+  // Ne s'afficher que sur la page d'accueil
+  const isHomePage = pathname === '/';
 
-  // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
-  if (shouldHide || !effectiveUser || loading) {
+  // Ne pas afficher si pas sur la page d'accueil, pas d'utilisateur (page 404, erreurs, etc.)
+  if (!isHomePage || !effectiveUser || loading) {
     return null;
   }
 

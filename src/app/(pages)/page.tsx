@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useCallback, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import { CategoryCardWithProgress, MenuLink, SiteMapGroup } from '@/app/components';
+import { CategoryCardWithProgress, MenuLink, SiteMapGroup, WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
-import { MapIcon, ChatIcon, PlusIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
+import { MapIcon, ChatIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { MENU_COLORS } from '@/app/constants/card.constants';
@@ -22,11 +22,6 @@ const AnimatePresence = dynamic(
 
 const MotionDiv = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
-  { ssr: false }
-);
-
-const ProgressFAB = dynamic(
-  () => import('@/app/components/ProgressFAB').then(mod => ({ default: mod.ProgressFAB })),
   { ssr: false }
 );
 
@@ -97,8 +92,11 @@ export default function Home() {
   return (
     <section>
       <div className="max-w-5xl mx-auto">
+        {/* Welcome Header - uniquement sur la page d'accueil */}
+        <WelcomeHeaderWrapper />
+        
         {/* Contenu principal */}
-        <div className="px-3 md:px-4 pb-24 md:pb-8">
+        <div className="px-3 md:px-4 pb-12 md:pb-8">
           <AnimatePresence mode="wait">
             {!effectiveUser && userLoading ? (
               <MotionDiv
@@ -166,18 +164,20 @@ export default function Home() {
                           </MotionDiv>
                         );
                       })}
-                    </div>
-
-                    {/* Action secondaire : Ajouter un exercice */}
+                    {/* Action secondaire : Voir par équipement */}
                     <MenuLink
-                      title="Ajouter un exercice"
-                      icon={<PlusIcon className="w-5 h-5" />}
-                      description="Créer un nouvel exercice personnalisé"
-                      href="/exercice/add"
-                      iconBgColor={SITEMAP_ICON_STYLES.primary.addExercice.bg}
-                      iconTextColor={SITEMAP_ICON_STYLES.primary.addExercice.text}
+                      title="Voir par équipement"
+                      icon="🏋️‍♂️"
+                      description="Explorer tous les exercices par équipement"
+                      href="/exercices/equipments"
+                      iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+                      iconTextColor={SITEMAP_ICON_STYLES.default.text}
                       isSecondary={true}
                     />
+                    </div>
+
+
+                  
                   </div>
                 )}
 
@@ -235,9 +235,6 @@ export default function Home() {
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Bouton flottant "Noter un progrès" - visible sur toutes les pages */}
-      {effectiveUser && <ProgressFAB />}
 
       {/* Modal d'édition de progrès */}
       {effectiveUser && (

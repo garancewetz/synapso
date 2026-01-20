@@ -8,7 +8,7 @@ import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { TouchLink } from '@/app/components/TouchLink';
 import { MapIcon } from '@/app/components/ui/icons';
-import { ProgressFAB, ProgressBottomSheet } from '@/app/components';
+import { ProgressBottomSheet } from '@/app/components';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
@@ -18,8 +18,6 @@ import { useOrthophonieProgress } from '@/app/hooks/useOrthophonieProgress';
 import { ProgressTimeline } from '@/app/components/historique';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { Card } from '@/app/components/ui/Card';
-
-export const dynamic = 'force-dynamic';
 
 export default function AphasiePage() {
   const { hasAccess } = useAphasieCheck();
@@ -136,9 +134,6 @@ export default function AphasiePage() {
           </div>
         </div>
       </div>
-
-      {/* Bouton flottant "Noter un progrès" avec catégorie orthophonie par défaut */}
-      {effectiveUser && <ProgressFAB onSuccess={handleProgressSuccess} defaultCategory="ORTHOPHONIE" />}
 
       {/* Modal de progrès avec catégorie orthophonie par défaut */}
       {effectiveUser && (

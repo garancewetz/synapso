@@ -1,0 +1,266 @@
+'use client';
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ExerciceCard } from '@/app/components/ExerciceCard';
+import { EmptyState } from '@/app/components/EmptyState';
+import { BackButton } from '@/app/components/ui/BackButton';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
+import { getEquipmentIcon } from '@/app/constants/equipment.constants';
+import { useUser } from '@/app/contexts/UserContext';
+import { useEquipmentMetadata } from '@/app/hooks/useEquipmentMetadata';
+import { useExercices } from '@/app/hooks/useExercices';
+import type { Exercice } from '@/app/types';
+import { ExerciceCategory } from '@/app/types/exercice';
+import clsx from 'clsx';
+
+export default function EquipmentsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { effectiveUser } = useUser();
+  
+  // Récupérer les équipements depuis l'URL (query param)
+  const equipmentsFromUrl = searchParams.get('equipments');
+  const [selectedEquipments, setSelectedEquipments] = useState<string[]>(
+    equipmentsFromUrl 
+      ? equipmentsFromUrl.split(',').map(eq => decodeURIComponent(eq)).filter(Boolean)
+      : []
+  );
+
+  // Charger les métadonnées des équipements via hook personnalisé
+  const { equipmentsWithCounts, equipmentIconsMap, loading: loadingMetadata } = useEquipmentMetadata();
+
+  // Mémoriser les options pour éviter les re-renders inutiles du hook
+  const exercicesOptions = useMemo(() => ({
+    equipments: selectedEquipments.length > 0 ? selectedEquipments : undefined,
+  }), [selectedEquipments]);
+
+  // Charger les exercices via hook personnalisé avec filtrage par équipements côté serveur
+  // Ne charger que si au moins un équipement est sélectionné (pour optimiser les requêtes)
+  const { exercices, loading: loadingExercices, updateExercice } = useExercices(exercicesOptions);
+
+  // Fonction pour toggle un équipement dans la sélection
+  const toggleEquipment = useCallback((equipmentName: string) => {
+    setSelectedEquipments(prev => {
+      if (prev.includes(equipmentName)) {
+        return prev.filter(eq => eq !== equipmentName);
+      } else {
+        return [...prev, equipmentName];
+      }
+    });
+  }, []);
+
+  // Mettre à jour l'URL quand les équipements changent
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedEquipments.length > 0) {
+      params.set('equipments', selectedEquipments.map(eq => encodeURIComponent(eq)).join(','));
+    } else {
+      params.delete('equipments');
+    }
+    router.replace(`/exercices/equipments?${params.toString()}`, { scroll: false });
+  }, [selectedEquipments, router, searchParams]);
+
+  const handleEditClick = useCallback((id: number) => {
+    router.push(`/exercice/edit/${id}?from=${encodeURIComponent('/exercices/equipments')}`);
+  }, [router]);
+
+  const handleCompleted = useCallback((updatedExercice: Exercice) => {
+    updateExercice(updatedExercice);
+  }, [updateExercice]);
+
+  // Les exercices sont déjà filtrés côté serveur par équipements sélectionnés
+  // Plus besoin de filtrer côté client, sauf si aucun équipement n'est sélectionné
+  const filteredExercices = useMemo(() => {
+    if (selectedEquipments.length === 0) return [];
+    // Les exercices sont déjà filtrés par le serveur, on les utilise directement
+    return exercices;
+  }, [exercices, selectedEquipments]);
+
+  // Grouper par catégorie
+  const exercicesByCategory = useMemo(() => {
+    const grouped: Record<ExerciceCategory, Exercice[]> = {
+      UPPER_BODY: [],
+      LOWER_BODY: [],
+      CORE: [],
+      STRETCHING: [],
+    };
+    
+    filteredExercices.forEach(ex => {
+      grouped[ex.category].push(ex);
+    });
+    
+    return grouped;
+  }, [filteredExercices]);
+
+  return (
+    <section className="pb-12 md:pb-8">
+      <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+        {/* Header */}
+        <div className="px-4 mb-6">
+          <BackButton />
+          <div className={clsx(
+            'flex items-start gap-3 mt-4',
+            effectiveUser?.dominantHand === 'LEFT' 
+              ? 'justify-start md:justify-between' 
+              : 'justify-between',
+            'md:justify-between'
+          )}>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl font-bold text-gray-800">
+                Exercices par équipement
+              </h1>
+              {selectedEquipments.length > 0 ? (
+                loadingExercices ? (
+                  <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
+                ) : (
+                  <p className="text-gray-500 mt-1">
+                    {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} avec {selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}
+                  </p>
+                )
+              ) : (
+                <p className="text-gray-500 mt-1">
+                  Sélectionnez un ou plusieurs équipements pour voir les exercices
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* Filtres - toujours visible */}
+          <div className="mt-4 space-y-4">
+            {/* Filtre par équipement */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Équipement
+              </label>
+              {loadingMetadata ? (
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : equipmentsWithCounts.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {equipmentsWithCounts.map(({ name, count }) => {
+                    const icon = equipmentIconsMap[name] || getEquipmentIcon(name);
+                    const isSelected = selectedEquipments.includes(name);
+                    return (
+                      <button
+                        key={name}
+                        onClick={() => toggleEquipment(name)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleEquipment(name);
+                          }
+                        }}
+                        className={clsx(
+                          'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+                          'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+                          'active:scale-[0.98]',
+                          isSelected
+                            ? 'bg-gray-800 text-white shadow-md'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                        )}
+                        aria-label={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${name} (${count} exercices)`}
+                        aria-pressed={isSelected}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span>{icon}</span>
+                          <span>{name}</span>
+                          <span className="text-[10px] font-bold opacity-90">({count})</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Aucun équipement disponible pour le moment
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Exercices - affichés seulement si au moins un équipement est sélectionné */}
+        {selectedEquipments.length > 0 && (
+          <div className="px-4">
+            {loadingExercices ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ) : filteredExercices.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
+            >
+              <EmptyState
+                icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
+                title={
+                  selectedEquipments.length > 0
+                    ? `Aucun exercice avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : 'ces équipements'}`
+                    : "Aucun exercice"
+                }
+                message={
+                  selectedEquipments.length > 0
+                    ? "Aucun exercice n'utilise ces équipements pour le moment."
+                    : "Aucun exercice disponible pour le moment."
+                }
+              />
+            </motion.div>
+          ) : (
+            <div className="space-y-8">
+              {CATEGORY_ORDER.map((category) => {
+                const categoryExercices = exercicesByCategory[category];
+                const categoryIcon = CATEGORY_ICONS[category];
+                const hasExercices = categoryExercices.length > 0;
+
+                if (!hasExercices) {
+                  return null;
+                }
+
+                return (
+                  <motion.div
+                    key={category}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="mb-4">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                        <span>{categoryIcon}</span>
+                        <span>{CATEGORY_LABELS[category]}</span>
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        {categoryExercices.length} exercice{categoryExercices.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                      {categoryExercices.map((exercice) => (
+                        <div key={exercice.id} className="h-full">
+                          <ExerciceCard
+                            exercice={exercice}
+                            onEdit={handleEditClick}
+                            onCompleted={handleCompleted}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

@@ -5,6 +5,7 @@ import { useUser } from '@/app/contexts/UserContext';
 
 type UseExercicesOptions = {
   category?: ExerciceCategory;
+  equipments?: string[];
 };
 
 type UseExercicesReturn = {
@@ -20,7 +21,7 @@ type UseExercicesReturn = {
  * Centralise la logique de récupération et de mise à jour des exercices
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
-export function useExercices({ category }: UseExercicesOptions = {}): UseExercicesReturn {
+export function useExercices({ category, equipments }: UseExercicesOptions = {}): UseExercicesReturn {
   const { effectiveUser, loading: userLoading } = useUser();
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +45,16 @@ export function useExercices({ category }: UseExercicesOptions = {}): UseExercic
     setError(null);
     
     try {
-      const url = category 
-        ? `/api/exercices?category=${category}`
+      const params = new URLSearchParams();
+      if (category) {
+        params.append('category', category);
+      }
+      if (equipments && equipments.length > 0) {
+        params.append('equipments', equipments.map(eq => encodeURIComponent(eq)).join(','));
+      }
+      
+      const url = params.toString() 
+        ? `/api/exercices?${params.toString()}`
         : `/api/exercices`;
       
       const res = await fetch(url, { credentials: 'include' });
@@ -70,7 +79,7 @@ export function useExercices({ category }: UseExercicesOptions = {}): UseExercic
     } finally {
       setLoading(false);
     }
-  }, [category, effectiveUser, userLoading]);
+  }, [category, equipments, effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchExercices();

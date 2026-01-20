@@ -11,6 +11,7 @@ import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
 import { Badge, Button, CompleteButton, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
 import { CheckIcon } from '@/app/components/ui/icons';
+import { TouchLink } from '@/app/components/TouchLink';
 import { getDayName } from '@/app/utils/date.utils';
 
 type Props = {
@@ -199,12 +200,19 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                                     {exercice.workout.duration}
                                 </Badge>
                             )}
-                            {/* Équipements */}
+                            {/* Équipements - cliquables */}
                             {exercice.equipments && exercice.equipments.length > 0 &&
                                 exercice.equipments.map((equipment: string) => (
-                                    <Badge key={equipment} variant="equipment" icon="🏋️">
-                                        {equipment}
-                                    </Badge>
+                                    <TouchLink
+                                        key={equipment}
+                                        href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
+                                        className="inline-block"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Badge variant="equipment" icon="🏋️">
+                                            {equipment}
+                                        </Badge>
+                                    </TouchLink>
                                 ))
                             }
                         </div>

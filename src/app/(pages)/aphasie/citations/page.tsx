@@ -7,8 +7,6 @@ import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
 import { useAphasieItems } from '@/app/hooks/useAphasieItems';
 
-export const dynamic = 'force-dynamic';
-
 export default function AphasieCitationsPage() {
   const { hasAccess } = useAphasieCheck();
   const { items } = useAphasieItems();

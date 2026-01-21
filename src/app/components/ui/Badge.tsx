@@ -22,8 +22,8 @@ const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-gray-100 text-gray-800',
   // Workout : slate pour les infos d'entraînement (séries, répétitions, durée)
   workout: 'bg-slate-100 text-slate-700',
-  // Equipment : gris pour le matériel nécessaire
-  equipment: 'bg-gray-100 text-gray-700 border border-gray-200',
+  // Equipment : blanc pour le matériel nécessaire (cohérent avec les filtres)
+  equipment: 'bg-white text-gray-700 border border-gray-200',
   // Completed : vert émeraude pour exercice complété
   completed: 'bg-emerald-500/90 text-white border border-emerald-400/50',
   // Mastered : vert émeraude pour exercice maîtrisé

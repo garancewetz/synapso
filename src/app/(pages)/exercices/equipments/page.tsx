@@ -129,6 +129,16 @@ export default function EquipmentsPage() {
     return grouped;
   }, [filteredExercices]);
 
+  // Vérifier si le badge "Tous" est actif (aucun équipement sélectionné)
+  const isAllEquipmentsSelected = useMemo(() => {
+    return selectedEquipments.length === 0;
+  }, [selectedEquipments.length]);
+
+  // Fonction pour réinitialiser les équipements (sélectionner "Tous")
+  const handleSelectAllEquipments = useCallback(() => {
+    setSelectedEquipments([]);
+  }, []);
+
   return (
     <section className="pb-12 md:pb-8">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
@@ -157,6 +167,7 @@ export default function EquipmentsPage() {
             <AddButton 
               href="/exercice/add" 
               label="Ajouter un exercice"
+              addFromParam
               className={clsx(
                 'shrink-0',
                 effectiveUser?.dominantHand === 'LEFT' && 'md:order-last'
@@ -194,6 +205,28 @@ export default function EquipmentsPage() {
                 </div>
               ) : equipmentsWithCounts.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
+                  {/* Badge "Tous" */}
+                  <button
+                    onClick={handleSelectAllEquipments}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectAllEquipments();
+                      }
+                    }}
+                    className={clsx(
+                      'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+                      'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+                      'active:scale-[0.98]',
+                      isAllEquipmentsSelected
+                        ? 'bg-gray-800 text-white shadow-md'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                    )}
+                    aria-label={isAllEquipmentsSelected ? 'Tous les équipements sélectionnés' : 'Sélectionner tous les équipements'}
+                    aria-pressed={isAllEquipmentsSelected}
+                  >
+                    <span>Tous</span>
+                  </button>
                   {equipmentsWithCounts.map(({ name, count }) => {
                     const icon = equipmentIconsMap[name] || getEquipmentIcon(name);
                     const isSelected = selectedEquipments.includes(name);

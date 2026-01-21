@@ -61,6 +61,11 @@ export function getCurrentPageName(pathname: string): string | null {
     return 'Modifier un exercice';
   }
 
+  // Page équipements
+  if (pathname === '/exercices/equipments' || pathname.startsWith('/exercices/equipments')) {
+    return 'Filtrer par équipement';
+  }
+
   // Pages d'exercices par catégorie - extraire la catégorie de l'URL
   const categoryMatch = pathname.match(/^\/exercices\/([^\/]+)$/);
   if (categoryMatch) {

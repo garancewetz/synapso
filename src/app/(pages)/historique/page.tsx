@@ -340,7 +340,7 @@ export default function HistoriquePage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6"
+                className="space-y-6 pb-24"
               >
                 {/* SECTION 2 : MES PROGRÈS */}
                 <section id="progres" className="space-y-6">

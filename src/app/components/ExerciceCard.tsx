@@ -183,6 +183,25 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                                     </Badge>
                                 ))
                             }
+                               {/* Équipements - cliquables */}
+                               {exercice.equipments && exercice.equipments.length > 0 &&
+                                exercice.equipments.map((equipment: string) => (
+                                    <TouchLink
+                                        key={equipment}
+                                        href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
+                                        className="inline-block transition-all duration-200 hover:scale-105 active:scale-95"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Badge 
+                                            variant="equipment" 
+                                            icon={getEquipmentIcon(equipment)}
+                                            className="border border-gray-200 shadow-sm active:scale-95 active:bg-gray-50 md:hover:bg-gray-50 md:hover:border-gray-300 md:hover:shadow-md transition-all duration-200"
+                                        >
+                                            {equipment}
+                                        </Badge>
+                                    </TouchLink>
+                                ))
+                            }
                             {/* Séries */}
                             {exercice.workout.series && exercice.workout.series !== '1' && (
                                 <Badge variant="workout">
@@ -201,21 +220,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                                     {exercice.workout.duration}
                                 </Badge>
                             )}
-                            {/* Équipements - cliquables */}
-                            {exercice.equipments && exercice.equipments.length > 0 &&
-                                exercice.equipments.map((equipment: string) => (
-                                    <TouchLink
-                                        key={equipment}
-                                        href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
-                                        className="inline-block"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <Badge variant="equipment" icon={getEquipmentIcon(equipment)}>
-                                            {equipment}
-                                        </Badge>
-                                    </TouchLink>
-                                ))
-                            }
+                         
                         </div>
 
                         {/* Description - visible si étendu avec animation smooth */}

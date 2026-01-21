@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
@@ -13,7 +13,8 @@ import {
   CATEGORY_ORDER,
   BODYPART_TO_CATEGORY,
   BODYPART_ICONS,
-  AVAILABLE_BODYPARTS
+  AVAILABLE_BODYPARTS,
+  CATEGORY_COLORS
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
@@ -51,13 +52,13 @@ export default function CategoryPage() {
     }
   }, [isValidCategory, router]);
 
-  const handleEditClick = (id: number) => {
+  const handleEditClick = useCallback((id: number) => {
     router.push(`/exercice/edit/${id}?from=${encodeURIComponent(pathname)}`);
-  };
+  }, [router, pathname]);
 
-  const handleCompleted = (updatedExercice: Exercice) => {
+  const handleCompleted = useCallback((updatedExercice: Exercice) => {
     updateExercice(updatedExercice);
-  };
+  }, [updateExercice]);
 
   // Calculer les bodyparts disponibles pour cette catégorie avec leurs compteurs
   const bodypartsWithCounts = useMemo(() => {
@@ -151,6 +152,16 @@ export default function CategoryPage() {
     ];
   }, [exercices]);
 
+  // Vérifier si le badge "Tous" est actif (aucun bodypart sélectionné)
+  const isAllBodypartsSelected = useMemo(() => {
+    return selectedBodyparts.length === 0;
+  }, [selectedBodyparts.length]);
+
+  // Fonction pour réinitialiser les bodyparts (sélectionner "Tous")
+  const handleSelectAllBodyparts = () => {
+    setSelectedBodyparts([]);
+  };
+
   if (!isValidCategory) {
     return null;
   }
@@ -161,7 +172,6 @@ export default function CategoryPage() {
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
           <div className={clsx(
-            'flex items-start gap-3',
             'flex items-start gap-3',
             effectiveUser?.dominantHand === 'LEFT' 
               ? 'justify-start md:justify-between' 
@@ -237,6 +247,38 @@ export default function CategoryPage() {
                   Partie du corps
                 </label>
                 <div className="flex flex-wrap gap-2">
+                  {/* Badge "Tous" */}
+                  <button
+                    onClick={handleSelectAllBodyparts}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectAllBodyparts();
+                      }
+                    }}
+                    className={clsx(
+                      'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+                      'focus:outline-none focus:ring-2 focus:ring-offset-1',
+                      'active:scale-[0.98]',
+                      isAllBodypartsSelected
+                        ? clsx(
+                            CATEGORY_COLORS[categoryParam].accent,
+                            'text-white shadow-md',
+                            CATEGORY_COLORS[categoryParam].focusRing.replace('focus:', 'ring-')
+                          )
+                        : clsx(
+                            CATEGORY_COLORS[categoryParam].bg,
+                            CATEGORY_COLORS[categoryParam].text,
+                            'border',
+                            CATEGORY_COLORS[categoryParam].border,
+                            'hover:shadow-sm hover:brightness-105'
+                          )
+                    )}
+                    aria-label={isAllBodypartsSelected ? 'Toutes les parties du corps sélectionnées' : 'Sélectionner toutes les parties du corps'}
+                    aria-pressed={isAllBodypartsSelected}
+                  >
+                    <span>Tous</span>
+                  </button>
                   {bodypartsWithCounts.map(({ value, label, icon, count }) => {
                     const isSelected = selectedBodyparts.includes(value);
                     return (

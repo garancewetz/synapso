@@ -13,7 +13,7 @@ export const EQUIPMENT_ICONS: Record<string, string> = {
   'Bâton': '🏋️',
   'Porte': '🚪',
   'Escaliers': '🪜',
-  'Table': '🪑',
+  'Table': '🍱',
 } as const;
 
 // Icône par défaut pour les équipements sans icône spécifique

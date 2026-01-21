@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') as ExerciceCategory | null;
     const equipmentsParam = searchParams.get('equipments');
     
-    // Parser les équipements depuis le paramètre URL (format: "Lit,Chaise" ou "Lit")
+    // Parser les équipements depuis le paramètre URL (format: "Lit/Tapis,Chaise" ou "Lit/Tapis")
     const selectedEquipments = equipmentsParam
       ? equipmentsParam.split(',').map(eq => decodeURIComponent(eq).trim()).filter(Boolean)
       : [];

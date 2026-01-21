@@ -5,7 +5,7 @@
 // Mapping de référence des emojis pour les équipements
 // Basé sur les équipements réellement utilisés dans le projet
 export const EQUIPMENT_ICONS: Record<string, string> = {
-  'Lit': '🛏️',
+  'Lit/Tapis': '🛏️', // Terme unifié pour Lit et Tapis (surface d'appui similaire)
   'Rambarde': '🏋️',
   'Stepper': '🪜',
   'Sangle': '🎗️',

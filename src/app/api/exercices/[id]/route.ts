@@ -4,7 +4,7 @@ import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
 export async function GET(
@@ -101,13 +101,9 @@ export async function GET(
     // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
     const completedInPeriod = weeklyCompletions.length > 0;
     
-    // Un exercice est complété aujourd'hui si il y a une entrée dans l'historique pour aujourd'hui
-    const startOfToday = startOfDay(now);
-    const endOfToday = startOfDay(addDays(now, 1));
-    const hasTodayHistory = exercice.history.some(
-      (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
-    );
-    const completedToday = hasTodayHistory;
+    // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
+    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+    const completedToday = isCompletedToday(completedDate);
 
     // Reformater les données
     const formattedExercice = {
@@ -295,13 +291,9 @@ export async function PUT(
     // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
     const completedInPeriod = weeklyCompletions.length > 0;
     
-    // Un exercice est complété aujourd'hui si il y a une entrée dans l'historique pour aujourd'hui
-    const startOfToday = startOfDay(now);
-    const endOfToday = startOfDay(addDays(now, 1));
-    const hasTodayHistory = history.some(
-      (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
-    );
-    const completedToday = hasTodayHistory;
+    // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
+    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
+    const completedToday = isCompletedToday(completedDate);
 
     // Reformater les données
     const formattedExercice = {

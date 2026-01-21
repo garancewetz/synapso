@@ -1,6 +1,7 @@
 import { Badge } from '@/app/components/ui';
 import { TouchLink } from '@/app/components/TouchLink';
 import type { Exercice } from '@/app/types';
+import { getEquipmentIcon } from '@/app/constants/equipment.constants';
 
 type Props = {
   exercice: Exercice;
@@ -51,7 +52,7 @@ export function ExerciceTags({ exercice, categoryStyle }: Props) {
             className="inline-block"
             onClick={(e) => e.stopPropagation()}
           >
-            <Badge variant="equipment" icon="🏋️">
+            <Badge variant="equipment" icon={getEquipmentIcon(equipment)}>
               {equipment}
             </Badge>
           </TouchLink>

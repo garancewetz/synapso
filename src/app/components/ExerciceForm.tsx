@@ -6,8 +6,8 @@ import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
-import { FORM_COLORS } from '@/app/constants/ui.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
+import { useAllEquipments } from '@/app/hooks/useAllEquipments';
 import clsx from 'clsx';
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
 
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
+  const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -30,7 +31,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     bodyparts: [] as string[],
     equipments: [] as string[],
   });
-  const [equipmentsList, setEquipmentsList] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!exerciceId);
@@ -38,14 +38,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    // Charger la liste des équipements existants
-    fetch('/api/metadata', { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => {
-        setEquipmentsList(data.equipments || []);
-      })
-      .catch(() => {});
-
     if (exerciceId && effectiveUser) {
       // Charger l'exercice existant
       fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser.id}`, { credentials: 'include' })
@@ -91,12 +83,12 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   };
 
   const addNewEquipment = () => {
-    if (newEquipment && !formData.equipments.includes(newEquipment)) {
+    const trimmedEquipment = newEquipment.trim();
+    if (trimmedEquipment && !formData.equipments.includes(trimmedEquipment)) {
       setFormData((prev) => ({
         ...prev,
-        equipments: [...prev.equipments, newEquipment],
+        equipments: [...prev.equipments, trimmedEquipment],
       }));
-      setEquipmentsList((prev) => [...new Set([...prev, newEquipment])].sort());
       setNewEquipment('');
     }
   };
@@ -255,7 +247,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <label className="block text-base font-semibold text-gray-800 mb-2">
           Parties du corps ciblées
         </label>
-        <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps (optionnel)</p>
+        <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps</p>
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_BODYPARTS.map((bodypart) => {
             const isSelected = formData.bodyparts.includes(bodypart);
@@ -340,46 +332,86 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <label className="block text-base font-semibold text-gray-800 mb-4">
           Équipements (optionnel)
         </label>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {equipmentsList.map((equipment) => {
-            const isSelected = formData.equipments.includes(equipment);
-            return (
-              <button
-                key={equipment}
-                type="button"
-                onClick={() => toggleEquipment(equipment)}
-                className={clsx(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer',
-                  isSelected 
-                    ? FORM_COLORS.equipment.selected
-                    : FORM_COLORS.equipment.unselected
-                )}
-              >
-                {equipment}
-                {isSelected && ' ✓'}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            placeholder="Ajouter un équipement..."
-            value={newEquipment}
-            onChange={(e) => setNewEquipment(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEquipment())}
-            className=" px-4 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
-          />
-          <button
-            type="button"
-            onClick={addNewEquipment}
-            className={clsx(
-              'px-4 h-10 rounded-lg transition-colors font-medium sm:w-auto w-full cursor-pointer',
-              FORM_COLORS.equipment.addButton
-            )}
-          >
-            + Ajouter
-          </button>
+        <p className="text-sm text-gray-500 mb-4">Sélectionnez un ou plusieurs équipements (optionnel)</p>
+        
+        {/* Liste de tous les équipements disponibles */}
+        {loadingEquipments ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader size="small" />
+          </div>
+        ) : allEquipments.length > 0 ? (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {allEquipments.map((equipmentName) => {
+              const isSelected = formData.equipments.includes(equipmentName);
+              const icon = equipmentIconsMap[equipmentName];
+              return (
+                <button
+                  key={equipmentName}
+                  type="button"
+                  onClick={() => toggleEquipment(equipmentName)}
+                  className={clsx(
+                    'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                    'flex items-center gap-2 min-w-0',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+                    'active:scale-[0.98]',
+                    isSelected
+                      ? 'bg-gray-800 text-white shadow-md'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  )}
+                  aria-label={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${equipmentName}`}
+                  aria-pressed={isSelected}
+                >
+                  <span className="text-base">{icon}</span>
+                  <span className="flex-1 text-left truncate">{equipmentName}</span>
+                  {isSelected && (
+                    <CheckIcon className="w-4 h-4 shrink-0" strokeWidth={2.5} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 text-center py-4 mb-4">
+            Aucun équipement disponible pour le moment
+          </p>
+        )}
+
+        {/* Champ pour ajouter un nouvel équipement */}
+        <div className="pt-3 border-t border-gray-200">
+          <p className="text-sm text-gray-600 mb-2">
+            Ajouter un nouvel équipement :
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              placeholder="Nom de l'équipement..."
+              value={newEquipment}
+              onChange={(e) => setNewEquipment(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addNewEquipment();
+                }
+              }}
+              className="px-4 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
+              aria-label="Nom du nouvel équipement"
+            />
+            <button
+              type="button"
+              onClick={addNewEquipment}
+              disabled={!newEquipment.trim()}
+              className={clsx(
+                'px-4 h-10 rounded-lg transition-colors font-medium sm:w-auto w-full',
+                'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                newEquipment.trim()
+                  ? 'bg-gray-800 text-white hover:bg-gray-700 active:scale-[0.98]'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              )}
+            >
+              Ajouter
+            </button>
+          </div>
         </div>
       </div>
 

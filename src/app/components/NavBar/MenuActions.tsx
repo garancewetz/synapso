@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon, SparklesIcon, SettingsIcon } from '@/app/components/ui/icons';
+import { PlusIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 
 type Props = {
@@ -27,23 +27,6 @@ function getMenuActions(): MenuAction[] {
       title: 'Ajouter un exercice',
       iconBgColor: MENU_COLORS.ADD_EXERCICE.bg,
       iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
-    },
-    {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      href: (_pathname: string) => '/historique#progres',
-      icon: <SparklesIcon className="w-5 h-5" />,
-      title: 'Voir mes progrès',
-      iconBgColor: MENU_COLORS.PROGRES.bg,
-      iconTextColor: MENU_COLORS.PROGRES.text,
-    },
-    {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      href: (_pathname: string) => '/settings',
-      icon: <SettingsIcon className="w-5 h-5" />,
-      title: 'Mon profil',
-      description: 'Gérer mon profil et mes préférences',
-      iconBgColor: MENU_COLORS.SETTINGS.bg,
-      iconTextColor: MENU_COLORS.SETTINGS.text,
     },
   ];
 }

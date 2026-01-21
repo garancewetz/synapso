@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
-import { BackButton } from '@/app/components/ui/BackButton';
+import { AddButton, SegmentedControl } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import { getEquipmentIcon } from '@/app/constants/equipment.constants';
@@ -15,6 +15,8 @@ import { useExercices } from '@/app/hooks/useExercices';
 import type { Exercice } from '@/app/types';
 import { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
+
+type FilterType = 'all' | 'notCompleted' | 'completed';
 
 export default function EquipmentsPage() {
   const router = useRouter();
@@ -28,6 +30,7 @@ export default function EquipmentsPage() {
       ? equipmentsFromUrl.split(',').map(eq => decodeURIComponent(eq)).filter(Boolean)
       : []
   );
+  const [filter, setFilter] = useState<FilterType>('all');
 
   // Charger les métadonnées des équipements via hook personnalisé
   const { equipmentsWithCounts, equipmentIconsMap, loading: loadingMetadata } = useEquipmentMetadata();
@@ -76,8 +79,7 @@ export default function EquipmentsPage() {
         : '/exercices/equipments';
       router.replace(newUrl, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEquipments, router]);
+  }, [selectedEquipments, router, searchParams]);
 
   const handleEditClick = useCallback((id: number) => {
     router.push(`/exercice/edit/${id}?from=${encodeURIComponent('/exercices/equipments')}`);
@@ -87,11 +89,28 @@ export default function EquipmentsPage() {
     updateExercice(updatedExercice);
   }, [updateExercice]);
 
-  // Les exercices sont déjà filtrés côté serveur par équipements sélectionnés
-  // Si aucun équipement n'est sélectionné, on affiche tous les exercices
+  // Filtrer les exercices selon le filtre ET les équipements sélectionnés
   const filteredExercices = useMemo(() => {
-    // Les exercices sont déjà filtrés par le serveur, on les utilise directement
-    return exercices;
+    const filtered = filter === 'all'
+      ? exercices
+      : filter === 'notCompleted'
+      ? exercices.filter(e => !e.completed)
+      : exercices.filter(e => e.completed);
+
+    return filtered;
+  }, [exercices, filter]);
+
+  // Calculer les counts pour chaque état
+  const filterOptionsWithCounts = useMemo(() => {
+    const allCount = exercices.length;
+    const notCompletedCount = exercices.filter(e => !e.completed).length;
+    const completedCount = exercices.filter(e => e.completed).length;
+
+    return [
+      { value: 'all' as FilterType, label: 'Tous', count: allCount },
+      { value: 'notCompleted' as FilterType, label: 'Non faits', count: notCompletedCount },
+      { value: 'completed' as FilterType, label: 'Faits', count: completedCount },
+    ];
   }, [exercices]);
 
   // Grouper par catégorie
@@ -115,34 +134,50 @@ export default function EquipmentsPage() {
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header */}
         <div className="px-4 mb-6">
-          <BackButton />
           <div className={clsx(
-            'flex items-start gap-3 mt-4',
-            effectiveUser?.dominantHand === 'LEFT' 
-              ? 'justify-start md:justify-between' 
-              : 'justify-between',
-            'md:justify-between'
+            'flex items-start gap-3',
+            'justify-between',
+            effectiveUser?.dominantHand === 'LEFT' && 'md:flex-row-reverse'
           )}>
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-bold text-gray-800">
-                Exercices par équipement
+                Filtrer par équipement
               </h1>
               {loadingExercices ? (
                 <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
-              ) : selectedEquipments.length > 0 ? (
+              ) : exercices.length > 0 ? (
                 <p className="text-gray-500 mt-1">
-                  {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} avec {selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}
+                  {selectedEquipments.length > 0 
+                    ? `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''} avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}`
+                    : `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''}`
+                  }
                 </p>
-              ) : (
-                <p className="text-gray-500 mt-1">
-                  {filteredExercices.length} exercice{filteredExercices.length > 1 ? 's' : ''} disponible{filteredExercices.length > 1 ? 's' : ''}. Sélectionnez un équipement pour filtrer.
-                </p>
-              )}
+              ) : null}
             </div>
+            <AddButton 
+              href="/exercice/add" 
+              label="Ajouter un exercice"
+              className={clsx(
+                'shrink-0',
+                effectiveUser?.dominantHand === 'LEFT' && 'md:order-last'
+              )}
+            />
           </div>
           
           {/* Filtres - toujours visible */}
           <div className="mt-4 space-y-4">
+            {/* Filtre principal : Tous / À faire / Faits */}
+            <div>
+              <SegmentedControl
+                options={filterOptionsWithCounts}
+                value={filter}
+                onChange={setFilter}
+                fullWidth
+                size="md"
+                variant="filter"
+              />
+            </div>
+
             {/* Filtre par équipement */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-2">
@@ -216,12 +251,28 @@ export default function EquipmentsPage() {
               <EmptyState
                 icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
                 title={
-                  selectedEquipments.length > 0
+                  filter === 'notCompleted'
+                    ? selectedEquipments.length > 0
+                      ? `Tous les exercices avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : 'ces équipements'} sont faits !`
+                      : "Tous les exercices sont faits !"
+                    : filter === 'completed'
+                    ? selectedEquipments.length > 0
+                      ? `Aucun exercice fait avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : 'ces équipements'}`
+                      : "Aucun exercice fait"
+                    : selectedEquipments.length > 0
                     ? `Aucun exercice avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : 'ces équipements'}`
                     : "Aucun exercice"
                 }
                 message={
-                  selectedEquipments.length > 0
+                  filter === 'notCompleted'
+                    ? selectedEquipments.length > 0
+                      ? "Félicitations, vous avez complété tous les exercices avec ces équipements."
+                      : "Félicitations, vous avez complété tous les exercices."
+                    : filter === 'completed'
+                    ? selectedEquipments.length > 0
+                      ? "Vous n'avez pas encore complété d'exercices avec ces équipements."
+                      : "Vous n'avez pas encore complété d'exercices."
+                    : selectedEquipments.length > 0
                     ? "Aucun exercice n'utilise ces équipements pour le moment."
                     : "Aucun exercice disponible pour le moment."
                 }
@@ -244,7 +295,6 @@ export default function EquipmentsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="pb-6 md:pb-0"
                   >
                     <div className="mb-4 md:mb-4">
                       <h2 className="text-lg font-semibold text-gray-800 mb-1 mt-8 flex items-center gap-2">

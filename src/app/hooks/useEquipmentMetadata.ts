@@ -95,6 +95,8 @@ export function useEquipmentMetadata(): UseEquipmentMetadataReturn {
       setEquipmentsWithCounts([]);
       setEquipmentIconsMap({});
       console.error('Erreur lors de la récupération des métadonnées des équipements:', errorMessage);
+    } finally {
+      setLoading(false);
     }
   }, [effectiveUser, userLoading]);
 

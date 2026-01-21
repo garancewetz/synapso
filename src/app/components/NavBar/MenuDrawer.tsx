@@ -114,11 +114,11 @@ export function MenuDrawer({
           {/* Sélecteur d'utilisateur admin */}
           <AdminUserSelector onMenuClose={onClose} isMenuOpen={isOpen} />
 
-          {/* Sections principales (Aphasie et Parcours) */}
-          <MenuSections onMenuClose={onClose} isMenuOpen={isOpen} />
-
           {/* Actions rapides */}
           <MenuActions onMenuClose={onClose} isMenuOpen={isOpen} />
+
+          {/* Sections principales (Aphasie et Parcours) */}
+          <MenuSections onMenuClose={onClose} isMenuOpen={isOpen} />
         </div>
       </div>
     </>

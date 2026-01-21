@@ -24,7 +24,7 @@ export function FormPageWrapper({ children, title, backHref, backLabel }: Props)
       {/* Bouton retour */}
       <BackButton backHref={backHref} backLabel={backLabel} className="mb-4" />
 
-      <div className="bg-gray-50 rounded-lg p-4 sm:p-6 md:p-8">
+      <div className="bg-gray-50 rounded-lg sm:p-6 md:p-8">
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 sm:p-6 md:p-8">
             {title && (

@@ -67,6 +67,7 @@ export function NavBar() {
             >
               <Logo size={36} className="md:scale-110" />
               <span className="text-lg text-gray-800 max-lg:hidden">Synapso</span>
+              <span className="text-xl" aria-hidden="true">🏠</span>
             </TouchLink>
           </div>
 

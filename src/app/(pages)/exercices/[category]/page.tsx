@@ -25,7 +25,7 @@ type FilterType = 'all' | 'notCompleted' | 'completed';
 
 export default function CategoryPage() {
   const [filter, setFilter] = useState<FilterType>('all');
-  const [selectedBodypart, setSelectedBodypart] = useState<string | null>(null);
+  const [selectedBodyparts, setSelectedBodyparts] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
@@ -90,7 +90,7 @@ export default function CategoryPage() {
       .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
   }, [exercices, categoryParam]);
 
-  // Filtrer les exercices selon le filtre ET le bodypart
+  // Filtrer les exercices selon le filtre ET les bodyparts
   const filteredExercices = useMemo(() => {
     let filtered = filter === 'all'
       ? exercices
@@ -98,15 +98,15 @@ export default function CategoryPage() {
       ? exercices.filter(e => !e.completed)
       : exercices.filter(e => e.completed);
 
-    // Filtrer par bodypart si sélectionné
-    if (selectedBodypart) {
+    // Filtrer par bodyparts si sélectionnés (l'exercice doit cibler au moins un des bodyparts sélectionnés)
+    if (selectedBodyparts.length > 0) {
       filtered = filtered.filter(e => 
-        e.bodyparts.includes(selectedBodypart)
+        e.bodyparts.some(bp => selectedBodyparts.includes(bp))
       );
     }
 
     return filtered;
-  }, [exercices, filter, selectedBodypart]);
+  }, [exercices, filter, selectedBodyparts]);
 
   // Calculer les exercices d'étirement liés (qui ciblent les mêmes bodyparts que la catégorie actuelle)
   const relatedStretchingExercices = useMemo(() => {
@@ -124,15 +124,15 @@ export default function CategoryPage() {
       ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
     );
 
-    // Filtrer par bodypart si sélectionné
-    if (selectedBodypart) {
+    // Filtrer par bodyparts si sélectionnés (l'étirement doit cibler au moins un des bodyparts sélectionnés)
+    if (selectedBodyparts.length > 0) {
       filtered = filtered.filter(ex =>
-        ex.bodyparts.includes(selectedBodypart)
+        ex.bodyparts.some(bp => selectedBodyparts.includes(bp))
       );
     }
 
     return filtered;
-  }, [categoryParam, stretchingExercices, selectedBodypart]);
+  }, [categoryParam, stretchingExercices, selectedBodyparts]);
 
   // Les favoris sont déjà en haut grâce au tri dans l'API
   // (orderBy: [{ pinned: 'desc' }, { id: 'desc' }])
@@ -161,6 +161,7 @@ export default function CategoryPage() {
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
           <div className={clsx(
+            'flex items-start gap-3',
             'flex items-start gap-3',
             effectiveUser?.dominantHand === 'LEFT' 
               ? 'justify-start md:justify-between' 
@@ -236,42 +237,28 @@ export default function CategoryPage() {
                   Partie du corps
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedBodypart(null)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedBodypart(null);
-                      }
-                    }}
-                    className={clsx(
-                      'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-                      'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
-                      'active:scale-[0.98]',
-                      selectedBodypart === null
-                        ? 'bg-gray-800 text-white shadow-md'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                    )}
-                    aria-label={`Afficher toutes les parties du corps (${exercices.length} exercices)`}
-                    aria-pressed={selectedBodypart === null}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <span>Toutes</span>
-                      <span className="text-[10px] font-bold opacity-90">({exercices.length})</span>
-                    </span>
-                  </button>
-                  {bodypartsWithCounts.map(({ value, label, icon, count }) => (
-                    <FilterBadge
-                      key={value}
-                      label={label}
-                      icon={icon}
-                      count={count}
-                      isActive={selectedBodypart === value}
-                      category={categoryParam}
-                      onClick={() => setSelectedBodypart(value)}
-                    />
-                  ))}
+                  {bodypartsWithCounts.map(({ value, label, icon, count }) => {
+                    const isSelected = selectedBodyparts.includes(value);
+                    return (
+                      <FilterBadge
+                        key={value}
+                        label={label}
+                        icon={icon}
+                        count={count}
+                        isActive={isSelected}
+                        category={categoryParam}
+                        onClick={() => {
+                          setSelectedBodyparts(prev => 
+                            isSelected 
+                              ? prev.filter(bp => bp !== value)
+                              : [...prev, value]
+                          );
+                        }}
+                      />
+                    );
+                  })}
                 </div>
+          
               </div>
             )}
           </div>

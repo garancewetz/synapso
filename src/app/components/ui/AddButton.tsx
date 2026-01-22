@@ -1,6 +1,7 @@
 'use client';
 
 import { ActionButton } from './ActionButton';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
   href: string;
@@ -9,6 +10,7 @@ type Props = {
   position?: 'left' | 'right' | 'auto';
   queryParams?: Record<string, string>;
   addFromParam?: boolean;
+  display?: 'inline' | 'fixed';
 };
 
 /**
@@ -16,18 +18,31 @@ type Props = {
  * S'adapte automatiquement à la préférence de main de l'utilisateur
  * 
  * Utilise ActionButton avec variant="simple"
+ * 
+ * @param display - 'inline' pour intégration dans une page, 'fixed' pour bouton flottant
+ * @param position - Position du bouton flottant ('left' | 'right' | 'auto'). Si 'auto', utilise la préférence de main
  */
 export function AddButton({ 
   href, 
   label, 
   className = '',
   queryParams,
-  addFromParam = false
+  addFromParam = false,
+  display = 'inline',
+  position = 'auto'
 }: Props) {
+  const { isLeftHanded } = useHandPreference();
+  
+  // Déterminer la position automatiquement si 'auto'
+  const finalPosition = position === 'auto' 
+    ? (isLeftHanded ? 'left' : 'right')
+    : position;
+
   return (
     <ActionButton
       variant="simple"
-      display="inline"
+      display={display}
+      position={finalPosition}
       href={href}
       label={label}
       className={className}

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
-import { StatusFilterBadge, FilterBadge } from '@/app/components/ui';
-import type { Exercice } from '@/app/types';
-import type { ExerciceCategory } from '@/app/types/exercice';
+import { FilterBadge, StatusFilterSection } from '@/app/components/ui';
+import type { ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
 import { 
   CATEGORY_LABELS, 
   CATEGORY_ORDER,
@@ -17,19 +16,15 @@ import {
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
-import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
-import clsx from 'clsx';
-
-type FilterType = 'all' | 'notCompleted' | 'completed';
+import { useExerciceStatusFilter } from '@/app/hooks/useExerciceStatusFilter';
+import { useExerciceHandlers } from '@/app/hooks/useExerciceHandlers';
 
 export default function CategoryPage() {
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<ExerciceStatusFilter>('all');
   const [selectedBodyparts, setSelectedBodyparts] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
-  const pathname = usePathname();
-  const { effectiveUser } = useUser();
 
   // Convertir le paramètre URL en catégorie
   const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
@@ -51,13 +46,15 @@ export default function CategoryPage() {
     }
   }, [isValidCategory, router]);
 
-  const handleEditClick = useCallback((id: number) => {
-    router.push(`/exercice/edit/${id}?from=${encodeURIComponent(pathname)}`);
-  }, [router, pathname]);
+  // Utiliser les hooks partagés
+  const { filteredExercices: baseFilteredExercices, completedCount } = useExerciceStatusFilter({
+    exercices,
+    filter,
+  });
 
-  const handleCompleted = useCallback((updatedExercice: Exercice) => {
-    updateExercice(updatedExercice);
-  }, [updateExercice]);
+  const { handleEditClick, handleCompleted } = useExerciceHandlers({
+    updateExercice,
+  });
 
   // Calculer les bodyparts disponibles pour cette catégorie avec leurs compteurs
   const bodypartsWithCounts = useMemo(() => {
@@ -90,23 +87,17 @@ export default function CategoryPage() {
       .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
   }, [exercices, categoryParam]);
 
-  // Filtrer les exercices selon le filtre ET les bodyparts
+  // Filtrer les exercices selon les bodyparts sélectionnés
   const filteredExercices = useMemo(() => {
-    let filtered = filter === 'all'
-      ? exercices
-      : filter === 'notCompleted'
-      ? exercices.filter(e => !e.completed)
-      : exercices.filter(e => e.completed);
-
-    // Filtrer par bodyparts si sélectionnés (l'exercice doit cibler au moins un des bodyparts sélectionnés)
-    if (selectedBodyparts.length > 0) {
-      filtered = filtered.filter(e => 
-        e.bodyparts.some(bp => selectedBodyparts.includes(bp))
-      );
+    if (selectedBodyparts.length === 0) {
+      return baseFilteredExercices;
     }
 
-    return filtered;
-  }, [exercices, filter, selectedBodyparts]);
+    // Filtrer par bodyparts si sélectionnés (l'exercice doit cibler au moins un des bodyparts sélectionnés)
+    return baseFilteredExercices.filter(e => 
+      e.bodyparts.some(bp => selectedBodyparts.includes(bp))
+    );
+  }, [baseFilteredExercices, selectedBodyparts]);
 
   // Calculer les exercices d'étirement liés (qui ciblent les mêmes bodyparts que la catégorie actuelle)
   const relatedStretchingExercices = useMemo(() => {
@@ -124,6 +115,13 @@ export default function CategoryPage() {
       ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
     );
 
+    // Filtrer par état (comme pour les exercices principaux)
+    if (filter === 'notCompleted') {
+      filtered = filtered.filter(e => !e.completed);
+    } else if (filter === 'completed') {
+      filtered = filtered.filter(e => e.completed);
+    }
+
     // Filtrer par bodyparts si sélectionnés (l'étirement doit cibler au moins un des bodyparts sélectionnés)
     if (selectedBodyparts.length > 0) {
       filtered = filtered.filter(ex =>
@@ -132,24 +130,7 @@ export default function CategoryPage() {
     }
 
     return filtered;
-  }, [categoryParam, stretchingExercices, selectedBodyparts]);
-
-  // Les favoris sont déjà en haut grâce au tri dans l'API
-  // (orderBy: [{ pinned: 'desc' }, { id: 'desc' }])
-  const completedCount = exercices.filter(e => e.completed).length;
-
-  // Calculer les counts pour chaque état
-  const filterOptionsWithCounts = useMemo(() => {
-    const allCount = exercices.length;
-    const notCompletedCount = exercices.filter(e => !e.completed).length;
-    const completedCount = exercices.filter(e => e.completed).length;
-
-    return [
-      { value: 'all' as FilterType, label: 'Tous', count: allCount },
-      { value: 'notCompleted' as FilterType, label: 'Non faits', count: notCompletedCount },
-      { value: 'completed' as FilterType, label: 'Faits', count: completedCount },
-    ];
-  }, [exercices]);
+  }, [categoryParam, stretchingExercices, selectedBodyparts, filter]);
 
   // Vérifier si le badge "Tous" est actif (aucun bodypart sélectionné)
   const isAllBodypartsSelected = useMemo(() => {
@@ -170,80 +151,25 @@ export default function CategoryPage() {
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
-          <div className={clsx(
-            'flex items-start gap-3',
-            effectiveUser?.dominantHand === 'LEFT' 
-              ? 'justify-start md:justify-between' 
-              : 'justify-between',
-            'md:justify-between'
-          )}>
-            {effectiveUser?.dominantHand === 'LEFT' ? (
-              <>
-                <AddButton 
-                  href="/exercice/add" 
-                  label="Ajouter un exercice"
-                  queryParams={{ category: categoryParam.toLowerCase() }}
-                  addFromParam
-                  className="md:order-last shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    {CATEGORY_LABELS[categoryParam]}
-                  </h1>
-                  {loadingExercices ? (
-                    <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
-                  ) : exercices.length > 0 ? (
-                    <p className="text-gray-500 mt-1">
-                      {completedCount}/{exercices.length} exercices complétés
-                    </p>
-                  ) : null}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    {CATEGORY_LABELS[categoryParam]}
-                  </h1>
-                  {loadingExercices ? (
-                    <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
-                  ) : exercices.length > 0 ? (
-                    <p className="text-gray-500 mt-1">
-                      {completedCount}/{exercices.length} exercices complétés
-                    </p>
-                  ) : null}
-                </div>
-                <AddButton 
-                  href="/exercice/add" 
-                  label="Ajouter un exercice"
-                  queryParams={{ category: categoryParam.toLowerCase() }}
-                  addFromParam
-                  className="shrink-0"
-                />
-              </>
-            )}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              {CATEGORY_LABELS[categoryParam]}
+            </h1>
+            {loadingExercices ? (
+              <p className="text-gray-500 mt-1">
+                <span className="inline-block h-5 w-40 bg-gray-200 rounded animate-pulse" />
+              </p>
+            ) : exercices.length > 0 ? (
+              <p className="text-gray-500 mt-1">
+                {completedCount}/{exercices.length} exercices complétés
+              </p>
+            ) : null}
           </div>
           
           {/* Filtres - toujours visible */}
           <div className="mt-4 space-y-4">
             {/* Filtre principal : Tous / Non faits / Faits */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                État
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {filterOptionsWithCounts.map((option) => (
-                  <StatusFilterBadge
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    count={option.count}
-                    isActive={filter === option.value}
-                    onClick={() => setFilter(option.value)}
-                  />
-                ))}
-              </div>
-            </div>
+            <StatusFilterSection filter={filter} onFilterChange={setFilter} />
 
             {/* Filtre par partie du corps - affiché seulement s'il y a des bodyparts disponibles */}
             {bodypartsWithCounts.length > 0 && (
@@ -255,7 +181,6 @@ export default function CategoryPage() {
                   {/* Badge "Tous" */}
                   <FilterBadge
                     label="Tous"
-                    count={exercices.length}
                     isActive={isAllBodypartsSelected}
                     category={categoryParam}
                     onClick={handleSelectAllBodyparts}
@@ -289,7 +214,11 @@ export default function CategoryPage() {
 
         {/* Contenu principal */}
         <div className="px-4">
-          {filteredExercices.length === 0 && !loadingExercices ? (
+          {loadingExercices ? (
+            <div className="flex items-center justify-center min-h-screen py-12">
+              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ) : filteredExercices.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -365,6 +294,15 @@ export default function CategoryPage() {
         </div>
       </div>
 
+      {/* Bouton "Ajouter un exercice" - centré en bas de page */}
+      <div className="flex justify-center mt-8 mb-6">
+        <AddButton 
+          href="/exercice/add" 
+          label="Ajouter un exercice"
+          queryParams={{ category: categoryParam.toLowerCase() }}
+          addFromParam
+        />
+      </div>
     </section>
   );
 }

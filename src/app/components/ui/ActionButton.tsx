@@ -77,7 +77,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
 
   const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-full';
   
-  const sizeStyles = 'px-5 h-14 text-base' 
+  const sizeStyles = isFixed ? 'px-4 h-12 text-sm' : 'px-5 h-14 text-base' 
 
   const variantStyles = variant === 'golden'
     ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 md:hover:from-amber-500 md:hover:via-yellow-500 md:hover:to-amber-600 shadow-lg md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2'
@@ -94,10 +94,12 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         sizeStyles,
         variantStyles,
         'transition-all duration-200 ease-out active:scale-[0.97] select-none',
-        isFixed && 'fixed bottom-28 md:bottom-8 z-40 font-semibold',
+        // Ne pas mettre fixed sur le bouton si c'est un lien (sera sur le TouchLink)
+        !isLink && isFixed && 'fixed bottom-22 md:bottom-8 z-60 font-semibold',
         isLink && 'w-auto px-4 md:px-5 shadow-md',
         isLink && 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
-        positionClass,
+        // Position seulement si pas de link (sinon sur le TouchLink)
+        !isLink && positionClass,
         className
       )}
       style={{ touchAction: 'manipulation' }}
@@ -107,16 +109,18 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         <span className={isFixed ? 'text-xl' : 'text-lg'}>{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
       {variant === 'simple' && (
-        <PlusIcon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={3} />
+        <PlusIcon className={isFixed ? "w-5 h-5" : "w-6 h-6 md:w-7 md:h-7"} strokeWidth={3} />
       )}
       {children || (
         <>
           {isFixed && isProgress ? (
             <span className="whitespace-nowrap">Noter un progrès</span>
+          ) : isFixed && label ? (
+            <span className="whitespace-nowrap">{label}</span>
           ) : isProgress ? (
             <span className="hidden md:inline whitespace-nowrap">{label || 'Ajouter'}</span>
           ) : label ? (
-            <span className="whitespace-nowrap">Ajouter</span>
+            <span className="whitespace-nowrap">{label}</span>
           ) : null}
         </>
       )}
@@ -124,10 +128,15 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   );
 
   if (isLink) {
+    // Pour les boutons flottants, les classes fixed doivent être sur le TouchLink
+    const linkClassName = isFixed 
+      ? clsx('block', 'fixed bottom-20 md:bottom-8 z-60', positionClass)
+      : 'inline-block';
+    
     return (
       <TouchLink 
         href={finalHref!}
-        className="inline-block"
+        className={linkClassName}
         aria-label={ariaLabel || label || 'Ajouter'}
       >
         {buttonContent}

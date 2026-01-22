@@ -5,23 +5,19 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
-import { AddButton, StatusFilterBadge, EquipmentFilterBadge } from '@/app/components/ui';
+import { StatusFilterSection, EquipmentFilterBadge, AddButton } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import { getEquipmentIcon } from '@/app/constants/equipment.constants';
-import { useUser } from '@/app/contexts/UserContext';
 import { useEquipmentMetadata } from '@/app/hooks/useEquipmentMetadata';
 import { useExercices } from '@/app/hooks/useExercices';
-import type { Exercice } from '@/app/types';
-import type { ExerciceCategory } from '@/app/types/exercice';
-import clsx from 'clsx';
-
-type FilterType = 'all' | 'notCompleted' | 'completed';
+import { useExerciceStatusFilter } from '@/app/hooks/useExerciceStatusFilter';
+import { useExerciceHandlers } from '@/app/hooks/useExerciceHandlers';
+import type { Exercice, ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
 
 export default function EquipmentsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { effectiveUser } = useUser();
   
   // Récupérer les équipements depuis l'URL (query param)
   const equipmentsFromUrl = searchParams.get('equipments');
@@ -30,7 +26,7 @@ export default function EquipmentsPage() {
       ? equipmentsFromUrl.split(',').map(eq => decodeURIComponent(eq)).filter(Boolean)
       : []
   );
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<ExerciceStatusFilter>('all');
 
   // Charger les métadonnées des équipements via hook personnalisé
   const { equipmentsWithCounts, equipmentIconsMap, loading: loadingMetadata } = useEquipmentMetadata();
@@ -49,6 +45,17 @@ export default function EquipmentsPage() {
 
   // Charger les exercices via hook personnalisé avec filtrage par équipements côté serveur
   const { exercices, loading: loadingExercices, updateExercice } = useExercices(exercicesOptions);
+
+  // Utiliser les hooks partagés
+  const { filteredExercices } = useExerciceStatusFilter({
+    exercices,
+    filter,
+  });
+
+  const { handleEditClick, handleCompleted } = useExerciceHandlers({
+    updateExercice,
+    fromPath: '/exercices/equipments',
+  });
 
   // Fonction pour toggle un équipement dans la sélection
   const toggleEquipment = useCallback((equipmentName: string) => {
@@ -81,38 +88,6 @@ export default function EquipmentsPage() {
     }
   }, [selectedEquipments, router, searchParams]);
 
-  const handleEditClick = useCallback((id: number) => {
-    router.push(`/exercice/edit/${id}?from=${encodeURIComponent('/exercices/equipments')}`);
-  }, [router]);
-
-  const handleCompleted = useCallback((updatedExercice: Exercice) => {
-    updateExercice(updatedExercice);
-  }, [updateExercice]);
-
-  // Filtrer les exercices selon le filtre ET les équipements sélectionnés
-  const filteredExercices = useMemo(() => {
-    const filtered = filter === 'all'
-      ? exercices
-      : filter === 'notCompleted'
-      ? exercices.filter(e => !e.completed)
-      : exercices.filter(e => e.completed);
-
-    return filtered;
-  }, [exercices, filter]);
-
-  // Calculer les counts pour chaque état
-  const filterOptionsWithCounts = useMemo(() => {
-    const allCount = exercices.length;
-    const notCompletedCount = exercices.filter(e => !e.completed).length;
-    const completedCount = exercices.filter(e => e.completed).length;
-
-    return [
-      { value: 'all' as FilterType, label: 'Tous', count: allCount },
-      { value: 'notCompleted' as FilterType, label: 'Non faits', count: notCompletedCount },
-      { value: 'completed' as FilterType, label: 'Faits', count: completedCount },
-    ];
-  }, [exercices]);
-
   // Grouper par catégorie
   const exercicesByCategory = useMemo(() => {
     const grouped: Record<ExerciceCategory, Exercice[]> = {
@@ -140,61 +115,32 @@ export default function EquipmentsPage() {
   }, []);
 
   return (
-    <section className="pb-12 md:pb-8">
+    <section className="pb-12 md:pb-8 min-h-screen">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header */}
         <div className="px-4 mb-6">
-          <div className={clsx(
-            'flex items-start gap-3',
-            'justify-between',
-            effectiveUser?.dominantHand === 'LEFT' && 'md:flex-row-reverse'
-          )}>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Filtrer par équipement
-              </h1>
-              {loadingExercices ? (
-                <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mt-1" />
-              ) : exercices.length > 0 ? (
-                <p className="text-gray-500 mt-1">
-                  {selectedEquipments.length > 0 
-                    ? `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''} avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}`
-                    : `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''}`
-                  }
-                </p>
-              ) : null}
-            </div>
-            <AddButton 
-              href="/exercice/add" 
-              label="Ajouter un exercice"
-              addFromParam
-              className={clsx(
-                'shrink-0',
-                effectiveUser?.dominantHand === 'LEFT' && 'md:order-last'
-              )}
-            />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Filtrer par équipement
+            </h1>
+            {loadingExercices ? (
+              <p className="text-gray-500 mt-1">
+                <span className="inline-block h-5 w-48 bg-gray-200 rounded animate-pulse" />
+              </p>
+            ) : (
+              <p className="text-gray-500 mt-1">
+                {selectedEquipments.length > 0 
+                  ? `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''} avec ${selectedEquipments.length === 1 ? selectedEquipments[0] : `${selectedEquipments.length} équipements`}`
+                  : `${filteredExercices.length} exercice${filteredExercices.length > 1 ? 's' : ''}`
+                }
+              </p>
+            )}
           </div>
           
           {/* Filtres - toujours visible */}
           <div className="mt-4 space-y-4">
             {/* Filtre principal : Tous / Non faits / Faits */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                État
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {filterOptionsWithCounts.map((option) => (
-                  <StatusFilterBadge
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    count={option.count}
-                    isActive={filter === option.value}
-                    onClick={() => setFilter(option.value)}
-                  />
-                ))}
-              </div>
-            </div>
+            <StatusFilterSection filter={filter} onFilterChange={setFilter} />
 
             {/* Filtre par équipement */}
             <div>
@@ -215,7 +161,6 @@ export default function EquipmentsPage() {
                   {/* Badge "Tous" */}
                   <EquipmentFilterBadge
                     label="Tous"
-                    count={exercices.length}
                     isActive={isAllEquipmentsSelected}
                     onClick={handleSelectAllEquipments}
                   />
@@ -247,7 +192,7 @@ export default function EquipmentsPage() {
         {/* Exercices - toujours affichés, filtrés par équipements si sélectionnés */}
         <div className="px-4">
           {loadingExercices ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center min-h-screen py-12">
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
           ) : filteredExercices.length === 0 ? (
@@ -330,6 +275,15 @@ export default function EquipmentsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Bouton "Ajouter un exercice" - centré en bas de page */}
+      <div className="flex justify-center mt-8 mb-6">
+        <AddButton 
+          href="/exercice/add" 
+          label="Ajouter un exercice"
+          addFromParam
+        />
       </div>
     </section>
   );

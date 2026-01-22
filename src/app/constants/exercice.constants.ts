@@ -1,4 +1,4 @@
-import type { ExerciceCategory } from '@/app/types/exercice';
+import type { ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
 
 // ============================================================================
 // CONFIGURATION DE BASE - Source unique de vérité
@@ -318,3 +318,16 @@ export function getBodypartChartColor(bodypart: string): string {
   const category = BODYPART_TO_CATEGORY[bodypart];
   return category ? CATEGORY_CHART_COLORS[category] : '#6B7280';
 }
+
+// ============================================================================
+// FILTRES D'ÉTAT - Options de filtre pour les exercices
+// ============================================================================
+
+export const EXERCICE_STATUS_FILTER_OPTIONS: Array<{
+  value: ExerciceStatusFilter;
+  label: string;
+}> = [
+  { value: 'all', label: 'Tous' },
+  { value: 'notCompleted', label: 'Non faits' },
+  { value: 'completed', label: 'Faits' },
+] as const;

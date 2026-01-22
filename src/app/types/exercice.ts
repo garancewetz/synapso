@@ -1,6 +1,9 @@
 // Les 4 catégories simples pour les exercices
 export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING' | 'CORE';
 
+// Type pour les filtres d'état des exercices
+export type ExerciceStatusFilter = 'all' | 'notCompleted' | 'completed';
+
 export interface Exercice {
   id: number;
   name: string;

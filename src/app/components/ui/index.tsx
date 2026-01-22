@@ -28,4 +28,5 @@ export { BackButton } from './BackButton';
 export { SpeechButton } from './SpeechButton';
 export { FilterBadge } from './FilterBadge';
 export { StatusFilterBadge } from './StatusFilterBadge';
+export { StatusFilterSection } from './StatusFilterSection';
 export { EquipmentFilterBadge } from './EquipmentFilterBadge';

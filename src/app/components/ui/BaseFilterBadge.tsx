@@ -54,12 +54,13 @@ export function BaseFilterBadge({
     <button
       onClick={onClick}
       onKeyDown={handleKeyDown}
+      style={{ willChange: 'auto' }}
       className={clsx(
         'h-8 px-3 py-1 rounded-lg text-xs font-medium',
-        'transition-all duration-200 ease-out',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'transition-colors duration-200 ease-out',
+        'focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-offset-2',
         colors.focusRing,
-        // Border toujours présente pour éviter le décalage
+        // Border toujours présente avec la même largeur pour éviter le décalage
         'border',
         isActive
           ? clsx(

@@ -45,20 +45,24 @@ export function FilterBadge({
     STRETCHING: 'md:hover:ring-purple-300/50',
   };
 
+  // Extraire la couleur du ring depuis focusRing (ex: "focus:ring-orange-500" -> "ring-orange-500")
+  const activeRingColor = categoryColors.focusRing.replace('focus:', '');
+
   return (
     <button
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={clsx(
-        'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+        'h-8 px-3 py-1 rounded-lg text-xs font-medium',
+        'transition-all duration-200 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         categoryColors.focusRing,
-        'active:scale-[0.98]',
+        'active:scale-[0.99]',
         isActive
           ? clsx(
               categoryColors.accent,
-              'text-white ring-2 ring-offset-2',
-              categoryColors.focusRing.replace('focus:', 'ring-')
+              'text-white ring-2 ring-offset-1',
+              activeRingColor
             )
           : clsx(
               categoryColors.bg,

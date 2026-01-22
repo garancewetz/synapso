@@ -44,14 +44,15 @@ export function StatusFilterBadge({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={clsx(
-        'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+        'h-8 px-3 py-1 rounded-lg text-xs font-medium',
+        'transition-all duration-200 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         focusRingColor,
-        'active:scale-[0.98]',
+        'active:scale-[0.99]',
         isActive
           ? clsx(
               isCompletedFilter ? 'bg-emerald-500 text-white' : 'bg-gray-800 text-white',
-              'ring-2 ring-offset-2',
+              'ring-2 ring-offset-1',
               activeRingColor
             )
           : clsx(

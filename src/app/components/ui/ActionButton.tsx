@@ -93,7 +93,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         baseStyles,
         sizeStyles,
         variantStyles,
-        'active:scale-[0.95] select-none',
+        'transition-all duration-200 ease-out active:scale-[0.97] select-none',
         isFixed && 'fixed bottom-28 md:bottom-8 z-40 font-semibold',
         isLink && 'w-auto px-4 md:px-5 shadow-md',
         isLink && 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',

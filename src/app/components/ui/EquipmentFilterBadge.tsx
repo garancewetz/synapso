@@ -37,11 +37,12 @@ export function EquipmentFilterBadge({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={clsx(
-        'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+        'h-8 px-3 py-1 rounded-lg text-xs font-medium',
+        'transition-all duration-200 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
-        'active:scale-[0.98]',
+        'active:scale-[0.99]',
         isActive
-          ? 'bg-gray-800 text-white ring-2 ring-offset-2 ring-gray-400'
+          ? 'bg-gray-800 text-white ring-2 ring-offset-1 ring-gray-400'
           : clsx(
               'bg-white text-gray-700 border border-gray-200',
               // Ring uniquement au hover sur desktop, pas au repos

@@ -96,8 +96,8 @@ function BaseCardRoot({
 }: BaseCardProps) {
   const baseClasses = clsx(
     isGolden ? GOLDEN_CARD_STYLES.card : DEFAULT_CARD_STYLES.card,
-    onClick && isGolden && 'cursor-pointer transition-all duration-200 hover:ring-amber-300/60 hover:ring-4 hover:drop-shadow-[0_0_12px_rgba(251,191,36,0.5)] hover:border-amber-400',
-    onClick && !isGolden && 'cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300',
+    onClick && isGolden && 'cursor-pointer transition-all duration-200 md:hover:ring-2 md:hover:ring-amber-300/50 md:hover:ring-offset-2 active:scale-[0.98]',
+    onClick && !isGolden && 'cursor-pointer transition-all duration-200 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2 active:scale-[0.98]',
     className
   );
 

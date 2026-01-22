@@ -38,8 +38,8 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
 }, ref) {
   // Styles pour iconOnly (ancien IconButton)
   if (iconOnly) {
-    const baseStyles = 'flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 border cursor-pointer';
-    const inactiveStyles = 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700';
+    const baseStyles = 'flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 active:scale-[0.95]';
+    const inactiveStyles = 'bg-white text-gray-500 border-gray-200 md:hover:border-gray-300 md:hover:text-gray-700 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
     
     return (
       <button
@@ -60,7 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   }
 
   // Styles normaux pour Button
-  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.95]';
   
   const sizeStyles = {
     sm: 'px-3 h-10 text-sm',
@@ -75,12 +75,12 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   };
   
   const variantStyles = {
-    secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
-    action: 'bg-blue-600 text-white hover:bg-blue-700',
-    'danger-outline': 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-300',
-    golden: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-lg hover:shadow-xl',
-    simple: 'bg-gray-800 text-white hover:bg-gray-700',
+    secondary: 'bg-gray-200 text-gray-700 md:hover:bg-gray-300 md:hover:ring-2 md:hover:ring-gray-300/60 md:hover:ring-offset-2',
+    danger: 'bg-red-600 text-white md:hover:bg-red-700 md:hover:ring-2 md:hover:ring-red-400/60 md:hover:ring-offset-2',
+    action: 'bg-blue-600 text-white md:hover:bg-blue-700 md:hover:ring-2 md:hover:ring-blue-400/60 md:hover:ring-offset-2',
+    'danger-outline': 'bg-red-50 text-red-600 md:hover:bg-red-100 border border-red-300 md:hover:ring-2 md:hover:ring-red-300/50 md:hover:ring-offset-2',
+    golden: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 md:hover:from-amber-500 md:hover:via-yellow-500 md:hover:to-amber-600 shadow-lg md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2',
+    simple: 'bg-gray-800 text-white md:hover:bg-gray-700 md:hover:ring-2 md:hover:ring-gray-400/60 md:hover:ring-offset-2',
   };
 
   const iconElement = icon && (

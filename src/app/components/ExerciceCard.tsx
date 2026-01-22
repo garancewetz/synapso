@@ -11,7 +11,6 @@ import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { ChevronIcon, EditIcon, HeartIcon } from '@/app/components/ui/icons';
 import { Badge, Button, CompleteButton, BaseCard, WeeklyCompletionIndicator } from '@/app/components/ui';
 import { CheckIcon } from '@/app/components/ui/icons';
-import { TouchLink } from '@/app/components/TouchLink';
 import { getDayName } from '@/app/utils/date.utils';
 import { getEquipmentIcon } from '@/app/constants/equipment.constants';
 
@@ -183,23 +182,16 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                                     </Badge>
                                 ))
                             }
-                               {/* Équipements - cliquables */}
+                               {/* Équipements - informatifs (non cliquables) */}
                                {exercice.equipments && exercice.equipments.length > 0 &&
                                 exercice.equipments.map((equipment: string) => (
-                                    <TouchLink
+                                    <Badge 
                                         key={equipment}
-                                        href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
-                                        className="inline-block transition-all duration-200 hover:scale-105 active:scale-95"
-                                        onClick={(e) => e.stopPropagation()}
+                                        variant="equipment" 
+                                        icon={getEquipmentIcon(equipment)}
                                     >
-                                        <Badge 
-                                            variant="equipment" 
-                                            icon={getEquipmentIcon(equipment)}
-                                            className="border border-gray-200 shadow-sm active:scale-95 active:bg-gray-50 md:hover:bg-gray-50 md:hover:border-gray-300 md:hover:shadow-md transition-all duration-200"
-                                        >
-                                            {equipment}
-                                        </Badge>
-                                    </TouchLink>
+                                        {equipment}
+                                    </Badge>
                                 ))
                             }
                             {/* Séries */}

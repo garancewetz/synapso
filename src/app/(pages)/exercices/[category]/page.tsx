@@ -5,16 +5,15 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
-import { SegmentedControl, FilterBadge } from '@/app/components/ui';
+import { StatusFilterBadge, FilterBadge } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
-import { ExerciceCategory } from '@/app/types/exercice';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import { 
   CATEGORY_LABELS, 
   CATEGORY_ORDER,
   BODYPART_TO_CATEGORY,
   BODYPART_ICONS,
-  AVAILABLE_BODYPARTS,
-  CATEGORY_COLORS
+  AVAILABLE_BODYPARTS
 } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
@@ -227,17 +226,23 @@ export default function CategoryPage() {
           
           {/* Filtres - toujours visible */}
           <div className="mt-4 space-y-4">
-            {/* Filtre principal : Tous / À faire / Faits */}
+            {/* Filtre principal : Tous / Non faits / Faits */}
             <div>
-           
-              <SegmentedControl
-                options={filterOptionsWithCounts}
-                value={filter}
-                onChange={setFilter}
-                fullWidth
-                size="md"
-                variant="filter"
-              />
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                État
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {filterOptionsWithCounts.map((option) => (
+                  <StatusFilterBadge
+                    key={option.value}
+                    value={option.value}
+                    label={option.label}
+                    count={option.count}
+                    isActive={filter === option.value}
+                    onClick={() => setFilter(option.value)}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Filtre par partie du corps - affiché seulement s'il y a des bodyparts disponibles */}
@@ -248,37 +253,13 @@ export default function CategoryPage() {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {/* Badge "Tous" */}
-                  <button
+                  <FilterBadge
+                    label="Tous"
+                    count={exercices.length}
+                    isActive={isAllBodypartsSelected}
+                    category={categoryParam}
                     onClick={handleSelectAllBodyparts}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleSelectAllBodyparts();
-                      }
-                    }}
-                    className={clsx(
-                      'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-                      'focus:outline-none focus:ring-2 focus:ring-offset-1',
-                      'active:scale-[0.98]',
-                      isAllBodypartsSelected
-                        ? clsx(
-                            CATEGORY_COLORS[categoryParam].accent,
-                            'text-white shadow-md',
-                            CATEGORY_COLORS[categoryParam].focusRing.replace('focus:', 'ring-')
-                          )
-                        : clsx(
-                            CATEGORY_COLORS[categoryParam].bg,
-                            CATEGORY_COLORS[categoryParam].text,
-                            'border',
-                            CATEGORY_COLORS[categoryParam].border,
-                            'hover:shadow-sm hover:brightness-105'
-                          )
-                    )}
-                    aria-label={isAllBodypartsSelected ? 'Toutes les parties du corps sélectionnées' : 'Sélectionner toutes les parties du corps'}
-                    aria-pressed={isAllBodypartsSelected}
-                  >
-                    <span>Tous</span>
-                  </button>
+                  />
                   {bodypartsWithCounts.map(({ value, label, icon, count }) => {
                     const isSelected = selectedBodyparts.includes(value);
                     return (

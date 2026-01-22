@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import clsx from 'clsx';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
 import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
@@ -273,11 +274,13 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                   onClick={handleCategoryClick}
                   className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
                 >
-                  <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center
-                    transition-all duration-150
-                    ${isSelected ? `${colors.active} scale-110` : `${colors.inactive} hover:scale-105`}
-                  `}>
+                  <div className={clsx(
+                    'w-12 h-12 rounded-full flex items-center justify-center',
+                    'transition-all duration-150',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
+                    'active:scale-[0.98]',
+                    isSelected ? clsx(colors.active, 'ring-2 ring-offset-2 ring-gray-400') : clsx(colors.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
+                  )}>
                     <span className="text-xl">{emoji}</span>
                   </div>
                   <span className={`text-[10px] font-medium ${isSelected ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -294,14 +297,15 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                 onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
                 className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
               >
-                <div className={`
-                  w-12 h-12 rounded-full flex items-center justify-center
-                  transition-all duration-150
-                  ${selectedCategory === 'ORTHOPHONIE' 
-                    ? `${ORTHOPHONIE_COLORS.active} scale-110` 
-                    : `${ORTHOPHONIE_COLORS.inactive} hover:scale-105`
-                  }
-                `}>
+                <div className={clsx(
+                  'w-12 h-12 rounded-full flex items-center justify-center',
+                  'transition-all duration-150',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
+                  'active:scale-[0.98]',
+                  selectedCategory === 'ORTHOPHONIE' 
+                    ? clsx(ORTHOPHONIE_COLORS.active, 'ring-2 ring-offset-2 ring-gray-400')
+                    : clsx(ORTHOPHONIE_COLORS.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
+                )}>
                   <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
                 </div>
                 <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -320,21 +324,28 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           <button
             type="button"
             onClick={handleClose}
-            className="flex-1 py-4 px-4 rounded-2xl font-semibold text-gray-600 
-                       bg-gray-100 hover:bg-gray-200
-                       transition-all active:scale-[0.98] cursor-pointer"
+            className={clsx(
+              'flex-1 py-4 px-4 rounded-2xl font-semibold text-gray-600',
+              'bg-gray-100 md:hover:bg-gray-200',
+              'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
+              'transition-all active:scale-[0.98] cursor-pointer',
+              'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
+            )}
           >
             Annuler
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !content.trim()}
-            className="flex-1 py-4 px-4 rounded-2xl font-bold text-amber-950 
-                       bg-linear-to-r from-amber-300 via-yellow-400 to-amber-500 
-                       shadow-md hover:shadow-lg
-                       transition-all active:scale-[0.98]
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2 cursor-pointer"
+            className={clsx(
+              'flex-1 py-4 px-4 rounded-2xl font-bold text-amber-950',
+              'bg-linear-to-r from-amber-300 via-yellow-400 to-amber-500',
+              'shadow-md md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2',
+              'transition-all active:scale-[0.98]',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'flex items-center justify-center gap-2 cursor-pointer',
+              'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400'
+            )}
           >
             {isSubmitting ? (
               <span className="animate-spin">⏳</span>

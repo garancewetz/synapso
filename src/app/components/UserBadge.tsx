@@ -55,8 +55,10 @@ export function UserBadge({ size = 'md' }: Props) {
       href="/settings"
       className={clsx(
         'group flex items-center px-2 py-1 rounded-xl cursor-pointer',
-        'hover:bg-gray-50 transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-400',
+        'md:hover:bg-gray-50 transition-all duration-200',
+        'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
+        'active:scale-[0.98]',
+        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400',
         isLeftHanded && 'flex-row-reverse'
       )}
       aria-label={`Connecté en tant que ${effectiveUser.name}. Accéder aux paramètres.`}
@@ -69,7 +71,7 @@ export function UserBadge({ size = 'md' }: Props) {
           'bg-linear-to-br shadow-sm',
           badgeColors,
           'ring-2 ring-white',
-          'group-hover:scale-105 group-hover:shadow-md transition-all duration-200'
+          'transition-all duration-200'
         )}
       >
         {initial}

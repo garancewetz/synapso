@@ -80,8 +80,8 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   const sizeStyles = 'px-5 h-14 text-base' 
 
   const variantStyles = variant === 'golden'
-    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 hover:from-amber-500 hover:via-yellow-500 hover:to-amber-600 shadow-lg hover:shadow-xl'
-    : 'bg-gray-800 text-white hover:bg-gray-700';
+    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 md:hover:from-amber-500 md:hover:via-yellow-500 md:hover:to-amber-600 shadow-lg md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2'
+    : 'bg-gray-800 text-white md:hover:bg-gray-700 md:hover:ring-2 md:hover:ring-gray-400/60 md:hover:ring-offset-2';
 
   const buttonContent = (
     <button
@@ -93,7 +93,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         baseStyles,
         sizeStyles,
         variantStyles,
-        'hover:scale-105 active:scale-95 select-none',
+        'active:scale-[0.95] select-none',
         isFixed && 'fixed bottom-28 md:bottom-8 z-40 font-semibold',
         isLink && 'w-auto px-4 md:px-5 shadow-md',
         isLink && 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',

@@ -49,7 +49,7 @@ export function CategoryCardWithProgress({
         bgColor={styles.bg}
         className={clsx(
           'transition-all duration-200 cursor-pointer',
-          'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
+          'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2 active:scale-[0.98]',
           'focus-within:ring-2 focus-within:ring-offset-2',
           styles.cardBorder,
           styles.focusRing
@@ -59,14 +59,12 @@ export function CategoryCardWithProgress({
           {/* Icône */}
           <div className={clsx(
             'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
-            'shadow-md group-hover:shadow-lg group-hover:scale-110',
-            'transition-all duration-200',
+            'shadow-md transition-all duration-200',
             styles.iconBg
           )}>
             <span 
               className={clsx(
                 'text-2xl flex items-center justify-center',
-                'transition-transform duration-200 group-hover:scale-110',
                 styles.iconText
               )}
               role="img" 
@@ -78,10 +76,10 @@ export function CategoryCardWithProgress({
           
           {/* Textes */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-950 transition-colors truncate">
+            <h3 className="text-base font-semibold text-gray-900 truncate">
               {label}
             </h3>
-            <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
+            <p className="text-xs text-gray-500">
               {total} exercice{total > 1 ? 's' : ''}
             </p>
           </div>

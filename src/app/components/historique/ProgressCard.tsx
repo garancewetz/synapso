@@ -65,10 +65,10 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
         'relative',
         '!bg-gradient-to-br !from-amber-50/95 !via-yellow-50/90 !to-amber-100/85',
         '!border !border-amber-200/60',
-        'shadow-sm hover:shadow-md',
+        'shadow-sm',
         'transition-all duration-300',
-        'hover:border-amber-300/80',
-        'hover:shadow-amber-200/20 hover:shadow-lg'
+        'md:hover:ring-2 md:hover:ring-amber-300/50 md:hover:ring-offset-2',
+        'active:scale-[0.98]'
       )}
     >
       {/* Accent doré sur le côté */}

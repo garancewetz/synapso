@@ -50,16 +50,16 @@ export function CompleteButton({
   const getCustomStyles = () => {
     if (variant === 'challenge') {
       if (isCompleted) {
-        return 'bg-emerald-500 text-white hover:bg-emerald-600 border-0';
+        return 'bg-emerald-500 text-white md:hover:bg-emerald-600 border-0 md:hover:ring-2 md:hover:ring-emerald-400/60 md:hover:ring-offset-2';
       }
-      return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
+      return 'bg-gray-100 text-gray-700 border border-gray-300 md:hover:bg-gray-200 md:hover:border-gray-400 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
     }
     
     // Pour les exercices : vert uniquement si fait aujourd'hui, sinon gris
     if (isCompletedToday) {
-      return '!bg-emerald-500 text-white hover:bg-emerald-600 border-0';
+      return '!bg-emerald-500 text-white md:hover:bg-emerald-600 border-0 md:hover:ring-2 md:hover:ring-emerald-400/60 md:hover:ring-offset-2';
     }
-    return 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 hover:border-gray-400';
+    return 'bg-gray-100 text-gray-700 border border-gray-300 md:hover:bg-gray-200 md:hover:border-gray-400 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
   };
 
   const getIcon = () => {

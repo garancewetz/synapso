@@ -221,11 +221,14 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
                 onClick={() => setFormData({ ...formData, category })}
                 className={clsx(
                   'p-5 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2',
+                  colors.focusRing,
+                  'active:scale-[0.98]',
                   colors.bg,
                   colors.cardBorder,
                   isSelected 
-                    ? `${colors.border} shadow-md scale-[1.02]` 
-                    : 'hover:shadow-sm'
+                    ? clsx(colors.border, 'ring-2 ring-offset-2', colors.focusRing.replace('focus:', 'ring-'))
+                    : 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2'
                 )}
                 aria-pressed={isSelected}
               >
@@ -258,14 +261,15 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
                 key={bodypart}
                 type="button"
                 onClick={() => toggleBodypart(bodypart)}
-                className={`
-                  px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer
-                  ${colorClass}
-                  ${isSelected 
-                    ? 'border-2 border-gray-400 shadow-md font-semibold' 
-                    : 'border border-transparent font-medium hover:shadow-sm hover:border-gray-200'
-                  }
-                `}
+                className={clsx(
+                  'px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
+                  'active:scale-[0.98]',
+                  colorClass,
+                  isSelected 
+                    ? 'border-2 border-gray-400 ring-2 ring-offset-2 ring-gray-400 font-semibold' 
+                    : 'border border-transparent font-medium md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2'
+                )}
               >
                 {bodypart}
                 {isSelected && (
@@ -352,11 +356,11 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
                   className={clsx(
                     'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                     'flex items-center gap-2 min-w-0',
-                    'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
                     'active:scale-[0.98]',
                     isSelected
-                      ? 'bg-gray-800 text-white shadow-md'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                      ? 'bg-gray-800 text-white ring-2 ring-offset-2 ring-gray-400'
+                      : 'bg-white text-gray-700 border border-gray-200 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2'
                   )}
                   aria-label={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${equipmentName}`}
                   aria-pressed={isSelected}

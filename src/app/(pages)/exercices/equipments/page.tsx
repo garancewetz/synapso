@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
-import { AddButton, SegmentedControl } from '@/app/components/ui';
+import { AddButton, StatusFilterBadge, EquipmentFilterBadge } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 import { getEquipmentIcon } from '@/app/constants/equipment.constants';
@@ -13,7 +13,7 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useEquipmentMetadata } from '@/app/hooks/useEquipmentMetadata';
 import { useExercices } from '@/app/hooks/useExercices';
 import type { Exercice } from '@/app/types';
-import { ExerciceCategory } from '@/app/types/exercice';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
 
 type FilterType = 'all' | 'notCompleted' | 'completed';
@@ -177,16 +177,23 @@ export default function EquipmentsPage() {
           
           {/* Filtres - toujours visible */}
           <div className="mt-4 space-y-4">
-            {/* Filtre principal : Tous / À faire / Faits */}
+            {/* Filtre principal : Tous / Non faits / Faits */}
             <div>
-              <SegmentedControl
-                options={filterOptionsWithCounts}
-                value={filter}
-                onChange={setFilter}
-                fullWidth
-                size="md"
-                variant="filter"
-              />
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                État
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {filterOptionsWithCounts.map((option) => (
+                  <StatusFilterBadge
+                    key={option.value}
+                    value={option.value}
+                    label={option.label}
+                    count={option.count}
+                    isActive={filter === option.value}
+                    onClick={() => setFilter(option.value)}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Filtre par équipement */}
@@ -206,57 +213,25 @@ export default function EquipmentsPage() {
               ) : equipmentsWithCounts.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {/* Badge "Tous" */}
-                  <button
+                  <EquipmentFilterBadge
+                    label="Tous"
+                    count={exercices.length}
+                    isActive={isAllEquipmentsSelected}
                     onClick={handleSelectAllEquipments}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleSelectAllEquipments();
-                      }
-                    }}
-                    className={clsx(
-                      'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-                      'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
-                      'active:scale-[0.98]',
-                      isAllEquipmentsSelected
-                        ? 'bg-gray-800 text-white shadow-md'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                    )}
-                    aria-label={isAllEquipmentsSelected ? 'Tous les équipements sélectionnés' : 'Sélectionner tous les équipements'}
-                    aria-pressed={isAllEquipmentsSelected}
-                  >
-                    <span>Tous</span>
-                  </button>
+                  />
                   {equipmentsWithCounts.map(({ name, count }) => {
                     const icon = equipmentIconsMap[name] || getEquipmentIcon(name);
                     const isSelected = selectedEquipments.includes(name);
                     return (
-                      <button
+                      <EquipmentFilterBadge
                         key={name}
+                        label={name}
+                        icon={icon}
+                        count={count}
+                        isActive={isSelected}
                         onClick={() => toggleEquipment(name)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            toggleEquipment(name);
-                          }
-                        }}
-                        className={clsx(
-                          'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-                          'focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
-                          'active:scale-[0.98]',
-                          isSelected
-                            ? 'bg-gray-800 text-white shadow-md'
-                            : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                        )}
-                        aria-label={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${name} (${count} exercices)`}
-                        aria-pressed={isSelected}
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span>{icon}</span>
-                          <span>{name}</span>
-                          <span className="text-[10px] font-bold opacity-90">({count})</span>
-                        </span>
-                      </button>
+                        ariaLabel={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${name} (${count} exercices)`}
+                      />
                     );
                   })}
                 </div>

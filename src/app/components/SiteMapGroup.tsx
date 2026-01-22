@@ -39,21 +39,21 @@ export function SiteMapGroup({
         href={href}
         className={clsx(
           'group flex items-center gap-3 px-4 py-4 transition-all duration-200',
-          'hover:bg-gray-50 active:bg-gray-100',
-          'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400'
+          'md:hover:bg-gray-50 active:scale-[0.98]',
+          'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400'
         )}
       >
         {/* Icône */}
         <span className={clsx(
           'w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200',
-          'shadow-md group-hover:shadow-lg group-hover:scale-110',
+          'shadow-md',
           iconBgColor
         )}>
           {typeof icon === 'string' ? (
             <span 
               className={clsx(
-                'text-2xl transition-transform duration-200 flex items-center justify-center',
-                'group-hover:scale-110',
+                'text-2xl flex items-center justify-center',
                 iconTextColor
               )} 
               role="img" 
@@ -63,8 +63,7 @@ export function SiteMapGroup({
             </span>
           ) : (
             <span className={clsx(
-              'w-6 h-6 transition-transform duration-200 flex items-center justify-center',
-              'group-hover:scale-110',
+              'w-6 h-6 flex items-center justify-center',
               iconTextColor
             )}>
               {icon}
@@ -74,10 +73,10 @@ export function SiteMapGroup({
 
         {/* Contenu */}
         <div className="flex-1 min-w-0">
-          <span className="block font-semibold text-base text-gray-900 group-hover:text-gray-950 transition-colors">
+          <span className="block font-semibold text-base text-gray-900">
             {title}
           </span>
-          <p className="text-xs text-gray-500 mt-0.5 group-hover:text-gray-600 transition-colors">
+          <p className="text-xs text-gray-500 mt-0.5">
             {description}
           </p>
         </div>

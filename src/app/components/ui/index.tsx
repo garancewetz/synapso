@@ -27,3 +27,5 @@ export { ProgressButton } from './ProgressButton';
 export { BackButton } from './BackButton';
 export { SpeechButton } from './SpeechButton';
 export { FilterBadge } from './FilterBadge';
+export { StatusFilterBadge } from './StatusFilterBadge';
+export { EquipmentFilterBadge } from './EquipmentFilterBadge';

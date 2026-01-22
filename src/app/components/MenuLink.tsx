@@ -47,16 +47,13 @@ export function MenuLink({
     <span className={clsx(
       'rounded-xl flex items-center justify-center shrink-0 transition-all duration-200',
       isVertical ? 'w-11 h-11' : 'w-12 h-12',
-      noCardStyle
-        ? 'group-hover:scale-105'
-        : 'shadow-md group-hover:shadow-lg group-hover:scale-110',
+      'shadow-md',
       iconBgColor
     )}>
       {typeof icon === 'string' ? (
         <span 
           className={clsx(
-            'transition-transform duration-200 flex items-center justify-center',
-            noCardStyle ? '' : 'group-hover:scale-110',
+            'flex items-center justify-center',
             iconTextColor,
             isVertical ? 'text-xl' : iconSizeClasses[iconSize]
           )} 
@@ -67,9 +64,8 @@ export function MenuLink({
         </span>
       ) : (
         <span className={clsx(
-          'transition-transform duration-200 flex items-center justify-center',
+          'flex items-center justify-center',
           isVertical ? 'w-5 h-5' : 'w-6 h-6',
-          noCardStyle ? '' : 'group-hover:scale-110',
           iconTextColor
         )}>
           {icon}
@@ -81,14 +77,14 @@ export function MenuLink({
   const textElement = (
     <div className={clsx(isVertical ? 'text-center' : 'flex-1 min-w-0')}>
       <span className={clsx(
-        'block font-semibold text-gray-900 group-hover:text-gray-950 transition-colors',
+        'block font-semibold text-gray-900',
         isVertical ? 'text-sm' : 'text-base'
       )}>
         {title}
       </span>
       {description && (
         <p className={clsx(
-          'text-gray-500 mt-0.5 group-hover:text-gray-600 transition-colors',
+          'text-gray-500 mt-0.5',
           isVertical ? 'text-[11px] leading-tight' : 'text-xs'
         )}>
           {description}
@@ -130,7 +126,7 @@ export function MenuLink({
             padding="none"
             className={clsx(
               'transition-all duration-200',
-              'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
+              'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2 active:scale-[0.98]',
               'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-400',
               isVertical
                 ? 'flex flex-col items-center gap-2 px-3 py-4 text-center'

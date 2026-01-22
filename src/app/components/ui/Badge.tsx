@@ -19,11 +19,14 @@ const baseClasses = 'text-xs px-2.5 py-1 rounded-md font-medium flex items-cente
 // Styles par variante
 const variantStyles: Record<BadgeVariant, string> = {
   // Default : gris neutre, utilisé pour les bodyparts avec className de couleur
+  // Pas de border ni shadow pour distinguer des badges interactifs
   default: 'bg-gray-100 text-gray-800',
   // Workout : slate pour les infos d'entraînement (séries, répétitions, durée)
+  // Pas de border ni shadow pour distinguer des badges interactifs
   workout: 'bg-slate-100 text-slate-700',
-  // Equipment : blanc pour le matériel nécessaire (cohérent avec les filtres)
-  equipment: 'bg-white text-gray-700 border border-gray-200',
+  // Equipment : gris légèrement plus foncé pour le matériel nécessaire (plus important que workout)
+  // Pas de border ni shadow pour distinguer des badges interactifs, mais plus visible que workout
+  equipment: 'bg-gray-200 text-gray-800',
   // Completed : vert émeraude pour exercice complété
   completed: 'bg-emerald-500/90 text-white border border-emerald-400/50',
   // Mastered : vert émeraude pour exercice maîtrisé

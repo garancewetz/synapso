@@ -2,34 +2,30 @@
 
 import { useCallback } from 'react';
 import clsx from 'clsx';
-import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
+
+type StatusFilterType = 'all' | 'notCompleted' | 'completed';
 
 type Props = {
+  value: StatusFilterType;
   label: string;
-  icon?: string;
   count: number;
   isActive: boolean;
-  category: ExerciceCategory;
   onClick: () => void;
   ariaLabel?: string;
 };
 
 /**
- * Badge de filtre pour les parties du corps
- * Utilise les couleurs de la catégorie pour la cohérence visuelle
+ * Badge de filtre pour l'état des exercices (Tous / Non faits / Faits)
+ * Utilise un ring vert pour "Faits" (sémantique du succès) et gris pour les autres
  */
-export function FilterBadge({
+export function StatusFilterBadge({
+  value,
   label,
-  icon,
   count,
   isActive,
-  category,
   onClick,
   ariaLabel,
 }: Props) {
-  const categoryColors = CATEGORY_COLORS[category];
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -37,13 +33,11 @@ export function FilterBadge({
     }
   }, [onClick]);
 
-  // Mapping des couleurs de catégorie vers les classes de ring hover
-  const ringHoverMap: Record<ExerciceCategory, string> = {
-    UPPER_BODY: 'md:hover:ring-orange-300/50',
-    CORE: 'md:hover:ring-teal-300/50',
-    LOWER_BODY: 'md:hover:ring-blue-300/50',
-    STRETCHING: 'md:hover:ring-purple-300/50',
-  };
+  // Ring vert pour "Faits" (sémantique du succès), gris pour les autres
+  const isCompletedFilter = value === 'completed';
+  const focusRingColor = isCompletedFilter ? 'focus:ring-emerald-500' : 'focus:ring-gray-400';
+  const activeRingColor = isCompletedFilter ? 'ring-emerald-500' : 'ring-gray-400';
+  const hoverRingColor = isCompletedFilter ? 'md:hover:ring-emerald-300/50' : 'md:hover:ring-gray-300/50';
 
   return (
     <button
@@ -52,21 +46,18 @@ export function FilterBadge({
       className={clsx(
         'h-8 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        categoryColors.focusRing,
+        focusRingColor,
         'active:scale-[0.98]',
         isActive
           ? clsx(
-              categoryColors.accent,
-              'text-white ring-2 ring-offset-2',
-              categoryColors.focusRing.replace('focus:', 'ring-')
+              isCompletedFilter ? 'bg-emerald-500 text-white' : 'bg-gray-800 text-white',
+              'ring-2 ring-offset-2',
+              activeRingColor
             )
           : clsx(
-              categoryColors.bg,
-              categoryColors.text,
-              'border',
-              categoryColors.border,
+              'bg-white text-gray-700 border border-gray-200',
               // Ring uniquement au hover sur desktop, pas au repos
-              ringHoverMap[category],
+              hoverRingColor,
               'md:hover:ring-2 md:hover:ring-offset-2'
             )
       )}
@@ -74,14 +65,13 @@ export function FilterBadge({
       aria-pressed={isActive}
     >
       <span className="flex items-center gap-1.5">
-        {icon && <span className="text-sm">{icon}</span>}
         <span>{label}</span>
         <span
           className={clsx(
             'text-[10px] font-bold px-1 py-0.5 rounded',
             isActive
               ? 'bg-white/20 text-white'
-              : clsx(categoryColors.tag, 'opacity-90')
+              : 'bg-gray-100 text-gray-600 opacity-90'
           )}
         >
           {count}

@@ -118,11 +118,20 @@ export async function PATCH(
       );
     }
 
+    // Validation : le nom ne doit pas contenir d'espaces
+    if (data.name && data.name.trim().includes(' ')) {
+      return NextResponse.json(
+        { error: 'Le nom ne peut pas contenir d\'espaces' },
+        { status: 400 }
+      );
+    }
+
     // Vérifier que le nom n'est pas déjà pris par un autre utilisateur
     if (data.name) {
+      const trimmedName = data.name.trim();
       const existingUser = await prisma.user.findFirst({
         where: {
-          name: data.name.trim(),
+          name: trimmedName,
           id: { not: requestedUserId },
         },
       });

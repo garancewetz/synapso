@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExerciceCard } from '@/app/components/ExerciceCard';
 import { EmptyState } from '@/app/components/EmptyState';
 import { FilterBadge, StatusFilterSection } from '@/app/components/ui';
-import type { ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
+import type { ExerciceCategory, ExerciceStatusFilter, Exercice } from '@/app/types/exercice';
 import { 
   CATEGORY_LABELS, 
   CATEGORY_ORDER,
@@ -36,7 +36,7 @@ export default function CategoryPage() {
   });
 
   // Charger aussi les exercices d'étirement pour la section "Étirements liés"
-  const { exercices: stretchingExercices } = useExercices({
+  const { exercices: stretchingExercices, updateExercice: updateStretchingExercice } = useExercices({
     category: categoryParam !== 'STRETCHING' ? 'STRETCHING' : undefined,
   });
 
@@ -52,7 +52,18 @@ export default function CategoryPage() {
     filter,
   });
 
-  const { handleEditClick, handleCompleted } = useExerciceHandlers({
+  // Créer un handler de complétion qui met à jour les deux listes
+  const handleCompleted = useCallback((updatedExercice: Exercice) => {
+    // Mettre à jour la liste principale
+    updateExercice(updatedExercice);
+    
+    // Si c'est un étirement, mettre à jour aussi la liste des étirements
+    if (updatedExercice.category === 'STRETCHING') {
+      updateStretchingExercice(updatedExercice);
+    }
+  }, [updateExercice, updateStretchingExercice]);
+
+  const { handleEditClick } = useExerciceHandlers({
     updateExercice,
   });
 

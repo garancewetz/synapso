@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
+import { useUserNameValidation } from '@/app/hooks/useUserNameValidation';
 
 import { Button } from '@/app/components/ui/Button';
 import { Input } from '@/app/components/ui/Input';
@@ -22,6 +23,8 @@ export default function SettingsPage() {
   // Déterminer quel utilisateur on modifie (effectiveUser pour admin en mode impersonation)
   const userToEdit = effectiveUser;
   const isImpersonating = isAdmin && effectiveUser && currentUser && effectiveUser.id !== currentUser.id;
+  
+  const { validateName } = useUserNameValidation({ currentUserId: userToEdit?.id });
   
   // Pré-remplir avec le nom de l'utilisateur effectif immédiatement
   const [name, setName] = useState(userToEdit?.name || '');
@@ -96,6 +99,13 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!userToEdit) {
       setError('Utilisateur non défini');
+      return;
+    }
+
+    // Validation du nom (sans espaces, longueur, etc.)
+    const nameError = validateName(name);
+    if (nameError) {
+      setError(nameError);
       return;
     }
 

@@ -8,6 +8,7 @@ import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
 import { UserSetup } from '@/app/components/UserSetup';
 import { InitialLoader } from '@/app/components/InitialLoader';
+import { useUserNameValidation } from '@/app/hooks/useUserNameValidation';
 
 type Props = {
   onSuccess: () => Promise<void>;
@@ -31,6 +32,8 @@ export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
   const [newUserId, setNewUserId] = useState<number | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  const { validateName } = useUserNameValidation();
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -53,6 +56,14 @@ export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
     if (mode === 'register') {
       if (!invitationCode.trim()) {
         setError('Le code d\'invitation est obligatoire');
+        setLoading(false);
+        return;
+      }
+
+      // Validation du nom (sans espaces, longueur, etc.)
+      const nameError = validateName(name);
+      if (nameError) {
+        setError(nameError);
         setLoading(false);
         return;
       }

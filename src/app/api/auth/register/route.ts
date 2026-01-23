@@ -98,6 +98,14 @@ export async function POST(request: NextRequest) {
 
     const trimmedName = name.trim();
 
+    // Validation : le nom ne doit pas contenir d'espaces
+    if (trimmedName.includes(' ')) {
+      return NextResponse.json(
+        { error: 'Le nom ne peut pas contenir d\'espaces' },
+        { status: 400 }
+      );
+    }
+
     // Validation de la longueur du nom
     if (trimmedName.length > MAX_NAME_LENGTH) {
       return NextResponse.json(

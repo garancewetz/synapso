@@ -6,8 +6,7 @@ import { AphasieSectionHeader } from '@/app/components/AphasieSectionHeader';
 import { AphasieItemCard } from '@/app/components/AphasieItemCard';
 import { AphasieChallengesList } from '@/app/components/AphasieChallengesList';
 import { BackButton } from '@/app/components/ui/BackButton';
-import { TouchLink } from '@/app/components/TouchLink';
-import { MapIcon } from '@/app/components/ui/icons';
+import { AddButton } from '@/app/components/ui/AddButton';
 import { ProgressBottomSheet } from '@/app/components';
 import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
 import { useAphasieCheck } from '@/app/hooks/useAphasieCheck';
@@ -59,11 +58,18 @@ export default function AphasiePage() {
               emoji="🎯"
               addHref="/aphasie/exercices/add"
               addLabel="Ajouter un exercice"
+              hideAddButton
             />
             <AphasieChallengesList 
               limit={3} 
               onMasteredChange={refetchProgress}
             />
+            <div className="mt-4">
+              <AddButton 
+                href="/aphasie/exercices/add" 
+                label="Ajouter un exercice" 
+              />
+            </div>
           </Card>
 
           {/* Section Citations */}
@@ -73,6 +79,7 @@ export default function AphasiePage() {
               emoji={CATEGORY_EMOJIS.ORTHOPHONIE}
               addHref="/aphasie/add"
               addLabel="Ajouter une citation"
+              hideAddButton
             />
             {items.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
@@ -94,6 +101,12 @@ export default function AphasiePage() {
                 )}
               </>
             )}
+            <div className="mt-4">
+              <AddButton 
+                href="/aphasie/add" 
+                label="Ajouter une citation" 
+              />
+            </div>
           </Card>
 
           {/* Section Progrès */}
@@ -117,21 +130,6 @@ export default function AphasiePage() {
               />
             )}
           </Card>
-
-          {/* Bouton "Mon parcours" */}
-          <div className="flex justify-center mt-8">
-            <TouchLink
-              href="/historique"
-              className="max-w-md py-4 px-6 rounded-full font-bold text-amber-950 
-                         bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 
-                         shadow-[0_4px_10px_rgba(217,119,6,0.3)] 
-                         hover:scale-[1.02] hover:shadow-[0_6px_14px_rgba(217,119,6,0.4)]
-                         transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <MapIcon className="w-5 h-5" />
-              Mon parcours
-            </TouchLink>
-          </div>
         </div>
       </div>
 

@@ -31,15 +31,17 @@ import { WelcomeHeader } from '@/app/components/WelcomeHeader';
 /**
  * Composant de carte pour afficher un composant UI dans le styleguide
  */
+type ComponentCardProps = {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+};
+
 function ComponentCard({ 
   title, 
   description, 
   children 
-}: { 
-  title: string; 
-  description?: string; 
-  children: React.ReactNode;
-}) {
+}: ComponentCardProps) {
   return (
     <Card variant="default" padding="md" className="mb-8">
       <h2 className="text-2xl font-semibold text-gray-800 mb-2">{title}</h2>

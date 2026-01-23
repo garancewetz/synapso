@@ -97,7 +97,7 @@ export const BarChart = memo(function BarChart({ data, currentStreak, progressCo
                   <g>
                     {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
                       <text
-                        key={i}
+                        key={`star-${props.cx}-${props.cy}-${i}`}
                         x={props.cx}
                         y={(props.cy || 0) - (i * 14)}
                         textAnchor="middle"

@@ -115,6 +115,9 @@ export async function GET(request: NextRequest) {
         // Extraire les noms des bodyparts
         const bodypartsNames = exercice.bodyparts.map((eb) => eb.bodypart.name);
 
+        // Les médias sont déjà un objet JSON (type Json de Prisma)
+        const mediaParsed = exercice.media ?? null;
+
         return {
           id: exercice.id,
           name: exercice.name,
@@ -135,6 +138,7 @@ export async function GET(request: NextRequest) {
           completedAt: exercice.completedAt,
           pinned: exercice.pinned ?? false,
           weeklyCompletions: weeklyCompletions,
+          media: mediaParsed,
         };
       })
       // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
@@ -254,6 +258,7 @@ export async function POST(request: NextRequest) {
           equipments: JSON.stringify(data.equipments || []),
           category: category as PrismaExerciceCategory,
           userId: userId,
+          media: data.media ?? null,
         },
       });
 
@@ -280,6 +285,9 @@ export async function POST(request: NextRequest) {
       return exercice;
     });
 
+    // Les médias sont déjà un objet JSON (type Json de Prisma)
+    const mediaParsed = result.media ?? null;
+
     // Reformater les données
     const formattedExercice = {
       id: result.id,
@@ -299,6 +307,7 @@ export async function POST(request: NextRequest) {
       completed: result.completed,
       completedAt: result.completedAt,
       pinned: result.pinned,
+      media: mediaParsed,
     };
 
     return NextResponse.json(formattedExercice, { status: 201 });

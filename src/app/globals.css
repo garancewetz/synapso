@@ -96,8 +96,6 @@ a:focus-visible {
 button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  corner-shape: squircle !important;
-  /* corner-radius: 1rem !important; */
 }
 
 /* Optimisation pour les éléments interactifs sur mobile */

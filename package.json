@@ -22,11 +22,17 @@
     "db:add-is-aphasic": "tsx prisma/add-is-aphasic.ts",
     "db:migrate-lit-tapis": "tsx scripts/migrate-lit-tapis.ts",
     "postinstall": "prisma generate",
-    "pwa:icons": "tsx scripts/generate-icons.ts"
+    "pwa:icons": "tsx scripts/generate-icons.ts",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "security:check": "npm audit --audit-level=high"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.22.0",
     "@prisma/client": "6.17.1",
     "bcryptjs": "2.4.3",
+    "cloudinary": "2.9.0",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "framer-motion": "12.23.24",
@@ -45,7 +51,7 @@
     "@types/node": "20.17.10",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
-    "eslint": "9.18.0",
+    "eslint": "9.39.2",
     "eslint-config-next": "15.5.9",
     "postcss": "8.4.47",
     "sharp": "0.33.5",

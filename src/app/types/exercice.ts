@@ -4,6 +4,16 @@ export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING' | 'COR
 // Type pour les filtres d'état des exercices
 export type ExerciceStatusFilter = 'all' | 'notCompleted' | 'completed';
 
+export type MediaItem = {
+  url: string;
+  publicId: string;
+};
+
+export type MediaData = {
+  photos?: MediaItem[];
+  video?: MediaItem | null;
+};
+
 export interface Exercice {
   id: number;
   name: string;
@@ -24,6 +34,7 @@ export interface Exercice {
   completedAt: Date | null;
   pinned: boolean;
   weeklyCompletions?: Date[]; // Toutes les dates de complétion de la semaine (mode WEEKLY)
+  media?: MediaData | null;
 }
 
 export interface Bodypart {

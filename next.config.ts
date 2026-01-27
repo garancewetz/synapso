@@ -35,9 +35,9 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js nécessite unsafe-eval pour le développement et certaines optimisations
       "style-src 'self' 'unsafe-inline'", // Tailwind CSS et Next.js nécessitent unsafe-inline pour les styles
-      "img-src 'self' data: blob:", // data: pour les images inline, blob: pour les images générées
+      "img-src 'self' data: blob: https://res.cloudinary.com", // data: pour les images inline, blob: pour les images générées, Cloudinary pour les médias
       "font-src 'self'", // Fonts locales uniquement (next/font)
-      "connect-src 'self'", // API calls uniquement vers le même origine
+      "connect-src 'self' https://res.cloudinary.com", // API calls vers même origine + Cloudinary pour les médias
       "worker-src 'self' blob:", // Service Worker (blob: nécessaire pour certains navigateurs)
       "frame-ancestors 'none'", // Empêcher l'inclusion dans des iframes
       "base-uri 'self'", // Base URI uniquement depuis la même origine
@@ -48,6 +48,15 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
+  },
   async headers() {
     return [
       {

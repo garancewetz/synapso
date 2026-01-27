@@ -6,6 +6,7 @@ import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
+import { deleteExerciceMedia, deletePhoto, deleteVideo } from '@/app/utils/cloudinary.utils';
 
 export async function GET(
   request: NextRequest,
@@ -105,6 +106,9 @@ export async function GET(
     const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
     const completedToday = isCompletedToday(completedDate);
 
+    // Les médias sont déjà un objet JSON (type Json de Prisma)
+    const mediaParsed = exercice.media ?? null;
+
     // Reformater les données
     const formattedExercice = {
       id: exercice.id,
@@ -126,6 +130,7 @@ export async function GET(
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,
       weeklyCompletions: weeklyCompletions,
+      media: mediaParsed,
     };
 
     return NextResponse.json(formattedExercice);
@@ -219,6 +224,9 @@ export async function PUT(
       ? startOfDay(addDays(now, 1))
       : startOfDay(addDays(startOfPeriod, 7));
 
+    // Récupérer les anciens médias pour nettoyage
+    const oldMedia = existingExercice.media as { photos?: Array<{ url: string; publicId: string }>; video?: { url: string; publicId: string } | null } | null;
+
     // Utiliser une transaction pour garantir l'intégrité des données
     const exercice = await prisma.$transaction(async (tx) => {
       // Mettre à jour l'exercice
@@ -233,6 +241,7 @@ export async function PUT(
           workoutDuration: updatedData.workout?.duration,
           equipments: updatedData.equipments ? JSON.stringify(updatedData.equipments) : undefined,
           category: updatedData.category as PrismaExerciceCategory | undefined,
+          media: updatedData.media !== undefined ? (updatedData.media ?? null) : undefined,
         },
       });
 
@@ -262,6 +271,34 @@ export async function PUT(
 
       return updated;
     });
+
+    // Nettoyer les anciens médias qui ne sont plus utilisés
+    if (oldMedia) {
+      const newMedia = updatedData.media as { photos?: Array<{ url: string; publicId: string }>; video?: { url: string; publicId: string } | null } | null | undefined;
+      
+      try {
+        // Supprimer les photos qui ne sont plus dans les nouveaux médias
+        if (oldMedia.photos && Array.isArray(oldMedia.photos)) {
+          const newPhotoPublicIds = newMedia?.photos?.map(p => p.publicId) || [];
+          const photosToDelete = oldMedia.photos.filter(photo => !newPhotoPublicIds.includes(photo.publicId));
+          
+          for (const photo of photosToDelete) {
+            await deletePhoto(photo);
+          }
+        }
+
+        // Supprimer l'ancienne vidéo si elle a été remplacée ou supprimée
+        if (oldMedia.video && oldMedia.video.publicId) {
+          const newVideoPublicId = newMedia?.video?.publicId;
+          if (newVideoPublicId !== oldMedia.video.publicId) {
+            await deleteVideo(oldMedia.video);
+          }
+        }
+      } catch (error) {
+        // Log l'erreur mais continuer
+        logError('Error cleaning up old exercice media from Cloudinary', error);
+      }
+    }
 
     // Récupérer l'historique pour calculer les statuts
     const history = await prisma.history.findMany({
@@ -316,6 +353,7 @@ export async function PUT(
       completedAt: exercice.completedAt,
       pinned: exercice.pinned,
       weeklyCompletions: weeklyCompletions,
+      media: exercice.media ?? null,
     };
 
     return NextResponse.json(formattedExercice);
@@ -369,6 +407,16 @@ export async function DELETE(
         { error: 'Exercice not found' },
         { status: 404 }
       );
+    }
+    
+    // Supprimer les médias Cloudinary avant de supprimer l'exercice
+    if (existingExercice.media) {
+      try {
+        await deleteExerciceMedia(existingExercice.media as { photos?: Array<{ url: string; publicId: string }>; video?: { url: string; publicId: string } | null });
+      } catch (error) {
+        // Log l'erreur mais continuer la suppression de l'exercice
+        logError('Error deleting exercice media from Cloudinary', error);
+      }
     }
     
     await prisma.exercice.delete({

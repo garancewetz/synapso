@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
-import { ExerciceCategory } from '@/app/types/exercice';
+import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
+import { MediaUploader } from '@/app/components/MediaUploader';
 import clsx from 'clsx';
 
 type Props = {
@@ -30,6 +31,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     category: (initialCategory || 'UPPER_BODY') as ExerciceCategory,
     bodyparts: [] as string[],
     equipments: [] as string[],
+    media: null as MediaData | null,
   });
   const [newEquipment, setNewEquipment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,6 +55,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
             category: data.category || 'UPPER_BODY',
             bodyparts: data.bodyparts || [],
             equipments: data.equipments || [],
+            media: data.media || null,
           });
         })
         .catch(() => {
@@ -122,6 +125,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       category: formData.category,
       bodyparts: formData.bodyparts,
       equipments: formData.equipments,
+      media: formData.media,
       userId: effectiveUser.id,
     };
 
@@ -418,6 +422,11 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
           </div>
         </div>
       </div>
+
+      <MediaUploader
+        value={formData.media}
+        onChange={(media) => setFormData({ ...formData, media })}
+      />
 
       <FormActions
         loading={loading}

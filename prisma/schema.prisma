@@ -34,6 +34,7 @@ model Exercice {
   workoutSeries      String?
   workoutDuration    String?
   equipments         String
+  media              Json?
   completed          Boolean            @default(false)
   completedAt        DateTime?
   createdAt          DateTime           @default(now())

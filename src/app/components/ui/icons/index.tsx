@@ -1,6 +1,9 @@
+export { ArrowLeftIcon } from './ArrowLeftIcon';
+export { ArrowRightIcon } from './ArrowRightIcon';
 export { BookIcon } from './BookIcon';
 export { BookmarkIcon } from './BookmarkIcon';
 export { CalendarIcon } from './CalendarIcon';
+export { CameraIcon } from './CameraIcon';
 export { ChatIcon } from './ChatIcon';
 export { CheckIcon } from './CheckIcon';
 export { ChevronIcon } from './ChevronIcon';

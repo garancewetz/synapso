@@ -6,7 +6,7 @@ import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
-import { deleteExerciceMedia, deletePhoto, deleteVideo } from '@/app/utils/cloudinary.utils';
+import { deleteExerciceMedia, deletePhoto } from '@/app/utils/cloudinary.utils';
 
 export async function GET(
   request: NextRequest,
@@ -287,13 +287,6 @@ export async function PUT(
           }
         }
 
-        // Supprimer l'ancienne vidéo si elle a été remplacée ou supprimée
-        if (oldMedia.video && oldMedia.video.publicId) {
-          const newVideoPublicId = newMedia?.video?.publicId;
-          if (newVideoPublicId !== oldMedia.video.publicId) {
-            await deleteVideo(oldMedia.video);
-          }
-        }
       } catch (error) {
         // Log l'erreur mais continuer
         logError('Error cleaning up old exercice media from Cloudinary', error);

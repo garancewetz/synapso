@@ -73,9 +73,7 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
       totalCount: completions.length,
     };
   }, [completions]);
-
-  const hasToday = weekDays.some(d => d.isToday && d.isCompleted);
-
+   
   if (totalCount === 0) {
     return null;
   }

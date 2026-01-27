@@ -14,14 +14,9 @@ type Props = {
 };
 
 export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOpenMedia }: Props) {
-  const categoryStyle = useMemo(
-    () => CATEGORY_COLORS[exercice.category],
-    [exercice.category]
-  );
-
   const hasMedia = useMemo(
     () => exercice.media && 
-      ((exercice.media.photos && exercice.media.photos.length > 0) || exercice.media.video),
+      exercice.media.photos && exercice.media.photos.length > 0,
     [exercice.media]
   );
 

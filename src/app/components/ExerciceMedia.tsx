@@ -12,7 +12,6 @@ type MediaItem = {
 
 type MediaData = {
   photos?: MediaItem[];
-  video?: MediaItem | null;
 };
 
 type Props = {
@@ -58,22 +57,6 @@ export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLig
   if (!media) return null;
 
   const photos = media.photos || [];
-  const video = media.video;
-
-  // Si une vidéo existe, afficher uniquement la vidéo
-  if (video) {
-    return (
-      <div className={clsx('w-full', className)}>
-        <video
-          src={video.url}
-          controls
-          className="w-full rounded-lg border border-gray-200"
-          aria-label="Vidéo de l'exercice"
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-    );
-  }
 
   if (photos.length === 0) {
     return null;

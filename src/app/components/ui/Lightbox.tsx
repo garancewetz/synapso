@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import clsx from 'clsx';
 import { CloseIcon, ArrowLeftIcon, ArrowRightIcon } from '@/app/components/ui/icons';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
@@ -105,9 +106,9 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose, goToPrevious, goToNext]);
 
-  const getDistance = (touch1: Touch, touch2: Touch): number => {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
+  const getDistance = (x1: number, y1: number, x2: number, y2: number): number => {
+    const dx = x1 - x2;
+    const dy = y1 - y2;
     return Math.sqrt(dx * dx + dy * dy);
   };
 
@@ -161,7 +162,12 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
     } else if (touches.length === 2) {
       state.isPinching = true;
       state.isSwiping = false;
-      state.startDistance = getDistance(touches[0], touches[1]);
+      state.startDistance = getDistance(
+        touches[0].clientX,
+        touches[0].clientY,
+        touches[1].clientX,
+        touches[1].clientY
+      );
       state.startScale = scale;
       state.startTranslateX = translateX;
       state.startTranslateY = translateY;
@@ -174,7 +180,12 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
 
     if (touches.length === 2 && state.isPinching) {
       e.preventDefault();
-      const newDistance = getDistance(touches[0], touches[1]);
+      const newDistance = getDistance(
+        touches[0].clientX,
+        touches[0].clientY,
+        touches[1].clientX,
+        touches[1].clientY
+      );
       const scaleChange = newDistance / state.startDistance;
       const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, state.startScale * scaleChange));
       setScale(newScale);
@@ -261,12 +272,16 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
       aria-label={`Visualiseur d'image - Photo ${currentIndex + 1} sur ${images.length}`}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/95" aria-hidden="true" />
+      <div 
+        className="absolute inset-0 bg-black/95" 
+        aria-hidden="true"
+        onClick={onClose}
+      />
 
       {/* Titre */}
       {title && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-16 md:px-20">
-          <h2 className="text-white text-lg font-semibold bg-black/50 px-6 py-3 rounded-lg text-center truncate">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-4 pointer-events-none">
+          <h2 className="text-white text-sm font-medium bg-black/40 px-4 py-2 rounded-lg text-center truncate">
             {title}
           </h2>
         </div>
@@ -276,15 +291,15 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-4 left-4 flex items-center justify-center text-white p-4 rounded-full bg-black/60 hover:bg-black/70 active:bg-black/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-30"
+        className="absolute top-2 left-2 flex items-center justify-center text-white p-2 rounded-full bg-black/50 hover:bg-black/60 active:bg-black/70 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-30"
         aria-label="Fermer la visionneuse"
       >
-        <CloseIcon className="w-8 h-8" />
+        <CloseIcon className="w-6 h-6" />
       </button>
 
       {/* Indicateur de zoom */}
       {scale > 1 && (
-        <div className="absolute top-4 right-4 z-30 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+        <div className="absolute top-2 right-2 z-30 text-white text-xs bg-black/40 px-2 py-1 rounded-full pointer-events-none">
           {Math.round(scale * 100)}%
         </div>
       )}
@@ -292,30 +307,28 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
       {/* Zone de l'image avec gestes tactiles */}
       <div
         ref={containerRef}
-        className="relative w-full h-full flex items-center justify-center overflow-hidden"
+        className="relative w-full h-full flex items-center justify-center overflow-hidden pointer-events-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={onClose}
       >
         {/* Navigation précédente */}
         {showNavigation && (
           <button
             type="button"
             onClick={(e) => handleNavClick(e, goToPrevious)}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 text-white p-4 md:p-3 rounded-full bg-black/60 hover:bg-black/70 active:bg-black/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-20"
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-white p-2 rounded-full bg-black/50 hover:bg-black/60 active:bg-black/70 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-20 pointer-events-auto"
             aria-label="Photo précédente"
           >
-            <ArrowLeftIcon className="w-8 h-8 md:w-6 md:h-6" />
+            <ArrowLeftIcon className="w-6 h-6" />
           </button>
         )}
 
         {/* Image */}
         <div
           className={clsx(
-            'relative max-w-[85vw] max-h-[85vh]',
-            title && 'mt-16',
-            hasMultipleImages && 'mx-16 md:mx-20'
+            'relative max-w-[95vw] max-h-[95vh] pointer-events-auto',
+            title && 'mt-12'
           )}
           style={{
             transform: `scale(${scale}) translate(${translateX / scale}px, ${translateY / scale}px)`,
@@ -323,11 +336,14 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <img
+          <Image
             src={currentImage.url}
             alt={currentImage.alt || `Photo ${currentIndex + 1} sur ${images.length}`}
-            className="max-w-full max-h-[85vh] object-contain select-none"
+            width={1920}
+            height={1080}
+            className="max-w-full max-h-[95vh] object-contain select-none"
             draggable={false}
+            unoptimized
           />
         </div>
 
@@ -336,18 +352,18 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
           <button
             type="button"
             onClick={(e) => handleNavClick(e, goToNext)}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 text-white p-4 md:p-3 rounded-full bg-black/60 hover:bg-black/70 active:bg-black/80 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-20"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-white p-2 rounded-full bg-black/50 hover:bg-black/60 active:bg-black/70 transition-colors focus:outline-none focus:ring-2 focus:ring-white z-20 pointer-events-auto"
             aria-label="Photo suivante"
           >
-            <ArrowRightIcon className="w-8 h-8 md:w-6 md:h-6" />
+            <ArrowRightIcon className="w-6 h-6" />
           </button>
         )}
       </div>
 
       {/* Indicateur de position */}
       {hasMultipleImages && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
-          <div className="text-white text-base font-medium bg-black/60 px-4 py-2 rounded-full">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="text-white text-sm font-medium bg-black/40 px-3 py-1.5 rounded-full">
             {currentIndex + 1} / {images.length}
           </div>
         </div>

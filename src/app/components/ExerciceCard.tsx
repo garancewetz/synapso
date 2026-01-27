@@ -72,8 +72,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
         e.stopPropagation();
         if (exercice.media?.photos && exercice.media.photos.length > 0) {
             setLightboxIndex(0);
-        } else if (exercice.media?.video) {
-            setIsExpanded(true);
         }
     }, [exercice.media]);
 

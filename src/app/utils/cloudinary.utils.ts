@@ -44,11 +44,6 @@ export async function deleteExerciceMedia(media: MediaData | null | undefined): 
     });
   }
 
-  // Supprimer la vidéo
-  if (media.video && media.video.publicId) {
-    deletePromises.push(deleteCloudinaryMedia(media.video.publicId, 'video'));
-  }
-
   // Exécuter toutes les suppressions en parallèle
   await Promise.all(deletePromises);
 }
@@ -59,15 +54,6 @@ export async function deleteExerciceMedia(media: MediaData | null | undefined): 
 export async function deletePhoto(photo: { url: string; publicId: string }): Promise<void> {
   if (photo.publicId) {
     await deleteCloudinaryMedia(photo.publicId, 'image');
-  }
-}
-
-/**
- * Supprime une seule vidéo de Cloudinary
- */
-export async function deleteVideo(video: { url: string; publicId: string }): Promise<void> {
-  if (video.publicId) {
-    await deleteCloudinaryMedia(video.publicId, 'video');
   }
 }
 

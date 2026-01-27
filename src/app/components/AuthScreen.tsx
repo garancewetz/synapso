@@ -128,7 +128,7 @@ export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [mode, name, password, confirmPassword, invitationCode, onSuccess]);
+  }, [mode, name, password, confirmPassword, invitationCode, onSuccess, validateName]);
 
   const switchMode = useCallback(() => {
     setMode((prevMode) => prevMode === 'login' ? 'register' : 'login');

@@ -100,15 +100,27 @@ button {
 
 /* Optimisation pour les éléments interactifs sur mobile */
 a[href],
-button,
-[role="button"],
-[tabindex] {
+button {
   /* Réduire le délai de 300ms sur mobile */
   touch-action: manipulation;
   /* Supprimer le highlight bleu sur iOS/Safari */
   -webkit-tap-highlight-color: transparent;
   /* Empêcher la sélection de texte lors des clics rapides */
   user-select: none;
+  /* Améliorer la performance des transitions */
+  will-change: transform;
+}
+
+/* Pour les cards et autres éléments interactifs (role="button", tabindex) */
+/* On garde les optimisations tactiles mais on permet la sélection de texte */
+[role="button"],
+[tabindex] {
+  /* Réduire le délai de 300ms sur mobile */
+  touch-action: manipulation;
+  /* Supprimer le highlight bleu sur iOS/Safari */
+  -webkit-tap-highlight-color: transparent;
+  /* Permettre la sélection de texte dans les cards */
+  user-select: text;
   /* Améliorer la performance des transitions */
   will-change: transform;
 }

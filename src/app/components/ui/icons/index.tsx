@@ -11,6 +11,7 @@ export { ClockIcon } from './ClockIcon';
 export { CloseIcon } from './CloseIcon';
 export { CompassIcon } from './CompassIcon';
 export { EditIcon } from './EditIcon';
+export { EyeIcon } from './EyeIcon';
 export { HeartIcon } from './HeartIcon';
 export { MapIcon } from './MapIcon';
 export { MenuIcon } from './MenuIcon';

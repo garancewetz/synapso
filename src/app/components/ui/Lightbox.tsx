@@ -327,7 +327,7 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
         {/* Image */}
         <div
           className={clsx(
-            'relative max-w-[95vw] max-h-[95vh] pointer-events-auto',
+            'relative w-fit max-h-[95vh] pointer-events-auto',
             title && 'mt-12'
           )}
           style={{
@@ -341,7 +341,7 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
             alt={currentImage.alt || `Photo ${currentIndex + 1} sur ${images.length}`}
             width={1920}
             height={1080}
-            className="max-w-full max-h-[95vh] object-contain select-none"
+            className="w-fit max-h-[95vh] object-contain select-none"
             draggable={false}
             unoptimized
           />

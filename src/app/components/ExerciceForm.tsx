@@ -212,7 +212,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <label className="block text-base font-semibold text-gray-800 mb-3">
           Catégorie *
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-full">
+        <div className="grid grid-cols-4 gap-2 max-w-full">
           {categories.map((category) => {
             const isSelected = formData.category === category;
             const colors = CATEGORY_COLORS[category];
@@ -224,7 +224,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
                 type="button"
                 onClick={() => setFormData({ ...formData, category })}
                 className={clsx(
-                  'p-5 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center',
+                  'p-2 md:p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center',
                   'focus:outline-none focus:ring-2 focus:ring-offset-2',
                   colors.focusRing,
                   'active:scale-[0.98]',

@@ -20,7 +20,7 @@ type Props = {
   onChange: (media: MediaData | null) => void;
 };
 
-const MAX_PHOTOS = 5;
+const MAX_PHOTOS = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export function MediaUploader({ value, onChange }: Props) {

@@ -12,6 +12,7 @@ import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { HistoryProvider } from "@/app/contexts/HistoryContext";
 import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
+import { GlobalCelebration } from "@/app/components/GlobalCelebration";
 import { WebVitals } from "@/app/components/WebVitals";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
@@ -81,6 +82,7 @@ export default function RootLayout({
                   </main>
                   <BottomNavBar />
                   <DayDetailModalWrapper />
+                  <GlobalCelebration />
                 </AuthWrapper>
               </DayDetailModalProvider>
             </CategoryProvider>

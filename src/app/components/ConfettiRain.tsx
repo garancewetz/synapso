@@ -172,10 +172,10 @@ const ConfettiRain = memo(function ConfettiRain({
   colors,
   variant = 'default',
 }: Props) {
-  // ⚡ PERFORMANCE: Réduire le nombre de particules sur mobile
+  // ⚡ PERFORMANCE: Réduire légèrement le nombre de particules sur mobile
   const isMobile = useIsMobile();
-  const actualEmojiCount = isMobile ? Math.min(emojiCount, 3) : emojiCount;
-  const actualConfettiCount = isMobile ? Math.min(confettiCount, 12) : confettiCount;
+  const actualEmojiCount = isMobile ? Math.min(emojiCount, 6) : emojiCount;
+  const actualConfettiCount = isMobile ? Math.min(confettiCount, 30) : confettiCount;
   
   // Utiliser les presets de la variante, avec possibilité de surcharger
   const preset = VARIANT_PRESETS[variant];

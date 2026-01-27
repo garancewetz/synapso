@@ -37,24 +37,6 @@ export function ExerciceCardTags({ exercice }: Props) {
           </Badge>
         ))
       }
-      
-      {exercice.workout.series && exercice.workout.series !== '1' && (
-        <Badge variant="workout">
-          {exercice.workout.series} séries
-        </Badge>
-      )}
-      
-      {exercice.workout.repeat && (
-        <Badge variant="workout">
-          {exercice.workout.repeat}x
-        </Badge>
-      )}
-      
-      {exercice.workout.duration && (
-        <Badge variant="workout">
-          {exercice.workout.duration}
-        </Badge>
-      )}
     </div>
   );
 }

@@ -22,37 +22,53 @@ type Props = {
   onLightboxClose?: () => void;
   onLightboxOpen?: (index: number) => void;
   showThumbnails?: boolean;
+  showLightbox?: boolean;
   title?: string;
 };
 
-export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLightboxIndex = null, onLightboxClose, onLightboxOpen, showThumbnails = true, title }: Props) {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(initialLightboxIndex ?? null);
+export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLightboxIndex = null, onLightboxClose, onLightboxOpen, showThumbnails = true, showLightbox = true, title }: Props) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(showLightbox ? (initialLightboxIndex ?? null) : null);
 
-  // Synchroniser avec la prop initialLightboxIndex (pour l'icône qui ouvre depuis l'extérieur)
+  // Synchroniser avec la prop initialLightboxIndex (uniquement si showLightbox est activé)
   useEffect(() => {
-    if (initialLightboxIndex !== null && initialLightboxIndex !== lightboxIndex) {
-      setLightboxIndex(initialLightboxIndex);
-    } else if (initialLightboxIndex === null && lightboxIndex !== null) {
-      setLightboxIndex(null);
+    if (showLightbox) {
+      if (initialLightboxIndex !== null && initialLightboxIndex !== lightboxIndex) {
+        setLightboxIndex(initialLightboxIndex);
+      } else if (initialLightboxIndex === null && lightboxIndex !== null) {
+        setLightboxIndex(null);
+      }
+    } else {
+      // Si showLightbox est désactivé, s'assurer que l'état est null
+      if (lightboxIndex !== null) {
+        setLightboxIndex(null);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialLightboxIndex]);
+  }, [initialLightboxIndex, showLightbox]);
 
   const openLightbox = useCallback((index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setLightboxIndex(index);
+    // Toujours notifier le parent, même si on n'affiche pas le lightbox local
     onLightboxOpen?.(index);
-  }, [onLightboxOpen]);
+    // Ne mettre à jour l'état local que si showLightbox est activé
+    if (showLightbox) {
+      setLightboxIndex(index);
+    }
+  }, [onLightboxOpen, showLightbox]);
 
   const closeLightbox = useCallback(() => {
-    setLightboxIndex(null);
+    if (showLightbox) {
+      setLightboxIndex(null);
+    }
     onLightboxClose?.();
-  }, [onLightboxClose]);
+  }, [onLightboxClose, showLightbox]);
 
   const handleIndexChange = useCallback((index: number) => {
-    setLightboxIndex(index);
+    if (showLightbox) {
+      setLightboxIndex(index);
+    }
     onLightboxOpen?.(index);
-  }, [onLightboxOpen]);
+  }, [onLightboxOpen, showLightbox]);
 
   if (!media) return null;
 
@@ -65,10 +81,10 @@ export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLig
   const photosToShow = photos.slice(0, maxPhotos);
   const remainingCount = photos.length - maxPhotos;
 
-  // Préparer les images pour le Lightbox
-  const lightboxImages = photos.map((photo, index) => ({
+  // Préparer les images pour le Lightbox (limité à maxPhotos)
+  const lightboxImages = photos.slice(0, maxPhotos).map((photo, index) => ({
     url: photo.url,
-    alt: `Photo de l'exercice ${index + 1} sur ${photos.length}`,
+    alt: `Photo de l'exercice ${index + 1} sur ${Math.min(photos.length, maxPhotos)}`,
   }));
 
   return (
@@ -107,7 +123,7 @@ export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLig
       )}
 
       {/* Lightbox */}
-      {lightboxIndex !== null && (
+      {showLightbox && lightboxIndex !== null && (
         <Lightbox
           images={lightboxImages}
           currentIndex={lightboxIndex}

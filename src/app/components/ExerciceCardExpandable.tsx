@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { ExerciceMedia } from '@/app/components/ExerciceMedia';
+import { Badge } from '@/app/components/ui';
 import type { Exercice } from '@/app/types';
 
 type Props = {
@@ -16,7 +17,8 @@ export function ExerciceCardExpandable({
   isExpanded,
   onLightboxOpen,
 }: Props) {
-  const hasExpandableContent = exercice.description.text || exercice.media;
+  const hasWorkoutInfo = exercice.workout.series || exercice.workout.repeat || exercice.workout.duration;
+  const hasExpandableContent = exercice.description.text || exercice.media || hasWorkoutInfo;
 
   if (!hasExpandableContent) {
     return null;
@@ -44,6 +46,7 @@ export function ExerciceCardExpandable({
             }}
             className="overflow-hidden space-y-3"
           >
+            {/* 1. Images */}
             {exercice.media && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -54,10 +57,12 @@ export function ExerciceCardExpandable({
                   media={exercice.media} 
                   maxPhotos={3}
                   onLightboxOpen={onLightboxOpen}
+                  showLightbox={false}
                 />
               </motion.div>
             )}
             
+            {/* 2. Description */}
             {exercice.description.text && (
               <motion.p
                 initial={{ opacity: 0 }}
@@ -71,6 +76,35 @@ export function ExerciceCardExpandable({
               </motion.p>
             )}
             
+            {/* 3. Badges de paramètre (séries, répétitions, durée) */}
+            {hasWorkoutInfo && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.1 }}
+                className="flex flex-wrap gap-1.5"
+              >
+                {exercice.workout.series && exercice.workout.series !== '1' && (
+                  <Badge variant="workout">
+                    {exercice.workout.series} séries
+                  </Badge>
+                )}
+                
+                {exercice.workout.repeat && (
+                  <Badge variant="workout">
+                    {exercice.workout.repeat}x
+                  </Badge>
+                )}
+                
+                {exercice.workout.duration && (
+                  <Badge variant="workout">
+                    {exercice.workout.duration}
+                  </Badge>
+                )}
+              </motion.div>
+            )}
+            
+            {/* 4. Conseil */}
             {exercice.description.comment && (
               <motion.div
                 initial={{ opacity: 0 }}

@@ -95,7 +95,7 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
         title="Cliquez pour voir le calendrier de la semaine"
         aria-label={`Fait ${totalCount} fois cette semaine`}
       >
-        <span>Fait {totalCount}×</span>
+        <span>{totalCount}×</span>
       </button>
 
       {/* Tooltip calendrier */}

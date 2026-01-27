@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
-import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { Badge, WeeklyCompletionIndicator } from '@/app/components/ui';
 import { getDayName } from '@/app/utils/date.utils';
-import { CameraIcon } from '@/app/components/ui/icons';
+import { EyeIcon } from '@/app/components/ui/icons';
 
 type Props = {
   exercice: Exercice;
@@ -27,11 +27,22 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
           <button
             type="button"
             onClick={onOpenMedia}
-            className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 rounded p-1 active:scale-95 shrink-0"
-            aria-label="Voir les médias de l'exercice"
-            title="Voir les médias"
+            className={clsx(
+              'flex items-center justify-center',
+              'w-10 h-10 rounded-lg',
+              'bg-gray-100 text-gray-600',
+              'border border-gray-200',
+              'transition-all duration-200',
+              'md:hover:bg-gray-200 md:hover:border-gray-300 md:hover:scale-105',
+              'active:bg-gray-200 active:scale-95',
+              'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2',
+              'shrink-0',
+              'touch-manipulation'
+            )}
+            aria-label="Voir les photos de l'exercice"
+            title="Voir les photos"
           >
-            <CameraIcon className="w-4 h-4" strokeWidth={2} />
+            <EyeIcon className="w-5 h-5" strokeWidth={2.5} />
           </button>
         )}
         <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight">

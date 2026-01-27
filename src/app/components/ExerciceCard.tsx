@@ -123,7 +123,8 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
                     />
 
-                    <Button
+                    {/* Bouton favori masqué - fonctionnalité en stand-by */}
+                    {/* <Button
                         iconOnly
                         onClick={handlePin}
                         disabled={isPinning}
@@ -132,7 +133,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                     >
                         <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
-                    </Button>
+                    </Button> */}
                 </BaseCard.Footer>
             </BaseCard.Content>
             </BaseCard>

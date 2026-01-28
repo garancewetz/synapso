@@ -11,7 +11,7 @@ export const SITEMAP_ICON_STYLES = {
   },
   // Style pour les cartes principales avec couleurs vives
   primary: {
-    aphasie: {
+    journal: {
       bg: 'bg-yellow-400',
       text: 'text-white',
     },
@@ -40,7 +40,7 @@ export const SITEMAP_ICON_STYLES = {
  */
 export const TAB_RING_COLORS = {
   corps: 'ring-blue-500',
-  aphasie: 'ring-yellow-400',
+  journal: 'ring-yellow-400',
   parcours: 'ring-amber-500',
 } as const;
 

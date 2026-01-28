@@ -34,8 +34,8 @@ export default function SettingsPage() {
   const [dominantHand, setDominantHand] = useState<DominantHand>(
     (userToEdit?.dominantHand as DominantHand) || 'RIGHT'
   );
-  const [isAphasic, setIsAphasic] = useState<boolean>(
-    userToEdit?.isAphasic ?? false
+  const [hasJournal, setHasJournal] = useState<boolean>(
+    userToEdit?.hasJournal ?? false
   );
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function SettingsPage() {
     name: string;
     resetFrequency: ResetFrequency;
     dominantHand: DominantHand;
-    isAphasic: boolean;
+    hasJournal: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -68,19 +68,19 @@ export default function SettingsPage() {
       const loadedName = userToEdit.name || '';
       const loadedResetFrequency = (userToEdit.resetFrequency as ResetFrequency) || 'DAILY';
       const loadedDominantHand = (userToEdit.dominantHand as DominantHand) || 'RIGHT';
-      const loadedIsAphasic = userToEdit.isAphasic ?? false;
+      const loadedHasJournal = userToEdit.hasJournal ?? false;
       
       setName(loadedName);
       setResetFrequency(loadedResetFrequency);
       setDominantHand(loadedDominantHand);
-      setIsAphasic(loadedIsAphasic);
+      setHasJournal(loadedHasJournal);
       
       // Sauvegarder les valeurs initiales
       setInitialValues({
         name: loadedName,
         resetFrequency: loadedResetFrequency,
         dominantHand: loadedDominantHand,
-        isAphasic: loadedIsAphasic,
+        hasJournal: loadedHasJournal,
       });
       
       setInitialLoading(false);
@@ -92,7 +92,7 @@ export default function SettingsPage() {
     name !== initialValues.name ||
     resetFrequency !== initialValues.resetFrequency ||
     dominantHand !== initialValues.dominantHand ||
-    isAphasic !== initialValues.isAphasic
+    hasJournal !== initialValues.hasJournal
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +120,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, resetFrequency, dominantHand, isAphasic }),
+        body: JSON.stringify({ name, resetFrequency, dominantHand, hasJournal }),
       });
 
       if (!response.ok) {
@@ -138,7 +138,7 @@ export default function SettingsPage() {
         name: updatedUser.name || '',
         resetFrequency: (updatedUser.resetFrequency as ResetFrequency) || 'DAILY',
         dominantHand: (updatedUser.dominantHand as DominantHand) || 'RIGHT',
-        isAphasic: updatedUser.isAphasic ?? false,
+        hasJournal: updatedUser.hasJournal ?? false,
       });
       
       setSuccess(true);
@@ -255,7 +255,7 @@ export default function SettingsPage() {
       `- Vos exercices\n` +
       `- Votre historique de progression\n` +
       `- Vos progrès et victoires\n` +
-      `- Vos citations d'aphasie\n` +
+      `- Vos notes du journal\n` +
       `- Vos exercices d'orthophonie\n\n` +
       `Êtes-vous absolument sûr de vouloir supprimer votre compte ?`
     );
@@ -382,13 +382,13 @@ export default function SettingsPage() {
             />
           </Card>
 
-          {/* Section Aphasie */}
+          {/* Section Journal */}
           <Card variant="default" padding="md">
             <label className="block text-base font-semibold text-gray-800 mb-2">
-              Journal d&apos;aphasie
+              Journal
             </label>
             <p className="text-sm text-gray-500 mb-4">
-              Activez cette option si vous souhaitez accéder au journal d&apos;aphasie pour suivre vos citations et exercices
+              Activez cette option si vous souhaitez accéder au journal pour suivre vos tâches et notes
             </p>
             
             <ToggleButtonGroup
@@ -396,8 +396,8 @@ export default function SettingsPage() {
                 { value: true, label: 'Oui', icon: '✓' },
                 { value: false, label: 'Non', icon: '✗' },
               ]}
-              value={isAphasic}
-              onChange={(value) => setIsAphasic(value as boolean)}
+              value={hasJournal}
+              onChange={(value) => setHasJournal(value as boolean)}
               activeColor="purple"
             />
           </Card>

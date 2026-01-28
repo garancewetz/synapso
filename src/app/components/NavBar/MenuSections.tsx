@@ -12,19 +12,19 @@ type Props = {
 
 export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
   const { effectiveUser } = useUser();
-  const isAphasic = effectiveUser?.isAphasic ?? false;
+  const hasJournal = effectiveUser?.hasJournal ?? false;
   const tabIndex = isMenuOpen ? 0 : -1;
 
   return (
     <>
-      {/* Section Aphasie */}
-      {isAphasic && (
+      {/* Section Journal */}
+      {hasJournal && (
         <MenuLink
-          title="Aphasie"
+          title="Journal"
           icon={<ChatIcon className="w-4 h-4" />}
-          href="/aphasie"
-          iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
-          iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
+          href="/journal"
+          iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
+          iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}
           onClick={onMenuClose}
           tabIndex={tabIndex}
           iconSize="sm"

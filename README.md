@@ -10,7 +10,7 @@ Synapso est une application de rééducation qui permet de :
 - **Filtrer les exercices** : par équipement, par statut (complété/à compléter), et par partie du corps
 - **Suivre la progression** : marquer les exercices comme complétés et consulter l'historique détaillé
 - **Consulter les statistiques** : nombre total d'exercices complétés, activité de la semaine, du mois, et répartition par partie du corps
-- **Journal des erreurs d'aphasie** : enregistrer et consulter les erreurs de langage pour se souvenir (citations avec leurs significations)
+- **Journal** : gérer des tâches et prendre des notes libres pour suivre sa progression
 
 ## 🚀 Fonctionnalités principales
 
@@ -31,12 +31,11 @@ Synapso est une application de rééducation qui permet de :
 - Répartition par partie du corps avec compteurs
 - Historique détaillé groupé par date avec horaire de réalisation
 
-### Page Aphasie
-- Journal des erreurs de langage (erreurs d'aphasie) pour se souvenir
-- Liste des citations avec leur signification correcte
-- Affichage des dates et commentaires associés
-- Tri par date (plus récentes en premier)
-- Actions admin directes (ajout/modification sans mot de passe supplémentaire)
+### Page Journal
+- Gestion de tâches : créer, modifier et marquer des tâches comme complétées
+- Notes libres : enregistrer des notes avec titre, contenu et date optionnelle
+- Organisation : visualiser les tâches et notes de manière claire et simple
+- Actions directes : ajout/modification sans mot de passe supplémentaire
 
 ## 🛠️ Stack technique
 
@@ -118,7 +117,8 @@ Synapso est une application de rééducation qui permet de :
 - **Bodypart** : Parties du corps avec nom et couleur associée
 - **ExerciceBodypart** : Relation many-to-many entre exercices et parties du corps
 - **History** : Historique des exercices complétés avec date et heure
-- **AphasieItem** : Journal des erreurs d'aphasie (citations avec leur signification correcte, date et commentaire)
+- **JournalTask** : Tâches du journal avec titre, statut de complétion et date de complétion
+- **JournalNote** : Notes libres avec contenu, titre optionnel et date optionnelle
 
 ## 🔐 Sécurité
 

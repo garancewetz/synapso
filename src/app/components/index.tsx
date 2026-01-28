@@ -1,5 +1,4 @@
 import { AdminUserSwitcher } from './AdminUserSwitcher';
-import { AphasieForm } from './AphasieForm';
 import { AuthScreen } from './AuthScreen';
 import { BottomNavBar } from './BottomNavBar';
 import { CategoryCardWithProgress } from './CategoryCardWithProgress';
@@ -33,7 +32,6 @@ import { Badge, Button, CalendarIcon, Input, Loader, Logo, Textarea, PinIcon, Sp
 
 export {
   AdminUserSwitcher,
-  AphasieForm,
   AuthScreen,
   Badge,
   BottomNavBar,

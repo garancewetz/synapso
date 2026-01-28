@@ -30,12 +30,12 @@ const ProgressBottomSheet = dynamic(
   { ssr: false }
 );
 
-type TabValue = 'corps' | 'aphasie' | 'parcours';
+type TabValue = 'corps' | 'journal' | 'parcours';
 
 export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
-  const isAphasic = effectiveUser?.isAphasic ?? false;
+  const hasJournal = effectiveUser?.hasJournal ?? false;
   const [activeTab, setActiveTab] = useState<TabValue>('corps');
   
   const { exercices, refetch: refetchExercices } = useExercices();
@@ -66,10 +66,10 @@ export default function Home() {
       icon: <UserIcon className="w-5 h-5" />
     });
     
-    if (isAphasic) {
+    if (hasJournal) {
       options.push({ 
-        value: 'aphasie', 
-        label: 'Aphasie',
+        value: 'journal', 
+        label: 'Journal',
         icon: <ChatIcon className="w-5 h-5" />
       });
     }
@@ -81,7 +81,7 @@ export default function Home() {
     });
     
     return options;
-  }, [isAphasic]);
+  }, [hasJournal]);
 
   // Si l'onglet actif n'est plus disponible, changer vers 'corps'
   const currentActiveTab = useMemo(() => {
@@ -181,28 +181,28 @@ export default function Home() {
                   </div>
                 )}
 
-              {currentActiveTab === 'aphasie' && isAphasic && (
+              {currentActiveTab === 'journal' && hasJournal && (
                 <SiteMapGroup
-                  title="Journal d'aphasie"
+                  title="Journal"
                   icon={<ChatIcon className="w-5 h-5" />}
-                  description="Mes exercices et mes citations"
-                  href="/aphasie"
-                  iconBgColor={SITEMAP_ICON_STYLES.primary.aphasie.bg}
-                  iconTextColor={SITEMAP_ICON_STYLES.primary.aphasie.text}
+                  description="Mes tâches et mes notes"
+                  href="/journal"
+                  iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
+                  iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}
                 >
                   <MenuLink
-                    title="Exercices ortho"
+                    title="Tâches"
                     icon={<PinIcon className="w-5 h-5" />}
-                    description="Voir mes exercices"
-                    href="/aphasie/exercices"
+                    description="Voir mes tâches"
+                    href="/journal/tasks"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
                   <MenuLink
-                    title="Mes citations"
+                    title="Mes notes"
                     icon={<BookIcon className="w-5 h-5" />}
                     description="Voir toutes"
-                    href="/aphasie/citations"
+                    href="/journal/notes"
                     iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.default.text}
                   />
@@ -244,6 +244,8 @@ export default function Home() {
           onSuccess={handleProgressSuccess}
           userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
+          initialContent={progressModal.initialContent}
+          initialEmoji={progressModal.initialEmoji}
         />
       )}
 

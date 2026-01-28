@@ -9,7 +9,7 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isCompleted: boolean;
   isCompletedToday?: boolean;
   isLoading?: boolean;
-  variant?: 'exercice' | 'challenge';
+  variant?: 'exercice' | 'challenge' | 'task';
   weeklyCount?: number; // Nombre de fois fait cette semaine
 };
 
@@ -27,6 +27,10 @@ export function CompleteButton({
       return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
     }
     
+    if (variant === 'task') {
+      return isCompleted ? 'Fait' : 'Marquer comme fait';
+    }
+    
     // Afficher le compteur hebdomadaire si fait plusieurs fois cette semaine
     if (weeklyCount > 1) {
       return `Fait (${weeklyCount}× cette semaine)`;
@@ -41,6 +45,10 @@ export function CompleteButton({
       return isCompleted ? 'Annuler maîtrise' : 'Marquer comme maîtrisé';
     }
     
+    if (variant === 'task') {
+      return isCompleted ? 'Démarquer' : 'Marquer comme fait';
+    }
+    
     if (isCompletedToday) {
       return 'Démarquer';
     }
@@ -49,6 +57,14 @@ export function CompleteButton({
 
   const getCustomStyles = () => {
     if (variant === 'challenge') {
+      if (isCompleted) {
+        return 'bg-emerald-500 text-white md:hover:bg-emerald-600 border-0 md:hover:ring-2 md:hover:ring-emerald-400/60 md:hover:ring-offset-2';
+      }
+      return 'bg-gray-100 text-gray-700 border border-gray-300 md:hover:bg-gray-200 md:hover:border-gray-400 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
+    }
+    
+    if (variant === 'task') {
+      // Pour les tâches : vert si fait (définitif), sinon gris
       if (isCompleted) {
         return 'bg-emerald-500 text-white md:hover:bg-emerald-600 border-0 md:hover:ring-2 md:hover:ring-emerald-400/60 md:hover:ring-offset-2';
       }
@@ -81,7 +97,13 @@ export function CompleteButton({
         className
       )}
       title={getTitle()}
-      aria-label={isCompletedToday ? (variant === 'challenge' ? 'Annuler maîtrise' : 'Démarquer') : (variant === 'challenge' ? 'Marquer comme maîtrisé' : 'Marquer comme fait aujourd\'hui')}
+      aria-label={
+        variant === 'challenge' 
+          ? (isCompleted ? 'Annuler maîtrise' : 'Marquer comme maîtrisé')
+          : variant === 'task'
+          ? (isCompleted ? 'Démarquer' : 'Marquer comme fait')
+          : (isCompletedToday ? 'Démarquer' : 'Marquer comme fait aujourd\'hui')
+      }
       disabled={isLoading}
       {...props}
     >

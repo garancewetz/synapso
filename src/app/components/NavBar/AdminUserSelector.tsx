@@ -82,7 +82,7 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
       `- Exercices\n` +
       `- Historique de progression\n` +
       `- Progrès et victoires\n` +
-      `- Citations d'aphasie\n` +
+      `- Notes du journal\n` +
       `- Exercices d'orthophonie\n\n` +
       `Êtes-vous absolument sûr de vouloir supprimer ce compte ?`
     );

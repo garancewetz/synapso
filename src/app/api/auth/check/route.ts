@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         role: true,
         resetFrequency: true,
         dominantHand: true,
-        isAphasic: true,
+        hasJournal: true,
         createdAt: true,
       },
     });
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             role: true,
             resetFrequency: true,
             dominantHand: true,
-            isAphasic: true,
+            hasJournal: true,
             createdAt: true,
           },
         });

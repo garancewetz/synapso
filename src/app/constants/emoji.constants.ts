@@ -28,8 +28,14 @@ export const CATEGORY_EMOJIS = {
 
 /**
  * Emoji utilisé pour identifier les progrès orthophonie dans la base de données
+ * @deprecated Utiliser JOURNAL_EMOJI pour les nouveaux progrès du journal
  */
 export const ORTHOPHONIE_PROGRESS_EMOJI = '🎯' as const;
+
+/**
+ * Emoji utilisé pour le module journal
+ */
+export const JOURNAL_EMOJI = '📔' as const;
 
 /**
  * Emojis pour la navigation et le parcours

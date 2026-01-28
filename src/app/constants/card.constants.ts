@@ -93,11 +93,11 @@ export const MENU_COLORS = {
 } as const;
 
 // ============================================================================
-// COULEURS APHASIE
+// COULEURS JOURNAL (obsolète - utiliser JOURNAL_COLORS de journal.constants.ts)
 // ============================================================================
 
 export const APHASIE_COLORS = {
-  // Jaune solaire (non maîtrisé)
+  // Jaune solaire (obsolète - conservé pour compatibilité)
   SOLAR_YELLOW: 'bg-yellow-400',
 } as const;
 

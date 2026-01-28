@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         role: true,
         resetFrequency: true,
         dominantHand: true,
-        isAphasic: true,
+        hasJournal: true,
         createdAt: true,
       },
     });
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest) {
         role: true,
         resetFrequency: true,
         dominantHand: true,
-        isAphasic: true,
+        hasJournal: true,
         createdAt: true,
       },
     });

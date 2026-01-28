@@ -21,11 +21,13 @@ type Props = {
   userId: number;
   progressToEdit?: Progress | null;
   defaultCategory?: ProgressCategory;
+  initialContent?: string; // Contenu initial pour la création (ex: depuis une tâche complétée)
+  initialEmoji?: string; // Emoji initial pour la création
 };
 
 type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
 
-export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory }: Props) {
+export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory, initialContent, initialEmoji }: Props) {
   const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -59,7 +61,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     textarea.style.height = `${textarea.scrollHeight}px`;
   }, [displayContent]);
 
-  // Pré-remplir les champs en mode édition ou avec defaultCategory
+  // Pré-remplir les champs en mode édition ou avec defaultCategory/initialContent
   useEffect(() => {
     if (isOpen && progressToEdit) {
       setContent(progressToEdit.content);
@@ -71,6 +73,20 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
         const categoryFromEmoji = getExerciceCategoryFromEmoji(progressToEdit.emoji);
         setSelectedCategory(categoryFromEmoji || null);
       }
+    } else if (isOpen && initialContent) {
+      // Pré-remplir avec le contenu initial (ex: depuis une tâche complétée)
+      setContent(initialContent);
+      setSelectedTags([]);
+      // Si un emoji initial est fourni, déterminer la catégorie
+      if (initialEmoji) {
+        if (initialEmoji === ORTHOPHONIE_PROGRESS_EMOJI) {
+          setSelectedCategory('ORTHOPHONIE');
+        } else {
+          // Chercher la catégorie correspondant à l'emoji
+          const categoryFromEmoji = getExerciceCategoryFromEmoji(initialEmoji);
+          setSelectedCategory(categoryFromEmoji || null);
+        }
+      }
     } else if (isOpen && defaultCategory) {
       // Pré-sélectionner la catégorie par défaut si fournie
       setSelectedCategory(defaultCategory);
@@ -80,7 +96,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       setSelectedTags([]);
       setSelectedCategory(null);
     }
-  }, [isOpen, progressToEdit, defaultCategory]);
+  }, [isOpen, progressToEdit, defaultCategory, initialContent, initialEmoji]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +109,14 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     setIsSubmitting(true);
     setError('');
 
-    // Déterminer l'emoji selon la catégorie sélectionnée
-    const categoryEmoji = selectedCategory === 'ORTHOPHONIE' 
-      ? ORTHOPHONIE_PROGRESS_EMOJI 
-      : selectedCategory 
-        ? CATEGORY_ICONS[selectedCategory] 
-        : null;
+    // Déterminer l'emoji selon la catégorie sélectionnée ou initialEmoji
+    const categoryEmoji = initialEmoji 
+      ? initialEmoji
+      : selectedCategory === 'ORTHOPHONIE' 
+        ? ORTHOPHONIE_PROGRESS_EMOJI 
+        : selectedCategory 
+          ? CATEGORY_ICONS[selectedCategory] 
+          : null;
 
     try {
       const url = isEditMode ? `/api/progress/${progressToEdit!.id}` : '/api/progress';
@@ -290,8 +308,8 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               );
             })}
             
-            {/* Option Orthophonie - à la fin avec couleur jaune (uniquement si l'utilisateur est aphasique) */}
-            {effectiveUser?.isAphasic && (
+            {/* Option Orthophonie - à la fin avec couleur jaune (uniquement si l'utilisateur a le journal) */}
+            {effectiveUser?.hasJournal && (
               <button
                 type="button"
                 onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}

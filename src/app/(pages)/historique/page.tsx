@@ -166,10 +166,10 @@ export default function HistoriquePage() {
 
   // Filtrer les progrès selon le filtre sélectionné
   const filteredProgress = useMemo(() => {
-    const isAphasic = effectiveUser?.isAphasic ?? false;
+    const hasJournal = effectiveUser?.hasJournal ?? false;
     
-    // Si l'utilisateur n'est pas aphasique, toujours afficher tous les progrès
-    if (!isAphasic) {
+    // Si l'utilisateur n'a pas le journal, toujours afficher tous les progrès
+    if (!hasJournal) {
       return progressList;
     }
     
@@ -182,7 +182,7 @@ export default function HistoriquePage() {
     }
     // filter === 'physique'
     return progressList.filter(p => p.emoji !== '🎯');
-  }, [progressList, filter, effectiveUser?.isAphasic]);
+  }, [progressList, filter, effectiveUser?.hasJournal]);
 
   const loading = loadingHistory || loadingProgress;
   const STAR_BRIGHT_EMOJI = PROGRESS_EMOJIS?.STAR_BRIGHT || '🌟';
@@ -351,7 +351,7 @@ export default function HistoriquePage() {
                     </h2>
                     {effectiveUser && (
                       <ProgressButton 
-                        onClick={progressModal.openForCreate}
+                        onClick={() => progressModal.openForCreate()}
                         variant="inline"
                         label="Noter un progrès"
                       />
@@ -366,7 +366,7 @@ export default function HistoriquePage() {
               )}
 
               {/* Filtre avec nombre de progrès - affiché uniquement pour les utilisateurs aphasiques */}
-              {!loadingProgress && progressList.length > 0 && (effectiveUser?.isAphasic ?? false) && (
+              {!loadingProgress && progressList.length > 0 && (effectiveUser?.hasJournal ?? false) && (
                 <div>
                   <SegmentedControl
                     options={[

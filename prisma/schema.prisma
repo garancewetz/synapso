@@ -16,11 +16,11 @@ model User {
   updatedAt      DateTime           @updatedAt
   resetFrequency ResetFrequency     @default(DAILY)
   dominantHand   DominantHand       @default(RIGHT)
-  isAphasic      Boolean            @default(false)
+  hasJournal     Boolean            @default(false)
   exercices      Exercice[]
   progress       Progress[]
-  aphasieItems   AphasieItem[]
-  aphasieChallenges AphasieChallenge[]
+  journalTasks   JournalTask[]
+  journalNotes   JournalNote[]
 
   @@index([role])
 }
@@ -85,33 +85,36 @@ model History {
   @@index([completedAt])
 }
 
-model AphasieItem {
-  id        Int       @id @default(autoincrement())
-  quote     String
-  meaning   String
-  date      DateTime?
-  comment   String?
-  userId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([date])
-}
-
-model AphasieChallenge {
-  id        Int      @id @default(autoincrement())
-  text      String
-  mastered  Boolean  @default(false)
-  userId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([mastered])
-  @@index([userId])
-}
+// ⚠️ Modèles obsolètes - À supprimer après migration des données
+// Les données ont été migrées vers JournalTask et JournalNote
+// 
+// model AphasieItem {
+//   id        Int       @id @default(autoincrement())
+//   quote     String
+//   meaning   String
+//   date      DateTime?
+//   comment   String?
+//   userId    Int
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//
+//   @@index([userId])
+//   @@index([date])
+// }
+//
+// model AphasieChallenge {
+//   id        Int      @id @default(autoincrement())
+//   text      String
+//   mastered  Boolean  @default(false)
+//   userId    Int
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//
+//   @@index([mastered])
+//   @@index([userId])
+// }
 
 model Progress {
   id        Int      @id @default(autoincrement())
@@ -126,6 +129,34 @@ model Progress {
   @@index([userId])
   @@index([createdAt])
   @@map("Victory")
+}
+
+model JournalTask {
+  id          Int       @id @default(autoincrement())
+  title       String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  userId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([completed])
+  @@index([userId])
+}
+
+model JournalNote {
+  id        Int       @id @default(autoincrement())
+  content   String
+  title     String?
+  date      DateTime?
+  userId    Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
 }
 
 enum ExerciceCategory {

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       invitationCode,
       resetFrequency, 
       dominantHand, 
-      isAphasic 
+      hasJournal 
     } = await request.json();
 
     // 🔒 SÉCURITÉ: Validation du code d'invitation en premier
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
         // Paramètres optionnels (utilisent les valeurs par défaut du schéma si non fournis)
         ...(resetFrequency && { resetFrequency }),
         ...(dominantHand && { dominantHand }),
-        ...(isAphasic !== undefined && { isAphasic }),
+        ...(hasJournal !== undefined && { hasJournal }),
       },
       select: {
         id: true,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         role: true,
         resetFrequency: true,
         dominantHand: true,
-        isAphasic: true,
+        hasJournal: true,
         createdAt: true,
       },
     });

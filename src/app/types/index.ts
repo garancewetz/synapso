@@ -1,5 +1,5 @@
 export * from './exercice';
-export * from './aphasie';
+export * from './journal';
 export * from './history';
 export * from './menu';
 export * from './user';

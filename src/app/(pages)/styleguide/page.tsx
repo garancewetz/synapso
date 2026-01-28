@@ -754,7 +754,7 @@ export default function StyleguidePage() {
         
         <Card variant="default" padding="md" className="mb-8">
           <p className="text-sm text-gray-500">
-            Les composants composites (CategoryCardWithProgress, ExerciceCard, AphasieItemCard, etc.) 
+            Les composants composites (CategoryCardWithProgress, ExerciceCard, JournalNoteCard, etc.) 
             sont documentés dans leur contexte d&apos;utilisation dans l&apos;application.
           </p>
         </Card>

@@ -135,7 +135,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
               }}
               formatter={formatTooltip}
             />
-            {effectiveUser?.isAphasic && (
+            {effectiveUser?.hasJournal && (
               <Area 
                 type="monotone" 
                 dataKey="ortho" 
@@ -157,7 +157,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
         </ResponsiveContainer>
       </div>
 
-      <ChartLegend isAphasic={effectiveUser?.isAphasic ?? false} />
+      <ChartLegend hasJournal={effectiveUser?.hasJournal ?? false} />
     </Card>
   );
 });
@@ -209,13 +209,13 @@ function ChartGradients() {
 
 // Composant: Légende du graphique
 type ChartLegendProps = {
-  isAphasic: boolean;
+  hasJournal: boolean;
 };
 
-function ChartLegend({ isAphasic }: ChartLegendProps) {
+function ChartLegend({ hasJournal }: ChartLegendProps) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 text-xs mb-4">
-      {isAphasic && (
+      {hasJournal && (
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-yellow-500" />
           <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.ORTHOPHONIE} Orthophonie</span>

@@ -23,7 +23,7 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
   const { refreshUser } = useUser();
   const [resetFrequency, setResetFrequency] = useState<ResetFrequency>('DAILY');
   const [dominantHand, setDominantHand] = useState<DominantHand>('RIGHT');
-  const [isAphasic, setIsAphasic] = useState<boolean>(false);
+  const [hasJournal, setHasJournal] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -41,7 +41,7 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
         body: JSON.stringify({ 
           resetFrequency, 
           dominantHand, 
-          isAphasic 
+          hasJournal 
         }),
       });
 
@@ -60,7 +60,7 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
       setError(err instanceof Error ? err.message : 'Erreur lors de la configuration');
       setLoading(false);
     }
-  }, [userId, resetFrequency, dominantHand, isAphasic, refreshUser, onComplete]);
+  }, [userId, resetFrequency, dominantHand, hasJournal, refreshUser, onComplete]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-amber-50 via-white to-orange-50 p-4">
@@ -130,13 +130,13 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
             </div>
           </Card>
 
-          {/* Section Aphasie */}
+          {/* Section Journal */}
           <Card variant="default" padding="lg">
             <label className="block text-base font-semibold text-gray-800 mb-2">
-              Journal d&apos;aphasie
+              Journal
             </label>
             <p className="text-sm text-gray-500 mb-4">
-              Pour suivre tes citations et pratiquer des exercices d&apos;orthophonie
+              Pour suivre tes tâches et prendre des notes
             </p>
 
             <ToggleButtonGroup
@@ -144,8 +144,8 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
                 { value: true, label: 'Oui', icon: '✓' },
                 { value: false, label: 'Non', icon: '✗' },
               ]}
-              value={isAphasic}
-              onChange={(value) => setIsAphasic(value as boolean)}
+              value={hasJournal}
+              onChange={(value) => setHasJournal(value as boolean)}
               activeColor="purple"
             />
           </Card>

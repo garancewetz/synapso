@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { LinkButton } from '@/app/components/ui/LinkButton';
-import { getCurrentPageName } from '@/app/utils/navigation.utils';
+import { getCurrentPageName, getPageEmoji } from '@/app/utils/navigation.utils';
 import clsx from 'clsx';
 
 type Props = {
@@ -33,6 +33,14 @@ export function BackButton({
     return pageName ? `Retour à ${pageName.toLowerCase()}` : null;
   }, [backHref, backLabel]);
 
+  // Obtenir l'emoji de la page de retour
+  const pageEmoji = useMemo(() => {
+    if (!backHref || backHref === '/') {
+      return null;
+    }
+    return getPageEmoji(backHref);
+  }, [backHref]);
+
   // Ne pas afficher le bouton si pas de label ou si c'est l'accueil
   if (!label || !backHref || backHref === '/') {
     return null;
@@ -60,6 +68,7 @@ export function BackButton({
         aria-label={label}
       >
         <ChevronIcon className="w-6 h-6 text-gray-700" direction="left" />
+        {pageEmoji && <span>{pageEmoji}</span>}
         <span>{label}</span>
       </LinkButton>
     </div>

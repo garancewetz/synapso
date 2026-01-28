@@ -10,7 +10,7 @@ type User = {
   role: 'USER' | 'ADMIN';
   resetFrequency?: 'DAILY' | 'WEEKLY';
   dominantHand?: 'LEFT' | 'RIGHT';
-  isAphasic?: boolean;
+  hasJournal?: boolean;
   createdAt?: string;
 };
 
@@ -18,8 +18,8 @@ type UserWithStats = User & {
   _count?: {
     exercices: number;
     progress: number;
-    aphasieItems: number;
-    aphasieChallenges: number;
+    journalNotes: number;
+    journalTasks: number;
   };
 };
 

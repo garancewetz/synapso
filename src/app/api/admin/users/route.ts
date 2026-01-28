@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
         role: true,
         resetFrequency: true,
         dominantHand: true,
-        isAphasic: true,
+        hasJournal: true,
         createdAt: true,
         _count: {
           select: {
             exercices: true,
             progress: true,
-            aphasieItems: true,
-            aphasieChallenges: true,
+            journalNotes: true,
+            journalTasks: true,
           },
         },
       },

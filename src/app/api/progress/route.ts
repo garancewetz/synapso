@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, emoji, tags } = body;
+    const { content, emoji, tags, medias } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json(
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
         tags: Array.isArray(tags) ? tags : [],
+        medias: Array.isArray(medias) ? medias : [],
         userId: userId,
       },
     });

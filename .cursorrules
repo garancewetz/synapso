@@ -2,6 +2,8 @@
 
 ## Contexte de l'application
 
+organise les fichiers par features. Les composants d'une meme features doivent être préfixé pareil (du nom de leur features). Un fichier ne doit pas dépasser 250 lignes.
+
 Cette application est conçue pour la rééducation de personnes ayant subi un AVC (Accident Vasculaire Cérébral). Par conséquent, l'interface doit être :
 - **Simple** : Navigation claire, actions évidentes, pas de complexité inutile
 - **Intuitive** : Flux logiques, feedback immédiat, pas de confusion possible
@@ -294,3 +296,60 @@ Update README.md
 ```
 
 - After making changes, always propose a commit message following these conventions 
+
+
+### **. General Rules**
+
+1. **Follow Standard Conventions**: Adhere to the coding standards and conventions that are prevalent for the languages and tools we use.
+2. **Keep It Simple**: Always prefer simpler solutions. Reduce complexity wherever possible.
+3. **Boy Scout Rule**: Always leave the code cleaner than you found it. Refactor or clean up every time you make changes.
+4. **Root Cause Analysis**: Always strive to find and fix the root cause of a defect, not just the symptoms.
+5. **Use Existing Hooks First**: Always check for and prioritize using existing hooks in the codebase before fetching data directly or passing data through props. Search the codebase for relevant hooks (e.g., `usePractitionerFragment`, `useOrganization`) and use them to access data within components.
+
+### **B. Design Rules**
+
+1. **Feature Isolation**: A component outside a feature (`components/`) must never import elements from a feature (`features/`). If a component uses feature-specific elements, it must be placed within that feature and prefixed with the feature name (e.g., `transplant-document-status-badge.tsx` in `features/patient-transplant-files/components/`).
+2. **High-Level Configuration**: Keep configurable data at high levels in the code to enhance flexibility.
+3. **Separate Multi-threading**: Isolate multi-threading code to manage complexity and enhance maintainability.
+4. **Limit Over-Configurability**: Avoid excessive configurability which can lead to complex and unmanageable code.
+5. **Use Dependency Injection**: Favor dependency injection to manage dependencies cleanly and flexibly.
+6. **Law of Demeter**: Follow the Law of Demeter; a module should only know about direct dependencies.
+
+### **C. Understandability Tips**
+
+1. **Consistency**: If you do something one way, do all similar things in the same way.
+2. **Explanatory Variables**: Use explanatory variables to clarify the purpose of complex expressions. 
+3. **Encapsulate Boundary Conditions**: Centralize the handling of boundary conditions in a single location.
+4. **Avoid Logical Dependencies**: Ensure methods do not have hidden dependencies on internal class state.
+
+### **D. Naming Rules**
+
+1. Everything in english, always. 
+2. At least 3 characters rules for naming, unless it’s very explicit with less. 
+3. Avoid acronyms at all cost ⬇️
+4. **Descriptive Names**: Choose names that describe their purpose or behavior.
+5. **Meaningful Distinctions**: Distinguish names in a way that clarifies their differences.
+6. **Pronounceable and Searchable Names**: Use names that are easy to pronounce and search through code.
+7. **Replace Magic Numbers**: Use named constants instead of magic numbers to enhance readability.
+
+### **E. Function Rules**
+
+1. **Small and Focused**: Functions should be small and focused on a single task.
+2. **Descriptive Names**: Function names should clearly describe their behavior.
+3. **Limit Arguments**: If possible prefer fewer arguments for simplicity and clarity.
+4. **No Side Effects**: Functions should not have side effects. They should not modify any state not contained within them.
+
+### **F. Commenting Rules**
+
+1. **Don’t comment code :** There is no reason to push commented code, if a code is commented it is not used and therefore should not be present. 
+2. **Explain Why, Not What**: Use comments to explain why something is done, not what is done.
+3. **Avoid Redundant Comments**: Don't add comments that just repeat what the code does.
+4. **Clarify Complex Code**: Use comments to clarify complex code operations or decisions.
+5. **Intent and Warnings**: Document the intent behind decisions and warn about potential consequences.
+
+### **G. Source Code Structure**
+
+1. **Vertical Separation**: Separate concepts vertically in the code for better readability.
+2. **Related Code Should Be Close**: Keep related functions and variables close to each other.
+3. **Declare Variables Close to Usage**: Declare variables close to where they are used.
+4. **Logical Flow**: Arrange functions in a logical flow downwards, callers above callees.

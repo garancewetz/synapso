@@ -1,52 +1,40 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Loader } from './ui';
 import { ErrorMessage } from './ErrorMessage';
 import clsx from 'clsx';
 
-type MediaItem = {
-  url: string;
-  publicId: string;
-};
-
-type MediaData = {
-  photos?: MediaItem[];
-};
-
 type Props = {
-  value: MediaData | null;
-  onChange: (media: MediaData | null) => void;
+  value: string[];
+  onChange: (medias: string[]) => void;
 };
 
-const MAX_PHOTOS = 3;
+const MAX_MEDIAS = 2;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
-export function MediaUploader({ value, onChange }: Props) {
+export function MediaUploaderProgress({ value, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
-  const photos = useMemo(() => value?.photos || [], [value?.photos]);
-  const canAddPhotos = photos.length < MAX_PHOTOS;
+  const medias = value || [];
+  const canAddMedias = medias.length < MAX_MEDIAS;
 
   const handleFileSelect = useCallback(async (file: File) => {
     setError('');
     setUploading(true);
 
     try {
-      // Vérifier la taille
       if (file.size > MAX_IMAGE_SIZE) {
         const maxSizeMB = MAX_IMAGE_SIZE / (1024 * 1024);
         throw new Error(`Le fichier est trop volumineux. Taille maximale: ${maxSizeMB}MB`);
       }
 
-      // Créer FormData
       const formData = new FormData();
       formData.append('file', file);
       formData.append('resourceType', 'image');
 
-      // Upload
       const response = await fetch('/api/exercices/upload-media', {
         method: 'POST',
         credentials: 'include',
@@ -60,60 +48,54 @@ export function MediaUploader({ value, onChange }: Props) {
 
       const result = await response.json();
 
-      // Mettre à jour l'état
-      onChange({
-        ...value,
-        photos: [...photos, { url: result.url, publicId: result.publicId }],
-      });
+      onChange([...medias, result.url]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'upload';
       setError(errorMessage);
     } finally {
       setUploading(false);
     }
-  }, [value, photos, onChange]);
+  }, [medias, onChange]);
 
   const handleImageInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleFileSelect(file);
     }
-    // Réinitialiser l'input pour permettre de sélectionner le même fichier
     e.target.value = '';
   }, [handleFileSelect]);
 
-  const removePhoto = useCallback((index: number) => {
-    const newPhotos = photos.filter((_, i) => i !== index);
-    onChange(newPhotos.length > 0 ? { ...value, photos: newPhotos } : null);
-  }, [photos, value, onChange]);
+  const removeMedia = useCallback((index: number) => {
+    const newMedias = medias.filter((_, i) => i !== index);
+    onChange(newMedias);
+  }, [medias, onChange]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
         <p className="text-xs text-gray-500 text-center mb-2">Médias (optionnel)</p>
         <p className="text-xs text-gray-400 text-center mb-3">
-          Jusqu&apos;à {MAX_PHOTOS} médias
+          Jusqu&apos;à {MAX_MEDIAS} médias
         </p>
 
-        <ErrorMessage message={error} />
+        <ErrorMessage message={error} className="mb-2" />
 
-        {/* Photos existantes */}
-        {photos.length > 0 && (
+        {medias.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-3">
-            {photos.map((photo, index) => (
-              <div key={photo.publicId} className="relative group">
+            {medias.map((mediaUrl, index) => (
+              <div key={mediaUrl} className="relative group">
                 <Image
-                  src={photo.url}
-                  alt={`Photo ${index + 1}`}
+                  src={mediaUrl}
+                  alt={`Média ${index + 1}`}
                   width={200}
                   height={150}
                   className="w-full h-32 object-cover rounded-lg border border-gray-200"
                 />
                 <button
                   type="button"
-                  onClick={() => removePhoto(index)}
+                  onClick={() => removeMedia(index)}
                   className="absolute top-2 right-2 bg-gray-700/80 hover:bg-gray-800 text-white rounded-full p-1.5 opacity-100 transition-all focus:outline-none focus:ring-2 focus:ring-gray-500 active:scale-95"
-                  aria-label={`Supprimer la photo ${index + 1}`}
+                  aria-label={`Supprimer le média ${index + 1}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -124,7 +106,7 @@ export function MediaUploader({ value, onChange }: Props) {
           </div>
         )}
 
-        {canAddPhotos && (
+        {canAddMedias && (
           <label className="block">
             <input
               type="file"
@@ -149,7 +131,7 @@ export function MediaUploader({ value, onChange }: Props) {
                   <span>Upload...</span>
                 </div>
               ) : (
-                <span>📷 Ajouter ({photos.length}/{MAX_PHOTOS})</span>
+                <span>📷 Ajouter ({medias.length}/{MAX_MEDIAS})</span>
               )}
             </div>
           </label>

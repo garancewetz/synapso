@@ -11,6 +11,7 @@ import { BottomSheetModal, Button } from '@/app/components/ui';
 import { useDeleteConfirmation } from '@/app/hooks/useDeleteConfirmation';
 import { ErrorMessage } from '@/app/components/ErrorMessage';
 import { useUser } from '@/app/contexts/UserContext';
+import { MediaUploaderProgress } from './MediaUploaderProgress';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Progress } from '@/app/types';
 
@@ -31,6 +32,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
   const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedMedias, setSelectedMedias] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ProgressCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +68,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     if (isOpen && progressToEdit) {
       setContent(progressToEdit.content);
       setSelectedTags(progressToEdit.tags || []);
+      setSelectedMedias(progressToEdit.medias || []);
       // Utiliser les utilitaires factorisés pour déterminer la catégorie
       if (isOrthophonieProgress(progressToEdit.emoji)) {
         setSelectedCategory('ORTHOPHONIE');
@@ -77,6 +80,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       // Pré-remplir avec le contenu initial (ex: depuis une tâche complétée)
       setContent(initialContent);
       setSelectedTags([]);
+      setSelectedMedias([]);
       // Si un emoji initial est fourni, déterminer la catégorie
       if (initialEmoji) {
         if (initialEmoji === ORTHOPHONIE_PROGRESS_EMOJI) {
@@ -91,9 +95,11 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       // Pré-sélectionner la catégorie par défaut si fournie
       setSelectedCategory(defaultCategory);
       setSelectedTags([]);
+      setSelectedMedias([]);
     } else if (!isOpen) {
       setContent('');
       setSelectedTags([]);
+      setSelectedMedias([]);
       setSelectedCategory(null);
     }
   }, [isOpen, progressToEdit, defaultCategory, initialContent, initialEmoji]);
@@ -129,6 +135,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           content: content.trim(),
           emoji: categoryEmoji,
           tags: selectedTags,
+          medias: selectedMedias,
           ...(isEditMode ? {} : { userId }),
         }),
       });
@@ -171,6 +178,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
   const resetForm = () => {
     setContent('');
     setSelectedTags([]);
+    setSelectedMedias([]);
     setSelectedCategory(null);
     setError('');
   };
@@ -192,14 +200,15 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
 
   return (
     <BottomSheetModal isOpen={isOpen} onClose={handleClose}>
-      {/* Titre */}
-        <div className="text-center pb-3 md:pt-4 md:px-12">
+      <div className="flex flex-col h-full max-h-[90vh]">
+        {/* Titre */}
+        <div className="text-center pb-3 md:pt-4 md:px-12 shrink-0">
           <h2 className="text-xl font-bold text-gray-900">
             {isEditMode ? 'Modifier ton progrès ✏️' : `Ton progrès ! ${PROGRESS_EMOJIS.STAR_BRIGHT}`}
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-8">
+        <form onSubmit={handleSubmit} className="px-5 pb-8 overflow-y-auto flex-1 min-h-0">
         {/* Zone de texte avec micro - OBLIGATOIRE */}
         <div className="mb-4">
           <label htmlFor="progress-content" className="block text-sm font-medium text-gray-700 mb-2">
@@ -269,6 +278,14 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           </div>
         </div>
 
+        {/* Médias */}
+        <div className="mb-4">
+          <MediaUploaderProgress
+            value={selectedMedias}
+            onChange={setSelectedMedias}
+          />
+        </div>
+
         {/* Catégories */}
         <div className="mb-4">
           <p className="text-xs text-gray-500 text-center mb-2">Zone travaillée (optionnel)</p>
@@ -308,7 +325,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               );
             })}
             
-            {/* Option Orthophonie - à la fin avec couleur jaune (uniquement si l'utilisateur a le journal) */}
+            {/* Option Autre - à la fin avec couleur jaune (uniquement si l'utilisateur a le journal) */}
             {effectiveUser?.hasJournal && (
               <button
                 type="button"
@@ -327,7 +344,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                   <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
                 </div>
                 <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Ortho
+                  Autre
                 </span>
               </button>
             )}
@@ -402,6 +419,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           </Button>
         )}
         </form>
+      </div>
     </BottomSheetModal>
   );
 }

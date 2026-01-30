@@ -117,8 +117,8 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
             <span className="whitespace-nowrap">Noter un progrès</span>
           ) : isFixed && label ? (
             <span className="whitespace-nowrap">{label}</span>
-          ) : isProgress ? (
-            <span className="hidden md:inline whitespace-nowrap">{label || 'Ajouter'}</span>
+          ) : isProgress && !isFixed ? (
+            <span className="whitespace-nowrap">{label || 'Ajouter'}</span>
           ) : label ? (
             <span className="whitespace-nowrap">{label}</span>
           ) : null}

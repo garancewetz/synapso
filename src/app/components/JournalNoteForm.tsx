@@ -141,20 +141,20 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <ErrorMessage message={error} />
 
-      <TextareaWithSpeech
-        label="Note"
-        rows={4}
-        required
-        value={formData.content}
-        onValueChange={(value) => setFormData({ ...formData, content: value })}
-      />
-
       <InputWithSpeech
         label="Titre"
         type="text"
         value={formData.title}
         onValueChange={(value) => setFormData({ ...formData, title: value })}
         placeholder="Optionnel - pour organiser vos notes"
+      />
+
+      <TextareaWithSpeech
+        label="Note"
+        rows={4}
+        required
+        value={formData.content}
+        onValueChange={(value) => setFormData({ ...formData, content: value })}
       />
 
       <div>

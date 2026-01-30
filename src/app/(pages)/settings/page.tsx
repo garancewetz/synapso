@@ -332,14 +332,6 @@ export default function SettingsPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <ErrorMessage message={error} />
           
-          {success && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <p className="text-emerald-700 text-sm font-medium">
-                ✓ Profil enregistré avec succès
-              </p>
-            </div>
-          )}
-          
           {hasUnsavedChanges && !success && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
@@ -429,6 +421,14 @@ export default function SettingsPage() {
               )}
             </div>
           </Card>
+
+          {success && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-emerald-700 text-sm font-medium">
+                ✓ Profil enregistré avec succès
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Button

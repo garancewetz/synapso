@@ -46,9 +46,14 @@ export async function POST(request: NextRequest) {
       isValidPassword = await verifyPassword(password, user.passwordHash);
     } else {
       // Simuler la vérification du mot de passe pour un temps constant
-      // Utiliser un hash bcrypt factice pour maintenir le temps de réponse constant
-      const dummyHash = '$2a$10$dummyhashforconstanttimeverification';
-      await verifyPassword(password, dummyHash);
+      // Utiliser un hash bcrypt valide mais qui ne correspondra jamais au mot de passe
+      // Hash généré pour "dummy-password-never-matches" avec bcrypt
+      const dummyHash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+      try {
+        await verifyPassword(password, dummyHash);
+      } catch {
+        // Ignorer les erreurs de vérification du hash factice
+      }
     }
 
     // Toujours retourner le même message pour éviter l'énumération

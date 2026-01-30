@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress, MenuLink, SiteMapGroup, WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
-import { MapIcon, ChatIcon, BookIcon, PinIcon, SparklesIcon, UserIcon } from '@/app/components/ui/icons';
+import { MapIcon, ChatIcon, BookIcon, PinIcon, SparklesIcon, UserIcon, PlusIcon } from '@/app/components/ui/icons';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { MENU_COLORS } from '@/app/constants/card.constants';
@@ -211,6 +211,14 @@ export default function Home() {
 
               {currentActiveTab === 'parcours' && (
                 <div className="space-y-3">
+                  <MenuLink
+                    title="Noter un progrès"
+                    icon={<PlusIcon className="w-5 h-5" />}
+                    description="Ajouter un nouveau progrès"
+                    href="/historique?action=add-progress"
+                    iconBgColor={MENU_COLORS.PROGRES.bg}
+                    iconTextColor={MENU_COLORS.PROGRES.text}
+                  />
                   <MenuLink
                     title="Voir mes progrès"
                     icon={<SparklesIcon className="w-5 h-5" />}

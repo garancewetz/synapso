@@ -4,10 +4,8 @@ import { memo, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { isOrthophonieProgress } from '@/app/utils/progress.utils';
 import { CATEGORY_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
-import { CATEGORY_CHART_COLORS, ORTHOPHONIE_CHART_COLORS } from '@/app/constants/exercice.constants';
-import { useUser } from '@/app/contexts/UserContext';
+import { CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
 import type { Progress } from '@/app/types';
 import { Card } from '@/app/components/ui/Card';
 
@@ -19,15 +17,12 @@ type Props = {
 type ChartDataPoint = {
   week: string;
   weekKey: string;
-  ortho: number;
   physique: number;
   total: number;
 };
 
 // Constantes pour les couleurs du graphique (utilise les constantes du projet)
 const COLORS = {
-  ORTHO: ORTHOPHONIE_CHART_COLORS.primary,
-  ORTHO_GRADIENT: ORTHOPHONIE_CHART_COLORS.gradient,
   PHYSIQUE: CATEGORY_CHART_COLORS.UPPER_BODY, // Orange pour les progrès physiques
 } as const;
 
@@ -44,11 +39,9 @@ function getCumulativeProgress(progressList: Progress[], untilDate: Date): Progr
   return progressList.filter(p => parseISO(p.createdAt) <= untilDate);
 }
 
-// Helper: Compter les progrès par type
-function countProgressByType(progressList: Progress[]) {
-  const ortho = progressList.filter(p => isOrthophonieProgress(p.emoji)).length;
-  const physique = progressList.length - ortho;
-  return { ortho, physique };
+// Helper: Compter les progrès physiques
+function countPhysiqueProgress(progressList: Progress[]) {
+  return progressList.length;
 }
 
 /**
@@ -56,8 +49,6 @@ function countProgressByType(progressList: Progress[]) {
  * Montre la progression cumulative des progrès - la montagne ne fait que grandir !
  */
 export const ProgressStatsChart = memo(function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
-  const { effectiveUser } = useUser();
-  
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (progressList.length === 0) return [];
 
@@ -81,14 +72,13 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
     return weeks.map((weekStart): ChartDataPoint => {
       const weekEnd = getWeekEnd(weekStart);
       const cumulativeProgress = getCumulativeProgress(sortedProgress, weekEnd);
-      const { ortho, physique } = countProgressByType(cumulativeProgress);
+      const physique = countPhysiqueProgress(cumulativeProgress);
 
       return {
         week: format(weekStart, 'd MMM', { locale: fr }),
         weekKey: format(weekStart, 'yyyy-MM-dd'),
-        ortho,
         physique,
-        total: ortho + physique,
+        total: physique,
       };
     });
   }, [progressList]);
@@ -110,7 +100,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
       <div 
         className="w-full h-64 sm:h-80 mb-4"
         role="img"
-        aria-label="Graphique d'évolution des progrès au fil du temps montrant la progression cumulative des progrès physiques et orthophonie par semaine"
+        aria-label="Graphique d'évolution des progrès au fil du temps montrant la progression cumulative des progrès physiques par semaine"
       >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
@@ -135,16 +125,6 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
               }}
               formatter={formatTooltip}
             />
-            {effectiveUser?.hasJournal && (
-              <Area 
-                type="monotone" 
-                dataKey="ortho" 
-                stackId="1"
-                stroke={COLORS.ORTHO} 
-                fill="url(#colorOrtho)"
-                strokeWidth={2.5}
-              />
-            )}
             <Area 
               type="monotone" 
               dataKey="physique" 
@@ -157,7 +137,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
         </ResponsiveContainer>
       </div>
 
-      <ChartLegend hasJournal={effectiveUser?.hasJournal ?? false} />
+      <ChartLegend />
     </Card>
   );
 });
@@ -193,11 +173,6 @@ function ChartTitle() {
 function ChartGradients() {
   return (
     <defs>
-      <linearGradient id="colorOrtho" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="5%" stopColor={COLORS.ORTHO} stopOpacity={0.9}/>
-        <stop offset="50%" stopColor={COLORS.ORTHO_GRADIENT} stopOpacity={0.7}/>
-        <stop offset="95%" stopColor={COLORS.ORTHO_GRADIENT} stopOpacity={0.15}/>
-      </linearGradient>
       <linearGradient id="colorPhysique" x1="0" y1="0" x2="0" y2="1">
         <stop offset="5%" stopColor={COLORS.PHYSIQUE} stopOpacity={0.9}/>
         <stop offset="50%" stopColor={COLORS.PHYSIQUE} stopOpacity={0.7}/>
@@ -208,19 +183,9 @@ function ChartGradients() {
 }
 
 // Composant: Légende du graphique
-type ChartLegendProps = {
-  hasJournal: boolean;
-};
-
-function ChartLegend({ hasJournal }: ChartLegendProps) {
+function ChartLegend() {
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 text-xs mb-4">
-      {hasJournal && (
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-yellow-500" />
-          <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.ORTHOPHONIE} Orthophonie</span>
-        </div>
-      )}
       <div className="flex items-center gap-2">
         <div className="w-4 h-4 rounded bg-orange-500" />
         <span className="text-gray-700 font-medium">{CATEGORY_EMOJIS.PHYSIQUE} Physique</span>
@@ -232,8 +197,7 @@ function ChartLegend({ hasJournal }: ChartLegendProps) {
 // Formatter pour le tooltip
 function formatTooltip(value: number | undefined, name: string | undefined) {
   if (value === undefined || name === undefined) return ['', ''];
-  const label = name === 'ortho' ? 'Orthophonie' : name === 'physique' ? 'Physique' : 'Total';
-  return [`${value} progrès`, label];
+  return [`${value} progrès`, 'Physique'];
 }
 
 

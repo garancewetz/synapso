@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
-import { PlusIcon } from '@/app/components/ui/icons';
+import { PlusIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 
 type Props = {
@@ -27,6 +27,13 @@ function getMenuActions(): MenuAction[] {
       title: 'Ajouter un exercice',
       iconBgColor: MENU_COLORS.ADD_EXERCICE.bg,
       iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
+    },
+    {
+      href: () => '/historique?action=add-progress',
+      icon: <SparklesIcon />,
+      title: 'Noter un progrès',
+      iconBgColor: MENU_COLORS.PROGRES.bg,
+      iconTextColor: MENU_COLORS.PROGRES.text,
     },
   ];
 }

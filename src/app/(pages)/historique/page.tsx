@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
@@ -25,10 +24,6 @@ const ProgressBottomSheet = dynamic(
   { ssr: false }
 );
 
-const ProgressFAB = dynamic(
-  () => import('@/app/components/ProgressFAB').then(mod => ({ default: mod.ProgressFAB })),
-  { ssr: false }
-);
 
 const ConfettiRain = dynamic(
   () => import('@/app/components/ConfettiRain').then(mod => ({ default: mod.ConfettiRain })),
@@ -44,13 +39,12 @@ const MotionDiv = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
   { ssr: false }
 );
-import { ProgressButton } from '@/app/components/ui/ProgressButton';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { SegmentedControl, Loader, Card } from '@/app/components/ui';
+import { ProgressButton } from '@/app/components/ui/ProgressButton';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS, CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
-import { isOrthophonieProgress } from '@/app/utils/progress.utils';
+import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatProgressForWhatsApp } from '@/app/utils/share.utils';
 import {
   calculateBodypartStatsByPeriod,
@@ -60,7 +54,6 @@ import {
 } from '@/app/utils/historique.utils';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
-type FilterType = 'all' | 'orthophonie' | 'physique';
 type ActiveTab = 'statistiques' | 'progres';
 
 // 30 jours pour le heatmap du mois
@@ -73,10 +66,8 @@ export default function HistoriquePage() {
   const { effectiveUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
+  const { openForCreate } = progressModal;
   const displayName = effectiveUser?.name || "";
-  const searchParams = useSearchParams();
-  const filterParam = searchParams.get('filter') as FilterType | null;
-  const [filter, setFilter] = useState<FilterType>(filterParam && ['all', 'orthophonie', 'physique'].includes(filterParam) ? filterParam : 'all');
 
   // Charger l'historique
   const { history, loading: loadingHistory } = useHistory();
@@ -84,17 +75,20 @@ export default function HistoriquePage() {
   // Charger les progrès
   const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
 
-  // Synchroniser le filtre avec le paramètre d'URL
-  useEffect(() => {
-    if (filterParam && ['all', 'orthophonie', 'physique'].includes(filterParam)) {
-      setFilter(filterParam);
-    }
-  }, [filterParam]);
 
   // Déterminer l'onglet actif depuis l'URL (progrès par défaut)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      // Vérifier si on doit ouvrir le modal de création de progrès
+      if (searchParams.get('action') === 'add-progress') {
+        openForCreate();
+        // Nettoyer l'URL
+        window.history.replaceState({}, '', window.location.pathname + (hash || '#progres'));
+      }
+      
       if (hash === '#statistiques') {
         setActiveTab('statistiques');
       } else {
@@ -106,7 +100,7 @@ export default function HistoriquePage() {
         }
       }
     }
-  }, []);
+  }, [openForCreate]);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {
@@ -164,25 +158,10 @@ export default function HistoriquePage() {
 
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
 
-  // Filtrer les progrès selon le filtre sélectionné
+  // Tous les progrès (plus de filtre orthophonie)
   const filteredProgress = useMemo(() => {
-    const hasJournal = effectiveUser?.hasJournal ?? false;
-    
-    // Si l'utilisateur n'a pas le journal, toujours afficher tous les progrès
-    if (!hasJournal) {
-      return progressList;
-    }
-    
-    // Sinon, appliquer le filtre sélectionné
-    if (filter === 'all') {
-      return progressList;
-    }
-    if (filter === 'orthophonie') {
-      return progressList.filter(p => p.emoji === '🎯');
-    }
-    // filter === 'physique'
-    return progressList.filter(p => p.emoji !== '🎯');
-  }, [progressList, filter, effectiveUser?.hasJournal]);
+    return progressList;
+  }, [progressList]);
 
   const loading = loadingHistory || loadingProgress;
   const STAR_BRIGHT_EMOJI = PROGRESS_EMOJIS?.STAR_BRIGHT || '🌟';
@@ -344,19 +323,10 @@ export default function HistoriquePage() {
               >
                 {/* SECTION 2 : MES PROGRÈS */}
                 <section id="progres" className="space-y-6">
-                  <div className={clsx('flex items-center justify-between', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                      <span>{STAR_BRIGHT_EMOJI}</span>
-                      <span>Mes progrès</span>
-                    </h2>
-                    {effectiveUser && (
-                      <ProgressButton 
-                        onClick={() => progressModal.openForCreate()}
-                        variant="inline"
-                        label="Noter un progrès"
-                      />
-                    )}
-                  </div>
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span>{STAR_BRIGHT_EMOJI}</span>
+                    <span>Mes progrès</span>
+                  </h2>
 
               {/* Graphique encourageant */}
               {!loadingProgress && progressList.length >= 2 && (
@@ -365,39 +335,6 @@ export default function HistoriquePage() {
                 </div>
               )}
 
-              {/* Filtre avec nombre de progrès - affiché uniquement pour les utilisateurs aphasiques */}
-              {!loadingProgress && progressList.length > 0 && (effectiveUser?.hasJournal ?? false) && (
-                <div>
-                  <SegmentedControl
-                    options={[
-                      {
-                        value: 'all',
-                        label: 'Tous',
-                        icon: STAR_BRIGHT_EMOJI,
-                        count: progressList.length
-                      },
-                      {
-                        value: 'orthophonie',
-                        label: 'Orthophonie',
-                        icon: CATEGORY_EMOJIS.ORTHOPHONIE,
-                        count: progressList.filter(p => isOrthophonieProgress(p.emoji)).length
-                      },
-                      {
-                        value: 'physique',
-                        label: 'Physique',
-                        icon: '🏋️',
-                        count: progressList.filter(p => !isOrthophonieProgress(p.emoji)).length
-                      }
-                    ]}
-                    value={filter}
-                    onChange={(value) => setFilter(value as FilterType)}
-                    fullWidth
-                    size="md"
-                    variant="filter"
-                    showCountBelow
-                  />
-                </div>
-              )}
 
               {/* Timeline des progrès */}
               <AnimatePresence mode="wait">
@@ -431,17 +368,23 @@ export default function HistoriquePage() {
                   </MotionDiv>
                 )}
                 </AnimatePresence>
+
+                {/* Bouton "Noter un progrès" centré sous les cartes */}
+                {effectiveUser && (
+                  <div className="flex justify-center pt-4">
+                    <ProgressButton 
+                      onClick={() => progressModal.openForCreate()}
+                      variant="inline"
+                      label="Noter un progrès"
+                    />
+                  </div>
+                )}
                 </section>
               </MotionDiv>
             )}
           </AnimatePresence>
         )}
       </div>
-
-      {/* Bouton flottant "Noter un progrès" - uniquement sur l'onglet progrès */}
-      {effectiveUser && activeTab === 'progres' && (
-        <ProgressFAB onSuccess={handleProgressSuccess} />
-      )}
 
       {/* Pluie de confettis dorés */}
       <ConfettiRain 

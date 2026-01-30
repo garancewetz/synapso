@@ -17,6 +17,19 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
 
   return (
     <>
+      {/* Section Parcours */}
+      <MenuLink
+        title="Mon parcours"
+        icon={<MapIcon className="w-4 h-4" />}
+        href="/historique"
+        iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
+        iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
+        onClick={onMenuClose}
+        tabIndex={tabIndex}
+        iconSize="sm"
+        noCardStyle
+      />
+
       {/* Section Journal */}
       {hasJournal && (
         <MenuLink
@@ -31,19 +44,6 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
           noCardStyle
         />
       )}
-
-      {/* Section Parcours */}
-      <MenuLink
-        title="Mon parcours"
-        icon={<MapIcon className="w-4 h-4" />}
-        href="/historique"
-        iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
-        iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
-        onClick={onMenuClose}
-        tabIndex={tabIndex}
-        iconSize="sm"
-        noCardStyle
-      />
     </>
   );
 }

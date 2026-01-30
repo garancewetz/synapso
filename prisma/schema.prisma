@@ -121,6 +121,7 @@ model Progress {
   content   String
   emoji     String?
   tags      String[] @default([])
+  medias    String[] @default([])
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

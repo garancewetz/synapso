@@ -48,7 +48,7 @@ export function ExerciceTags({ exercice, categoryStyle }: Props) {
         exercice.equipments.map((equipment) => (
           <TouchLink
             key={equipment}
-            href={`/exercices/equipments?equipments=${encodeURIComponent(equipment)}`}
+            href={`/exercices/all?equipments=${encodeURIComponent(equipment)}`}
             className="inline-block"
             onClick={(e) => e.stopPropagation()}
           >

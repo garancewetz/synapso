@@ -7,9 +7,10 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
-import { useProgress } from '@/app/hooks/useProgress';
+import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
 import { useProgressStats } from '@/app/hooks/useProgressStats';
 import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
+import { apiCache } from '@/app/utils/api-cache.utils';
 import { 
   DonutChart, 
   ActivityHeatmap,
@@ -112,6 +113,10 @@ export default function HistoriquePage() {
 
   const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
+    // Invalider le cache des progrès pour forcer le rafraîchissement
+    apiCache.invalidateByPrefix('/api/progress');
+    // Notifier tous les hooks useProgress pour qu'ils se rafraîchissent
+    triggerProgressRefresh();
     refetchProgress();
   }, [refetchProgress]);
 
@@ -179,10 +184,10 @@ export default function HistoriquePage() {
           <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-                {NAVIGATION_EMOJIS.MAP} Mon parcours
+                {NAVIGATION_EMOJIS.ROCKET} Ma progression
               </h1>
               <p className="text-gray-500 mt-2">
-                Statistiques et progrès de ton parcours de rééducation
+                Statistiques et progrès de ta progression de rééducation
               </p>
             </div>
           </div>
@@ -221,7 +226,7 @@ export default function HistoriquePage() {
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <Loader size="large" />
             <p className="text-gray-600 font-medium">
-              Chargement de ton parcours... 📊
+              Chargement de ta progression... 📊
             </p>
           </div>
         ) : (

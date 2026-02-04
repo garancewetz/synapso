@@ -15,6 +15,19 @@ type UseProgressReturn = {
   lastProgress: Progress | null;
 };
 
+// Événement personnalisé pour notifier tous les hooks useProgress
+const PROGRESS_REFRESH_EVENT = 'progress-refresh';
+
+/**
+ * Déclenche un rafraîchissement de tous les hooks useProgress
+ * Appelé après l'ajout, la modification ou la suppression d'un progrès
+ */
+export function triggerProgressRefresh(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(PROGRESS_REFRESH_EVENT));
+  }
+}
+
 /**
  * Hook pour récupérer et gérer les progrès
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
@@ -26,7 +39,7 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchProgress = useCallback(() => {
+  const fetchProgress = useCallback((forceRefresh = false) => {
     // Attendre que l'utilisateur soit chargé
     if (userLoading) {
       return;
@@ -43,15 +56,17 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
       ? `/api/progress?limit=${limit}`
       : '/api/progress';
 
-    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
+    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête (sauf si forceRefresh)
     const cacheKey = generateCacheKey(url, { userId: effectiveUser.id, limit });
-    const cachedData = apiCache.get<Progress[]>(cacheKey);
-
-    if (cachedData) {
-      setProgressList(cachedData);
-      setLoading(false);
-      setError(null);
-      return;
+    
+    if (!forceRefresh) {
+      const cachedData = apiCache.get<Progress[]>(cacheKey);
+      if (cachedData) {
+        setProgressList(cachedData);
+        setLoading(false);
+        setError(null);
+        return;
+      }
     }
 
     setLoading(true);
@@ -100,9 +115,25 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
     fetchProgress();
   }, [fetchProgress]);
 
+  // Écouter les événements de rafraîchissement global
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchProgress(true);
+    };
+
+    window.addEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
+    return () => {
+      window.removeEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
+    };
+  }, [fetchProgress]);
+
   const lastProgress = useMemo(() => {
     return progressList.length > 0 ? progressList[0] : null;
   }, [progressList]);
 
-  return { progressList, loading: loading || userLoading, error, refetch: fetchProgress, lastProgress };
+  const refetch = useCallback(() => {
+    fetchProgress(true);
+  }, [fetchProgress]);
+
+  return { progressList, loading: loading || userLoading, error, refetch, lastProgress };
 }

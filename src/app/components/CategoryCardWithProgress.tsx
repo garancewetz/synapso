@@ -10,6 +10,8 @@ type Props = {
   total: number;
   /** Nombre d'exercices complétés dans la période */
   completedCount: number;
+  /** Nombre d'étirements liés à cette catégorie */
+  relatedStretchingCount?: number;
 };
 
 /**
@@ -23,7 +25,8 @@ type Props = {
 export function CategoryCardWithProgress({ 
   category, 
   total, 
-  completedCount 
+  completedCount,
+  relatedStretchingCount = 0
 }: Props) {
   const styles = CATEGORY_COLORS[category];
   const icon = CATEGORY_ICONS[category];
@@ -35,11 +38,15 @@ export function CategoryCardWithProgress({
   const hasProgress = completedCount > 0;
   const isComplete = completedCount >= total;
   const hasBonus = completedCount > total;
+  
+  // Texte adapté selon la catégorie
+  const itemLabel = category === 'STRETCHING' ? 'étirement' : 'exercice';
+  const itemLabelPlural = category === 'STRETCHING' ? 'étirements' : 'exercices';
 
   return (
     <TouchLink 
       href={href}
-      aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? `, ${completedCount - total} exercices bonus` : ''}`}
+      aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? `, ${completedCount - total} ${itemLabelPlural} bonus` : ''}`}
       aria-describedby={`progress-${category}`}
       className="block group"
     >
@@ -80,7 +87,12 @@ export function CategoryCardWithProgress({
               {label}
             </h3>
             <p className="text-xs text-gray-500">
-              {total} exercice{total > 1 ? 's' : ''}
+              {total} {itemLabel}{total > 1 ? 's' : ''}
+              {relatedStretchingCount > 0 && (
+                <span className="ml-1.5 text-gray-400">
+                  + {relatedStretchingCount} étirement{relatedStretchingCount > 1 ? 's' : ''}
+                </span>
+              )}
             </p>
           </div>
 
@@ -109,7 +121,7 @@ export function CategoryCardWithProgress({
             aria-valuenow={Math.min(completedCount, total)} 
             aria-valuemin={0} 
             aria-valuemax={total} 
-            aria-label={`Progression : ${Math.min(completedCount, total)} sur ${total} exercices complétés${hasBonus ? ` (+${completedCount - total} bonus)` : ''}`} 
+            aria-label={`Progression : ${Math.min(completedCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? ` (+${completedCount - total} bonus)` : ''}`} 
             id={`progress-${category}`}
           >
             <div

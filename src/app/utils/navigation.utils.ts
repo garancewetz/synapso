@@ -21,7 +21,7 @@ export function getCurrentPageName(pathname: string): string | null {
 
   // Historique
   if (pathname === '/historique') {
-    return 'Mon parcours';
+    return 'Ma progression';
   }
 
   // Journal
@@ -62,9 +62,9 @@ export function getCurrentPageName(pathname: string): string | null {
     return 'Modifier un exercice';
   }
 
-  // Page équipements
-  if (pathname === '/exercices/equipments' || pathname.startsWith('/exercices/equipments')) {
-    return 'Filtrer par équipement';
+  // Page vue globale
+  if (pathname === '/exercices/all' || pathname.startsWith('/exercices/all')) {
+    return 'Vue globale';
   }
 
   // Pages d'exercices par catégorie - extraire la catégorie de l'URL
@@ -106,7 +106,7 @@ export function getPageEmoji(pathname: string): string | null {
 
   // Historique
   if (pathname === '/historique') {
-    return NAVIGATION_EMOJIS.MAP;
+    return NAVIGATION_EMOJIS.ROCKET;
   }
 
   // Journal

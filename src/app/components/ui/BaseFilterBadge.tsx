@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
+import { CloseIcon } from './icons/CloseIcon';
 
 type FilterBadgeColors = {
   // Couleurs pour l'état actif
@@ -25,6 +26,7 @@ type Props = {
   onClick: () => void;
   ariaLabel?: string;
   colors: FilterBadgeColors;
+  showCloseIcon?: boolean;
 };
 
 /**
@@ -39,6 +41,7 @@ export function BaseFilterBadge({
   onClick,
   ariaLabel,
   colors,
+  showCloseIcon = false,
 }: Props) {
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -91,6 +94,9 @@ export function BaseFilterBadge({
           >
             {count}
           </span>
+        )}
+        {showCloseIcon && (
+          <CloseIcon className={clsx('w-3.5 h-3.5 ml-0.5', isActive ? 'text-white' : colors.inactiveText)} />
         )}
       </span>
     </button>

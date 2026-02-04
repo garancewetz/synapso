@@ -65,7 +65,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
       {/* Header avec titre et streak */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-          ✨ {userName ? `Ton parcours, ${userName}` : 'Mon parcours'}
+          ✨ {userName ? `Ta progression, ${userName}` : 'Ma progression'}
         </h2>
         {currentStreak >= 2 && (
           <span className="text-sm font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
@@ -142,11 +142,11 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
         </div>
       </div>
 
-      {/* Bouton voir tout le parcours */}
+      {/* Bouton voir toute la progression */}
       {showFullLink && (
         <ViewAllLink 
           href="/historique"
-          label="Voir tout le parcours"
+          label="Voir toute la progression"
           emoji={NAVIGATION_EMOJIS.MAP}
         />
       )}

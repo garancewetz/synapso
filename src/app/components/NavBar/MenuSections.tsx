@@ -17,9 +17,9 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
 
   return (
     <>
-      {/* Section Parcours */}
+      {/* Section Progression */}
       <MenuLink
-        title="Mon parcours"
+        title="Ma progression"
         icon={<MapIcon className="w-4 h-4" />}
         href="/historique"
         iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}

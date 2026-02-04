@@ -73,7 +73,12 @@ export default function CategoryPage() {
     // Pour les autres catégories, on filtre par BODYPART_TO_CATEGORY
     const isStretching = categoryParam === 'STRETCHING';
 
-    // Compter les exercices par bodypart
+    // Obtenir les bodyparts de cette catégorie
+    const categoryBodyparts = isStretching
+      ? AVAILABLE_BODYPARTS
+      : AVAILABLE_BODYPARTS.filter(bp => BODYPART_TO_CATEGORY[bp] === categoryParam);
+
+    // Compter les exercices par bodypart (catégorie principale)
     const counts: Record<string, number> = {};
     exercices.forEach(ex => {
       ex.bodyparts.forEach(bp => {
@@ -83,10 +88,20 @@ export default function CategoryPage() {
       });
     });
 
+    // Pour les catégories non-étirement, aussi compter les bodyparts des étirements qui ciblent cette catégorie
+    if (!isStretching && stretchingExercices.length > 0) {
+      stretchingExercices.forEach(ex => {
+        ex.bodyparts.forEach(bp => {
+          // Si l'étirement cible un bodypart de cette catégorie, l'inclure dans les compteurs
+          if (categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number])) {
+            counts[bp] = (counts[bp] || 0) + 1;
+          }
+        });
+      });
+    }
+
     // Retourner uniquement les bodyparts qui ont au moins un exercice
-    const bodypartsToShow = isStretching
-      ? AVAILABLE_BODYPARTS.filter(bp => counts[bp] > 0)
-      : AVAILABLE_BODYPARTS.filter(bp => BODYPART_TO_CATEGORY[bp] === categoryParam && counts[bp] > 0);
+    const bodypartsToShow = categoryBodyparts.filter(bp => counts[bp] > 0);
 
     return bodypartsToShow
       .map(bp => ({
@@ -96,7 +111,7 @@ export default function CategoryPage() {
         count: counts[bp],
       }))
       .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
-  }, [exercices, categoryParam]);
+  }, [exercices, stretchingExercices, categoryParam]);
 
   // Filtrer les exercices selon les bodyparts sélectionnés
   const filteredExercices = useMemo(() => {
@@ -143,6 +158,32 @@ export default function CategoryPage() {
     return filtered;
   }, [categoryParam, stretchingExercices, selectedBodyparts, filter]);
 
+  // Calculer le nombre total d'étirements associés à cette catégorie (sans tenir compte du filtre)
+  const totalStretchingCount = useMemo(() => {
+    if (categoryParam === 'STRETCHING' || !stretchingExercices.length) {
+      return 0;
+    }
+
+    // Obtenir les bodyparts de cette catégorie
+    const categoryBodyparts = AVAILABLE_BODYPARTS.filter(
+      bp => BODYPART_TO_CATEGORY[bp] === categoryParam
+    );
+
+    // Filtrer les étirements qui ciblent au moins un bodypart de cette catégorie
+    let filtered = stretchingExercices.filter(ex =>
+      ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
+    );
+
+    // Filtrer par bodyparts si sélectionnés
+    if (selectedBodyparts.length > 0) {
+      filtered = filtered.filter(ex =>
+        ex.bodyparts.some(bp => selectedBodyparts.includes(bp))
+      );
+    }
+
+    return filtered.length;
+  }, [categoryParam, stretchingExercices, selectedBodyparts]);
+
   // Vérifier si le badge "Tous" est actif (aucun bodypart sélectionné)
   const isAllBodypartsSelected = useMemo(() => {
     return selectedBodyparts.length === 0;
@@ -172,7 +213,10 @@ export default function CategoryPage() {
               </p>
             ) : exercices.length > 0 ? (
               <p className="text-gray-500 mt-1">
-                {completedCount}/{exercices.length} exercices complétés
+                {completedCount}/{exercices.length} {categoryParam === 'STRETCHING' ? 'étirements' : 'exercices'} complétés
+                {totalStretchingCount > 0 && categoryParam !== 'STRETCHING' && (
+                  <span className="text-gray-400"> et {totalStretchingCount} étirement{totalStretchingCount > 1 ? 's' : ''}</span>
+                )}
               </p>
             ) : null}
           </div>

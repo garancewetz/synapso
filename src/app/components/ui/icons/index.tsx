@@ -17,6 +17,7 @@ export { MapIcon } from './MapIcon';
 export { MenuIcon } from './MenuIcon';
 export { PinIcon } from './PinIcon';
 export { PlusIcon } from './PlusIcon';
+export { RocketIcon } from './RocketIcon';
 export { SettingsIcon } from './SettingsIcon';
 export { ShareIcon } from './ShareIcon';
 export { SparklesIcon } from './SparklesIcon';

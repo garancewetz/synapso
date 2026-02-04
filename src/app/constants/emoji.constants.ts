@@ -38,20 +38,22 @@ export const ORTHOPHONIE_PROGRESS_EMOJI = '🎯' as const;
 export const JOURNAL_EMOJI = '📔' as const;
 
 /**
- * Emojis pour la navigation et le parcours
+ * Emojis pour la navigation et la progression
  */
 export const NAVIGATION_EMOJIS = {
   /** Maison - utilisée pour la page d'accueil */
   HOME: '🏠',
-  /** Carte géographique - utilisée pour "Mon parcours" */
+  /** Fusée - utilisée pour "Ma progression" */
+  ROCKET: '🚀',
+  /** Carte géographique - utilisée pour les statistiques et visualisations */
   MAP: '🗺️',
   /** Pin de localisation - utilisée pour indiquer le jour actuel */
   PIN: '📍',
-  /** Petite pousse - utilisée pour les sections repliées (début du parcours, croissance) */
+  /** Petite pousse - utilisée pour les sections repliées (début de la progression, croissance) */
   FOLDER_CLOSED: '🌱',
   /** Grand arbre - utilisée pour les sections dépliées (progression, développement) */
   FOLDER_OPEN: '🌳',
-  /** Blé/champ - utilisée pour les listes et parcours (récolte, résultat de la croissance) */
+  /** Blé/champ - utilisée pour les listes et progression (récolte, résultat de la croissance) */
   CLIPBOARD: '🌾',
 } as const;
 

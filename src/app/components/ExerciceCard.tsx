@@ -7,8 +7,7 @@ import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { useCompleteExercice } from '@/app/hooks/useCompleteExercice';
-import { usePinExercice } from '@/app/hooks/usePinExercice';
-import { EditIcon, HeartIcon } from '@/app/components/ui/icons';
+import { EditIcon } from '@/app/components/ui/icons';
 import { Button, CompleteButton, BaseCard } from '@/app/components/ui';
 import { ExerciceCardHeader } from '@/app/components/ExerciceCardHeader';
 import { ExerciceCardTags } from '@/app/components/ExerciceCardTags';
@@ -42,12 +41,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
         userId: effectiveUser?.id ?? 0,
         onCompleted: effectiveUser ? onCompleted : undefined,
         refreshHistory: effectiveUser ? refreshHistory : undefined,
-    });
-
-    const { handlePin, isPinning } = usePinExercice({
-        exercice,
-        userId: effectiveUser?.id ?? 0,
-        onCompleted: effectiveUser ? onCompleted : undefined,
     });
 
     const handleEdit = useCallback((e: React.MouseEvent) => {
@@ -122,18 +115,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                         isLoading={isCompleting}
                         weeklyCount={exercice.weeklyCompletions?.length || 0}
                     />
-
-                    {/* Bouton favori masqué - fonctionnalité en stand-by */}
-                    {/* <Button
-                        iconOnly
-                        onClick={handlePin}
-                        disabled={isPinning}
-                        isActive={exercice.pinned}
-                        title={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                        aria-label={exercice.pinned ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                    >
-                        <HeartIcon className="w-4 h-4" filled={exercice.pinned} />
-                    </Button> */}
                 </BaseCard.Footer>
             </BaseCard.Content>
             </BaseCard>

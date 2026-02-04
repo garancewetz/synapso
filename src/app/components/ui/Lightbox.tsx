@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import clsx from 'clsx';
 import { CloseIcon, ArrowLeftIcon, ArrowRightIcon } from '@/app/components/ui/icons';
@@ -264,9 +265,9 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
   const hasMultipleImages = images.length > 1;
   const showNavigation = hasMultipleImages && scale === 1;
 
-  return (
+  const lightboxContent = (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center touch-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center touch-none"
       role="dialog"
       aria-modal="true"
       aria-label={`Visualiseur d'image - Photo ${currentIndex + 1} sur ${images.length}`}
@@ -370,4 +371,12 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
       )}
     </div>
   );
+
+  // Utiliser un portal pour rendre la lightbox directement dans le body
+  // Cela évite les problèmes de z-index avec les parents qui ont des contextes de stacking
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return createPortal(lightboxContent, document.body);
 }

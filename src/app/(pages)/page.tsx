@@ -4,15 +4,16 @@ import { useState, useMemo, useCallback, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress, MenuLink, SiteMapGroup, WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
-import { MapIcon, ChatIcon, BookIcon, PinIcon, SparklesIcon, UserIcon, PlusIcon } from '@/app/components/ui/icons';
-import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+import { RocketIcon, MapIcon, ChatIcon, BookIcon, PinIcon, SparklesIcon, UserIcon, PlusIcon } from '@/app/components/ui/icons';
+import { CATEGORY_ORDER, AVAILABLE_BODYPARTS, BODYPART_TO_CATEGORY } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/hooks/useExercices';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useCategoryStats } from '@/app/hooks/useCategoryStats';
-import { useProgress } from '@/app/hooks/useProgress';
+import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
+import { apiCache } from '@/app/utils/api-cache.utils';
 
 // ⚡ PERFORMANCE: Charger dynamiquement les composants lourds
 const AnimatePresence = dynamic(
@@ -30,18 +31,23 @@ const ProgressBottomSheet = dynamic(
   { ssr: false }
 );
 
-type TabValue = 'corps' | 'journal' | 'parcours';
+type TabValue = 'exercices' | 'journal' | 'progression';
 
 export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
   const hasJournal = effectiveUser?.hasJournal ?? false;
-  const [activeTab, setActiveTab] = useState<TabValue>('corps');
+  const [activeTab, setActiveTab] = useState<TabValue>('exercices');
   
   const { exercices, refetch: refetchExercices } = useExercices();
+  
+  // Charger les étirements pour calculer les étirements liés à chaque catégorie
+  const { exercices: stretchingExercices } = useExercices({
+    category: 'STRETCHING',
+  });
 
   // Charger les stats de progression par catégorie
-  const { stats: categoryStats, loading: loadingStats } = useCategoryStats({
+  const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats({
     userId: effectiveUser?.id ?? null,
     resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
   });
@@ -51,18 +57,53 @@ export default function Home() {
 
   // ⚡ PERFORMANCE: Mémoriser le callback de succès pour éviter les re-renders
   const handleProgressSuccess = useCallback(() => {
+    // Invalider le cache des progrès pour forcer le rafraîchissement
+    apiCache.invalidateByPrefix('/api/progress');
+    // Notifier tous les hooks useProgress pour qu'ils se rafraîchissent
+    triggerProgressRefresh();
+    // Rafraîchir les progrès localement
     refetchProgress();
+    // Rafraîchir les stats de catégorie
+    refreshCategoryStats();
     // Rafraîchir aussi la liste des exercices au cas où un progrès orthophonie a été créé
     refetchExercices();
-  }, [refetchProgress, refetchExercices]);
+  }, [refetchProgress, refetchExercices, refreshCategoryStats]);
+
+  // Calculer les étirements liés par catégorie
+  const relatedStretchingByCategory = useMemo(() => {
+    const counts: Record<string, number> = {
+      UPPER_BODY: 0,
+      CORE: 0,
+      LOWER_BODY: 0,
+      STRETCHING: 0,
+    };
+    
+    CATEGORY_ORDER.forEach((category) => {
+      if (category === 'STRETCHING') {
+        return; // Pas d'étirements liés pour la catégorie étirement elle-même
+      }
+      
+      // Obtenir les bodyparts de cette catégorie
+      const categoryBodyparts = AVAILABLE_BODYPARTS.filter(
+        bp => BODYPART_TO_CATEGORY[bp] === category
+      );
+      
+      // Compter les étirements qui ciblent au moins un bodypart de cette catégorie
+      counts[category] = stretchingExercices.filter(ex =>
+        ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
+      ).length;
+    });
+    
+    return counts;
+  }, [stretchingExercices]);
 
   // Options des onglets
   const tabOptions = useMemo(() => {
     const options: Array<{ value: TabValue; label: string; icon?: ReactNode }> = [];
     
     options.push({ 
-      value: 'corps', 
-      label: 'Corps',
+      value: 'exercices', 
+      label: 'Exercices',
       icon: <UserIcon className="w-5 h-5" />
     });
     
@@ -75,18 +116,18 @@ export default function Home() {
     }
     
     options.push({ 
-      value: 'parcours', 
-      label: 'Parcours',
-      icon: <MapIcon className="w-5 h-5" />
+      value: 'progression', 
+      label: 'Progression',
+      icon: <RocketIcon className="w-5 h-5" />
     });
     
     return options;
   }, [hasJournal]);
 
-  // Si l'onglet actif n'est plus disponible, changer vers 'corps'
+  // Si l'onglet actif n'est plus disponible, changer vers 'exercices'
   const currentActiveTab = useMemo(() => {
     const isTabAvailable = tabOptions.some(opt => opt.value === activeTab);
-    return isTabAvailable ? activeTab : 'corps';
+    return isTabAvailable ? activeTab : 'exercices';
   }, [activeTab, tabOptions]);
 
   return (
@@ -142,7 +183,7 @@ export default function Home() {
                 )}
 
                 {/* Contenu selon l'onglet actif */}
-                {currentActiveTab === 'corps' && (
+                {currentActiveTab === 'exercices' && (
                   <div className="space-y-4">
                     {/* Cartes de catégories avec progression intégrée - toujours afficher les 4 catégories */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -160,24 +201,22 @@ export default function Home() {
                               category={category}
                               total={categoryExercices.length}
                               completedCount={loadingStats ? 0 : categoryStats[category]}
+                              relatedStretchingCount={relatedStretchingByCategory[category]}
                             />
                           </MotionDiv>
                         );
                       })}
-                    {/* Action secondaire : Voir par équipement */}
+                    </div>
+                    {/* Action secondaire : Vue globale */}
                     <MenuLink
-                      title="Voir par équipement"
-                      icon="🏋️‍♂️"
-                      description="Explorer tous les exercices par équipement"
-                      href="/exercices/equipments"
+                      title="Vue globale"
+                      icon="🔍"
+                      description="Tous les exercices et étirements avec filtres"
+                      href="/exercices/all"
                       iconBgColor={SITEMAP_ICON_STYLES.default.bg}
                       iconTextColor={SITEMAP_ICON_STYLES.default.text}
                       isSecondary={true}
                     />
-                    </div>
-
-
-                  
                   </div>
                 )}
 
@@ -209,20 +248,12 @@ export default function Home() {
                 </SiteMapGroup>
               )}
 
-              {currentActiveTab === 'parcours' && (
+              {currentActiveTab === 'progression' && (
                 <div className="space-y-3">
-                  <MenuLink
-                    title="Noter un progrès"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    description="Ajouter un nouveau progrès"
-                    href="/historique?action=add-progress"
-                    iconBgColor={MENU_COLORS.PROGRES.bg}
-                    iconTextColor={MENU_COLORS.PROGRES.text}
-                  />
                   <MenuLink
                     title="Voir mes progrès"
                     icon={<SparklesIcon className="w-5 h-5" />}
-                    description="Timeline et graphique de progression"
+                    description="Tous mes progrès et leur évolution dans le temps"
                     href="/historique#progres"
                     iconBgColor={MENU_COLORS.PROGRES.bg}
                     iconTextColor={MENU_COLORS.PROGRES.text}
@@ -230,10 +261,18 @@ export default function Home() {
                   <MenuLink
                     title="Voir mes Statistiques"
                     icon={<MapIcon className="w-5 h-5" />}
-                    description="Heatmap, graphique montagne et zones travaillées"
+                    description="Mon activité, mes graphiques et les zones travaillées"
                     href="/historique#statistiques"
                     iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
                     iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
+                  />
+                  <MenuLink
+                    title="Noter un progrès"
+                    icon={<PlusIcon className="w-5 h-5" />}
+                    description="Célébrer une nouvelle réussite ou victoire"
+                    href="/historique?action=add-progress"
+                    iconBgColor={MENU_COLORS.PROGRES.bg}
+                    iconTextColor={MENU_COLORS.PROGRES.text}
                   />
                 </div>
               )}

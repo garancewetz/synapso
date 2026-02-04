@@ -12,6 +12,7 @@ type Props = {
   category: ExerciceCategory;
   onClick: () => void;
   ariaLabel?: string;
+  showCloseIcon?: boolean;
 };
 
 /**
@@ -26,8 +27,21 @@ export function FilterBadge({
   category,
   onClick,
   ariaLabel,
+  showCloseIcon = false,
 }: Props) {
   const categoryColors = CATEGORY_COLORS[category];
+  const isAllLabel = label === 'Toutes';
+
+  // Couleurs anthracites pour le badge "Toutes"
+  const anthraciteColors = {
+    activeBg: 'bg-gray-900',
+    activeRing: 'ring-gray-300',
+    inactiveBg: 'bg-gray-100',
+    inactiveText: 'text-gray-800',
+    inactiveBorder: 'border-gray-300',
+    inactiveTag: 'bg-gray-200 text-gray-700',
+    focusRing: 'focus:ring-gray-400',
+  };
 
   return (
     <BaseFilterBadge
@@ -37,15 +51,20 @@ export function FilterBadge({
       isActive={isActive}
       onClick={onClick}
       ariaLabel={ariaLabel}
-      colors={{
-        activeBg: categoryColors.accent,
-        activeRing: categoryColors.focusRing.replace('focus:', ''),
-        inactiveBg: categoryColors.bg,
-        inactiveText: categoryColors.text,
-        inactiveBorder: categoryColors.border,
-        inactiveTag: categoryColors.tag,
-        focusRing: categoryColors.focusRing,
-      }}
+      showCloseIcon={showCloseIcon}
+      colors={
+        isAllLabel
+          ? anthraciteColors
+          : {
+              activeBg: categoryColors.accent,
+              activeRing: categoryColors.focusRing.replace('focus:', ''),
+              inactiveBg: categoryColors.bg,
+              inactiveText: categoryColors.text,
+              inactiveBorder: categoryColors.border,
+              inactiveTag: categoryColors.tag,
+              focusRing: categoryColors.focusRing,
+            }
+      }
     />
   );
 }

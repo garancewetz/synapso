@@ -3,6 +3,7 @@ import { AuthScreen } from './AuthScreen';
 import { BottomNavBar } from './BottomNavBar';
 import { CategoryCardWithProgress } from './CategoryCardWithProgress';
 import { ConfettiRain } from './ConfettiRain';
+import { ConfettiExplosion } from './ConfettiExplosion';
 import { DevBanner } from './DevBanner';
 import { EmptyState } from './EmptyState';
 import { ErrorMessage } from './ErrorMessage';
@@ -11,6 +12,8 @@ import { ExerciceTags } from './ExerciceTags';
 import { ExerciceForm } from './ExerciceForm';
 import { FormActions } from './FormActions';
 import { FormPageWrapper } from './FormPageWrapper';
+import { InitialLoader } from './InitialLoader';
+import { NavigationLoader } from './NavigationLoader';
 import { MenuLink } from './MenuLink';
 import { NavBar } from './NavBar';
 import { PWARegister } from './PWARegister';
@@ -39,6 +42,7 @@ export {
   CalendarIcon,
   CategoryCardWithProgress,
   ConfettiRain,
+  ConfettiExplosion,
   DevBanner,
   EmptyState,
   ErrorMessage,
@@ -47,11 +51,13 @@ export {
   ExerciceForm,
   FormActions,
   FormPageWrapper,
+  InitialLoader,
   Input,
   Loader,
   Logo,
   MenuLink,
   NavBar,
+  NavigationLoader,
   PinIcon,
   SparklesIcon,
   PWARegister,

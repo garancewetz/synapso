@@ -1,7 +1,7 @@
 'use client';
 
 import { MenuLink } from '@/app/components';
-import { ChatIcon, MapIcon } from '@/app/components/ui/icons';
+import { BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { useUser } from '@/app/contexts/UserContext';
 
@@ -20,7 +20,7 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
       {/* Section Progression */}
       <MenuLink
         title="Ma progression"
-        icon={<MapIcon className="w-4 h-4" />}
+        icon={<RocketIcon className="w-4 h-4" />}
         href="/historique"
         iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
         iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
@@ -34,7 +34,7 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
       {hasJournal && (
         <MenuLink
           title="Journal"
-          icon={<ChatIcon className="w-4 h-4" />}
+          icon={<BookIcon className="w-4 h-4" />}
           href="/journal"
           iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
           iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
@@ -16,7 +16,6 @@ import { apiCache } from '@/app/utils/api-cache.utils';
 import { HomeExercicesTab } from '@/app/components/home/HomeExercicesTab';
 import { HomeJournalTab } from '@/app/components/home/HomeJournalTab';
 import { HomeProgressionTab } from '@/app/components/home/HomeProgressionTab';
-import { markPageAsReady } from '@/app/components/NavigationLoader';
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
@@ -38,7 +37,7 @@ export default function Home() {
   const progressModal = useProgressModal();
   const hasJournal = effectiveUser?.hasJournal ?? false;
   
-  const { exercices, loading: exercicesLoading, refetch: refetchExercices } = useExercices();
+  const { exercices, refetch: refetchExercices } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
   const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats({
     userId: effectiveUser?.id ?? null,
@@ -73,13 +72,6 @@ export default function Home() {
     refreshCategoryStats();
     refetchExercices();
   }, [refetchProgress, refetchExercices, refreshCategoryStats]);
-
-  // Marquer la page comme prête quand les données essentielles sont chargées
-  useEffect(() => {
-    if (effectiveUser && !loadingStats && !exercicesLoading) {
-      markPageAsReady();
-    }
-  }, [effectiveUser, loadingStats, exercicesLoading]);
 
   return (
     <section>

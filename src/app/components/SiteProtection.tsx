@@ -11,8 +11,7 @@ type Props = {
   onAuthSuccess?: () => void;
 };
 
-const MIN_LOADING_DURATION = 3000; // 3 secondes minimum
-const PAGE_READY_EVENT = 'page-ready';
+const MIN_LOADING_DURATION = 2000; // 3 secondes minimum
 
 /**
  * ⚡ PERFORMANCE: 
@@ -22,7 +21,6 @@ const PAGE_READY_EVENT = 'page-ready';
 export const SiteProtection = memo(function SiteProtection({ children, onAuthSuccess }: Props) {
   const { currentUser, loading: userLoading, refreshUser } = useUser();
   const [showLoader, setShowLoader] = useState(true);
-  const [pageReady, setPageReady] = useState(false);
   const startTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -30,20 +28,8 @@ export const SiteProtection = memo(function SiteProtection({ children, onAuthSuc
       startTimeRef.current = Date.now();
     }
 
-    const handlePageReady = () => {
-      setPageReady(true);
-    };
-
-    window.addEventListener(PAGE_READY_EVENT, handlePageReady);
-
-    return () => {
-      window.removeEventListener(PAGE_READY_EVENT, handlePageReady);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!userLoading && pageReady && startTimeRef.current !== null) {
-      const elapsed = Date.now() - startTimeRef.current;
+    if (!userLoading) {
+      const elapsed = Date.now() - (startTimeRef.current || 0);
       const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
       
       const timer = setTimeout(() => {
@@ -52,7 +38,7 @@ export const SiteProtection = memo(function SiteProtection({ children, onAuthSuc
 
       return () => clearTimeout(timer);
     }
-  }, [userLoading, pageReady]);
+  }, [userLoading]);
 
   const handleAuthSuccess = useCallback(async () => {
     // Rafraîchir le contexte utilisateur pour synchroniser currentUser
@@ -60,8 +46,8 @@ export const SiteProtection = memo(function SiteProtection({ children, onAuthSuc
     onAuthSuccess?.();
   }, [refreshUser, onAuthSuccess]);
 
-  // Afficher le loader jusqu'à ce que l'utilisateur soit chargé ET la page soit prête (minimum 3 secondes)
-  if (showLoader || userLoading || !pageReady) {
+  // Afficher le loader pendant le chargement initial (minimum 3 secondes)
+  if (showLoader || userLoading) {
     return <InitialLoader />;
   }
 

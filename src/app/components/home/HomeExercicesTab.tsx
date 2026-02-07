@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress, MenuLink } from '@/app/components';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -48,10 +47,19 @@ export function HomeExercicesTab({
         })}
       </div>
       <MenuLink
-        title="Vue globale"
-        icon="🔍"
-        description="Tous les exercices et étirements avec filtres"
+        title="Vue par équipement"
+        icon="🏋️"
+        description="Filtrer les exercices par équipement"
         href="/exercices/all"
+        iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+        iconTextColor={SITEMAP_ICON_STYLES.default.text}
+        isSecondary={true}
+      />
+      <MenuLink
+        title="Exercices archivés"
+        icon="📦"
+        description="Voir les exercices archivés"
+        href="/exercices/archived"
         iconBgColor={SITEMAP_ICON_STYLES.default.bg}
         iconTextColor={SITEMAP_ICON_STYLES.default.text}
         isSecondary={true}

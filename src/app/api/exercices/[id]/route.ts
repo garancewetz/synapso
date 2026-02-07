@@ -131,6 +131,8 @@ export async function GET(
       pinned: exercice.pinned,
       weeklyCompletions: weeklyCompletions,
       media: mediaParsed,
+      archived: exercice.archived ?? false,
+      archivedAt: exercice.archivedAt,
     };
 
     return NextResponse.json(formattedExercice);
@@ -242,6 +244,8 @@ export async function PUT(
           equipments: updatedData.equipments ? JSON.stringify(updatedData.equipments) : undefined,
           category: updatedData.category as PrismaExerciceCategory | undefined,
           media: updatedData.media !== undefined ? (updatedData.media ?? null) : undefined,
+          archived: updatedData.archived !== undefined ? updatedData.archived : undefined,
+          archivedAt: updatedData.archived !== undefined ? (updatedData.archived ? new Date() : null) : undefined,
         },
       });
 
@@ -347,6 +351,8 @@ export async function PUT(
       pinned: exercice.pinned,
       weeklyCompletions: weeklyCompletions,
       media: exercice.media ?? null,
+      archived: exercice.archived ?? false,
+      archivedAt: exercice.archivedAt,
     };
 
     return NextResponse.json(formattedExercice);

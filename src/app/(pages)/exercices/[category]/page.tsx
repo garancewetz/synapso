@@ -67,6 +67,10 @@ export default function CategoryPage() {
     updateExercice,
   });
 
+  const handleArchive = (updatedExercice: Exercice) => {
+    updateExercice(updatedExercice);
+  };
+
   // Calculer les bodyparts disponibles pour cette catégorie avec leurs compteurs
   const bodypartsWithCounts = useMemo(() => {
     // Pour STRETCHING, on prend tous les bodyparts présents dans les exercices
@@ -203,22 +207,30 @@ export default function CategoryPage() {
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
         {/* Header - toujours visible */}
         <div className="px-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {CATEGORY_LABELS[categoryParam]}
-            </h1>
-            {loadingExercices ? (
-              <p className="text-gray-500 mt-1">
-                <span className="inline-block h-5 w-40 bg-gray-200 rounded animate-pulse" />
-              </p>
-            ) : exercices.length > 0 ? (
-              <p className="text-gray-500 mt-1">
-                {completedCount}/{exercices.length} {categoryParam === 'STRETCHING' ? 'étirements' : 'exercices'} complétés
-                {totalStretchingCount > 0 && categoryParam !== 'STRETCHING' && (
-                  <span className="text-gray-400"> et {totalStretchingCount} étirement{totalStretchingCount > 1 ? 's' : ''}</span>
-                )}
-              </p>
-            ) : null}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {CATEGORY_LABELS[categoryParam]}
+              </h1>
+              {loadingExercices ? (
+                <p className="text-gray-500 mt-1">
+                  <span className="inline-block h-5 w-40 bg-gray-200 rounded animate-pulse" />
+                </p>
+              ) : exercices.length > 0 ? (
+                <p className="text-gray-500 mt-1">
+                  {completedCount}/{exercices.length} {categoryParam === 'STRETCHING' ? 'étirements' : 'exercices'} complétés
+                  {totalStretchingCount > 0 && categoryParam !== 'STRETCHING' && (
+                    <span className="text-gray-400"> et {totalStretchingCount} étirement{totalStretchingCount > 1 ? 's' : ''}</span>
+                  )}
+                </p>
+              ) : null}
+            </div>
+            <AddButton 
+              href="/exercice/add" 
+              queryParams={{ category: categoryParam.toLowerCase() }}
+              addFromParam
+              className="shrink-0"
+            />
           </div>
           
           {/* Filtres - toujours visible */}
@@ -311,6 +323,7 @@ export default function CategoryPage() {
                     exercice={exercice}
                     onEdit={handleEditClick}
                     onCompleted={handleCompleted}
+                    onArchive={handleArchive}
                   />
                 </div>
               ))}

@@ -10,6 +10,7 @@ export { ChevronIcon } from './ChevronIcon';
 export { ClockIcon } from './ClockIcon';
 export { CloseIcon } from './CloseIcon';
 export { CompassIcon } from './CompassIcon';
+export { DotsIcon } from './DotsIcon';
 export { EditIcon } from './EditIcon';
 export { EyeIcon } from './EyeIcon';
 export { HeartIcon } from './HeartIcon';

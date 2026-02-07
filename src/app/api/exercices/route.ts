@@ -7,6 +7,12 @@ import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 
+type ExerciceWithArchived = {
+  archived?: boolean;
+  archivedAt?: Date | null;
+  [key: string]: unknown;
+};
+
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
@@ -22,7 +28,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category') as ExerciceCategory | null;
     const equipmentsParam = searchParams.get('equipments');
     
@@ -44,13 +50,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Récupérer le paramètre includeArchived
+    const includeArchived = searchParams.get('includeArchived') === 'true';
+
     // Construire le filtre
-    const whereClause: { userId: number; category?: PrismaExerciceCategory } = {
+    const whereClause: {
+      userId: number;
+      category?: PrismaExerciceCategory;
+      archived?: boolean;
+    } = {
       userId: userId,
     };
 
     if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
       whereClause.category = category as PrismaExerciceCategory;
+    }
+
+    // Filtrer les exercices archivés par défaut (sauf si includeArchived=true)
+    if (!includeArchived) {
+      whereClause.archived = false;
     }
 
     // Calculer la période de réinitialisation
@@ -139,6 +157,8 @@ export async function GET(request: NextRequest) {
           pinned: exercice.pinned ?? false,
           weeklyCompletions: weeklyCompletions,
           media: mediaParsed,
+          archived: (exercice as ExerciceWithArchived).archived ?? false,
+          archivedAt: (exercice as ExerciceWithArchived).archivedAt,
         };
       })
       // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
@@ -308,6 +328,8 @@ export async function POST(request: NextRequest) {
       completedAt: result.completedAt,
       pinned: result.pinned,
       media: mediaParsed,
+      archived: (result as ExerciceWithArchived).archived ?? false,
+      archivedAt: (result as ExerciceWithArchived).archivedAt,
     };
 
     return NextResponse.json(formattedExercice, { status: 201 });

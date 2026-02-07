@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useRef } from "react";
 import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { useCompleteExercice } from '@/app/hooks/useCompleteExercice';
-import { EditIcon } from '@/app/components/ui/icons';
-import { Button, CompleteButton, BaseCard } from '@/app/components/ui';
+import { useArchiveExercice } from '@/app/hooks/useArchiveExercice';
+import { useShareExercice } from '@/app/hooks/useShareExercice';
+import { CompleteButton, BaseCard, DotMenu } from '@/app/components/ui';
 import { ExerciceCardHeader } from '@/app/components/ExerciceCardHeader';
 import { ExerciceCardTags } from '@/app/components/ExerciceCardTags';
 import { ExerciceCardExpandable } from '@/app/components/ExerciceCardExpandable';
@@ -18,6 +19,7 @@ type Props = {
     exercice: Exercice;
     onEdit?: (id: number) => void;
     onCompleted?: (updatedExercice: Exercice) => void;
+    onArchive?: (updatedExercice: Exercice) => void;
 };
 
 /**
@@ -25,11 +27,14 @@ type Props = {
  * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
  * quand la liste d'exercices change mais pas cet exercice spécifique
  */
-const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted }: Props) {
+const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted, onArchive }: Props) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
     const { refreshHistory } = useHistoryContext();
+    const { archiveExercice } = useArchiveExercice();
+    const { handleShare } = useShareExercice(exercice, cardRef);
 
     const categoryStyle = useMemo(
         () => CATEGORY_COLORS[exercice.category],
@@ -43,12 +48,22 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
         refreshHistory: effectiveUser ? refreshHistory : undefined,
     });
 
-    const handleEdit = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleEdit = useCallback(() => {
         if (onEdit) {
             onEdit(exercice.id);
         }
     }, [onEdit, exercice.id]);
+
+    const handleArchive = useCallback(async () => {
+        const updated = await archiveExercice(exercice.id, !exercice.archived);
+        if (updated && onArchive) {
+            onArchive(updated);
+        }
+    }, [archiveExercice, exercice.id, exercice.archived, onArchive]);
+
+    const handleShareClick = useCallback(() => {
+        handleShare();
+    }, [handleShare]);
 
     const toggleExpand = useCallback(() => {
         setIsExpanded(prev => !prev);
@@ -69,7 +84,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
     }, [exercice.media]);
 
     return (
-        <div className="relative h-full">
+        <div ref={cardRef} className="relative h-full">
             <BaseCard
             className={clsx(
                 'exercise-card h-full',
@@ -99,14 +114,12 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted 
                     />
                 </div>
                 <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
-                    <Button
-                        iconOnly
-                        onClick={handleEdit}
-                        title="Modifier"
-                        aria-label="Modifier l'exercice"
-                    >
-                        <EditIcon className="w-4 h-4" />
-                    </Button>
+                    <DotMenu
+                        onArchive={handleArchive}
+                        onEdit={handleEdit}
+                        onShare={handleShareClick}
+                        isArchived={exercice.archived ?? false}
+                    />
 
                     <CompleteButton
                         onClick={handleComplete}

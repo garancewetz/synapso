@@ -35,6 +35,8 @@ export interface Exercice {
   pinned: boolean;
   weeklyCompletions?: Date[]; // Toutes les dates de complétion de la semaine (mode WEEKLY)
   media?: MediaData | null;
+  archived?: boolean;
+  archivedAt?: Date | string | null;
 }
 
 export interface Bodypart {

@@ -11,6 +11,7 @@ import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { HistoryProvider } from "@/app/contexts/HistoryContext";
+import { ToastProvider } from "@/app/contexts/ToastContext";
 import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
 import { GlobalCelebration } from "@/app/components/GlobalCelebration";
 import { WebVitals } from "@/app/components/WebVitals";
@@ -74,16 +75,18 @@ export default function RootLayout({
           <HistoryProvider>
             <CategoryProvider>
               <DayDetailModalProvider>
-                <DevBanner />
-                <AuthWrapper>
-                  <NavBar />
-                  <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
-                    {children}
-                  </main>
-                  <BottomNavBar />
-                  <DayDetailModalWrapper />
-                  <GlobalCelebration />
-                </AuthWrapper>
+                <ToastProvider>
+                  <DevBanner />
+                  <AuthWrapper>
+                    <NavBar />
+                    <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
+                      {children}
+                    </main>
+                    <BottomNavBar />
+                    <DayDetailModalWrapper />
+                    <GlobalCelebration />
+                  </AuthWrapper>
+                </ToastProvider>
               </DayDetailModalProvider>
             </CategoryProvider>
           </HistoryProvider>

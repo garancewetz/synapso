@@ -6,6 +6,7 @@ import { useUser } from '@/app/contexts/UserContext';
 type UseExercicesOptions = {
   category?: ExerciceCategory;
   equipments?: string[];
+  includeArchived?: boolean;
 };
 
 type UseExercicesReturn = {
@@ -21,7 +22,7 @@ type UseExercicesReturn = {
  * Centralise la logique de récupération et de mise à jour des exercices
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
-export function useExercices({ category, equipments }: UseExercicesOptions = {}): UseExercicesReturn {
+export function useExercices({ category, equipments, includeArchived }: UseExercicesOptions = {}): UseExercicesReturn {
   const { effectiveUser, loading: userLoading } = useUser();
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +53,9 @@ export function useExercices({ category, equipments }: UseExercicesOptions = {})
       if (equipments && equipments.length > 0) {
         params.append('equipments', equipments.map(eq => encodeURIComponent(eq)).join(','));
       }
+      if (includeArchived) {
+        params.append('includeArchived', 'true');
+      }
       
       const url = params.toString() 
         ? `/api/exercices?${params.toString()}`
@@ -79,16 +83,24 @@ export function useExercices({ category, equipments }: UseExercicesOptions = {})
     } finally {
       setLoading(false);
     }
-  }, [category, equipments, effectiveUser, userLoading]);
+  }, [category, equipments, includeArchived, effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchExercices();
   }, [fetchExercices]);
 
   const updateExercice = (updatedExercice: Exercice) => {
-    setExercices(prev => prev.map(ex => 
-      ex.id === updatedExercice.id ? updatedExercice : ex
-    ));
+    setExercices(prev => {
+      const updated = prev.map(ex => 
+        ex.id === updatedExercice.id ? updatedExercice : ex
+      );
+      
+      if (!includeArchived && updatedExercice.archived) {
+        return updated.filter(ex => ex.id !== updatedExercice.id);
+      }
+      
+      return updated;
+    });
   };
 
   return {

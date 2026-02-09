@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
@@ -7,6 +8,7 @@ import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 import { deleteExerciceMedia, deletePhoto } from '@/app/utils/cloudinary.utils';
+import { CACHE_TAGS } from '@/app/lib/cache';
 
 export async function GET(
   request: NextRequest,
@@ -437,6 +439,13 @@ export async function DELETE(
     await prisma.exercice.delete({
       where: { id },
     });
+
+    // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après suppression
+    revalidateTag(CACHE_TAGS.EXERCICES);
+    revalidateTag(CACHE_TAGS.EXERCICE(id));
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
+    revalidateTag(CACHE_TAGS.METADATA);
+    revalidateTag(CACHE_TAGS.USER_METADATA(userId));
 
     return NextResponse.json({ success: true });
   } catch (error) {

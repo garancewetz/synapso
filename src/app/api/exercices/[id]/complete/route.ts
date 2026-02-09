@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
@@ -6,6 +7,7 @@ import {
   parseCompletedAtFromBody,
   toggleExerciceCompletion,
 } from '@/app/utils/exercice-complete.utils';
+import { CACHE_TAGS } from '@/app/lib/cache';
 
 export async function PATCH(
   request: NextRequest,
@@ -70,6 +72,13 @@ export async function PATCH(
         timeout: 3000, // Réduit à 3s pour éviter les blocages prolongés
       }
     );
+
+    // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après complétion
+    revalidateTag(CACHE_TAGS.EXERCICES);
+    revalidateTag(CACHE_TAGS.EXERCICE(id));
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
+    revalidateTag(CACHE_TAGS.HISTORY);
+    revalidateTag(CACHE_TAGS.USER_HISTORY(userId));
 
     // ⚡ PERFORMANCE: Retourner immédiatement avec les valeurs calculées
     // Les valeurs manquantes seront mises à jour par le refetch automatique

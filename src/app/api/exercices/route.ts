@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
@@ -6,6 +7,7 @@ import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay, setHours, setMinutes, setSeconds } from 'date-fns';
+import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 
 type ExerciceWithArchived = {
   archived?: boolean;
@@ -88,8 +90,24 @@ export async function GET(request: NextRequest) {
       ? startOfDay(addDays(now, 1))
       : startOfDay(addDays(startOfPeriod, 7));
 
-    // Utiliser Prisma Query Builder natif
-    const exercices = await prisma.exercice.findMany({
+    // ⚡ PERFORMANCE: Cache côté serveur (30 secondes car les exercices peuvent changer)
+    // La clé de cache inclut tous les paramètres pour garantir l'unicité
+    const targetDateKey = targetDate.toISOString().split('T')[0]; // yyyy-MM-dd
+    const cacheKey = generateCacheKey([
+      'exercices',
+      userId,
+      category || 'all',
+      selectedEquipments.sort().join(','),
+      includeArchived ? 'archived' : 'active',
+      targetDateKey,
+      user.resetFrequency,
+    ]);
+
+    const formattedExercices = await cacheApiResponse(
+      cacheKey,
+      async () => {
+        // Utiliser Prisma Query Builder natif
+        const exercices = await prisma.exercice.findMany({
       where: whereClause,
       include: {
         bodyparts: {
@@ -173,15 +191,26 @@ export async function GET(request: NextRequest) {
           archived: (exercice as ExerciceWithArchived).archived ?? false,
           archivedAt: (exercice as ExerciceWithArchived).archivedAt,
         };
-      })
-      // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
-      .filter((exercice) => {
-        if (selectedEquipments.length === 0) {
-          return true;
-        }
-        // Vérifier si l'exercice contient au moins un des équipements sélectionnés
-        return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
-      });
+        })
+        // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
+        .filter((exercice) => {
+          if (selectedEquipments.length === 0) {
+            return true;
+          }
+          // Vérifier si l'exercice contient au moins un des équipements sélectionnés
+          return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
+        });
+
+        return formattedExercices;
+      },
+      {
+        revalidate: 30, // 30 secondes (les exercices peuvent changer rapidement)
+        tags: [
+          CACHE_TAGS.EXERCICES,
+          CACHE_TAGS.USER_EXERCICES(userId),
+        ],
+      }
+    );
     
     return NextResponse.json(formattedExercices);
   } catch (error) {
@@ -373,6 +402,12 @@ export async function POST(request: NextRequest) {
       archived: (result as ExerciceWithArchived).archived ?? false,
       archivedAt: (result as ExerciceWithArchived).archivedAt,
     };
+
+    // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après création
+    revalidateTag(CACHE_TAGS.EXERCICES);
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
+    revalidateTag(CACHE_TAGS.METADATA);
+    revalidateTag(CACHE_TAGS.USER_METADATA(userId));
 
     return NextResponse.json(formattedExercice, { status: 201 });
   } catch (error) {

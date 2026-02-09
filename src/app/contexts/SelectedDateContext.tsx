@@ -26,9 +26,17 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
   const searchParams = useSearchParams();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const previousDateKeyRef = useRef<string | null>(null);
+  const previousDateParamRef = useRef<string | null>(null);
   
   // ⚡ URL-BASED: Lire la date depuis l'URL (paramètre `date` au format yyyy-MM-dd)
   const dateParam = searchParams.get('date');
+  
+  // ⚡ FIX: Stocker la dernière valeur valide de dateParam pour éviter les faux positifs lors de la navigation
+  useEffect(() => {
+    if (dateParam) {
+      previousDateParamRef.current = dateParam;
+    }
+  }, [dateParam]);
   
   // ⚡ PERFORMANCE: Clé stable basée sur la date depuis l'URL
   // Valider et normaliser la date depuis l'URL
@@ -68,7 +76,7 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
       return null;
     }
     
-    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 30 jours)
+    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 28 jours)
     const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
     if (isBefore(parsedDate, minAllowedDate)) {
       // Date trop ancienne, nettoyer l'URL
@@ -130,7 +138,7 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
         return; // Ne pas définir la date si dans le futur
       }
       
-      // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 30 jours)
+      // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 28 jours)
       const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
       if (isBefore(normalizedDate, minAllowedDate)) {
         console.warn(`Date trop ancienne pour le mode sablier: ${date.toISOString()}. Limite: ${MAX_TIME_MACHINE_DAYS} jours`);
@@ -183,10 +191,29 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
 
   // ⚡ FIX: Détecter quand on passe en mode sablier ou qu'on en sort pour déclencher la transition
   useEffect(() => {
-    const currentDateKey = isTimeMachineMode ? selectedDateKey : null;
+    // ⚡ FIX: Utiliser la dernière valeur valide de dateParam stockée dans le ref
+    // pour éviter les faux positifs lors de la navigation (searchParams peut être temporairement vide)
+    const effectiveDateParam = dateParam || previousDateParamRef.current;
+    const hasDateParam = effectiveDateParam !== null && effectiveDateParam !== '';
+    const currentDateKey = isTimeMachineMode && selectedDateKey ? selectedDateKey : null;
     const wasInTimeMachine = previousDateKeyRef.current !== null;
-    const isEnteringTimeMachine = !previousDateKeyRef.current && currentDateKey;
-    const isExitingTimeMachine = wasInTimeMachine && !currentDateKey;
+    const isEnteringTimeMachine = !previousDateKeyRef.current && currentDateKey && hasDateParam;
+    
+    // ⚡ FIX: Ne déclencher la sortie que si le paramètre date a vraiment disparu de l'URL
+    // Vérifier directement dans window.location.search pour éviter les faux positifs lors de la navigation
+    let isExitingTimeMachine = false;
+    if (wasInTimeMachine && !dateParam) {
+      // Vérifier directement dans l'URL réelle (pas searchParams qui peut être temporairement vide)
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlDateParam = urlParams.get('date');
+        // Si le paramètre date n'existe vraiment pas dans l'URL, alors on sort du mode sablier
+        isExitingTimeMachine = !urlDateParam || urlDateParam === '';
+      } else {
+        // En SSR, se fier à dateParam
+        isExitingTimeMachine = true;
+      }
+    }
     
     // Si on entre en mode sablier, déclencher la transition
     if (isEnteringTimeMachine) {
@@ -195,6 +222,9 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
       const timer = setTimeout(() => {
         setIsTransitioning(false);
         previousDateKeyRef.current = currentDateKey;
+        if (dateParam) {
+          previousDateParamRef.current = dateParam;
+        }
       }, 1500);
       
       return () => clearTimeout(timer);
@@ -207,16 +237,20 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
       const timer = setTimeout(() => {
         setIsTransitioning(false);
         previousDateKeyRef.current = null;
+        previousDateParamRef.current = null;
       }, 1500);
       
       return () => clearTimeout(timer);
     }
     
     // Mettre à jour la référence si on change de date (mais toujours en mode sablier)
-    if (currentDateKey !== previousDateKeyRef.current && !isTransitioning && currentDateKey) {
+    if (currentDateKey !== previousDateKeyRef.current && !isTransitioning && currentDateKey && hasDateParam) {
       previousDateKeyRef.current = currentDateKey;
+      if (dateParam) {
+        previousDateParamRef.current = dateParam;
+      }
     }
-  }, [isTimeMachineMode, selectedDateKey, isTransitioning]);
+  }, [isTimeMachineMode, selectedDateKey, dateParam, isTransitioning]);
 
   // ⚡ PERFORMANCE: Mémoriser la valeur du context pour éviter les re-renders en boucle
   const contextValue = useMemo<SelectedDateContextType>(() => ({

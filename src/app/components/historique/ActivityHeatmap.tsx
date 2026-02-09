@@ -115,15 +115,20 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
 
       {/* Légende mode sablier */}
       {isTimeMachineMode && selectedDate && (
-        <div className="mb-4 p-3 bg-amber-50 border-2 border-amber-300 rounded-lg">
-          <div className="flex items-center gap-2 text-sm text-amber-900">
-            <span className="text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
+        <div className="mb-4 p-3 bg-indigo-900 border-2 border-indigo-700 rounded-lg shadow-lg"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0)',
+            backgroundSize: '20px 20px'
+          }}
+        >
+          <div className="flex items-center gap-2 text-sm text-white">
+            <span className="text-lg text-amber-400">{NAVIGATION_EMOJIS.HOURGLASS}</span>
             <p className="font-semibold">
               Mode sablier actif : Tu es sur le <strong className="underline">{formatShortDate(selectedDate)}</strong>
             </p>
           </div>
-          <p className="text-xs text-amber-700 mt-1.5">
-            La cellule avec le sablier ⏳ est le jour sélectionné. Les autres cellules sont atténuées pour mieux repérer le jour actif.
+          <p className="text-xs text-indigo-100 mt-1.5 ml-7">
+            La cellule avec le sablier ⏳ est le jour sélectionné.
           </p>
         </div>
       )}

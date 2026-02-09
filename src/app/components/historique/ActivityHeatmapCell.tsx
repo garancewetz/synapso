@@ -55,7 +55,7 @@ export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, prog
           'relative w-full aspect-square rounded-xl flex items-center justify-center',
           'transition-all duration-200',
           isClickable ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default',
-          // ⚡ MODE SABLIER: Le jour sélectionné doit être TRÈS visible avec une bordure amber pulsante
+          // ⚡ MODE SABLIER: Le jour sélectionné doit être TRÈS visible avec une bordure indigo pulsante avec lueur cosmique
           // Note: "aujourd'hui" ne peut jamais être sélectionné en mode sablier (mode sablier = passé uniquement)
           // ⚡ FIX: "Aujourd'hui" doit toujours afficher sa couleur dominante si elle a des exercices, même en mode sablier
           isCurrentDay
@@ -69,8 +69,8 @@ export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, prog
               : 'bg-emerald-500 ring-2 ring-emerald-300 ring-offset-1 shadow-lg'
             : isSelectedDay
               ? hasExercise && effectiveCategoryStyle
-                ? `${effectiveCategoryStyle.bg} ring-4 ring-amber-500 ring-offset-2 shadow-2xl animate-pulse`
-                : 'bg-gray-100 ring-4 ring-amber-500 ring-offset-2 shadow-2xl animate-pulse'
+                ? `${effectiveCategoryStyle.bg} ring-4 ring-indigo-500 ring-offset-2 shadow-2xl shadow-indigo-500/50 animate-pulse`
+                : 'bg-gray-100 ring-4 ring-indigo-500 ring-offset-2 shadow-2xl shadow-indigo-500/50 animate-pulse'
               : hasExercise && effectiveCategoryStyle
                 ? `${effectiveCategoryStyle.bg} shadow-md`
                 : 'bg-gray-100'
@@ -118,8 +118,8 @@ export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, prog
         
         {/* Indicateur sablier pour le jour sélectionné en mode sablier - badge en coin supérieur droit pour plus de visibilité */}
         {isSelectedDay && (
-          <div className="absolute -top-2 -right-2 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-full p-2 shadow-2xl border-2 border-amber-700 z-20 flex items-center justify-center">
-            <span className="text-base md:text-lg drop-shadow-lg font-bold text-amber-900">
+          <div className="absolute -top-2 -right-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 rounded-full p-2 shadow-2xl border-2 border-amber-400 z-20 flex items-center justify-center">
+            <span className="text-base md:text-lg drop-shadow-lg font-bold text-white">
               {NAVIGATION_EMOJIS.HOURGLASS}
             </span>
           </div>
@@ -131,7 +131,7 @@ export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, prog
         <span className={clsx(
           'text-[10px] sm:text-xs mt-1 font-medium',
           isSelectedDay
-            ? 'text-amber-700 font-bold'
+            ? 'text-indigo-200 font-bold'
             : isCurrentDay 
               ? 'text-emerald-600' 
               : hasExercise 

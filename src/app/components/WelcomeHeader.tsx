@@ -45,9 +45,9 @@ export function WelcomeHeader({ userName, completedToday, resetFrequency = null,
 
       {/* Badge sablier proéminent */}
       {isTimeMachineMode && selectedDate && (
-        <div className="mb-3 px-3 py-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center gap-2">
-          <span className="text-xl">{NAVIGATION_EMOJIS.HOURGLASS}</span>
-          <span className="text-sm font-bold text-amber-900">
+        <div className="mb-3 px-3 py-2 bg-indigo-900 border-2 border-indigo-600 rounded-lg flex items-center gap-2">
+          <span className="text-xl text-amber-400">{NAVIGATION_EMOJIS.HOURGLASS}</span>
+          <span className="text-sm font-bold text-white">
             Mode sablier - {formatShortDate(selectedDate)}
           </span>
         </div>

@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
-import { format, startOfDay, differenceInDays } from 'date-fns';
+import { format, startOfDay, differenceInDays, subDays, isBefore, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { getDateKey } from '@/app/utils/date.utils';
 import { WelcomeHeader } from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
@@ -54,26 +54,53 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
   // ⚡ FIX: Si la date sélectionnée est dans les 7 derniers jours, inclure les exercices d'aujourd'hui
   // pour que la cellule "aujourd'hui" affiche correctement sa couleur dominante
   const filteredHistory = useMemo(() => {
-    if (!isTimeMachineMode || !selectedDateKey) {
+    if (!isTimeMachineMode || !selectedDateKey || !selectedDate) {
       return history;
     }
     
-    // Vérifier si la date sélectionnée est dans les 7 derniers jours
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const selectedDateNormalized = new Date(selectedDate);
     selectedDateNormalized.setHours(0, 0, 0, 0);
     const daysDiff = differenceInDays(today, selectedDateNormalized);
     const todayKey = getDateKey(today);
+    const frequency = resetFrequency || 'DAILY';
     
-    // Si la date sélectionnée est dans les 7 derniers jours, inclure les exercices jusqu'à aujourd'hui
-    const maxDateKey = daysDiff <= 7 && todayKey ? todayKey : selectedDateKey;
+    let maxDateKey: string;
     
+    if (frequency === 'WEEKLY') {
+      // ⚡ FIX MODE HEBDOMADAIRE: Inclure toutes les dates de la semaine qui contient la date sélectionnée
+      // Calculer la semaine qui sera affichée (lundi-dimanche de la semaine de la date sélectionnée)
+      const weekStart = startOfWeek(selectedDateNormalized, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(selectedDateNormalized, { weekStartsOn: 1 });
+      
+      // Utiliser la date la plus récente entre la fin de la semaine et aujourd'hui
+      // (on ne peut pas avoir de données futures)
+      const weekEndKey = format(weekEnd, 'yyyy-MM-dd');
+      if (todayKey && weekEndKey > todayKey) {
+        // La semaine se termine après aujourd'hui, utiliser aujourd'hui comme limite
+        maxDateKey = todayKey;
+      } else {
+        // La semaine se termine avant ou aujourd'hui, utiliser la fin de la semaine
+        maxDateKey = weekEndKey;
+      }
+    } else {
+      // Mode quotidien : Si la date sélectionnée est dans les 7 derniers jours, inclure les exercices jusqu'à aujourd'hui
+      maxDateKey = daysDiff <= 7 && todayKey ? todayKey : selectedDateKey;
+    }
+    
+    // ⚡ FIX: Utiliser getDateKey directement au lieu de historyDateKeys pour éviter les entrées manquantes
+    // Si historyDateKeys n'a pas l'entrée (getDateKey retournait null), on recalcule pour être sûr
     return history.filter(entry => {
-      const entryDateKey = historyDateKeys.get(entry.id);
+      // Essayer d'abord avec historyDateKeys (plus rapide)
+      let entryDateKey = historyDateKeys.get(entry.id);
+      // Si pas trouvé, recalculer (peut arriver si getDateKey retournait null lors de la création de historyDateKeys)
+      if (!entryDateKey) {
+        entryDateKey = getDateKey(entry.completedAt);
+      }
       return entryDateKey && entryDateKey <= maxDateKey;
     });
-  }, [history, isTimeMachineMode, selectedDateKey, historyDateKeys]);
+  }, [history, isTimeMachineMode, selectedDateKey, selectedDate, historyDateKeys, resetFrequency]);
 
   // ⚡ PERFORMANCE: Utiliser une clé stable basée sur la longueur et les IDs triés
   const historyKey = useMemo(() => {
@@ -83,26 +110,42 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
 
   // Données selon le rythme de l'utilisateur
   // ⚡ MODE SABLIER: Déterminer intelligemment la date de fin du heatmap
-  // ⚡ RÉACTIVITÉ: Ajouter history dans les dépendances pour garantir la mise à jour immédiate
+  // ⚡ RÉACTIVITÉ: Utiliser filteredHistory directement pour garantir la mise à jour immédiate
   const weekData = useMemo(() => {
     const frequency = resetFrequency || 'DAILY';
     
     // ⚡ MODE SABLIER: Déterminer la date de fin du heatmap
     let endDate: Date;
     if (isTimeMachineMode && selectedDate) {
-      // Vérifier si la date sélectionnée est dans les 7 derniers jours
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const selectedDateNormalized = new Date(selectedDate);
       selectedDateNormalized.setHours(0, 0, 0, 0);
-      const daysDiff = differenceInDays(today, selectedDateNormalized);
       
-      if (daysDiff <= 7) {
-        // Date sélectionnée dans la semaine en cours : garder "aujourd'hui" comme dernière date
-        endDate = today;
-      } else {
-        // Date sélectionnée plus ancienne : utiliser la date sélectionnée comme dernière date
+      if (frequency === 'WEEKLY') {
+        // ⚡ FIX MODE HEBDOMADAIRE: Afficher la semaine qui contient la date sélectionnée en mode sablier
+        // Si on est en mode sablier, on affiche la semaine de la date sélectionnée
         endDate = selectedDateNormalized;
+      } else {
+        // Mode quotidien : vérifier si la date sélectionnée est dans les 7 derniers jours
+        const daysDiff = differenceInDays(today, selectedDateNormalized);
+        
+        if (daysDiff <= 7) {
+          // Date sélectionnée dans les 7 derniers jours : garder "aujourd'hui" comme dernière date
+          // ⚡ FIX: S'assurer que la date sélectionnée est incluse dans la plage
+          const minStartDate = subDays(today, 6);
+          if (isBefore(selectedDateNormalized, minStartDate)) {
+            // La date sélectionnée est plus ancienne que les 7 derniers jours depuis aujourd'hui
+            // Utiliser la date sélectionnée comme date de fin pour inclure cette date
+            endDate = selectedDateNormalized;
+          } else {
+            // La date sélectionnée est dans les 7 derniers jours, utiliser aujourd'hui comme date de fin
+            endDate = today;
+          }
+        } else {
+          // Date sélectionnée plus ancienne : utiliser la date sélectionnée comme dernière date
+          endDate = selectedDateNormalized;
+        }
       }
     } else {
       // Mode normal : toujours utiliser "aujourd'hui"
@@ -110,10 +153,11 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
       endDate.setHours(0, 0, 0, 0);
     }
     
+    // ⚡ FIX: Utiliser filteredHistory directement pour garantir que toutes les données sont incluses
     return frequency === 'WEEKLY' 
       ? getCurrentWeekData(filteredHistory, endDate)
       : getLast7DaysData(filteredHistory, endDate);
-  }, [history, historyKey, resetFrequency, isTimeMachineMode, selectedDate, filteredHistory]);
+  }, [filteredHistory, resetFrequency, isTimeMachineMode, selectedDate]);
 
   // ⚡ PERFORMANCE: Utiliser une clé stable basée sur les IDs des progrès
   const progressListKey = useMemo(() => {

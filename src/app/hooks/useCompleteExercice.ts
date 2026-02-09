@@ -99,8 +99,10 @@ export function useCompleteExercice({
 
       // ⚡ OPTIMISATION: Mettre à jour aussi todayCompletedCount dans l'optimistic update
       // pour une UI encore plus réactive
-      const wasCompleted = exercice.completed;
-      const countChange = newCompleted && !wasCompleted ? 1 : (!newCompleted && wasCompleted ? -1 : 0);
+      // ⚡ FIX: Utiliser completedToday au lieu de completed pour calculer le changement
+      // car completedToday indique si l'exercice compte pour la date cible (aujourd'hui ou date sélectionnée)
+      const wasCompletedToday = exercice.completedToday ?? false;
+      const countChange = newCompletedToday && !wasCompletedToday ? 1 : (!newCompletedToday && wasCompletedToday ? -1 : 0);
       if (countChange !== 0) {
         queryClient.setQueryData<number>(
           queryKeys.todayCompletedCount.list({
@@ -127,7 +129,7 @@ export function useCompleteExercice({
       }
     },
     onSuccess: (data) => {
-      const wasCompletedToday = exercice.completedToday;
+      const wasCompletedToday = exercice.completedToday ?? false;
       
       const updatedExercice: Exercice = {
         ...exercice,
@@ -158,9 +160,10 @@ export function useCompleteExercice({
 
       // ⚡ OPTIMISATION: Mettre à jour directement les stats au lieu de les invalider
       // Cela évite les refetch et rend l'UI instantanée
-      const isNowCompleted = updatedExercice.completed;
-      const wasCompleted = exercice.completed;
-      const countChange = isNowCompleted && !wasCompleted ? 1 : (!isNowCompleted && wasCompleted ? -1 : 0);
+      // ⚡ FIX: Utiliser completedToday au lieu de completed pour calculer le changement
+      // car completedToday indique si l'exercice compte pour la date cible (aujourd'hui ou date sélectionnée)
+      const isNowCompletedToday = updatedExercice.completedToday ?? false;
+      const countChange = isNowCompletedToday && !wasCompletedToday ? 1 : (!isNowCompletedToday && wasCompletedToday ? -1 : 0);
 
       // Mettre à jour todayCompletedCount directement
       queryClient.setQueryData<number>(

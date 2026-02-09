@@ -8,7 +8,7 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
 /**
  * Composant d'animation de transition pour l'activation et la désactivation du mode sablier
- * - Entrée : Affiche un fond sable avec un sablier géant qui tourne puis disparaît
+ * - Entrée : Affiche un fond bleu nuit cosmique avec un sablier doré géant qui tourne puis disparaît
  * - Sortie : Affiche un sablier qui disparaît avec un message "Retour à aujourd'hui"
  */
 export function TimeMachineTransition() {
@@ -53,24 +53,36 @@ export function TimeMachineTransition() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="fixed inset-0 z-[200] pointer-events-none"
+          style={{
+            // ⚡ MOBILE: S'assurer que l'overlay est au-dessus de tout (z-index très élevé)
+            zIndex: 9999,
+          }}
         >
-          {/* Fond sable avec gradient (entrée) ou fond blanc (sortie) */}
+          {/* Fond bleu nuit cosmique avec gradient (entrée) ou fond blanc (sortie) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ 
               opacity: 1,
-              backgroundColor: isExiting 
-                ? 'rgba(255, 255, 255, 0.95)' 
-                : 'rgba(254, 243, 199, 0.95)', // amber-100 avec opacité
             }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
             className={clsx(
               'absolute inset-0',
+              // ⚡ MOBILE: Fond complètement opaque pour éviter de voir le contenu derrière
               isExiting 
-                ? 'bg-gradient-to-br from-white via-gray-50 to-white'
-                : 'bg-gradient-to-br from-amber-100 via-amber-50 to-yellow-50'
+                ? 'bg-white' // Fond blanc pur pour la sortie
+                : '' // Gradient géré via style pour contrôle total de l'opacité
             )}
+            style={!isExiting ? {
+              // ⚡ MOBILE: Fond indigo cosmique complètement opaque avec gradient et pattern d'étoiles
+              // Le gradient de base est opaque, le pattern d'étoiles est en overlay
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.2) 1px, transparent 0), linear-gradient(to bottom right, rgb(30, 27, 75), rgb(30, 27, 75), rgb(15, 23, 42))',
+              backgroundSize: '25px 25px, 100% 100%',
+              backgroundColor: 'rgb(30, 27, 75)', // Fond de base indigo-950 complètement opaque
+            } : {
+              // ⚡ MOBILE: Fond blanc complètement opaque pour la sortie
+              backgroundColor: 'rgb(255, 255, 255)',
+            }}
           />
           
           {/* Sablier géant au centre avec animation différente selon entrée/sortie */}
@@ -102,7 +114,7 @@ export function TimeMachineTransition() {
               }}
               className="text-[120px] md:text-[180px] drop-shadow-2xl"
               style={{
-                filter: 'drop-shadow(0 10px 20px rgba(251, 191, 36, 0.5))',
+                filter: 'drop-shadow(0 10px 20px rgba(251, 191, 36, 0.6))',
               }}
             >
               {NAVIGATION_EMOJIS.HOURGLASS}
@@ -115,14 +127,14 @@ export function TimeMachineTransition() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="mt-8 text-xl md:text-2xl font-bold text-gray-800"
+                className="mt-8 text-xl md:text-2xl font-bold text-gray-900"
               >
                 Retour à aujourd&apos;hui
               </motion.p>
             )}
           </div>
           
-          {/* Particules de sable animées */}
+          {/* Particules d'étoiles animées */}
           <div className="absolute inset-0 overflow-hidden">
             {Array.from({ length: isExiting ? 20 : 30 }).map((_, i) => {
               const angle = (i / (isExiting ? 20 : 30)) * 360;

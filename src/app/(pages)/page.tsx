@@ -13,6 +13,7 @@ import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
 import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
 import { useHomeTabs } from '@/app/hooks/useHomeTabs';
 import { usePrefetchPreviousDates } from '@/app/hooks/usePrefetchPreviousDates';
+import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
 import { HomeExercicesTab } from '@/app/components/home/HomeExercicesTab';
@@ -42,6 +43,9 @@ export default function Home() {
   
   // ⚡ QUERY PREFETCHING: Précharger les données des dates précédentes en arrière-plan
   usePrefetchPreviousDates();
+  
+  // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
+  usePrefetchCommonPages();
   
   const { exercices, refetch: refetchExercices } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();

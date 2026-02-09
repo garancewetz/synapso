@@ -40,8 +40,11 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
   const isPastDay = date && !isToday(date);
   const isCurrentDay = date && isToday(date);
   const hasNoExercises = exercises.length === 0;
+  
+  // ⚡ FIX: Vérifier si la date est dans le futur
+  const isFutureDay = date && isAfter(startOfDay(date), startOfDay(new Date()));
 
-  // Vérifier si on peut ajouter des exercices pour ce jour (limite de 30 jours, pas de futur)
+  // Vérifier si on peut ajouter des exercices pour ce jour (limite de 28 jours, pas de futur)
   const canAddExercises = useMemo(() => {
     if (!date || !isPastDay) return false;
     
@@ -51,7 +54,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
       return false;
     }
     
-    // ⚡ VALIDATION: Vérifier la limite de 30 jours
+    // ⚡ VALIDATION: Vérifier la limite de 28 jours
     const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
     return !isBefore(date, minAllowedDate);
   }, [date, isPastDay]);
@@ -66,7 +69,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
       return;
     }
     
-    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 30 jours)
+    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 28 jours)
     const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
     if (isBefore(date, minAllowedDate)) {
       showToast(`Tu ne peux remonter que jusqu'à ${MAX_TIME_MACHINE_DAYS} jours en arrière`);
@@ -111,7 +114,25 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
         
-        {/* Section Progrès */}
+        {/* Message d'erreur pour les jours futurs */}
+        {isFutureDay && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">⏰</span>
+            </div>
+            <p className="text-gray-700 text-lg font-semibold">
+              Tu ne peux pas aller dans le futur
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              Le mode sablier permet uniquement de remonter dans le passé
+            </p>
+          </div>
+        )}
+        
+        {/* Contenu normal (seulement si pas un jour futur) */}
+        {!isFutureDay && (
+          <>
+            {/* Section Progrès */}
         {progress.length > 0 && (
           <section className="space-y-2">
             {progress.map((item) => (
@@ -176,10 +197,10 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
                   onClick={handleAddExercisesForDay}
                   className={clsx(
                     'px-6 py-3',
-                    '!bg-amber-400 !hover:bg-amber-500 !active:bg-amber-600',
-                    '!text-amber-900 font-bold',
-                    '!border-2 !border-amber-600',
-                    'shadow-md hover:shadow-lg transition-shadow'
+                    '!bg-indigo-700 !hover:bg-indigo-600 !active:bg-indigo-900',
+                    '!text-white font-bold',
+                    '!border-2 !border-indigo-500',
+                    'shadow-lg shadow-indigo-500/30 transition-shadow'
                   )}
                 >
                   <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
@@ -190,12 +211,12 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
           </div>
         )}
 
-        {/* Bouton pour ajouter des exercices même s'il y en a déjà (jour passé) */}
+        {/* Bouton pour modifier les exercices même s'il y en a déjà (jour passé) */}
         {isPastDay && hasContent && canAddExercises && (
           <div className="pt-4 border-t border-gray-200">
             <div className="text-center">
               <p className="text-gray-600 text-sm mb-4">
-                Tu veux ajouter ou modifier des exercices pour ce jour ?
+                Tu veux modifier les exercices pour ce jour ?
               </p>
               <div className="flex justify-center">
                 <Button
@@ -203,14 +224,14 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
                   onClick={handleAddExercisesForDay}
                   className={clsx(
                     'px-6 py-3',
-                    '!bg-amber-400 !hover:bg-amber-500 !active:bg-amber-600',
-                    '!text-amber-900 font-bold',
-                    '!border-2 !border-amber-600',
-                    'shadow-md hover:shadow-lg transition-shadow'
+                    '!bg-indigo-700 !hover:bg-indigo-600 !active:bg-indigo-900',
+                    '!text-white font-bold',
+                    '!border-2 !border-indigo-500',
+                    'shadow-lg shadow-indigo-500/30 transition-shadow'
                   )}
                 >
                   <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
-                  Ajouter des exercices pour ce jour
+                  Modifier les exercices pour ce jour
                 </Button>
               </div>
             </div>
@@ -222,11 +243,11 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
           <div className="pt-4 border-t border-gray-200">
             <div className="text-center">
               <p className="text-gray-600 text-sm mb-4">
-                Tu es en mode sablier. Revenir à aujourd'hui ?
+                Tu es en mode sablier. Revenir à aujourd&apos;hui ?
               </p>
               <div className="flex justify-center">
                 <Button
-                  variant="primary"
+                  variant="action"
                   onClick={handleReturnToToday}
                   className={clsx(
                     'px-6 py-3',
@@ -236,11 +257,13 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
                   )}
                 >
                   <span className="mr-2 text-lg">🏠</span>
-                  Revenir à aujourd'hui
+                  Revenir à aujourd&apos;hui
                 </Button>
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
     </BottomSheetModal>

@@ -160,7 +160,8 @@ export async function toggleExerciceCompletion(
       },
     });
 
-    // Récupérer la dernière entrée pour completedAt (nécessaire pour l'exercice)
+    // ⚡ PERFORMANCE: Récupérer la dernière entrée pour completedAt (nécessaire pour l'exercice)
+    // findFirst retourne déjà un seul résultat, optimisé avec orderBy
     const remainingHistory = await tx.history.findFirst({
       where: {
         exerciceId,

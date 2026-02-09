@@ -56,7 +56,7 @@ export async function PATCH(
     const { completedAt, checkDateForCompletedToday } =
       await parseCompletedAtFromBody(request);
 
-    // ⚡ PERFORMANCE CRITIQUE: Transaction ultra-minimale avec timeout réduit
+    // ⚡ PERFORMANCE CRITIQUE: Transaction avec timeout adapté
     // Tous les calculs complexes seront faits après la transaction
     const result = await prisma.$transaction(
       async (tx) => {
@@ -68,8 +68,8 @@ export async function PATCH(
         });
       },
       {
-        maxWait: 2000, // Réduit à 2s pour détecter rapidement les blocages
-        timeout: 3000, // Réduit à 3s pour éviter les blocages prolongés
+        maxWait: 5000, // Temps d'attente pour démarrer la transaction
+        timeout: 10000, // Timeout de 10s pour les transactions longues (deleteMany + findFirst peuvent être lents)
       }
     );
 

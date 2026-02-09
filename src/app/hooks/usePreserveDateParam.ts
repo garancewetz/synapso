@@ -1,13 +1,15 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 /**
  * Hook pour préserver le paramètre `date` lors de la navigation
  * 
  * Retourne une fonction qui construit une URL en préservant le paramètre `date`
  * de l'URL actuelle s'il existe (pour le mode sablier)
+ * 
+ * ⚡ PERFORMANCE: Optimisé pour ne se recalculer que si le paramètre date change
  * 
  * @example
  * const preserveDate = usePreserveDateParam();
@@ -17,26 +19,37 @@ import { useMemo } from 'react';
  */
 export function usePreserveDateParam() {
   const searchParams = useSearchParams();
+  const dateParamRef = useRef<string | null>(null);
   
+  // ⚡ PERFORMANCE: Extraire uniquement le paramètre date pour éviter les re-renders
+  // quand d'autres paramètres de l'URL changent
+  const dateParam = searchParams.get('date');
+  
+  // ⚡ PERFORMANCE: Ne recalculer la fonction que si le paramètre date change vraiment
   return useMemo(() => {
-    const dateParam = searchParams.get('date');
+    dateParamRef.current = dateParam;
     
     return (href: string): string => {
+      // Utiliser la valeur du ref pour éviter les dépendances
+      const currentDateParam = dateParamRef.current;
+      
       // Si pas de paramètre date, retourner l'URL telle quelle
-      if (!dateParam) {
+      if (!currentDateParam) {
         return href;
       }
       
-      // Séparer le pathname et les query params existants
-      const [pathname, existingQuery = ''] = href.split('?');
+      // Séparer le pathname, les query params et le hash
+      const [pathAndQuery, hash = ''] = href.split('#');
+      const [pathname, existingQuery = ''] = pathAndQuery.split('?');
       const params = new URLSearchParams(existingQuery);
       
       // Ajouter le paramètre date
-      params.set('date', dateParam);
+      params.set('date', currentDateParam);
       
-      // Reconstruire l'URL avec le paramètre date
+      // Reconstruire l'URL avec le paramètre date et le hash
       const queryString = params.toString();
-      return queryString ? `${pathname}?${queryString}` : pathname;
+      const urlWithQuery = queryString ? `${pathname}?${queryString}` : pathname;
+      return hash ? `${urlWithQuery}#${hash}` : urlWithQuery;
     };
-  }, [searchParams]);
+  }, [dateParam]); // ⚡ PERFORMANCE: Dépendance uniquement sur dateParam, pas sur searchParams entier
 }

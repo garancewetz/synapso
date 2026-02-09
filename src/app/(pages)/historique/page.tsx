@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,26 +24,25 @@ import {
   ProgressStatsChart,
 } from '@/app/components/historique';
 
-// ⚡ PERFORMANCE: Charger dynamiquement les composants lourds
+// ⚡ PERFORMANCE: Charger dynamiquement les composants lourds avec loading
 const ProgressBottomSheet = dynamic(
   () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
-  { ssr: false }
+  { ssr: false, loading: () => null }
 );
-
 
 const ConfettiRain = dynamic(
   () => import('@/app/components/ConfettiRain').then(mod => ({ default: mod.ConfettiRain })),
-  { ssr: false }
+  { ssr: false, loading: () => null }
 );
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
-  { ssr: false }
+  { ssr: false, loading: () => null }
 );
 
 const MotionDiv = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
-  { ssr: false }
+  { ssr: false, loading: () => null }
 );
 import { BackButton } from '@/app/components/ui/BackButton';
 import { SegmentedControl, Loader, Card } from '@/app/components/ui';
@@ -86,10 +85,16 @@ export default function HistoriquePage() {
   const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
   const { referenceDate } = useTimeContext();
 
+  // ⚡ PERFORMANCE: Utiliser useDeferredValue pour les calculs non critiques
+  // Cela permet de rendre l'UI immédiatement et de différer les calculs lourds
+  const deferredHistory = useDeferredValue(history);
+  const deferredProgressList = useDeferredValue(progressList);
+
   // ⚡ PERFORMANCE: Pré-calculer les dateKeys UNE SEULE FOIS (indexation)
+  // Utiliser deferredHistory pour différer les calculs lourds
   const historyDateKeys = useMemo(() => {
     const map = new Map<number, string>(); // Cache des dateKeys par ID
-    history.forEach(entry => {
+    deferredHistory.forEach(entry => {
       if (!map.has(entry.id)) {
         const date = new Date(entry.completedAt);
         date.setHours(0, 0, 0, 0);
@@ -97,23 +102,23 @@ export default function HistoriquePage() {
       }
     });
     return map;
-  }, [history]);
+  }, [deferredHistory]);
 
   // ⚡ PERFORMANCE: Filtrer avec comparaison de strings (ultra-rapide, pas de format() dans le filtre)
   const filteredHistory = useMemo(() => {
     if (!isTimeMachineMode || !selectedDateKey) {
-      return history;
+      return deferredHistory;
     }
-    return history.filter(entry => {
+    return deferredHistory.filter(entry => {
       const entryDateKey = historyDateKeys.get(entry.id);
       return entryDateKey && entryDateKey <= selectedDateKey;
     });
-  }, [history, isTimeMachineMode, selectedDateKey, historyDateKeys]);
+  }, [deferredHistory, isTimeMachineMode, selectedDateKey, historyDateKeys]);
 
   // ⚡ PERFORMANCE: Pré-calculer les dateKeys pour les progrès
   const progressDateKeys = useMemo(() => {
     const map = new Map<number, string>();
-    progressList.forEach(progress => {
+    deferredProgressList.forEach(progress => {
       if (!map.has(progress.id)) {
         const date = new Date(progress.createdAt);
         date.setHours(0, 0, 0, 0);
@@ -121,18 +126,18 @@ export default function HistoriquePage() {
       }
     });
     return map;
-  }, [progressList]);
+  }, [deferredProgressList]);
 
   // Filtrer les progrès par date sélectionnée (optimisé)
   const filteredProgress = useMemo(() => {
     if (!isTimeMachineMode || !selectedDateKey) {
-      return progressList;
+      return deferredProgressList;
     }
-    return progressList.filter(progress => {
+    return deferredProgressList.filter(progress => {
       const progressDateKey = progressDateKeys.get(progress.id);
       return progressDateKey && progressDateKey <= selectedDateKey;
     });
-  }, [progressList, isTimeMachineMode, selectedDateKey, progressDateKeys]);
+  }, [deferredProgressList, isTimeMachineMode, selectedDateKey, progressDateKeys]);
 
 
   // Déterminer l'onglet actif depuis l'URL (progrès par défaut)
@@ -197,7 +202,7 @@ export default function HistoriquePage() {
   const {
     progressDates,
     progressCountByDate,
-  } = useProgressStats(progressList);
+  } = useProgressStats(deferredProgressList);
 
   const donutDataBodyparts = useMemo(() => {
     const bodypartStats = calculateBodypartStatsByPeriod(filteredHistory, bodypartPeriod);
@@ -209,6 +214,7 @@ export default function HistoriquePage() {
   // ⚡ FIX: Le heatmap affiche toujours les 28 derniers jours depuis aujourd'hui
   // même en mode sablier, pour permettre de se situer dans le temps
   // Le jour sélectionné sera mis en évidence visuellement dans ActivityHeatmapCell
+  // ⚡ PERFORMANCE: Utiliser deferredHistory pour différer les calculs lourds du heatmap
   const {
     heatmapData,
     periodLabel: heatmapPeriodLabel,
@@ -216,11 +222,12 @@ export default function HistoriquePage() {
     canGoForward: canGoForwardHeatmap,
     goToPreviousPeriod: goToPreviousHeatmapPeriod,
     goToNextPeriod: goToNextHeatmapPeriod,
-  } = useHeatmapNavigation(history, MONTH_HEATMAP_DAYS);
+  } = useHeatmapNavigation(deferredHistory, MONTH_HEATMAP_DAYS);
   
   const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData, referenceDate), [heatmapData, referenceDate]);
-  
+
   // Navigation par période pour le graphique montagne
+  // ⚡ PERFORMANCE: Utiliser filteredHistory (déjà calculé) pour éviter les recalculs
   const {
     barChartData,
     selectedMonthLabel,
@@ -426,9 +433,9 @@ export default function HistoriquePage() {
                   </div>
 
               {/* Graphique encourageant */}
-              {!loadingProgress && progressList.length >= 2 && (
+              {!loadingProgress && deferredProgressList.length >= 2 && (
                 <div>
-                  <ProgressStatsChart progressList={progressList} />
+                  <ProgressStatsChart progressList={deferredProgressList} />
                 </div>
               )}
 

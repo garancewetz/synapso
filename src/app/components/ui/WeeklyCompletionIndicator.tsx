@@ -141,8 +141,8 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
                           : 'bg-emerald-100 text-emerald-700'
                         : 'bg-gray-100 text-gray-400',
                       day.isToday && 'ring-2 ring-blue-400 ring-offset-1',
-                      // ⚡ MODE SABLIER: Bordure sable pour le jour sélectionné
-                      day.isSelectedDate && 'ring-2 ring-amber-500 ring-offset-1'
+                      // ⚡ MODE SABLIER: Bordure indigo avec lueur cosmique pour le jour sélectionné
+                      day.isSelectedDate && 'ring-2 ring-indigo-500 ring-offset-1 shadow-indigo-500/30'
                     )}
                     title={day.fullName}
                   >

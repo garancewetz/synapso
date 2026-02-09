@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 interface HistoryEntry {
@@ -67,25 +68,36 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const history = await prisma.history.findMany({
-      where: whereClause,
-      include: {
-        exercice: {
+    // ⚡ PERFORMANCE: Utiliser le cache pour éviter les requêtes répétées
+    const cacheKey = generateCacheKey([
+      'history',
+      userId,
+      sinceParam || 'all',
+      limitParam || 'no-limit',
+    ]);
+
+    const formattedHistory = await cacheApiResponse(
+      cacheKey,
+      async () => {
+        const history = await prisma.history.findMany({
+          where: whereClause,
           include: {
-            bodyparts: {
+            exercice: {
               include: {
-                bodypart: true,
+                bodyparts: {
+                  include: {
+                    bodypart: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-      orderBy: { completedAt: 'desc' },
-      ...(limitParam && !isNaN(parseInt(limitParam)) && { take: parseInt(limitParam) }),
-    }) as HistoryEntry[];
+          orderBy: { completedAt: 'desc' },
+          ...(limitParam && !isNaN(parseInt(limitParam)) && { take: parseInt(limitParam) }),
+        }) as HistoryEntry[];
 
-    // Reformater les données
-    const formattedHistory = history.map((entry) => ({
+        // Reformater les données
+        return history.map((entry) => ({
       id: entry.id,
       completedAt: entry.completedAt,
       exercice: {
@@ -115,6 +127,12 @@ export async function GET(request: NextRequest) {
         })),
       },
     }));
+      },
+      {
+        revalidate: 10, // Cache de 10 secondes (données qui changent souvent)
+        tags: [CACHE_TAGS.HISTORY, CACHE_TAGS.USER_HISTORY(userId)],
+      }
+    );
 
     return NextResponse.json(formattedHistory);
   } catch (error) {

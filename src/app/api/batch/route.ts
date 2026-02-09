@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
               return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
             });
 
-          results.exercices = formattedExercices;
+          batchResults.exercices = formattedExercices;
         })()
       );
     }
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
             },
           }));
 
-          results.history = formattedHistory;
+          batchResults.history = formattedHistory;
         })()
       );
     }
@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
             updatedAt: p.updatedAt,
           }));
 
-          results.progress = formattedProgress;
+          batchResults.progress = formattedProgress;
         })()
       );
     }

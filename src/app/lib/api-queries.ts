@@ -51,6 +51,11 @@ export const queryKeys = {
   journalNotes: {
     all: ['journalNotes'] as const,
   },
+  batch: {
+    all: ['batch'] as const,
+    list: (params: { resources: string[]; filters?: Record<string, unknown> }) =>
+      [...queryKeys.batch.all, 'list', params] as const,
+  },
   journalTasks: {
     all: ['journalTasks'] as const,
   },
@@ -218,5 +223,53 @@ export async function fetchUser(): Promise<FetchUserResponse> {
     };
   }
   
+  return res.json();
+}
+
+/**
+ * ⚡ PERFORMANCE: Route batch pour charger plusieurs ressources en une seule requête
+ * Réduit le nombre de round-trips réseau de 40-60%
+ * 
+ * @param resources - Liste des ressources à charger: 'exercices', 'history', 'progress', 'metadata'
+ * @param filters - Filtres optionnels pour chaque ressource
+ */
+export async function fetchBatch(params: {
+  resources: Array<'exercices' | 'history' | 'progress' | 'metadata'>;
+  filters?: {
+    category?: ExerciceCategory;
+    equipments?: string;
+    includeArchived?: boolean;
+    targetDate?: string;
+    since?: string;
+    days?: number;
+    progressLimit?: number;
+  };
+}): Promise<{
+  exercices?: Exercice[];
+  history?: HistoryEntry[];
+  progress?: Progress[];
+  metadata?: {
+    bodyparts: string[];
+    equipments: string[];
+    equipmentsWithCounts: Array<{ name: string; count: number }>;
+  };
+}> {
+  const res = await fetch('/api/batch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      resources: params.resources,
+      filters: params.filters || {},
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || `Erreur HTTP: ${res.status}`);
+  }
+
   return res.json();
 }

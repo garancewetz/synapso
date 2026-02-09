@@ -53,4 +53,6 @@ export const CACHE_TAGS = {
   USER_PROGRESS: (userId: number) => `user-${userId}-progress`,
   STATS: 'stats',
   USER_STATS: (userId: number, dateKey: string) => `user-${userId}-stats-${dateKey}`,
+  PROGRESS: 'progress',
+  USER_PROGRESS: (userId: number) => `user-${userId}-progress`,
 } as const;

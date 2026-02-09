@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress, MenuLink } from '@/app/components';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
@@ -17,17 +18,29 @@ type Props = {
   loadingStats: boolean;
 };
 
-export function HomeExercicesTab({
+export const HomeExercicesTab = memo(function HomeExercicesTab({
   exercices,
   categoryStats,
   relatedStretchingByCategory,
   loadingStats,
 }: Props) {
+  // ⚡ PERFORMANCE: Mémoriser le filtrage des exercices par catégorie
+  const exercicesByCategory = useMemo(() => {
+    const map = new Map<ExerciceCategory, Exercice[]>();
+    CATEGORY_ORDER.forEach(category => {
+      map.set(category, exercices.filter(e => e.category === category));
+    });
+    return map;
+  }, [exercices]);
+
+  const archivedCount = useMemo(() => {
+    return exercices.filter(e => e.archived === true).length;
+  }, [exercices]);
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         {CATEGORY_ORDER.map((category, index) => {
-          const categoryExercices = exercices.filter(e => e.category === category);
+          const categoryExercices = exercicesByCategory.get(category) || [];
 
           return (
             <MotionDiv
@@ -58,7 +71,7 @@ export function HomeExercicesTab({
       <MenuLink
         title="Exercices archivés"
         icon="📦"
-        description="Voir les exercices archivés"
+        description={`${archivedCount} exercice${archivedCount > 1 ? 's' : ''} archivé${archivedCount > 1 ? 's' : ''}`}
         href="/exercices/archived"
         iconBgColor={SITEMAP_ICON_STYLES.default.bg}
         iconTextColor={SITEMAP_ICON_STYLES.default.text}
@@ -66,4 +79,4 @@ export function HomeExercicesTab({
       />
     </div>
   );
-}
+});

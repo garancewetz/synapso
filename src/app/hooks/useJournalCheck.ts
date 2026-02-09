@@ -12,7 +12,7 @@ export function useJournalCheck() {
     if (effectiveUser && !hasAccess) {
       router.push('/');
     }
-  }, [effectiveUser, hasAccess, router]);
+  }, [effectiveUser?.id, effectiveUser?.hasJournal, hasAccess, router]);
 
   return {
     hasAccess,

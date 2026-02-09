@@ -53,7 +53,18 @@ export function HistoryProvider({ children }: PropsWithChildren) {
       })
       .then(data => {
         if (Array.isArray(data)) {
-          setHistory(data);
+          // ⚡ PERFORMANCE: Ne mettre à jour que si le contenu a réellement changé
+          setHistory(prevHistory => {
+            // Comparer par longueur et IDs (triés pour gérer les changements d'ordre)
+            if (prevHistory.length === data.length) {
+              const prevIds = prevHistory.map(h => h.id).sort();
+              const newIds = data.map(h => h.id).sort();
+              if (prevIds.every((id, i) => id === newIds[i])) {
+                return prevHistory; // Retourner la même référence si identique
+              }
+            }
+            return data;
+          });
         } else {
           console.error('API error:', data);
           setError(new Error('Format de données invalide'));
@@ -69,7 +80,7 @@ export function HistoryProvider({ children }: PropsWithChildren) {
       .finally(() => {
         setLoading(false);
       });
-  }, [effectiveUser, userLoading]);
+  }, [effectiveUser?.id, userLoading]);
 
   // Charger l'historique au montage et quand l'utilisateur change
   useEffect(() => {

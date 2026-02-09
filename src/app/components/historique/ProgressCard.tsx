@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Progress } from '@/app/types';
 import { EditIcon, EyeIcon, ChevronIcon } from '@/app/components/ui/icons';
@@ -29,8 +29,7 @@ type Props = {
  */
 export function ProgressCard({ progress, onEdit, onShare, compact = false }: Props) {
   const { effectiveUser } = useUser();
-  const cardRef = useRef<HTMLDivElement>(null);
-  const { handleShare } = useShareProgress(progress, cardRef);
+  const { handleShare } = useShareProgress(progress);
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   
@@ -90,7 +89,7 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
   
   
   return (
-    <div ref={cardRef} className="relative">
+    <div className="relative">
       <BaseCard 
       isGolden 
       className={clsx(

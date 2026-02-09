@@ -1,8 +1,9 @@
 'use client';
 
-import { memo, type ReactNode } from 'react';
+import { memo, useMemo, type ReactNode } from 'react';
 import { ComposedChart, Bar, Scatter, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { Card } from '@/app/components/ui/Card';
 
@@ -22,20 +23,30 @@ function getBarColor(count: number, isToday: boolean): string {
 }
 
 export const BarChart = memo(function BarChart({ data, currentStreak, progressCountByDate, filterSlot }: Props) {
+  const { referenceDate, isTimeMachineMode } = useTimeContext();
+  
+  // ⚡ PERFORMANCE: Utiliser referenceDate directement (déjà calculée dans TimeContext)
+  const highlightedDate = referenceDate;
+  
   // Formater les données pour le graphique (inclut tous les jours)
-  const chartData = data.map(day => {
+  const chartData = useMemo(() => {
+    return data.map(day => {
       const progressCount = progressCountByDate && day.dateKey ? progressCountByDate.get(day.dateKey) || 0 : 0;
+      // Mettre en évidence le jour sélectionné en mode sablier, sinon utiliser isToday
+      const isHighlighted = day.date ? isSameDay(day.date, highlightedDate) : day.isToday;
+      
       return {
         date: day.date,
         dateKey: day.dateKey,
         count: day.count || 0,
-        isToday: day.isToday,
+        isToday: isHighlighted,
         dayNumber: day.date ? format(day.date, 'd') : '',
         progressCount,
         // Valeur pour le scatter: on met la valeur au-dessus de la barre si progrès
         progressMarker: progressCount > 0 ? (day.count || 0) + 0.5 : null,
       };
     });
+  }, [data, progressCountByDate, highlightedDate]);
 
   // Calculer l'intervalle d'affichage des labels en fonction du nombre de jours
   const xAxisInterval = (() => {
@@ -149,7 +160,7 @@ export const BarChart = memo(function BarChart({ data, currentStreak, progressCo
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-blue-500" />
-          <span>Aujourd&apos;hui</span>
+          <span>{isTimeMachineMode ? 'Jour sélectionné' : 'Aujourd\'hui'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-base">⭐</span>

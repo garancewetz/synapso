@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/app/contexts/UserContext';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useHistoryContext } from '@/app/contexts/HistoryContext';
+import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
@@ -9,6 +13,7 @@ import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS
 import { CheckIcon } from '@/app/components/ui/icons';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
 import { MediaUploader } from '@/app/components/MediaUploader';
+import { queryKeys } from '@/app/lib/api-queries';
 import clsx from 'clsx';
 
 type Props = {
@@ -20,7 +25,10 @@ type Props = {
 
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
+  const { selectedDate, selectedDateKey, isDateSelected } = useSelectedDate();
+  const { refreshHistory } = useHistoryContext();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -34,10 +42,129 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     media: null as MediaData | null,
   });
   const [newEquipment, setNewEquipment] = useState('');
-  const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!!exerciceId);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // ⚡ MUTATION: Créer ou éditer un exercice
+  const createOrUpdateMutation = useMutation({
+    mutationFn: async (exerciceData: {
+      name: string;
+      description: { text: string; comment: string | null };
+      workout: { repeat: string | null; series: string | null; duration: string | null };
+      category: ExerciceCategory;
+      bodyparts: string[];
+      equipments: string[];
+      media: MediaData | null;
+      userId: number;
+      createdAt?: string;
+    }) => {
+      const url = exerciceId ? `/api/exercices/${exerciceId}` : '/api/exercices';
+      const method = exerciceId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(exerciceData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'enregistrement');
+      }
+
+      return response.json();
+    },
+    onError: (err) => {
+      console.error('Erreur lors de l\'enregistrement:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice');
+    },
+    onSuccess: async () => {
+      // ⚡ CACHE INVALIDATION: Invalider les queries concernées et forcer le refetch
+      // Utiliser refetchType: 'active' pour forcer le refetch immédiat des queries actives
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.exercices.all,
+          refetchType: 'active', // Forcer le refetch des queries actives
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.history.all,
+          refetchType: 'active', // Forcer le refetch des queries actives (heatmap)
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.todayCompletedCount.list({
+            userId: effectiveUser?.id || 0,
+            dateKey: selectedDateKey,
+          }),
+          refetchType: 'active',
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.categoryStats.all,
+          refetchType: 'active',
+        }),
+      ]);
+      
+      // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
+      refreshHistory();
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+
+  // ⚡ MUTATION: Supprimer un exercice
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser?.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de la suppression');
+      }
+    },
+    onError: (err) => {
+      console.error('Erreur lors de la suppression:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice');
+    },
+    onSuccess: async () => {
+      // ⚡ CACHE INVALIDATION: Invalider les queries concernées et forcer le refetch
+      // Utiliser refetchType: 'active' pour forcer le refetch immédiat des queries actives
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.exercices.all,
+          refetchType: 'active', // Forcer le refetch des queries actives
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.history.all,
+          refetchType: 'active', // Forcer le refetch des queries actives (heatmap)
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.todayCompletedCount.list({
+            userId: effectiveUser?.id || 0,
+            dateKey: selectedDateKey,
+          }),
+          refetchType: 'active',
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.categoryStats.all,
+          refetchType: 'active',
+        }),
+      ]);
+      
+      // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
+      refreshHistory();
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
 
   useEffect(() => {
     if (exerciceId && effectiveUser) {
@@ -108,8 +235,15 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       return;
     }
     
-    setLoading(true);
     setError('');
+
+    // Si on est en mode sablier, utiliser la date sélectionnée à midi
+    let createdAtDate: string | undefined;
+    if (isDateSelected && selectedDate && !exerciceId) {
+      // Créer une date à midi pour le jour sélectionné
+      const dateAtNoon = setSeconds(setMinutes(setHours(new Date(selectedDate), 12), 0), 0);
+      createdAtDate = dateAtNoon.toISOString();
+    }
 
     const exerciceData = {
       name: formData.name,
@@ -127,34 +261,10 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       equipments: formData.equipments,
       media: formData.media,
       userId: effectiveUser.id,
+      ...(createdAtDate && { createdAt: createdAtDate }),
     };
 
-    try {
-      const url = exerciceId ? `/api/exercices/${exerciceId}` : '/api/exercices';
-      const method = exerciceId ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(exerciceData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'enregistrement');
-      }
-
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err) {
-      console.error('Erreur lors de l\'enregistrement:', err);
-      setError('Erreur lors de l\'enregistrement de l\'exercice');
-    } finally {
-      setLoading(false);
-    }
+    createOrUpdateMutation.mutate(exerciceData);
   };
 
   const handleDelete = async () => {
@@ -168,29 +278,12 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       return;
     }
 
-    setLoading(true);
     setError('');
-
-    try {
-      const response = await fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la suppression');
-      }
-
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err) {
-      console.error('Erreur lors de la suppression:', err);
-      setError('Erreur lors de la suppression de l\'exercice');
-    } finally {
-      setLoading(false);
-      setShowDeleteConfirm(false);
-    }
+    deleteMutation.mutate(undefined, {
+      onSettled: () => {
+        setShowDeleteConfirm(false);
+      },
+    });
   };
 
   const categories: ExerciceCategory[] = CATEGORY_ORDER;
@@ -429,7 +522,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       />
 
       <FormActions
-        loading={loading}
+        loading={createOrUpdateMutation.isPending || deleteMutation.isPending}
         onSubmitLabel={exerciceId ? 'Enregistrer les modifications' : 'Créer l\'exercice'}
         onCancel={onCancel}
         showDelete={!!exerciceId}

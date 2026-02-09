@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
-import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { useCompleteExercice } from '@/app/hooks/useCompleteExercice';
 import { useArchiveExercice } from '@/app/hooks/useArchiveExercice';
 import { useShareExercice } from '@/app/hooks/useShareExercice';
@@ -32,7 +31,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
-    const { refreshHistory } = useHistoryContext();
     const { archiveExercice } = useArchiveExercice();
     const { handleShare } = useShareExercice(exercice, cardRef);
 
@@ -45,7 +43,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
         exercice,
         userId: effectiveUser?.id ?? 0,
         onCompleted: effectiveUser ? onCompleted : undefined,
-        refreshHistory: effectiveUser ? refreshHistory : undefined,
     });
 
     const handleEdit = useCallback(() => {

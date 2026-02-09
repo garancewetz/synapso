@@ -57,7 +57,7 @@ export function useJournalNotes() {
       .finally(() => {
         setLoading(false);
       });
-  }, [effectiveUser, userLoading]);
+  }, [effectiveUser?.id, userLoading]);
 
   useEffect(() => {
     fetchNotes();

@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useCallback } from 'react';
 import type { Progress } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
-import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
+import { queryKeys, fetchProgress } from '@/app/lib/api-queries';
 
 type UseProgressOptions = {
   limit?: number;
@@ -35,105 +38,47 @@ export function triggerProgressRefresh(): void {
 export function useProgress(options: UseProgressOptions = {}): UseProgressReturn {
   const { effectiveUser, loading: userLoading } = useUser();
   const { limit } = options;
-  const [progressList, setProgressList] = useState<Progress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchProgress = useCallback((forceRefresh = false) => {
-    // Attendre que l'utilisateur soit chargé
-    if (userLoading) {
-      return;
-    }
+  // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
+  // TanStack Query démarrera automatiquement la requête dès que effectiveUser est disponible
+  const { data: progressList = [], isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.progress.list({ limit }),
+    queryFn: () => fetchProgress({ limit }),
+    enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
+    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
+    placeholderData: (previousData) => previousData,
+    // ⚡ OPTIMISATION: Données qui changent souvent, cache plus court
+    staleTime: 10000, // 10 secondes
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-    if (!effectiveUser) {
-      setLoading(false);
-      setProgressList([]);
-      setError(null);
-      return;
-    }
-
-    const url = limit
-      ? `/api/progress?limit=${limit}`
-      : '/api/progress';
-
-    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête (sauf si forceRefresh)
-    const cacheKey = generateCacheKey(url, { userId: effectiveUser.id, limit });
-    
-    if (!forceRefresh) {
-      const cachedData = apiCache.get<Progress[]>(cacheKey);
-      if (cachedData) {
-        setProgressList(cachedData);
-        setLoading(false);
-        setError(null);
-        return;
-      }
-    }
-
-    setLoading(true);
-    setError(null);
-
-    fetch(url, { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) {
-          // Ne pas logger l'erreur 404 comme une erreur critique
-          // Elle peut survenir lors du premier chargement si aucun progrès n'existe
-          if (res.status === 404) {
-            setProgressList([]);
-            setError(null);
-            setLoading(false);
-            return null;
-          }
-          throw new Error(`Erreur HTTP: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data === null) return; // Cas 404 géré ci-dessus
-        
-        if (Array.isArray(data)) {
-          // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
-          apiCache.set(cacheKey, data, 30000);
-          setProgressList(data);
-        } else {
-          console.error('API error:', data);
-          setError(new Error('Format de données invalide'));
-          setProgressList([]);
-        }
-      })
-      .catch(err => {
-        const errorMessage = err instanceof Error ? err : new Error('Erreur lors de la récupération des progrès');
-        console.error('Fetch error:', errorMessage);
-        setError(errorMessage);
-        setProgressList([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [effectiveUser, userLoading, limit]);
-
-  useEffect(() => {
-    fetchProgress();
-  }, [fetchProgress]);
-
-  // Écouter les événements de rafraîchissement global
+  // ⚡ EVENT-DRIVEN: Écouter les événements de rafraîchissement
   useEffect(() => {
     const handleRefresh = () => {
-      fetchProgress(true);
+      refetch();
     };
 
     window.addEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
     return () => {
       window.removeEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
     };
-  }, [fetchProgress]);
+  }, [refetch]);
 
   const lastProgress = useMemo(() => {
     return progressList.length > 0 ? progressList[0] : null;
   }, [progressList]);
 
-  const refetch = useCallback(() => {
-    fetchProgress(true);
-  }, [fetchProgress]);
+  const refetchCallback = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
-  return { progressList, loading: loading || userLoading, error, refetch, lastProgress };
+  return { 
+    progressList, 
+    // ⚡ PARALLEL QUERIES: Ne plus inclure userLoading dans le loading
+    // car les requêtes démarrent en parallèle dès que l'utilisateur est disponible
+    loading: isLoading, 
+    error: error as Error | null, 
+    refetch: refetchCallback,
+    lastProgress,
+  };
 }

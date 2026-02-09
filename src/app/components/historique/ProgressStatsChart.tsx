@@ -6,6 +6,7 @@ import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'dat
 import { fr } from 'date-fns/locale';
 import { CATEGORY_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { Progress } from '@/app/types';
 import { Card } from '@/app/components/ui/Card';
 
@@ -49,6 +50,8 @@ function countPhysiqueProgress(progressList: Progress[]) {
  * Montre la progression cumulative des progrès - la montagne ne fait que grandir !
  */
 export const ProgressStatsChart = memo(function ProgressStatsChart({ progressList, hideTitle = false }: Props) {
+  const { referenceDate } = useTimeContext();
+  
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (progressList.length === 0) return [];
 
@@ -57,14 +60,14 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
-    // Définir la plage de semaines : 1 semaine avant le premier progrès → semaine actuelle
+    // Définir la plage de semaines : 1 semaine avant le premier progrès → semaine de référence
     const firstProgressDate = parseISO(sortedProgress[0].createdAt);
     const firstProgressWeek = startOfWeek(firstProgressDate, { weekStartsOn: 1 });
     const startDate = addWeeks(firstProgressWeek, -1);
-    const todayWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const referenceWeek = startOfWeek(referenceDate, { weekStartsOn: 1 });
     
     const weeks = eachWeekOfInterval(
-      { start: startDate, end: todayWeek },
+      { start: startDate, end: referenceWeek },
       { weekStartsOn: 1 }
     );
 
@@ -81,7 +84,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
         total: physique,
       };
     });
-  }, [progressList]);
+  }, [progressList, referenceDate]);
 
   // Calculer le maximum pour l'axe Y (+1 pour montrer qu'on peut encore progresser)
   const maxYValue = useMemo(() => progressList.length + 1, [progressList.length]);

@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { subDays } from 'date-fns';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
-import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
+import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
 
 type UseHistoryOptions = {
   /**
@@ -32,75 +33,27 @@ type UseHistoryReturn = {
 export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
   const { days = 40 } = options;
   const { effectiveUser, loading: userLoading } = useUser();
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchHistory = useCallback(() => {
-    // Attendre que l'utilisateur soit chargé
-    if (userLoading) {
-      return;
-    }
+  // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
+  const { data: history = [], isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.history.list({ days: days || undefined }),
+    queryFn: () => fetchHistory({ days: days || undefined }),
+    enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
+    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
+    // ⚡ FIX: Ne pas utiliser placeholderData pour les invalidations actives (refetchType: 'active')
+    // car cela peut masquer les changements immédiats après suppression
+    placeholderData: (previousData) => previousData,
+    // ⚡ OPTIMISATION: Données qui changent souvent, cache plus court
+    staleTime: 10000, // 10 secondes
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-    if (!effectiveUser) {
-      setLoading(false);
-      setHistory([]);
-      setError(null);
-      return;
-    }
-
-    // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since` pour réduire le transfert
-    // Par défaut, charger seulement les 40 derniers jours
-    const url = days !== null 
-      ? `/api/history?since=${encodeURIComponent(subDays(new Date(), days).toISOString())}`
-      : '/api/history';
-
-    // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
-    const cacheKey = generateCacheKey(url, { userId: effectiveUser.id, days });
-    const cachedData = apiCache.get<HistoryEntry[]>(cacheKey);
-
-    if (cachedData) {
-      setHistory(cachedData);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    fetch(url, { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
-          apiCache.set(cacheKey, data, 30000);
-          setHistory(data);
-        } else {
-          console.error('API error:', data);
-          setError(new Error('Format de données invalide'));
-          setHistory([]);
-        }
-      })
-      .catch(err => {
-        const errorMessage = err instanceof Error ? err : new Error('Erreur lors de la récupération de l\'historique');
-        console.error('Fetch error:', errorMessage);
-        setError(errorMessage);
-        setHistory([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [effectiveUser, userLoading, days]);
-
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  return { history, loading: loading || userLoading, error, refetch: fetchHistory };
+  return { 
+    history, 
+    // ⚡ PARALLEL QUERIES: Ne plus inclure userLoading dans le loading
+    // car les requêtes démarrent en parallèle dès que l'utilisateur est disponible
+    loading: isLoading, 
+    error: error as Error | null, 
+    refetch: () => { refetch(); },
+  };
 }

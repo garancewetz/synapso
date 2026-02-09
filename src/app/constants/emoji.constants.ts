@@ -55,5 +55,7 @@ export const NAVIGATION_EMOJIS = {
   FOLDER_OPEN: '🌳',
   /** Blé/champ - utilisée pour les listes et progression (récolte, résultat de la croissance) */
   CLIPBOARD: '🌾',
+  /** Sablier - utilisée pour le mode "machine à remonter le temps" (sablier) */
+  HOURGLASS: '⏳',
 } as const;
 

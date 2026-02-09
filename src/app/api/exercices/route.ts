@@ -5,7 +5,7 @@ import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay } from 'date-fns';
+import { addDays, startOfDay, setHours, setMinutes, setSeconds } from 'date-fns';
 
 type ExerciceWithArchived = {
   archived?: boolean;
@@ -71,8 +71,18 @@ export async function GET(request: NextRequest) {
       whereClause.archived = false;
     }
 
-    // Calculer la période de réinitialisation
-    const now = new Date();
+    // Récupérer la date cible depuis les query params (optionnel, par défaut maintenant)
+    const targetDateParam = searchParams.get('targetDate');
+    let targetDate = new Date();
+    if (targetDateParam) {
+      const parsedDate = new Date(targetDateParam);
+      if (!isNaN(parsedDate.getTime())) {
+        targetDate = parsedDate;
+      }
+    }
+    
+    // Calculer la période de réinitialisation pour la date cible
+    const now = targetDate;
     const startOfPeriod = getStartOfPeriod(user.resetFrequency, now);
     const endOfPeriod = user.resetFrequency === 'DAILY'
       ? startOfDay(addDays(now, 1))
@@ -114,13 +124,16 @@ export async function GET(request: NextRequest) {
         // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
         const completedInPeriod = weeklyCompletions.length > 0;
         
-        // Un exercice est complété aujourd'hui si il y a une entrée dans l'historique pour aujourd'hui
-        const startOfToday = startOfDay(now);
-        const endOfToday = startOfDay(addDays(now, 1));
-        const hasTodayHistory = exercice.history.some(
-          (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
+        // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
+        const startOfTargetDay = startOfDay(now);
+        const endOfTargetDay = startOfDay(addDays(now, 1));
+        const hasTargetDayHistory = exercice.history.some(
+          (h) => {
+            const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
+            return completedDate >= startOfTargetDay && completedDate < endOfTargetDay;
+          }
         );
-        const completedToday = hasTodayHistory;
+        const completedToday = hasTargetDayHistory;
 
         // Parser les équipements
         let equipmentsParsed: string[] = [];
@@ -264,22 +277,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Si une date de création est fournie (mode sablier), l'utiliser à midi
+    let createdAtDate: Date | undefined;
+    if (data.createdAt) {
+      const parsedDate = new Date(data.createdAt);
+      if (!isNaN(parsedDate.getTime())) {
+        // Mettre la date à midi (12:00:00)
+        createdAtDate = setSeconds(setMinutes(setHours(parsedDate, 12), 0), 0);
+      }
+    }
+
     // Utiliser une transaction pour garantir l'intégrité des données
     const result = await prisma.$transaction(async (tx) => {
-      // Créer l'exercice
+      // Créer l'exercice avec la date personnalisée si fournie
+      const exerciceData: {
+        name: string;
+        descriptionText: string;
+        descriptionComment: string | null;
+        workoutRepeat: string | null;
+        workoutSeries: string | null;
+        workoutDuration: string | null;
+        equipments: string;
+        category: PrismaExerciceCategory;
+        userId: number;
+        media: unknown;
+        createdAt?: Date;
+      } = {
+        name: trimmedName,
+        descriptionText: data.description?.text || '',
+        descriptionComment: data.description?.comment || null,
+        workoutRepeat: data.workout?.repeat || null,
+        workoutSeries: data.workout?.series || null,
+        workoutDuration: data.workout?.duration || null,
+        equipments: JSON.stringify(data.equipments || []),
+        category: category as PrismaExerciceCategory,
+        userId: userId,
+        media: data.media ?? null,
+      };
+
+      // Ajouter la date de création personnalisée si fournie
+      if (createdAtDate) {
+        exerciceData.createdAt = createdAtDate;
+      }
+
       const exercice = await tx.exercice.create({
-        data: {
-          name: trimmedName,
-          descriptionText: data.description?.text || '',
-          descriptionComment: data.description?.comment || null,
-          workoutRepeat: data.workout?.repeat || null,
-          workoutSeries: data.workout?.series || null,
-          workoutDuration: data.workout?.duration || null,
-          equipments: JSON.stringify(data.equipments || []),
-          category: category as PrismaExerciceCategory,
-          userId: userId,
-          media: data.media ?? null,
-        },
+        data: exerciceData,
       });
 
       // Créer les relations bodyparts en parallèle si fournies

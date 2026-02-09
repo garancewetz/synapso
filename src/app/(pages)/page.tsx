@@ -12,7 +12,9 @@ import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
 import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
 import { useHomeTabs } from '@/app/hooks/useHomeTabs';
-import { apiCache } from '@/app/utils/api-cache.utils';
+import { usePrefetchPreviousDates } from '@/app/hooks/usePrefetchPreviousDates';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/lib/api-queries';
 import { HomeExercicesTab } from '@/app/components/home/HomeExercicesTab';
 import { HomeJournalTab } from '@/app/components/home/HomeJournalTab';
 import { HomeProgressionTab } from '@/app/components/home/HomeProgressionTab';
@@ -35,14 +37,15 @@ const ProgressBottomSheet = dynamic(
 export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
+  const queryClient = useQueryClient();
   const hasJournal = effectiveUser?.hasJournal ?? false;
+  
+  // ⚡ QUERY PREFETCHING: Précharger les données des dates précédentes en arrière-plan
+  usePrefetchPreviousDates();
   
   const { exercices, refetch: refetchExercices } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
-  const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats({
-    userId: effectiveUser?.id ?? null,
-    resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
-  });
+  const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats();
   const { refetch: refetchProgress } = useProgress();
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
 
@@ -66,12 +69,15 @@ export default function Home() {
   }, [tabOptionsData]);
 
   const handleProgressSuccess = useCallback(() => {
-    apiCache.invalidateByPrefix('/api/progress');
+    // ⚡ TANSTACK QUERY: Invalider les queries concernées
+    queryClient.invalidateQueries({ queryKey: queryKeys.progress.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.categoryStats.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
     triggerProgressRefresh();
     refetchProgress();
     refreshCategoryStats();
     refetchExercices();
-  }, [refetchProgress, refetchExercices, refreshCategoryStats]);
+  }, [queryClient, refetchProgress, refetchExercices, refreshCategoryStats]);
 
   return (
     <section>
@@ -125,12 +131,15 @@ export default function Home() {
                 )}
 
                 {activeTab === 'exercices' && (
-                  <HomeExercicesTab
+                  <>
+                   <HomeExercicesTab
                     exercices={exercices}
                     categoryStats={categoryStats}
                     relatedStretchingByCategory={relatedStretchingByCategory}
                     loadingStats={loadingStats}
                   />
+                  </>
+
                 )}
 
                 {activeTab === 'journal' && hasJournal && <HomeJournalTab />}

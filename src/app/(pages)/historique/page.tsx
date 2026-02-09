@@ -5,12 +5,16 @@ import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useProgressModal } from '@/app/hooks/useProgressModal';
 import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
 import { useProgressStats } from '@/app/hooks/useProgressStats';
 import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
-import { apiCache } from '@/app/utils/api-cache.utils';
+import { useHeatmapNavigation } from '@/app/hooks/useHeatmapNavigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/lib/api-queries';
 import { 
   DonutChart, 
   ActivityHeatmap,
@@ -50,15 +54,14 @@ import { formatProgressForWhatsApp } from '@/app/utils/share.utils';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
-  getHeatmapData,
   calculateCurrentStreak,
 } from '@/app/utils/historique.utils';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
 type ActiveTab = 'statistiques' | 'progres';
 
-// 30 jours pour le heatmap du mois
-const MONTH_HEATMAP_DAYS = 30;
+// 28 jours pour le heatmap du mois
+const MONTH_HEATMAP_DAYS = 28;
 
 export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -75,6 +78,58 @@ export default function HistoriquePage() {
 
   // Charger les progrès
   const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
+  const queryClient = useQueryClient();
+
+  const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
+  const { referenceDate } = useTimeContext();
+
+  // ⚡ PERFORMANCE: Pré-calculer les dateKeys UNE SEULE FOIS (indexation)
+  const historyDateKeys = useMemo(() => {
+    const map = new Map<number, string>(); // Cache des dateKeys par ID
+    history.forEach(entry => {
+      if (!map.has(entry.id)) {
+        const date = new Date(entry.completedAt);
+        date.setHours(0, 0, 0, 0);
+        map.set(entry.id, date.toISOString().split('T')[0]);
+      }
+    });
+    return map;
+  }, [history]);
+
+  // ⚡ PERFORMANCE: Filtrer avec comparaison de strings (ultra-rapide, pas de format() dans le filtre)
+  const filteredHistory = useMemo(() => {
+    if (!isTimeMachineMode || !selectedDateKey) {
+      return history;
+    }
+    return history.filter(entry => {
+      const entryDateKey = historyDateKeys.get(entry.id);
+      return entryDateKey && entryDateKey <= selectedDateKey;
+    });
+  }, [history, isTimeMachineMode, selectedDateKey, historyDateKeys]);
+
+  // ⚡ PERFORMANCE: Pré-calculer les dateKeys pour les progrès
+  const progressDateKeys = useMemo(() => {
+    const map = new Map<number, string>();
+    progressList.forEach(progress => {
+      if (!map.has(progress.id)) {
+        const date = new Date(progress.createdAt);
+        date.setHours(0, 0, 0, 0);
+        map.set(progress.id, date.toISOString().split('T')[0]);
+      }
+    });
+    return map;
+  }, [progressList]);
+
+  // Filtrer les progrès par date sélectionnée (optimisé)
+  const filteredProgress = useMemo(() => {
+    if (!isTimeMachineMode || !selectedDateKey) {
+      return progressList;
+    }
+    return progressList.filter(progress => {
+      const progressDateKey = progressDateKeys.get(progress.id);
+      return progressDateKey && progressDateKey <= selectedDateKey;
+    });
+  }, [progressList, isTimeMachineMode, selectedDateKey, progressDateKeys]);
 
 
   // Déterminer l'onglet actif depuis l'URL (progrès par défaut)
@@ -113,12 +168,11 @@ export default function HistoriquePage() {
 
   const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
-    // Invalider le cache des progrès pour forcer le rafraîchissement
-    apiCache.invalidateByPrefix('/api/progress');
-    // Notifier tous les hooks useProgress pour qu'ils se rafraîchissent
+    // ⚡ TANSTACK QUERY: Invalider les queries concernées
+    queryClient.invalidateQueries({ queryKey: queryKeys.progress.all });
     triggerProgressRefresh();
     refetchProgress();
-  }, [refetchProgress]);
+  }, [queryClient, refetchProgress]);
 
   // Handler pour le partage (optionnel, le partage est déjà géré par useShareProgress dans ProgressCard)
   const handleShare = useCallback(async (progress: typeof progressList[0]) => {
@@ -143,13 +197,23 @@ export default function HistoriquePage() {
   } = useProgressStats(progressList);
 
   const donutDataBodyparts = useMemo(() => {
-    const bodypartStats = calculateBodypartStatsByPeriod(history, bodypartPeriod);
+    const bodypartStats = calculateBodypartStatsByPeriod(filteredHistory, bodypartPeriod);
     return getDonutDataBodyparts(bodypartStats);
-  }, [history, bodypartPeriod]);
-
-  // Heatmap de 30 jours
-  const heatmapData = useMemo(() => getHeatmapData(history, MONTH_HEATMAP_DAYS), [history]);
-  const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData), [heatmapData]);
+  }, [filteredHistory, bodypartPeriod]);
+  
+  // ⚡ PERFORMANCE: Utiliser TimeContext pour la date de référence (déjà calculée et mémorisée)
+  
+  // Navigation pour le heatmap de 28 jours
+  const {
+    heatmapData,
+    periodLabel: heatmapPeriodLabel,
+    canGoBack: canGoBackHeatmap,
+    canGoForward: canGoForwardHeatmap,
+    goToPreviousPeriod: goToPreviousHeatmapPeriod,
+    goToNextPeriod: goToNextHeatmapPeriod,
+  } = useHeatmapNavigation(filteredHistory, MONTH_HEATMAP_DAYS);
+  
+  const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData, referenceDate), [heatmapData, referenceDate]);
   
   // Navigation par période pour le graphique montagne
   const {
@@ -159,14 +223,9 @@ export default function HistoriquePage() {
     canGoForward,
     goToPreviousPeriod,
     goToNextPeriod,
-  } = usePeriodNavigation(history, 15);
+  } = usePeriodNavigation(filteredHistory, 15);
 
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
-
-  // Tous les progrès (plus de filtre orthophonie)
-  const filteredProgress = useMemo(() => {
-    return progressList;
-  }, [progressList]);
 
   const loading = loadingHistory || loadingProgress;
   const STAR_BRIGHT_EMOJI = PROGRESS_EMOJIS?.STAR_BRIGHT || '🌟';
@@ -243,24 +302,33 @@ export default function HistoriquePage() {
                 {/* SECTION 1 : STATISTIQUES ET GRAPHIQUES */}
                 <section id="statistiques" className="space-y-6">
 
-              {/* Heatmap d'activité du mois (30 jours) */}
+              {/* Heatmap d'activité du mois (28 jours) */}
               {!loadingHistory && (
-                <MotionDiv
-                  key="heatmap"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                >
-                  <ActivityHeatmap 
-                    data={heatmapData} 
-                    currentStreak={currentStreak} 
-                    userName={displayName} 
-                    progressDates={progressDates}
-                    onDayClick={handleDayClick}
-                    showFullLink={false}
+                <Card variant="default" padding="md">
+                  <PeriodNavigation
+                    label={heatmapPeriodLabel}
+                    onPrevious={goToPreviousHeatmapPeriod}
+                    onNext={goToNextHeatmapPeriod}
+                    canGoBack={canGoBackHeatmap}
+                    canGoForward={canGoForwardHeatmap}
                   />
-                </MotionDiv>
+                  <MotionDiv
+                    key="heatmap"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    <ActivityHeatmap 
+                      data={heatmapData} 
+                      currentStreak={currentStreak} 
+                      userName={displayName} 
+                      progressDates={progressDates}
+                      onDayClick={handleDayClick}
+                      showFullLink={false}
+                    />
+                  </MotionDiv>
+                </Card>
               )}
 
               {/* Graphique montagne (ActivityLineChart) */}
@@ -328,10 +396,32 @@ export default function HistoriquePage() {
               >
                 {/* SECTION 2 : MES PROGRÈS */}
                 <section id="progres" className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <span>{STAR_BRIGHT_EMOJI}</span>
-                    <span>Mes progrès</span>
-                  </h2>
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <span>{STAR_BRIGHT_EMOJI}</span>
+                      <span>Mes progrès</span>
+                    </h2>
+                    {/* Bouton + doré pour ajouter un progrès */}
+                    {effectiveUser && (
+                      <button
+                        onClick={() => progressModal.openForCreate()}
+                        className={clsx(
+                          'flex items-center justify-center',
+                          'w-10 h-10 rounded-full',
+                          'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500',
+                          'text-amber-900 font-bold text-xl',
+                          'shadow-md hover:shadow-lg',
+                          'transition-all duration-200',
+                          'hover:scale-105 active:scale-95',
+                          'border-2 border-amber-600',
+                          'focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2'
+                        )}
+                        aria-label="Ajouter un progrès"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
 
               {/* Graphique encourageant */}
               {!loadingProgress && progressList.length >= 2 && (
@@ -366,7 +456,7 @@ export default function HistoriquePage() {
                   >
                     <ProgressTimeline 
                       progressList={filteredProgress}
-                      history={history}
+                      history={filteredHistory}
                       onEdit={progressModal.openForEdit}
                       onShare={handleShare}
                     />

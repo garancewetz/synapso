@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { addMonths, format, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import type { HistoryEntry } from '@/app/types/history';
@@ -25,10 +26,11 @@ export function usePeriodNavigation(
   history: HistoryEntry[],
   daysPerPeriod = 20
 ): PeriodNavigationResult {
+  const { referenceDate } = useTimeContext();
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0);
 
   const periodData = useMemo(() => {
-    const now = new Date();
+    const now = referenceDate;
     
     // Calculer la période en fonction de l'offset
     const periodEndDate = addMonths(now, selectedMonthOffset);
@@ -62,7 +64,7 @@ export function usePeriodNavigation(
         return entryDate >= dayStart && entryDate <= dayEnd;
       });
       
-      const isToday = format(day, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
+      const isToday = format(day, 'yyyy-MM-dd') === format(referenceDate, 'yyyy-MM-dd');
       const count = dayHistory.length;
       
       // Calculer les catégories
@@ -108,7 +110,7 @@ export function usePeriodNavigation(
       canGoBack: hasHistoryBefore,
       canGoForward: hasHistoryAfter,
     };
-  }, [history, selectedMonthOffset, daysPerPeriod]);
+  }, [history, selectedMonthOffset, daysPerPeriod, referenceDate]);
 
   const goToPreviousPeriod = () => setSelectedMonthOffset(prev => prev - 1);
   const goToNextPeriod = () => setSelectedMonthOffset(prev => prev + 1);

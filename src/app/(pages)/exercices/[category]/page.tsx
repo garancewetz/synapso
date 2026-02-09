@@ -26,25 +26,36 @@ export default function CategoryPage() {
   const router = useRouter();
   const params = useParams();
 
-  // Convertir le paramètre URL en catégorie
-  const categoryParam = (params.category as string)?.toUpperCase() as ExerciceCategory;
-  const isValidCategory = CATEGORY_ORDER.includes(categoryParam);
+  // ⚡ PERFORMANCE: Mémoriser la conversion du paramètre URL en catégorie
+  // pour éviter les recalculs et les re-renders en boucle
+  const categoryParam = useMemo(() => {
+    const category = (params.category as string)?.toUpperCase() as ExerciceCategory;
+    return category;
+  }, [params.category]);
 
-  // Ne charger les exercices que si le user est chargé et disponible
+  const isValidCategory = useMemo(() => {
+    return CATEGORY_ORDER.includes(categoryParam);
+  }, [categoryParam]);
+
+  // Ne charger les exercices que si le user est chargé et disponible ET que la catégorie est valide
+  // ⚡ PERFORMANCE: Attendre que params.category soit disponible avant de charger les exercices
   const { exercices, loading: loadingExercices, updateExercice } = useExercices({
-    category: isValidCategory ? categoryParam : undefined,
+    category: (params.category && isValidCategory) ? categoryParam : undefined,
   });
 
   // Charger aussi les exercices d'étirement pour la section "Étirements liés"
+  // ⚡ PERFORMANCE: Attendre que params.category soit disponible avant de charger les étirements
   const { exercices: stretchingExercices, updateExercice: updateStretchingExercice } = useExercices({
-    category: categoryParam !== 'STRETCHING' ? 'STRETCHING' : undefined,
+    category: (params.category && categoryParam !== 'STRETCHING') ? 'STRETCHING' : undefined,
   });
 
   useEffect(() => {
-    if (!isValidCategory) {
+    // ⚡ PERFORMANCE: Ne rediriger que si params.category est défini et que la catégorie n'est pas valide
+    // Cela évite de rediriger pendant le chargement initial où params.category pourrait être undefined
+    if (params.category && !isValidCategory) {
       router.push('/');
     }
-  }, [isValidCategory, router]);
+  }, [params.category, isValidCategory, router]);
 
   // Utiliser les hooks partagés
   const { filteredExercices: baseFilteredExercices, completedCount } = useExerciceStatusFilter({
@@ -198,8 +209,23 @@ export default function CategoryPage() {
     setSelectedBodyparts([]);
   };
 
-  if (!isValidCategory) {
+  // ⚡ PERFORMANCE: Ne pas retourner null si params.category n'est pas encore chargé
+  // Attendre que params.category soit disponible avant de décider si la catégorie est valide
+  if (params.category && !isValidCategory) {
     return null;
+  }
+
+  // Afficher un loader pendant le chargement initial
+  if (!params.category) {
+    return (
+      <section className="pb-12 md:pb-8">
+        <div className="max-w-5xl mx-auto pt-2 md:pt-4 px-4">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-gray-500">Chargement...</div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (

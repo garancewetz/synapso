@@ -214,10 +214,14 @@ function getDominantCategories(
   return { dominant, secondary: null };
 }
 
-export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_PREVIEW_DAYS): HeatmapDay[] {
+export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_PREVIEW_DAYS, endDate?: Date): HeatmapDay[] {
   const today = new Date();
-  const startDate = subDays(today, days - 1);
-  const allDays = eachDayOfInterval({ start: startDate, end: today });
+  const referenceEndDate = endDate || today;
+  const startDate = subDays(referenceEndDate, days - 1);
+  const allDays = eachDayOfInterval({ start: startDate, end: referenceEndDate });
+  
+  // ⚡ FIX: Créer un Set des dateKeys de la plage pour un filtrage rapide
+  const dateKeysInRange = new Set(allDays.map(day => format(day, 'yyyy-MM-dd')));
   
   // Compter les exercices par jour et par catégorie
   const exercisesByDay: Record<string, {
@@ -225,22 +229,28 @@ export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_P
     byCategory: Record<ExerciceCategory, number>;
   }> = {};
   
+  // ⚡ FIX: Filtrer les entrées pour ne compter que celles dans la plage de dates
   history.forEach(entry => {
-    const dateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
-    if (!exercisesByDay[dateKey]) {
-      exercisesByDay[dateKey] = {
-        count: 0,
-        byCategory: {
-          UPPER_BODY: 0,
-          CORE: 0,
-          LOWER_BODY: 0,
-          STRETCHING: 0,
-        },
-      };
-    }
-    exercisesByDay[dateKey].count++;
-    if (entry.exercice.category) {
-      exercisesByDay[dateKey].byCategory[entry.exercice.category]++;
+    const entryDate = startOfDay(new Date(entry.completedAt));
+    const dateKey = format(entryDate, 'yyyy-MM-dd');
+    
+    // Ne compter que les entrées dans la plage de dates du heatmap
+    if (dateKeysInRange.has(dateKey)) {
+      if (!exercisesByDay[dateKey]) {
+        exercisesByDay[dateKey] = {
+          count: 0,
+          byCategory: {
+            UPPER_BODY: 0,
+            CORE: 0,
+            LOWER_BODY: 0,
+            STRETCHING: 0,
+          },
+        };
+      }
+      exercisesByDay[dateKey].count++;
+      if (entry.exercice.category) {
+        exercisesByDay[dateKey].byCategory[entry.exercice.category]++;
+      }
     }
   });
 
@@ -294,10 +304,12 @@ export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_P
 // DONNÉES DES 7 DERNIERS JOURS (POUR RYTHME QUOTIDIEN)
 // ============================================================================
 
-export function getLast7DaysData(history: HistoryEntry[]): HeatmapDay[] {
-  const today = new Date();
-  const startDate = subDays(today, 6); // 7 jours au total (aujourd'hui + 6 jours précédents)
-  const allDays = eachDayOfInterval({ start: startDate, end: today });
+export function getLast7DaysData(history: HistoryEntry[], referenceDate?: Date): HeatmapDay[] {
+  // Utiliser la date de référence pour la plage de dates, mais toujours comparer avec aujourd'hui pour isToday
+  const endDate = referenceDate || new Date();
+  const realToday = new Date(); // Toujours utiliser la vraie date d'aujourd'hui pour isToday
+  const startDate = subDays(endDate, 6); // 7 jours au total (jour de fin + 6 jours précédents)
+  const allDays = eachDayOfInterval({ start: startDate, end: endDate });
   
   // Créer un Set des dateKeys pour un filtrage rapide
   const dateKeys = new Set(allDays.map(day => format(day, 'yyyy-MM-dd')));
@@ -352,7 +364,7 @@ export function getLast7DaysData(history: HistoryEntry[]): HeatmapDay[] {
       dominantCategory: dominant,
       secondaryCategory: secondary,
       allCategories,
-      isToday: isSameDay(day, today),
+      isToday: isSameDay(day, realToday), // Toujours comparer avec la vraie date d'aujourd'hui
       isEmpty: false,
     };
   });
@@ -364,10 +376,12 @@ export function getLast7DaysData(history: HistoryEntry[]): HeatmapDay[] {
 // DONNÉES DE LA SEMAINE EN COURS (LUNDI À DIMANCHE)
 // ============================================================================
 
-export function getCurrentWeekData(history: HistoryEntry[]): HeatmapDay[] {
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+export function getCurrentWeekData(history: HistoryEntry[], referenceDate?: Date): HeatmapDay[] {
+  // Utiliser la date de référence pour la plage de dates, mais toujours comparer avec aujourd'hui pour isToday
+  const endDate = referenceDate || new Date();
+  const realToday = new Date(); // Toujours utiliser la vraie date d'aujourd'hui pour isToday
+  const weekStart = startOfWeek(endDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(endDate, { weekStartsOn: 1 });
   const allDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
   
   // Créer un Set des dateKeys de la semaine pour un filtrage rapide
@@ -425,7 +439,7 @@ export function getCurrentWeekData(history: HistoryEntry[]): HeatmapDay[] {
       dominantCategory: dominant,
       secondaryCategory: secondary,
       allCategories,
-      isToday: isSameDay(day, today),
+      isToday: isSameDay(day, realToday), // Toujours comparer avec la vraie date d'aujourd'hui
       isEmpty: false,
     };
   });
@@ -534,9 +548,9 @@ export function getFirstDateFromProgressAndHistory(
 // CALCUL DE LA SÉRIE (STREAK)
 // ============================================================================
 
-export function calculateCurrentStreak(heatmapData: HeatmapDay[]): number {
+export function calculateCurrentStreak(heatmapData: HeatmapDay[], referenceDate?: Date): number {
   let streak = 0;
-  const today = startOfDay(new Date());
+  const today = startOfDay(referenceDate || new Date());
   
   for (let i = heatmapData.length - 1; i >= 0; i--) {
     const day = heatmapData[i];

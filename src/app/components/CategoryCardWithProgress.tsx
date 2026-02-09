@@ -1,8 +1,11 @@
+'use client';
+
 import clsx from 'clsx';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
+import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
 
 type Props = {
   category: ExerciceCategory;
@@ -28,6 +31,7 @@ export function CategoryCardWithProgress({
   completedCount,
   relatedStretchingCount = 0
 }: Props) {
+  const preserveDate = usePreserveDateParam();
   const styles = CATEGORY_COLORS[category];
   const icon = CATEGORY_ICONS[category];
   const label = CATEGORY_LABELS[category];
@@ -45,7 +49,7 @@ export function CategoryCardWithProgress({
 
   return (
     <TouchLink 
-      href={href}
+      href={preserveDate(href)}
       aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? `, ${completedCount - total} ${itemLabelPlural} bonus` : ''}`}
       aria-describedby={`progress-${category}`}
       className="block group"

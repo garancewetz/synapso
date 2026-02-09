@@ -1,7 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+'use client';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 import type { Exercice } from '@/app/types';
-import { ExerciceCategory } from '@/app/types/exercice';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
+import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
 
 type UseExercicesOptions = {
   category?: ExerciceCategory;
@@ -24,90 +29,51 @@ type UseExercicesReturn = {
  */
 export function useExercices({ category, equipments, includeArchived }: UseExercicesOptions = {}): UseExercicesReturn {
   const { effectiveUser, loading: userLoading } = useUser();
-  const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { isTimeMachineMode, referenceDate } = useTimeContext();
+  const queryClient = useQueryClient();
+  
+  // ⚡ OPTIMISATION: Calculer les filtres une seule fois pour éviter la duplication
+  const filters = useMemo(() => ({
+    category,
+    equipments,
+    includeArchived,
+    targetDate: isTimeMachineMode && referenceDate ? referenceDate.toISOString() : undefined,
+  }), [category, equipments, includeArchived, isTimeMachineMode, referenceDate]);
+  
+  // ⚡ TANSTACK QUERY: Utiliser useQuery pour gérer le fetch et le cache
+  // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
+  // TanStack Query démarrera automatiquement la requête dès que effectiveUser est disponible
+  const { data: exercices = [], isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.exercices.list(filters),
+    queryFn: () => fetchExercices(filters),
+    enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
+    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
+    placeholderData: (previousData) => previousData,
+    // ⚡ OPTIMISATION: Données qui changent souvent, cache plus court
+    staleTime: 10000, // 10 secondes
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-  const fetchExercices = useCallback(async () => {
-    // Attendre que l'utilisateur soit chargé
-    if (userLoading) {
-      return;
-    }
-    
-    // Ne pas charger si pas d'utilisateur effectif
-    if (!effectiveUser) {
-      setLoading(false);
-      setExercices([]);
-      setError(null);
-      return;
-    }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const params = new URLSearchParams();
-      if (category) {
-        params.append('category', category);
+  // ⚡ OPTIMISTIC UPDATE: Mettre à jour le cache localement pour une UI réactive
+  const updateExercice = useCallback((updatedExercice: Exercice) => {
+    queryClient.setQueryData<Exercice[]>(
+      queryKeys.exercices.list(filters),
+      (old) => {
+        if (!old) return [updatedExercice];
+        return old.map(ex => ex.id === updatedExercice.id ? updatedExercice : ex);
       }
-      if (equipments && equipments.length > 0) {
-        params.append('equipments', equipments.map(eq => encodeURIComponent(eq)).join(','));
-      }
-      if (includeArchived) {
-        params.append('includeArchived', 'true');
-      }
-      
-      const url = params.toString() 
-        ? `/api/exercices?${params.toString()}`
-        : `/api/exercices`;
-      
-      const res = await fetch(url, { credentials: 'include' });
-      
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Erreur HTTP: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      
-      if (Array.isArray(data)) {
-        setExercices(data);
-      } else {
-        setExercices([]);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err : new Error('Erreur inconnue lors de la récupération des exercices');
-      setError(errorMessage);
-      setExercices([]);
-      console.error('Erreur lors de la récupération des exercices:', errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [category, equipments, includeArchived, effectiveUser, userLoading]);
-
-  useEffect(() => {
-    fetchExercices();
-  }, [fetchExercices]);
-
-  const updateExercice = (updatedExercice: Exercice) => {
-    setExercices(prev => {
-      const updated = prev.map(ex => 
-        ex.id === updatedExercice.id ? updatedExercice : ex
-      );
-      
-      if (!includeArchived && updatedExercice.archived) {
-        return updated.filter(ex => ex.id !== updatedExercice.id);
-      }
-      
-      return updated;
-    });
-  };
+    );
+  }, [filters, queryClient]);
 
   return {
     exercices,
-    loading: loading || userLoading,
-    error,
-    refetch: fetchExercices,
+    // ⚡ PARALLEL QUERIES: Ne plus inclure userLoading dans le loading
+    // car les requêtes démarrent en parallèle dès que l'utilisateur est disponible
+    loading: isLoading,
+    error: error as Error | null,
+    refetch: async () => {
+      await refetch();
+    },
     updateExercice,
   };
 }

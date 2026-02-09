@@ -7,12 +7,19 @@ import { BottomNavBar } from "@/app/components/BottomNavBar";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
 import { PWARegister } from "@/app/components/PWARegister";
+import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { HistoryProvider } from "@/app/contexts/HistoryContext";
+import { SelectedDateProvider } from "@/app/contexts/SelectedDateContext";
+import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
 import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
+import { SelectedDateBanner } from "@/app/components/SelectedDateBanner";
+import { SelectedDateBannerSpacer } from "@/app/components/SelectedDateBannerSpacer";
+import { TimeMachineWrapper } from "@/app/components/TimeMachineWrapper";
+import { TimeMachineTransition } from "@/app/components/TimeMachineTransition";
 import { GlobalCelebration } from "@/app/components/GlobalCelebration";
 import { WebVitals } from "@/app/components/WebVitals";
 
@@ -71,26 +78,37 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <WebVitals />
         <PWARegister />
-        <UserProvider>
+        <QueryProvider>
+          <UserProvider>
           <HistoryProvider>
             <CategoryProvider>
               <DayDetailModalProvider>
-                <ToastProvider>
-                  <DevBanner />
-                  <AuthWrapper>
-                    <NavBar />
-                    <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
-                      {children}
-                    </main>
-                    <BottomNavBar />
-                    <DayDetailModalWrapper />
-                    <GlobalCelebration />
-                  </AuthWrapper>
-                </ToastProvider>
+                <SelectedDateProvider>
+                  <TimeProvider>
+                    <ToastProvider>
+                    <DevBanner />
+                    <AuthWrapper>
+                      <TimeMachineTransition />
+                      <TimeMachineWrapper>
+                        <SelectedDateBanner />
+                        <SelectedDateBannerSpacer />
+                        <NavBar />
+                        <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
+                          {children}
+                        </main>
+                        <BottomNavBar />
+                      </TimeMachineWrapper>
+                      <DayDetailModalWrapper />
+                      <GlobalCelebration />
+                    </AuthWrapper>
+                    </ToastProvider>
+                  </TimeProvider>
+                </SelectedDateProvider>
               </DayDetailModalProvider>
             </CategoryProvider>
           </HistoryProvider>
         </UserProvider>
+        </QueryProvider>
       </body>
     </html>
   );

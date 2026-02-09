@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { format, startOfDay } from 'date-fns';
-import { useHistoryContext } from '@/app/contexts/HistoryContext';
+import { useHistory } from '@/app/hooks/useHistory';
 import { useProgress } from '@/app/hooks/useProgress';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import type { ExerciceCategory } from '@/app/types/exercice';
@@ -22,15 +22,19 @@ type UseDayDetailDataReturn = {
  * 
  * IMPORTANT: Utilise la même logique de normalisation de date que getHeatmapData
  * pour éviter les décalages dus aux fuseaux horaires
+ * 
+ * ⚡ FIX: Utilise useHistory() au lieu de useHistoryContext() pour bénéficier
+ * de la mise à jour automatique via TanStack Query après suppression d'exercices
  */
 export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDataReturn {
-  const { history } = useHistoryContext();
+  // ⚡ FIX: Utiliser useHistory() qui se met à jour automatiquement via TanStack Query
+  const { history } = useHistory();
   const { progressList: allProgress } = useProgress();
 
   const exercises = useMemo(() => {
     if (!selectedDay?.dateKey) return [];
     
-    return history
+    const filtered = history
       .filter(entry => {
         // Utiliser la même logique de normalisation que getHeatmapData
         // pour éviter les problèmes de fuseau horaire
@@ -44,6 +48,13 @@ export function useDayDetailData(selectedDay: HeatmapDay | null): UseDayDetailDa
         category: entry.exercice.category!,
         completedAt: entry.completedAt,
       }));
+    
+    // ⚡ DEBUG: Log pour vérifier les données (à retirer après debug)
+    if (filtered.length > 0 && selectedDay.dateKey) {
+      console.log(`[useDayDetailData] ${selectedDay.dateKey}: ${filtered.length} exercice(s)`, filtered);
+    }
+    
+    return filtered;
   }, [selectedDay, history]);
 
   const progressList = useMemo(() => {

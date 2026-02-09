@@ -3,7 +3,10 @@
 import { TouchLink } from '@/app/components/TouchLink';
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { useTimeContext } from '@/app/contexts/TimeContext';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { RESET_FREQUENCY_COLORS } from '@/app/constants/ui.constants';
+import { formatShortDate } from '@/app/utils/date.utils';
 import clsx from 'clsx';
 
 type Props = {
@@ -11,8 +14,8 @@ type Props = {
   resetFrequency?: 'DAILY' | 'WEEKLY' | null;
 };
 
-function getTimeGreeting() {
-  const hour = new Date().getHours();
+function getTimeGreeting(referenceDate: Date) {
+  const hour = referenceDate.getHours();
   if (hour < 12) return "Bonjour";
   if (hour < 18) return "Bon après-midi";
   return "Bonsoir";
@@ -20,13 +23,20 @@ function getTimeGreeting() {
 
 export function WelcomeHeaderGreeting({ userName, resetFrequency }: Props) {
   const { isLeftHanded } = useHandPreference();
+  const { referenceDate, isTimeMachineMode } = useTimeContext();
+  const { selectedDate } = useSelectedDate();
+  
+  const greeting = getTimeGreeting(referenceDate);
+  const greetingText = isTimeMachineMode && selectedDate
+    ? `${greeting}, ${userName} (${formatShortDate(selectedDate)})`
+    : `${greeting}, ${userName}`;
 
   return (
     <div className="mb-4 relative z-10 px-3 md:px-4">
       <div className={clsx('flex items-start gap-2 justify-between', isLeftHanded && 'flex-row-reverse')}>
         <div className="flex-1">
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800 mb-1">
-            {getTimeGreeting()}, {userName}
+            {greetingText}
           </h1>
           {/* Badge de réinitialisation - affiché seulement si l'information est chargée */}
           {resetFrequency && (

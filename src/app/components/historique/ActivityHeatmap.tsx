@@ -8,6 +8,8 @@ import type { HeatmapDay } from '@/app/utils/historique.utils';
 import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
 import { Card } from '@/app/components/ui/Card';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { formatShortDate } from '@/app/utils/date.utils';
 
 type Props = {
   data: HeatmapDay[];
@@ -22,6 +24,8 @@ type Props = {
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, progressDates, onDayClick }: Props) {
+  const { isTimeMachineMode, selectedDate } = useSelectedDate();
+  
   // Filtrer les jours vides et ne garder que les vrais jours
   const realDays = data.filter(day => !day.isEmpty);
   
@@ -73,6 +77,21 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
           </span>
         )}
       </div>
+
+      {/* Légende mode sablier */}
+      {isTimeMachineMode && selectedDate && (
+        <div className="mb-4 p-3 bg-amber-50 border-2 border-amber-300 rounded-lg">
+          <div className="flex items-center gap-2 text-sm text-amber-900">
+            <span className="text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
+            <p className="font-semibold">
+              Mode sablier actif : Tu es sur le <strong className="underline">{formatShortDate(selectedDate)}</strong>
+            </p>
+          </div>
+          <p className="text-xs text-amber-700 mt-1.5">
+            La cellule avec le sablier ⏳ est le jour sélectionné. Les autres cellules sont atténuées pour mieux repérer le jour actif.
+          </p>
+        </div>
+      )}
 
       {/* Barre de progression */}
       <div className="mb-5">

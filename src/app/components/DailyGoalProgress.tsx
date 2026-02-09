@@ -1,7 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
+import { useTimeContext } from '@/app/contexts/TimeContext';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { formatShortDate } from '@/app/utils/date.utils';
 
 const DAILY_GOAL = 5;
 
@@ -10,17 +14,30 @@ type Props = {
 };
 
 export function DailyGoalProgress({ completedToday }: Props) {
+  const { isTimeMachineMode } = useTimeContext();
+  const { selectedDate } = useSelectedDate();
   const isLoading = completedToday === null;
   const count = completedToday ?? 0;
   const progress = isLoading ? 0 : Math.min(count / DAILY_GOAL, 1);
   const isGoalReached = !isLoading && count >= DAILY_GOAL;
   const bonusExercices = isLoading ? 0 : Math.max(0, count - DAILY_GOAL);
+  
+  // Adapter le label selon le mode sablier
+  // ⚡ MODE SABLIER: Utiliser selectedDateKey pour la stabilité (string au lieu de Date)
+  const { selectedDateKey } = useSelectedDate();
+  const goalLabel = useMemo(() => {
+    if (isTimeMachineMode && selectedDate && selectedDateKey) {
+      const formattedDate = formatShortDate(selectedDate);
+      return `Objectif du ${formattedDate}`;
+    }
+    return 'Objectif du jour';
+  }, [isTimeMachineMode, selectedDate, selectedDateKey]);
 
   return (
     <div className="mb-4 relative z-10 px-3 md:px-4">
       <div className="flex justify-between items-center mb-2">
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-          Objectif du jour
+          {goalLabel}
         </span>
         <span className="text-sm font-semibold text-gray-700" aria-live="polite" aria-atomic="true">
           {isLoading ? '...' : `${count} / ${DAILY_GOAL}`}

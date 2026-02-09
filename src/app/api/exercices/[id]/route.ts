@@ -50,7 +50,19 @@ export async function GET(
     }
 
     const resetFrequency = user.resetFrequency || 'DAILY';
-    const now = new Date();
+    
+    // Récupérer la date cible depuis les query params (optionnel, par défaut maintenant)
+    const { searchParams } = new URL(request.url);
+    const targetDateParam = searchParams.get('targetDate');
+    let targetDate = new Date();
+    if (targetDateParam) {
+      const parsedDate = new Date(targetDateParam);
+      if (!isNaN(parsedDate.getTime())) {
+        targetDate = parsedDate;
+      }
+    }
+    
+    const now = targetDate;
     const startOfPeriod = getStartOfPeriod(resetFrequency, now);
     const endOfPeriod = resetFrequency === 'DAILY'
       ? startOfDay(addDays(now, 1))
@@ -102,9 +114,13 @@ export async function GET(
     // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
     const completedInPeriod = weeklyCompletions.length > 0;
     
-    // Un exercice est complété aujourd'hui si la dernière complétion est aujourd'hui
-    const completedDate = exercice.completedAt ? new Date(exercice.completedAt) : null;
-    const completedToday = isCompletedToday(completedDate);
+    // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
+    const startOfTargetDay = startOfDay(now);
+    const endOfTargetDay = startOfDay(addDays(now, 1));
+    const hasTargetDayHistory = exercice.history.some(
+      (h) => h.completedAt >= startOfTargetDay && h.completedAt < endOfTargetDay
+    );
+    const completedToday = hasTargetDayHistory;
 
     // Les médias sont déjà un objet JSON (type Json de Prisma)
     const mediaParsed = exercice.media ?? null;

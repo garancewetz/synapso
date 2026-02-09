@@ -4,6 +4,8 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { isSameDay, startOfWeek, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { getDateKey } from '@/app/utils/date.utils';
 
 type Props = {
   completions: Date[];
@@ -24,6 +26,7 @@ const WEEK_DAYS = [
 export function WeeklyCompletionIndicator({ completions, className }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { selectedDate, isTimeMachineMode } = useSelectedDate();
 
   // Fermer le tooltip au clic extérieur
   useEffect(() => {
@@ -45,25 +48,31 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
     // Dédupliquer les dates complétées pour l'affichage du calendrier
+    // ⚡ OPTIMISATION: Utiliser getDateKey() pour éviter la duplication de logique
     const completedDates = new Set<string>();
     completions.forEach(completion => {
-      const date = new Date(completion);
-      const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-      completedDates.add(dateKey);
+      const dateKey = getDateKey(completion);
+      if (dateKey) {
+        completedDates.add(dateKey);
+      }
     });
 
     // Créer les 7 jours de la semaine
+    // ⚡ OPTIMISATION: Utiliser getDateKey() pour éviter la duplication de logique
     const days = WEEK_DAYS.map((dayInfo, index) => {
       const date = addDays(weekStart, index);
-      const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-      const isCompleted = completedDates.has(dateKey);
+      const dateKey = getDateKey(date);
+      const isCompleted = dateKey ? completedDates.has(dateKey) : false;
       const isToday = isSameDay(date, now);
+      // ⚡ MODE SABLIER: Vérifier si ce jour correspond à la date sélectionnée
+      const isSelectedDate = isTimeMachineMode && selectedDate && isSameDay(date, selectedDate);
 
       return {
         ...dayInfo,
         date,
         isCompleted,
         isToday,
+        isSelectedDate,
       };
     });
 
@@ -72,7 +81,7 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
       weekDays: days,
       totalCount: completions.length,
     };
-  }, [completions]);
+  }, [completions, isTimeMachineMode, selectedDate]);
    
   if (totalCount === 0) {
     return null;
@@ -131,7 +140,9 @@ export function WeeklyCompletionIndicator({ completions, className }: Props) {
                           ? 'bg-emerald-500 text-white shadow-sm'
                           : 'bg-emerald-100 text-emerald-700'
                         : 'bg-gray-100 text-gray-400',
-                      day.isToday && 'ring-2 ring-blue-400 ring-offset-1'
+                      day.isToday && 'ring-2 ring-blue-400 ring-offset-1',
+                      // ⚡ MODE SABLIER: Bordure sable pour le jour sélectionné
+                      day.isSelectedDate && 'ring-2 ring-amber-500 ring-offset-1'
                     )}
                     title={day.fullName}
                   >

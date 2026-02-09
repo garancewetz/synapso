@@ -1,12 +1,18 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
-import { BottomSheetModal } from '@/app/components/ui';
+import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
+import { BottomSheetModal, Button } from '@/app/components/ui';
 import { ProgressCardCompact } from './ProgressCardCompact';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useToast } from '@/app/contexts/ToastContext';
+import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
+import clsx from 'clsx';
 
 type DayExercise = {
   name: string;
@@ -29,6 +35,52 @@ type Props = {
 export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
   const hasContent = exercises.length > 0 || progress.length > 0;
+  const { setSelectedDate, clearSelectedDate, isTimeMachineMode } = useSelectedDate();
+  const { showToast } = useToast();
+  const isPastDay = date && !isToday(date);
+  const isCurrentDay = date && isToday(date);
+  const hasNoExercises = exercises.length === 0;
+
+  // Vérifier si on peut ajouter des exercices pour ce jour (limite de 30 jours, pas de futur)
+  const canAddExercises = useMemo(() => {
+    if (!date || !isPastDay) return false;
+    
+    // ⚡ VALIDATION: Ne pas permettre les dates futures
+    const today = startOfDay(new Date());
+    if (isAfter(startOfDay(date), today)) {
+      return false;
+    }
+    
+    // ⚡ VALIDATION: Vérifier la limite de 30 jours
+    const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
+    return !isBefore(date, minAllowedDate);
+  }, [date, isPastDay]);
+
+  const handleAddExercisesForDay = () => {
+    if (!date) return;
+    
+    // ⚡ VALIDATION: Vérifier que la date n'est pas dans le futur
+    const today = startOfDay(new Date());
+    if (isAfter(startOfDay(date), today)) {
+      showToast('Tu ne peux pas voyager vers le futur');
+      return;
+    }
+    
+    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 30 jours)
+    const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
+    if (isBefore(date, minAllowedDate)) {
+      showToast(`Tu ne peux remonter que jusqu'à ${MAX_TIME_MACHINE_DAYS} jours en arrière`);
+      return;
+    }
+    
+    setSelectedDate(date);
+    onClose();
+  };
+
+  const handleReturnToToday = () => {
+    clearSelectedDate();
+    onClose();
+  };
 
   return (
     <BottomSheetModal 
@@ -99,14 +151,95 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
           </section>
         )}
 
-        {/* État vide */}
+        {/* État vide ou pas d'exercices */}
         {!hasContent && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">{NAVIGATION_EMOJIS.CLIPBOARD}</span>
             </div>
-            <p className="text-gray-700 text-lg font-semibold">Jour de repos</p>
-            <p className="text-gray-400 text-sm mt-1">Chaque jour est différent, c&apos;est ok !</p>
+            <p className="text-gray-700 text-lg font-semibold">
+              {hasNoExercises && isPastDay
+                ? `Aucun exercice fait le ${formattedDate}`
+                : 'Jour de repos'}
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              {hasNoExercises && isPastDay
+                ? canAddExercises
+                  ? 'Tu as oublié de noter tes exercices ?'
+                  : `Tu ne peux remonter que jusqu'à ${MAX_TIME_MACHINE_DAYS} jours en arrière`
+                : "Chaque jour est différent, c'est ok !"}
+            </p>
+            {hasNoExercises && isPastDay && canAddExercises && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={handleAddExercisesForDay}
+                  className={clsx(
+                    'px-6 py-3',
+                    '!bg-amber-400 !hover:bg-amber-500 !active:bg-amber-600',
+                    '!text-amber-900 font-bold',
+                    '!border-2 !border-amber-600',
+                    'shadow-md hover:shadow-lg transition-shadow'
+                  )}
+                >
+                  <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
+                  Ajouter des exercices pour ce jour
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Bouton pour ajouter des exercices même s'il y en a déjà (jour passé) */}
+        {isPastDay && hasContent && canAddExercises && (
+          <div className="pt-4 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-4">
+                Tu veux ajouter ou modifier des exercices pour ce jour ?
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={handleAddExercisesForDay}
+                  className={clsx(
+                    'px-6 py-3',
+                    '!bg-amber-400 !hover:bg-amber-500 !active:bg-amber-600',
+                    '!text-amber-900 font-bold',
+                    '!border-2 !border-amber-600',
+                    'shadow-md hover:shadow-lg transition-shadow'
+                  )}
+                >
+                  <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
+                  Ajouter des exercices pour ce jour
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bouton pour revenir à aujourd'hui si on est en mode sablier et qu'on clique sur aujourd'hui */}
+        {isTimeMachineMode && isCurrentDay && (
+          <div className="pt-4 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-4">
+                Tu es en mode sablier. Revenir à aujourd'hui ?
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  variant="primary"
+                  onClick={handleReturnToToday}
+                  className={clsx(
+                    'px-6 py-3',
+                    '!bg-emerald-500 !hover:bg-emerald-600 !active:bg-emerald-700',
+                    '!text-white font-bold',
+                    'shadow-md hover:shadow-lg transition-shadow'
+                  )}
+                >
+                  <span className="mr-2 text-lg">🏠</span>
+                  Revenir à aujourd'hui
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

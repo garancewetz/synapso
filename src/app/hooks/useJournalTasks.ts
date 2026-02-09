@@ -60,7 +60,7 @@ export function useJournalTasks(): UseJournalTasksReturn {
       .finally(() => {
         setLoading(false);
       });
-  }, [effectiveUser, userLoading]);
+  }, [effectiveUser?.id, userLoading]);
 
   useEffect(() => {
     fetchTasks();

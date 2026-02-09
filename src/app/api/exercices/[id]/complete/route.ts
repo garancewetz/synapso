@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay } from 'date-fns';
+import {
+  parseCompletedAtFromBody,
+  toggleExerciceCompletion,
+} from '@/app/utils/exercice-complete.utils';
 
 export async function PATCH(
   request: NextRequest,
@@ -15,17 +17,13 @@ export async function PATCH(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    
+
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'ID invalide' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
     }
 
-    // 🔒 SÉCURITÉ: Récupérer l'userId depuis la session, PAS depuis le client
     const userId = await getEffectiveUserId(request);
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
@@ -34,9 +32,14 @@ export async function PATCH(
     }
 
     const exercice = await prisma.exercice.findFirst({
-      where: { 
+      where: {
         id,
         userId: userId,
+      },
+      include: {
+        user: {
+          select: { resetFrequency: true },
+        },
       },
     });
 
@@ -47,130 +50,36 @@ export async function PATCH(
       );
     }
 
-    // Récupérer les paramètres de l'utilisateur pour la réinitialisation
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { resetFrequency: true },
-    });
-    
-    const resetFrequency = user?.resetFrequency || 'DAILY';
-    const now = new Date();
-    
-    // En mode hebdomadaire, vérifier s'il y a déjà une entrée pour aujourd'hui
-    // En mode quotidien, vérifier s'il y a une entrée pour aujourd'hui
-    const startOfToday = startOfDay(now);
-    const endOfToday = startOfDay(addDays(now, 1));
-    
-    const todayHistory = await prisma.history.findFirst({
-      where: {
-        exerciceId: id,
-        completedAt: {
-          gte: startOfToday,
-          lt: endOfToday,
-        },
+    const resetFrequency = exercice.user.resetFrequency || 'DAILY';
+    const { completedAt, checkDateForCompletedToday } =
+      await parseCompletedAtFromBody(request);
+
+    // ⚡ PERFORMANCE CRITIQUE: Transaction ultra-minimale avec timeout réduit
+    // Tous les calculs complexes seront faits après la transaction
+    const result = await prisma.$transaction(
+      async (tx) => {
+        return toggleExerciceCompletion(tx, {
+          exerciceId: id,
+          completedAt,
+          resetFrequency: resetFrequency as 'DAILY' | 'WEEKLY',
+          checkDateForCompletedToday,
+        });
       },
-    });
-    
-    // Si complété aujourd'hui, on démarque. Sinon, on marque comme complété
-    const isCompleting = !todayHistory;
-    
-    // Utiliser une transaction pour garantir l'intégrité des données
-    const updatedExercice = await prisma.$transaction(async (tx) => {
-      if (isCompleting) {
-        // Marquer comme complété : ajouter une entrée dans l'historique
-        await tx.history.create({
-          data: {
-            exerciceId: id,
-            completedAt: now,
-          },
-        });
-        
-        // Mettre à jour completedAt avec la date actuelle
-        const updated = await tx.exercice.update({
-          where: { id },
-          data: {
-            completedAt: now,
-          },
-        });
-        
-        return updated;
-      } else {
-        // Démarquer : supprimer l'entrée d'aujourd'hui
-        await tx.history.deleteMany({
-          where: {
-            exerciceId: id,
-            completedAt: {
-              gte: startOfToday,
-              lt: endOfToday,
-            },
-          },
-        });
-        
-        // Mettre à jour completedAt : prendre la date de la dernière entrée de l'historique
-        // ou null si aucune entrée n'existe
-        const remainingHistory = await tx.history.findFirst({
-          where: {
-            exerciceId: id,
-          },
-          orderBy: {
-            completedAt: 'desc',
-          },
-        });
-        
-        const updated = await tx.exercice.update({
-          where: { id },
-          data: {
-            completedAt: remainingHistory?.completedAt || null,
-          },
-        });
-        
-        return updated;
+      {
+        maxWait: 2000, // Réduit à 2s pour détecter rapidement les blocages
+        timeout: 3000, // Réduit à 3s pour éviter les blocages prolongés
       }
-    });
-    
-    // Calculer completedToday pour la réponse : vérifier directement l'historique d'aujourd'hui
-    // (plus fiable que d'utiliser completedAt qui peut être une date ancienne)
-    const hasTodayHistoryAfterUpdate = await prisma.history.findFirst({
-      where: {
-        exerciceId: id,
-        completedAt: {
-          gte: startOfToday,
-          lt: endOfToday,
-        },
-      },
-    });
-    const completedToday = !!hasTodayHistoryAfterUpdate;
+    );
 
-    // Récupérer toutes les complétions de la période pour weeklyCompletions
-    const startOfPeriod = getStartOfPeriod(resetFrequency, now);
-    const endOfPeriod = resetFrequency === 'DAILY'
-      ? startOfDay(addDays(now, 1))
-      : startOfDay(addDays(startOfPeriod, 7));
-
-    const weeklyHistory = await prisma.history.findMany({
-      where: {
-        exerciceId: id,
-        completedAt: {
-          gte: startOfPeriod,
-          lt: endOfPeriod,
-        },
-      },
-      orderBy: {
-        completedAt: 'asc',
-      },
-    });
-
-    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
-    const completedInPeriod = weeklyCompletions.length > 0;
-
+    // ⚡ PERFORMANCE: Retourner immédiatement avec les valeurs calculées
+    // Les valeurs manquantes seront mises à jour par le refetch automatique
     return NextResponse.json({
-      ...updatedExercice,
-      completed: completedInPeriod,
-      completedToday: completedToday,
-      weeklyCompletions: weeklyCompletions,
+      ...result.exercice,
+      completed: result.completed,
+      completedToday: result.completedToday,
+      weeklyCompletions: result.weeklyCompletions,
     });
   } catch (error) {
-    // 🔒 SÉCURITÉ: Ne pas exposer les détails de l'erreur au client
     logError('Erreur lors de la mise à jour', error);
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour de l\'exercice' },

@@ -10,6 +10,7 @@ import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
@@ -35,6 +36,7 @@ export function NavBar() {
   const { effectiveUser, loading } = useUser();
   const { isOpen, openMenu, closeMenu } = useMenuState();
   const { isLeftHanded } = useHandPreference();
+  const preserveDate = usePreserveDateParam();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
@@ -58,7 +60,7 @@ export function NavBar() {
             isLeftHanded && 'flex-row-reverse'
           )}>
             <TouchLink
-              href="/"
+              href={preserveDate('/')}
               className={clsx(
                 'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0 cursor-pointer',
                 !isLeftHanded && '-ml-2'
@@ -78,7 +80,7 @@ export function NavBar() {
           >
             {/* Lien Accueil */}
             <TouchLink
-              href="/"
+              href={preserveDate('/')}
               className={clsx(
                 'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
                 'hover:text-gray-900',
@@ -105,7 +107,7 @@ export function NavBar() {
               return (
                 <TouchLink
                   key={category}
-                  href={href}
+                  href={preserveDate(href)}
                   className={clsx(
                     'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
                     isActive ? colors.text : 'text-gray-600 hover:text-gray-900'

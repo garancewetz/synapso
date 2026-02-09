@@ -1,18 +1,14 @@
-import { useCallback, type RefObject } from 'react';
+import { useCallback } from 'react';
 import type { Progress } from '@/app/types';
-import { shareProgressImage } from '@/app/utils/share.utils';
+import { shareProgressWithImage } from '@/app/utils/share.utils';
 
 /**
- * Hook pour partager un progrès sur WhatsApp
- * Capture la card en image et la partage
+ * Hook pour partager un progrès avec une image composite (canvas natif)
  */
-export function useShareProgress(progress: Progress, cardRef: RefObject<HTMLDivElement | null>) {
+export function useShareProgress(progress: Progress) {
   const handleShare = useCallback(async () => {
-    if (!cardRef.current) {
-      return;
-    }
-    await shareProgressImage(cardRef.current, progress);
-  }, [cardRef, progress]);
+    await shareProgressWithImage(progress);
+  }, [progress]);
 
   return { handleShare };
 }

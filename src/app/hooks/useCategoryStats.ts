@@ -1,15 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { HistoryEntry } from '@/app/types';
+'use client';
+
+import { useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { apiCache, generateCacheKey } from '@/app/utils/api-cache.utils';
-
-type ResetFrequency = 'DAILY' | 'WEEKLY';
-
-interface UseCategoryStatsOptions {
-  userId: number | null;
-  resetFrequency?: ResetFrequency;
-}
+import { useExercices } from '@/app/hooks/useExercices';
+import { queryKeys } from '@/app/lib/api-queries';
 
 interface UseCategoryStatsReturn {
   stats: Record<ExerciceCategory, number>;
@@ -26,88 +21,50 @@ const initialStats: Record<ExerciceCategory, number> = {
 
 /**
  * Hook pour charger les statistiques d'exercices complétés par catégorie
- * pour la période en cours (jour ou semaine selon resetFrequency)
+ * pour la date de référence (aujourd'hui ou date sélectionnée en mode sablier)
  * 
- * ⚡ PERFORMANCE: Utilise le paramètre `since` côté serveur pour éviter
- * de charger tout l'historique de l'utilisateur
+ * ⚡ OPTIMISATION: Utilise directement les exercices qui ont déjà `completedToday`
+ * calculé côté serveur, au lieu de filtrer l'historique. Plus performant et fiable.
+ * 
+ * ⚡ SIMPLIFICATION: Les paramètres userId et resetFrequency ne sont plus nécessaires
+ * car le calcul se fait directement depuis les exercices qui ont déjà completedToday
+ * calculé pour la date de référence (via useExercices qui utilise TimeContext).
  */
-export function useCategoryStats({ 
-  userId, 
-  resetFrequency = 'DAILY' 
-}: UseCategoryStatsOptions): UseCategoryStatsReturn {
-  const [stats, setStats] = useState<Record<ExerciceCategory, number>>(initialStats);
-  const [loading, setLoading] = useState(true);
+export function useCategoryStats(): UseCategoryStatsReturn {
+  const queryClient = useQueryClient();
+  
+  // ⚡ OPTIMISATION: Utiliser les exercices qui ont déjà `completedToday` calculé
+  // Le serveur calcule `completedToday` pour la date de référence (targetDate)
+  // via useExercices qui utilise TimeContext pour déterminer la date de référence
+  const { exercices, loading: exercicesLoading } = useExercices();
 
-  // Calculer la date de début de période une seule fois
-  const startOfPeriod = useMemo(() => {
-    return getStartOfPeriod(resetFrequency, new Date());
-  }, [resetFrequency]);
-
-  const fetchStats = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
+  // ⚡ CALCUL: Compter les exercices complétés aujourd'hui par catégorie
+  const stats = useMemo(() => {
+    const newStats: Record<ExerciceCategory, number> = { ...initialStats };
+    
+    if (!exercices.length) {
+      return newStats;
     }
-
-    try {
-      // ⚡ PERFORMANCE: Filtrer côté serveur avec le paramètre `since`
-      // Cela évite de charger tout l'historique de l'utilisateur
-      const sinceParam = startOfPeriod.toISOString();
-      const url = `/api/history?since=${encodeURIComponent(sinceParam)}`;
-      
-      // ⚡ PERFORMANCE: Vérifier le cache avant de faire la requête
-      const cacheKey = generateCacheKey(url, { userId, resetFrequency, since: sinceParam });
-      const cachedData = apiCache.get<HistoryEntry[]>(cacheKey);
-
-      if (cachedData) {
-        const newStats: Record<ExerciceCategory, number> = { ...initialStats };
-        cachedData.forEach((entry: HistoryEntry) => {
-          const category = entry.exercice.category;
-          if (category && category in newStats) {
-            newStats[category as ExerciceCategory]++;
-          }
-        });
-        setStats(newStats);
-        setLoading(false);
-        return;
+    
+    // Compter les exercices avec completedToday === true par catégorie
+    exercices.forEach((exercice) => {
+      if (exercice.completedToday && exercice.category && exercice.category in newStats) {
+        newStats[exercice.category as ExerciceCategory]++;
       }
-
-      const response = await fetch(url, { credentials: 'include' });
-      const data = await response.json();
-      
-      // ⚡ PERFORMANCE: Mettre en cache les données pour 30 secondes
-      if (Array.isArray(data)) {
-        apiCache.set(cacheKey, data, 30000);
-      }
-      
-      if (Array.isArray(data)) {
-        const newStats: Record<ExerciceCategory, number> = { ...initialStats };
-        
-        // Les données sont déjà filtrées côté serveur, on compte simplement
-        data.forEach((entry: HistoryEntry) => {
-          const category = entry.exercice.category;
-          if (category && category in newStats) {
-            newStats[category as ExerciceCategory]++;
-          }
-        });
-        
-        setStats(newStats);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, startOfPeriod, resetFrequency]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    });
+    
+    return newStats;
+  }, [exercices]);
 
   return {
     stats,
-    loading,
-    refresh: fetchStats,
+    loading: exercicesLoading,
+    refresh: async () => {
+      // Invalider les queries d'exercices pour forcer le refetch
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.exercices.all,
+        refetchType: 'active',
+      });
+    },
   };
 }
-

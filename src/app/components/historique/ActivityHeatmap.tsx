@@ -1,6 +1,8 @@
 'use client';
 
-import { getDay } from 'date-fns';
+import { useMemo } from 'react';
+import { getDay, getMonth, getYear, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
@@ -64,6 +66,39 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
 
   const displayDays = isWeekMode ? getWeekAlignedDays() : realDays;
 
+  // ⚡ NOUVEAU: Détecter les premières cellules de chaque mois pour afficher un label discret
+  // Affiche le label sur : la première cellule du heatmap ET la première cellule de chaque mois
+  const monthLabels = useMemo(() => {
+    if (displayDays.length === 0) return new Map<number, string>();
+    
+    const labels = new Map<number, string>();
+    let lastMonth = -1;
+    let lastYear = -1;
+    
+    displayDays.forEach((day, index) => {
+      if (day && day.date) {
+        const month = getMonth(day.date);
+        const year = getYear(day.date);
+        
+        // Toujours afficher sur la première cellule du heatmap
+        if (index === 0) {
+          labels.set(index, format(day.date, 'MMM', { locale: fr }));
+          lastMonth = month;
+          lastYear = year;
+        } else {
+          // Afficher sur la première cellule d'un nouveau mois
+          if (month !== lastMonth || year !== lastYear) {
+            labels.set(index, format(day.date, 'MMM', { locale: fr }));
+            lastMonth = month;
+            lastYear = year;
+          }
+        }
+      }
+    });
+    
+    return labels;
+  }, [displayDays]);
+
   return (
     <Card variant="default" padding="md">
       {/* Header avec titre et streak */}
@@ -109,7 +144,7 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
 
       {/* En-têtes des jours de la semaine (mode semaine uniquement) */}
       {isWeekMode && (
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-2 mb-3">
           {WEEKDAY_NAMES.map((name, index) => (
             <div 
               key={`weekday-${index}`} 
@@ -125,15 +160,32 @@ export function ActivityHeatmap({ data, currentStreak, showFullLink = true, user
       )}
 
       {/* Grille des jours - style calendrier compact avec emojis */}
-      <div className="grid grid-cols-7 gap-2">
-        {displayDays.map((day, index) => (
-          <ActivityHeatmapCell
-            key={day ? day.dateKey : `empty-${index}`}
-            day={day}
-            progressDates={progressDates}
-            onDayClick={onDayClick}
-          />
-        ))}
+      <div className="grid grid-cols-7 gap-2 relative">
+        {displayDays.map((day, index) => {
+          const monthLabel = monthLabels.get(index);
+          
+          return (
+            <div
+              key={day ? day.dateKey : `empty-${index}`}
+              className="relative"
+            >
+              {/* Badge discret du mois au-dessus de la première cellule, aligné à gauche */}
+              {monthLabel && (
+                <div 
+                  className="absolute -top-6 left-0 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 z-10 whitespace-nowrap"
+                  title={`${monthLabel} ${day?.date ? format(day.date, 'yyyy') : ''}`}
+                >
+                  {monthLabel}
+                </div>
+              )}
+              <ActivityHeatmapCell
+                day={day}
+                progressDates={progressDates}
+                onDayClick={onDayClick}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Légende compacte */}

@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
-import { subDays, format, startOfDay, differenceInDays } from 'date-fns';
+import { subDays, format, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useTimeContext } from '@/app/contexts/TimeContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import type { HeatmapDay } from '@/app/utils/historique.utils';
 import type { HistoryEntry } from '@/app/types/history';
 import { getHeatmapData } from '@/app/utils/historique.utils';
@@ -27,45 +25,30 @@ export function useHeatmapNavigation(
   history: HistoryEntry[],
   daysPerPeriod = 30
 ): HeatmapNavigationResult {
-  const { referenceDate, isTimeMachineMode } = useTimeContext();
-  const { selectedDate } = useSelectedDate();
   const [periodOffset, setPeriodOffset] = useState(0);
 
   const navigationData = useMemo(() => {
-    // Calculer la date de fin de la période en fonction de l'offset
-    // offset = 0 : période actuelle
-    // offset = -1 : période précédente (30 jours avant)
+    // ⚡ FIX: Le heatmap affiche toujours les 28 derniers jours depuis aujourd'hui
+    // même en mode sablier, pour permettre de se situer dans le temps
+    // Le jour sélectionné sera mis en évidence visuellement dans ActivityHeatmapCell
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     let periodEndDate: Date;
     
     if (periodOffset === 0) {
-      // Période actuelle
-      if (isTimeMachineMode && selectedDate) {
-        // ⚡ MODE SABLIER: Vérifier si la date sélectionnée est dans les 7 derniers jours
-        const selectedDateNormalized = startOfDay(selectedDate);
-        const daysDiff = differenceInDays(today, selectedDateNormalized);
-        
-        if (daysDiff <= 7) {
-          // Date sélectionnée dans la semaine courante : garder "aujourd'hui" comme dernière date
-          periodEndDate = today;
-        } else {
-          // Date sélectionnée plus ancienne : utiliser la date sélectionnée comme dernière date
-          periodEndDate = selectedDateNormalized;
-        }
-      } else {
-        // Mode normal : toujours utiliser "aujourd'hui"
-        periodEndDate = today;
-      }
+      // Période actuelle : toujours utiliser "aujourd'hui" comme date de fin
+      // même en mode sablier, pour garder le contexte temporel
+      periodEndDate = today;
     } else {
-      // Période précédente : utiliser referenceDate pour la cohérence
-      periodEndDate = subDays(referenceDate, Math.abs(periodOffset) * daysPerPeriod);
+      // Période précédente : calculer depuis aujourd'hui
+      periodEndDate = subDays(today, Math.abs(periodOffset) * daysPerPeriod);
     }
     
     const periodEnd = startOfDay(periodEndDate);
     
     // Calculer les données du heatmap pour cette période
+    // ⚡ NOTE: On utilise history complet (pas filtré) pour afficher tous les jours
     const heatmapData = getHeatmapData(history, daysPerPeriod, periodEnd);
     
     // Calculer le label de la période
@@ -92,7 +75,7 @@ export function useHeatmapNavigation(
       canGoBack: hasHistoryBefore,
       canGoForward,
     };
-  }, [history, periodOffset, daysPerPeriod, referenceDate, isTimeMachineMode, selectedDate]);
+  }, [history, periodOffset, daysPerPeriod]);
 
   const goToPreviousPeriod = () => setPeriodOffset(prev => prev - 1);
   const goToNextPeriod = () => setPeriodOffset(prev => prev + 1);

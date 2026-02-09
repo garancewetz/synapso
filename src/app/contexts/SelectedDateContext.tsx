@@ -181,29 +181,39 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
   // ⚡ PERFORMANCE: Mémoriser isDateSelected pour éviter les recalculs
   const isDateSelected = useMemo(() => normalizedSelectedDate !== null, [normalizedSelectedDate]);
 
-  // ⚡ FIX: Détecter quand on passe en mode sablier pour déclencher la transition
+  // ⚡ FIX: Détecter quand on passe en mode sablier ou qu'on en sort pour déclencher la transition
   useEffect(() => {
     const currentDateKey = isTimeMachineMode ? selectedDateKey : null;
-    const wasInTimeMachine = previousDateKeyRef.current !== null && previousDateKeyRef.current !== currentDateKey;
+    const wasInTimeMachine = previousDateKeyRef.current !== null;
     const isEnteringTimeMachine = !previousDateKeyRef.current && currentDateKey;
+    const isExitingTimeMachine = wasInTimeMachine && !currentDateKey;
     
     // Si on entre en mode sablier, déclencher la transition
     if (isEnteringTimeMachine) {
       setIsTransitioning(true);
-      // La transition durera 2 secondes (durée de l'animation)
+      // La transition durera 1.5 secondes (durée de l'animation d'entrée)
       const timer = setTimeout(() => {
         setIsTransitioning(false);
         previousDateKeyRef.current = currentDateKey;
-      }, 2000);
+      }, 1500);
       
       return () => clearTimeout(timer);
     }
     
-    // Mettre à jour la référence si on sort du mode sablier
-    if (wasInTimeMachine && !currentDateKey) {
-      previousDateKeyRef.current = null;
-      setIsTransitioning(false);
-    } else if (currentDateKey !== previousDateKeyRef.current && !isTransitioning) {
+    // ⚡ NOUVEAU: Si on sort du mode sablier, déclencher la transition de sortie
+    if (isExitingTimeMachine) {
+      setIsTransitioning(true);
+      // La transition de sortie durera 1.5 secondes (durée de l'animation de sortie)
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        previousDateKeyRef.current = null;
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+    
+    // Mettre à jour la référence si on change de date (mais toujours en mode sablier)
+    if (currentDateKey !== previousDateKeyRef.current && !isTransitioning && currentDateKey) {
       previousDateKeyRef.current = currentDateKey;
     }
   }, [isTimeMachineMode, selectedDateKey, isTransitioning]);

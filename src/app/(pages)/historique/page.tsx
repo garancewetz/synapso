@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
@@ -67,6 +68,8 @@ export default function HistoriquePage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('all');
   const [activeTab, setActiveTab] = useState<ActiveTab>('progres');
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { effectiveUser } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const progressModal = useProgressModal();
@@ -203,7 +206,9 @@ export default function HistoriquePage() {
   
   // ⚡ PERFORMANCE: Utiliser TimeContext pour la date de référence (déjà calculée et mémorisée)
   
-  // Navigation pour le heatmap de 28 jours
+  // ⚡ FIX: Le heatmap affiche toujours les 28 derniers jours depuis aujourd'hui
+  // même en mode sablier, pour permettre de se situer dans le temps
+  // Le jour sélectionné sera mis en évidence visuellement dans ActivityHeatmapCell
   const {
     heatmapData,
     periodLabel: heatmapPeriodLabel,
@@ -211,7 +216,7 @@ export default function HistoriquePage() {
     canGoForward: canGoForwardHeatmap,
     goToPreviousPeriod: goToPreviousHeatmapPeriod,
     goToNextPeriod: goToNextHeatmapPeriod,
-  } = useHeatmapNavigation(filteredHistory, MONTH_HEATMAP_DAYS);
+  } = useHeatmapNavigation(history, MONTH_HEATMAP_DAYS);
   
   const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData, referenceDate), [heatmapData, referenceDate]);
   
@@ -263,16 +268,13 @@ export default function HistoriquePage() {
               value={activeTab}
               onChange={(value) => {
                 setActiveTab(value as ActiveTab);
-                // Mettre à jour l'URL sans recharger la page
-                if (typeof window !== 'undefined') {
-                  const url = new URL(window.location.href);
-                  if (value === 'progres') {
-                    url.hash = '#progres';
-                  } else {
-                    url.hash = '#statistiques';
-                  }
-                  window.history.replaceState({}, '', url.toString());
-                }
+                // ⚡ FIX: Préserver le paramètre date lors du changement d'onglet
+                const params = new URLSearchParams(searchParams.toString());
+                const hash = value === 'progres' ? '#progres' : '#statistiques';
+                const newUrl = params.toString() 
+                  ? `${window.location.pathname}?${params.toString()}${hash}`
+                  : `${window.location.pathname}${hash}`;
+                router.replace(newUrl);
               }}
               fullWidth
               size="md"

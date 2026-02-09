@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
-import { Prisma } from '@prisma/client';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
@@ -52,13 +50,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Calculer la période de réinitialisation
+    // Calculer la période de réinitialisation (pour référence future si nécessaire)
     const now = targetDate;
-    const startOfPeriod = getStartOfPeriod(user.resetFrequency, now);
-    const endOfPeriod = user.resetFrequency === 'DAILY'
-      ? startOfDay(addDays(now, 1))
-      : startOfDay(addDays(startOfPeriod, 7));
-
     const startOfTargetDay = startOfDay(now);
     const endOfTargetDay = startOfDay(addDays(now, 1));
 

@@ -105,21 +105,25 @@ export function TimeProvider({ children }: PropsWithChildren) {
     return () => clearTimeout(timeoutId);
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
-  // ⚡ FIX: Invalider les queries de categoryStats quand on sort du mode sablier
-  // pour forcer le refetch avec la nouvelle referenceDateKey (aujourd'hui)
+  // ⚡ FIX: Invalider les queries d'exercices et categoryStats quand la date change
+  // pour forcer le refetch avec la nouvelle referenceDateKey (aujourd'hui ou date sélectionnée)
   useEffect(() => {
     if (!effectiveUser?.id) return;
     
-    // Si on sort du mode sablier (isTimeMachineMode passe de true à false)
-    // ou si referenceDateKey change vers aujourd'hui, invalider les queries
-    if (!isTimeMachineMode && !isTransitioning) {
-      // Invalider toutes les queries de categoryStats pour forcer le refetch
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.categoryStats.all,
-        refetchType: 'active', // Forcer le refetch immédiat des queries actives
-      });
-    }
-  }, [isTimeMachineMode, isTransitioning, effectiveUser?.id, queryClient]);
+    // Invalider les queries d'exercices quand la date change (entrée ou sortie du mode sablier)
+    // Cela force le refetch avec la nouvelle targetDate et met à jour completedToday
+    // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.exercices.all,
+      refetchType: 'active', // Forcer le refetch immédiat des queries actives
+    });
+    
+    // Invalider aussi les queries de categoryStats pour forcer le recalcul
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.categoryStats.all,
+      refetchType: 'active', // Forcer le refetch immédiat des queries actives
+    });
+  }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
   return (
     <TimeContext.Provider value={timeContextValue}>

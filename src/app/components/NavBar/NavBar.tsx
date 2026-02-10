@@ -11,6 +11,8 @@ import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { isToday } from 'date-fns';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
@@ -37,9 +39,13 @@ export function NavBar() {
   const { isOpen, openMenu, closeMenu } = useMenuState();
   const { isLeftHanded } = useHandPreference();
   const preserveDate = usePreserveDateParam();
+  const { selectedDate, isDateSelected } = useSelectedDate();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
+
+  // ⚡ MODE SABLIER: Ajouter un padding-top si la bannière est visible
+  const isBannerVisible = isDateSelected && selectedDate && !isToday(selectedDate);
 
   const categories = CATEGORY_ORDER;
   const isHomeActive = pathname === '/';
@@ -47,7 +53,14 @@ export function NavBar() {
   return (
     <>
       {/* Header minimaliste */}
-      <header className="bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6">
+      <header className={clsx(
+        'bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6',
+        'transition-all duration-300',
+        // ⚡ MODE SABLIER: Ajouter un padding-top pour laisser de la place à la bannière fixe
+        // La bannière fait environ 70-80px de hauteur (py-2.5 + 2 lignes de texte + border)
+        // On utilise pt-24 (96px) pour avoir une marge de sécurité
+        isBannerVisible && 'pt-24 sm:pt-28'
+      )}>
         <div
           className={clsx(
             'flex items-center py-3 md:py-4 justify-between',
@@ -56,13 +69,13 @@ export function NavBar() {
         >
           {/* Logo et nom */}
           <div className={clsx(
-            'flex items-center gap-3 flex-shrink-0',
+            'flex items-center gap-3 shrink-0',
             isLeftHanded && 'flex-row-reverse'
           )}>
             <TouchLink
               href={preserveDate('/')}
               className={clsx(
-                'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors flex-shrink-0 cursor-pointer',
+                'flex items-center gap-2 px-2 rounded-xl hover:bg-gray-50 transition-colors shrink-0 cursor-pointer',
                 !isLeftHanded && '-ml-2'
               )}
               aria-label="Retour à l'accueil Synapso"
@@ -131,7 +144,7 @@ export function NavBar() {
 
           {/* Badge utilisateur et bouton menu */}
           <div className={clsx(
-            'flex items-center gap-2 flex-shrink-0',
+            'flex items-center gap-2 shrink-0',
             isLeftHanded && 'flex-row-reverse'
           )}>
             {effectiveUser && (

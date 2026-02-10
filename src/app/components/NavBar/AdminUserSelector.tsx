@@ -208,7 +208,7 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
 
                   {/* Bouton de suppression (sauf pour soi-même) */}
                   {!isCurrentUser && (
-                    <div className="pr-2 flex-shrink-0">
+                    <div className="pr-2 shrink-0">
                       <UserDeleteButton
                         onDelete={() => handleDeleteUser(user.id, user.name)}
                         disabled={isDeleting}

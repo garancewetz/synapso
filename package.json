@@ -12,6 +12,9 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:time-machine": "playwright test tests/e2e/time-machine.spec.ts",
+    "test:e2e:robustness": "playwright test tests/e2e/date-change-robustness.spec.ts",
+    "test:e2e:all-date": "playwright test tests/e2e/time-machine.spec.ts tests/e2e/date-change-robustness.spec.ts",
+    "test:e2e:debug-auth": "playwright test tests/e2e/auth-debug.spec.ts --headed",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -57,7 +60,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.1.0",
-    "@playwright/test": "1.51.1",
+    "@playwright/test": "^1.51.1",
     "@tailwindcss/postcss": "4.1.18",
     "@types/bcryptjs": "2.4.6",
     "@types/node": "20.17.10",

@@ -47,6 +47,15 @@ export function useCategoryStats(): UseCategoryStatsReturn {
   // ⚡ CALCUL: Compter les exercices complétés pour la date de référence par catégorie
   // ⚡ FIX ROBUSTE: Forcer le recalcul en utilisant referenceDateKey comme clé de dépendance
   // ⚡ FIX: Pendant le chargement, retourner des stats à zéro pour éviter d'afficher les anciennes données
+  // ⚡ OPTIMISATION: Mémoriser les exercices filtrés pour éviter les recalculs inutiles
+  const completedExercices = useMemo(() => {
+    if (exercicesLoading || !exercices.length) {
+      return [];
+    }
+    // Filtrer une seule fois les exercices complétés pour la date de référence
+    return exercices.filter(ex => ex.completedToday === true);
+  }, [exercices, exercicesLoading]);
+
   const stats = useMemo(() => {
     const newStats: Record<ExerciceCategory, number> = { ...initialStats };
     
@@ -56,22 +65,21 @@ export function useCategoryStats(): UseCategoryStatsReturn {
       return newStats;
     }
     
-    if (!exercices.length) {
+    if (!completedExercices.length) {
       return newStats;
     }
     
-    // ⚡ FIX ROBUSTE: Filtrer les exercices pour ne compter que ceux avec completedToday === true
+    // ⚡ OPTIMISATION: Compter uniquement les exercices déjà filtrés (plus rapide)
     // completedToday est calculé côté serveur pour la date de référence (referenceDateKey)
-    // On utilise une boucle explicite pour garantir que le calcul se fait bien
-    exercices.forEach((exercice) => {
-      // ⚡ FIX: Vérifier explicitement que completedToday est true (pas undefined ou null)
-      if (exercice.completedToday === true && exercice.category && exercice.category in newStats) {
+    completedExercices.forEach((exercice) => {
+      // ⚡ FIX: Vérifier explicitement que la catégorie est valide
+      if (exercice.category && exercice.category in newStats) {
         newStats[exercice.category as ExerciceCategory]++;
       }
     });
     
     return newStats;
-  }, [exercices, referenceDateKey, exercicesLoading]);
+  }, [completedExercices, referenceDateKey, exercicesLoading]);
 
   return {
     stats,

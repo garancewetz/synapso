@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { AuthHelper } from './helpers/auth';
 import { TimeMachineHelper } from './helpers/time-machine';
+import { TEST_USER } from './helpers/test-constants';
 import { format, subDays, startOfDay } from 'date-fns';
 
 /**
@@ -22,7 +23,7 @@ test.describe('Mode Sablier (Time Machine)', () => {
     timeMachineHelper = new TimeMachineHelper(page);
 
     // Se connecter avec un utilisateur de test
-    await authHelper.login('Testeuse', 'calylove');
+    await authHelper.login(TEST_USER.username, TEST_USER.password);
     
     // Attendre un peu pour que la page se charge complètement
     await page.waitForTimeout(1000);

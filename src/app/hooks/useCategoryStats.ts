@@ -48,13 +48,14 @@ export function useCategoryStats(): UseCategoryStatsReturn {
   // ⚡ FIX ROBUSTE: Forcer le recalcul en utilisant referenceDateKey comme clé de dépendance
   // ⚡ FIX: Pendant le chargement, retourner des stats à zéro pour éviter d'afficher les anciennes données
   // ⚡ OPTIMISATION: Mémoriser les exercices filtrés pour éviter les recalculs inutiles
+  // ⚡ FIX BUG SABLIER: Ajouter referenceDateKey comme dépendance pour forcer le recalcul quand la date change
   const completedExercices = useMemo(() => {
     if (exercicesLoading || !exercices.length) {
       return [];
     }
     // Filtrer une seule fois les exercices complétés pour la date de référence
     return exercices.filter(ex => ex.completedToday === true);
-  }, [exercices, exercicesLoading]);
+  }, [exercices, exercicesLoading, referenceDateKey]);
 
   const stats = useMemo(() => {
     const newStats: Record<ExerciceCategory, number> = { ...initialStats };

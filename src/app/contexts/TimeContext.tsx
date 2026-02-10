@@ -26,7 +26,8 @@ export function TimeProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
 
   // Calculer la date de référence UNE SEULE FOIS avec dépendances stables
-  // ⚡ FIX: Pendant la transition, garder les anciennes données pour que l'animation se joue avant le changement
+  // ⚡ FIX BUG SABLIER: Mettre à jour referenceDate même pendant la transition pour que les données soient correctes
+  // L'animation visuelle peut continuer, mais les données doivent être à jour immédiatement
   const timeContextValue = useMemo<TimeContextType>(() => {
     // Par défaut : aujourd'hui
     // ⚡ FIX PREPROD: Utiliser startOfDay pour normaliser correctement la date
@@ -36,8 +37,9 @@ export function TimeProvider({ children }: PropsWithChildren) {
     let referenceDateKey = format(referenceDate, 'yyyy-MM-dd');
     
     // Mode sablier : utiliser la date sélectionnée
-    // ⚡ FIX: Ne pas mettre à jour pendant la transition pour que l'animation se joue d'abord
-    if (isTimeMachineMode && selectedDateKey && !isTransitioning) {
+    // ⚡ FIX BUG SABLIER: Mettre à jour même pendant la transition pour que les gauges affichent les bonnes valeurs
+    // L'animation visuelle (isTimeMachineMode) peut être retardée, mais les données doivent être à jour
+    if (isTimeMachineMode && selectedDateKey) {
       // ⚡ OPTIMISATION: Utiliser getDateFromKey() pour éviter la duplication de logique
       const dateFromKey = getDateFromKey(selectedDateKey);
       if (dateFromKey) {
@@ -47,16 +49,18 @@ export function TimeProvider({ children }: PropsWithChildren) {
     }
     
     // ⚡ PERFORMANCE: isToday calculé sans appel à date-fns (plus rapide)
-    // ⚡ FIX: Pendant la transition, garder l'état précédent
-    const isTodayValue = isTransitioning ? !isTimeMachineMode : !isTimeMachineMode;
+    // ⚡ FIX BUG SABLIER: Calculer isToday basé sur la vraie date de référence (pas la transition)
+    const isTodayValue = !isTimeMachineMode;
     
     return {
       referenceDate,
       referenceDateKey,
-      isTimeMachineMode: isTransitioning ? false : isTimeMachineMode,
+      // ⚡ FIX BUG SABLIER: Garder isTimeMachineMode basé sur la vraie date (pas la transition)
+      // L'animation visuelle peut être gérée ailleurs, mais les données doivent être correctes
+      isTimeMachineMode,
       isToday: isTodayValue,
     };
-  }, [isTimeMachineMode, selectedDateKey, isTransitioning]); // Dépendances minimales et stables (strings)
+  }, [isTimeMachineMode, selectedDateKey]); // ⚡ FIX: Retirer isTransitioning des dépendances pour que referenceDate se mette à jour immédiatement
 
   // ⚡ PERFORMANCE: Précharger les jours adjacents en arrière-plan avec TanStack Query
   // ⚡ OPTIMISATION: Utiliser un timeout pour éviter de précharger immédiatement après chaque changement
@@ -135,37 +139,34 @@ export function TimeProvider({ children }: PropsWithChildren) {
   // ⚡ FIX ROBUSTE: Invalider TOUTES les queries liées à la date quand la date change
   // Cela garantit que toutes les données sont recalculées pour la nouvelle date de référence
   // Solution simple et robuste : invalider tout ce qui dépend de la date
-  // ⚡ AMÉLIORATION: Debouncing pour éviter les invalidations multiples lors de changements rapides
+  // ⚡ FIX BUG SABLIER: Invalider IMMÉDIATEMENT même pendant la transition pour que les données se mettent à jour
+  // L'animation visuelle peut continuer, mais les données doivent être à jour
   useEffect(() => {
     if (!effectiveUser?.id) return;
     
-    // ⚡ OPTIMISATION: Debouncing pour les changements rapides de date (évite les invalidations multiples)
-    // Si l'utilisateur change rapidement de date, on attend un peu avant d'invalider
-    const timeoutId = setTimeout(() => {
-      // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
-      // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
-      // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
-      
-      // 1. Invalider les exercices (contient completedToday calculé pour la date)
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.exercices.all,
-        refetchType: 'active', // Forcer le refetch immédiat des queries actives
-      });
-      
-      // 2. Invalider le compteur d'exercices complétés (dépend de la date)
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.todayCompletedCount.all,
-        refetchType: 'active',
-      });
-      
-      // 3. Invalider les stats par catégorie (dépendent de completedToday)
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.categoryStats.all,
-        refetchType: 'active',
-      });
-    }, 50); // Délai de 50ms pour debouncer les changements rapides (assez court pour rester réactif)
+    // ⚡ FIX BUG SABLIER: Invalider immédiatement sans debouncing pour que les gauges se mettent à jour
+    // Le debouncing causait un décalage où les gauges affichaient les valeurs du jour d'avant
+    // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
+    // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
+    // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
     
-    return () => clearTimeout(timeoutId);
+    // 1. Invalider les exercices (contient completedToday calculé pour la date)
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.exercices.all,
+      refetchType: 'active', // Forcer le refetch immédiat des queries actives
+    });
+    
+    // 2. Invalider le compteur d'exercices complétés (dépend de la date)
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.todayCompletedCount.all,
+      refetchType: 'active',
+    });
+    
+    // 3. Invalider les stats par catégorie (dépendent de completedToday)
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.categoryStats.all,
+      refetchType: 'active',
+    });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
   return (

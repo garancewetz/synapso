@@ -63,14 +63,19 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
   }
 
   const handleUserSelect = async (userId: number) => {
-    if (userId === currentUser.id) {
-      // Revenir à son propre compte
-      await stopImpersonation();
-    } else {
-      // Impersonner cet utilisateur
-      await impersonate(userId);
+    try {
+      if (userId === currentUser.id) {
+        // Revenir à son propre compte
+        await stopImpersonation();
+      } else {
+        // Impersonner cet utilisateur
+        await impersonate(userId);
+      }
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la sélection de l\'utilisateur:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Erreur lors de la sélection de l\'utilisateur');
     }
-    setIsOpen(false);
   };
 
   const handleDeleteUser = async (userId: number, userName: string) => {

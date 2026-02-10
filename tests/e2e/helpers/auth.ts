@@ -349,7 +349,7 @@ export class AuthHelper {
         `Cookie d'authentification: ${authCookie ? 'Présent' : 'Absent'}\n` +
         `Capture d'écran sauvegardée dans test-results/auth-failed.png\n` +
         `Vérifiez que l'utilisateur "${username}" existe et que le mot de passe est correct.\n` +
-        `Contenu de la page: ${pageText.substring(0, 200)}...`
+        `Contenu de la page: ${pageText?.substring(0, 200) || 'Non disponible'}...`
       );
     }
   }

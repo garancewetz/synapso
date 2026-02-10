@@ -214,15 +214,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        // ⚡ TANSTACK QUERY: Mettre à jour le cache avec l'utilisateur impersonné
-        queryClient.setQueryData<typeof userData>(queryKeys.user.current(), (old) => {
-          if (!old) return old;
-          return { ...old, impersonatedUser: data.impersonatedUser };
+        // ⚡ FIX: Invalider la query pour forcer un refetch avec les nouvelles données
+        // Cela garantit que toutes les données sont à jour (effectiveUser, etc.)
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.user.current(),
+          refetchType: 'active',
         });
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Erreur lors de l\'impersonation' }));
+        throw new Error(error.error || 'Erreur lors de l\'impersonation');
       }
     } catch (error) {
       console.error('Erreur lors de l\'impersonation:', error);
+      throw error; // Propager l'erreur pour affichage dans le composant
     }
   }, [isAdmin, queryClient]);
 
@@ -237,14 +241,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
       });
 
       if (res.ok) {
-        // ⚡ TANSTACK QUERY: Mettre à jour le cache pour retirer l'impersonation
-        queryClient.setQueryData<typeof userData>(queryKeys.user.current(), (old) => {
-          if (!old) return old;
-          return { ...old, impersonatedUser: null };
+        // ⚡ FIX: Invalider la query pour forcer un refetch avec les nouvelles données
+        // Cela garantit que toutes les données sont à jour (effectiveUser, etc.)
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.user.current(),
+          refetchType: 'active',
         });
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Erreur lors de l\'arrêt de l\'impersonation' }));
+        throw new Error(error.error || 'Erreur lors de l\'arrêt de l\'impersonation');
       }
     } catch (error) {
       console.error('Erreur lors de l\'arrêt de l\'impersonation:', error);
+      throw error; // Propager l'erreur pour affichage dans le composant
     }
   }, [isAdmin, queryClient]);
 

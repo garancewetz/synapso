@@ -120,9 +120,12 @@ export function TimeProvider({ children }: PropsWithChildren) {
       queryKeys.categoryStats.all,       // → (déprécié, mais invalidé pour compatibilité)
     ];
     
-    // ⚡ BONNE PRATIQUE: Supprimer toutes les queries en une seule boucle
+    // ⚡ FIX: Utiliser invalidateQueries au lieu de removeQueries
+    // removeQueries supprimait les queries actives de la nouvelle date, causant un double-fetch
+    // et l'affichage de placeholders au lieu des données lors du changement de jour
+    // invalidateQueries marque les queries comme stale → refetch en arrière-plan sans perdre le cache
     dateDependentQueryKeys.forEach((queryKey) => {
-      queryClient.removeQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey });
     });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 

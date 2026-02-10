@@ -22,6 +22,8 @@ export { WeekHeatmap } from './components/WeekHeatmap';
 // Hooks
 export { useHistory } from './hooks/useHistory';
 export { useDayDetailData } from './hooks/useDayDetailData';
+export { useDayData } from './hooks/useDayData';
+export { useDayStats } from './hooks/useDayStats';
 
 // Utils
 export * from './utils/historique.utils';

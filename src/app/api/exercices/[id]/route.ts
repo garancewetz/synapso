@@ -441,11 +441,11 @@ export async function DELETE(
     });
 
     // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après suppression
-    revalidateTag(CACHE_TAGS.EXERCICES);
-    revalidateTag(CACHE_TAGS.EXERCICE(id));
-    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
-    revalidateTag(CACHE_TAGS.METADATA);
-    revalidateTag(CACHE_TAGS.USER_METADATA(userId));
+    revalidateTag(CACHE_TAGS.EXERCICES, 'max');
+    revalidateTag(CACHE_TAGS.EXERCICE(id), 'max');
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId), 'max');
+    revalidateTag(CACHE_TAGS.METADATA, 'max');
+    revalidateTag(CACHE_TAGS.USER_METADATA(userId), 'max');
 
     return NextResponse.json({ success: true });
   } catch (error) {

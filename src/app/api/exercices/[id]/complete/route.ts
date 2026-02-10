@@ -75,13 +75,13 @@ export async function PATCH(
 
     // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après complétion
     const targetDateKey = completedAt ? new Date(completedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-    revalidateTag(CACHE_TAGS.EXERCICES);
-    revalidateTag(CACHE_TAGS.EXERCICE(id));
-    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
-    revalidateTag(CACHE_TAGS.HISTORY);
-    revalidateTag(CACHE_TAGS.USER_HISTORY(userId));
-    revalidateTag(CACHE_TAGS.STATS);
-    revalidateTag(CACHE_TAGS.USER_STATS(userId, targetDateKey));
+    revalidateTag(CACHE_TAGS.EXERCICES, 'max');
+    revalidateTag(CACHE_TAGS.EXERCICE(id), 'max');
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId), 'max');
+    revalidateTag(CACHE_TAGS.HISTORY, 'max');
+    revalidateTag(CACHE_TAGS.USER_HISTORY(userId), 'max');
+    revalidateTag(CACHE_TAGS.STATS, 'max');
+    revalidateTag(CACHE_TAGS.USER_STATS(userId, targetDateKey), 'max');
 
     // ⚡ PERFORMANCE: Retourner immédiatement avec les valeurs calculées
     // Les valeurs manquantes seront mises à jour par le refetch automatique

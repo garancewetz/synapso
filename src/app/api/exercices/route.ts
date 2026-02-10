@@ -4,7 +4,7 @@ import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
-import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
+import { ExerciceCategory as PrismaExerciceCategory, Prisma } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay, setHours, setMinutes, setSeconds } from 'date-fns';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
@@ -329,7 +329,7 @@ export async function POST(request: NextRequest) {
         equipments: string;
         category: PrismaExerciceCategory;
         userId: number;
-        media: unknown;
+        media?: Prisma.InputJsonValue;
         createdAt?: Date;
       } = {
         name: trimmedName,
@@ -341,7 +341,7 @@ export async function POST(request: NextRequest) {
         equipments: JSON.stringify(data.equipments || []),
         category: category as PrismaExerciceCategory,
         userId: userId,
-        media: data.media ?? null,
+        ...(data.media && { media: data.media as Prisma.InputJsonValue }),
       };
 
       // Ajouter la date de création personnalisée si fournie
@@ -404,10 +404,10 @@ export async function POST(request: NextRequest) {
     };
 
     // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après création
-    revalidateTag(CACHE_TAGS.EXERCICES);
-    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId));
-    revalidateTag(CACHE_TAGS.METADATA);
-    revalidateTag(CACHE_TAGS.USER_METADATA(userId));
+    revalidateTag(CACHE_TAGS.EXERCICES, 'max');
+    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId), 'max');
+    revalidateTag(CACHE_TAGS.METADATA, 'max');
+    revalidateTag(CACHE_TAGS.USER_METADATA(userId), 'max');
 
     return NextResponse.json(formattedExercice, { status: 201 });
   } catch (error) {

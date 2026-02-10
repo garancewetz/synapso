@@ -93,10 +93,11 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
     // Si historyDateKeys n'a pas l'entrée (getDateKey retournait null), on recalcule pour être sûr
     return history.filter(entry => {
       // Essayer d'abord avec historyDateKeys (plus rapide)
-      let entryDateKey = historyDateKeys.get(entry.id);
+      let entryDateKey: string | undefined = historyDateKeys.get(entry.id);
       // Si pas trouvé, recalculer (peut arriver si getDateKey retournait null lors de la création de historyDateKeys)
       if (!entryDateKey) {
-        entryDateKey = getDateKey(entry.completedAt);
+        const computedDateKey = getDateKey(entry.completedAt);
+        entryDateKey = computedDateKey ?? undefined;
       }
       return entryDateKey && entryDateKey <= maxDateKey;
     });

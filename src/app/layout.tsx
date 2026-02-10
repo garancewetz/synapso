@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NavBar } from "@/app/components/NavBar";
-import { BottomNavBar } from "@/app/components/BottomNavBar";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
-import { PWARegister } from "@/app/components/PWARegister";
+import { LayoutComponents } from "@/app/components/LayoutComponents";
+import { LayoutUtils } from "@/app/components/LayoutUtils";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { CategoryProvider } from "@/app/contexts/CategoryContext";
@@ -15,13 +15,6 @@ import { HistoryProvider } from "@/app/contexts/HistoryContext";
 import { SelectedDateProvider } from "@/app/contexts/SelectedDateContext";
 import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
-import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
-import { SelectedDateBanner } from "@/app/components/SelectedDateBanner";
-import { SelectedDateBannerSpacer } from "@/app/components/SelectedDateBannerSpacer";
-import { TimeMachineWrapper } from "@/app/components/TimeMachineWrapper";
-import { TimeMachineTransition } from "@/app/components/TimeMachineTransition";
-import { GlobalCelebration } from "@/app/components/GlobalCelebration";
-import { WebVitals } from "@/app/components/WebVitals";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -76,34 +69,28 @@ export default function RootLayout({
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
-        <WebVitals />
-        <PWARegister />
+        <LayoutUtils />
         <QueryProvider>
           <UserProvider>
           <HistoryProvider>
             <CategoryProvider>
               <DayDetailModalProvider>
-                <SelectedDateProvider>
-                  <TimeProvider>
-                    <ToastProvider>
-                    <DevBanner />
-                    <AuthWrapper>
-                      <TimeMachineTransition />
-                      <TimeMachineWrapper>
-                        <SelectedDateBanner />
-                        <SelectedDateBannerSpacer />
-                        <NavBar />
-                        <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
+                {/* Suspense pour gérer useSearchParams() dans les composants enfants */}
+                {/* fallback={null} car on ne veut pas bloquer le rendu de l'application */}
+                <Suspense fallback={null}>
+                  <SelectedDateProvider>
+                    <TimeProvider>
+                      <ToastProvider>
+                      <DevBanner />
+                      <AuthWrapper>
+                        <LayoutComponents>
                           {children}
-                        </main>
-                        <BottomNavBar />
-                      </TimeMachineWrapper>
-                      <DayDetailModalWrapper />
-                      <GlobalCelebration />
-                    </AuthWrapper>
-                    </ToastProvider>
-                  </TimeProvider>
-                </SelectedDateProvider>
+                        </LayoutComponents>
+                      </AuthWrapper>
+                      </ToastProvider>
+                    </TimeProvider>
+                  </SelectedDateProvider>
+                </Suspense>
               </DayDetailModalProvider>
             </CategoryProvider>
           </HistoryProvider>

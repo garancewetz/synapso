@@ -33,7 +33,8 @@ export function SelectedDateBanner() {
       <div 
         role="banner"
         aria-label="Mode sablier actif"
-        className="fixed top-0 left-0 right-0 z-50 bg-indigo-900 border-b-2 border-indigo-700 shadow-lg"
+        data-testid="time-machine-banner"
+        className="fixed top-0 left-0 right-0 z-[100] bg-indigo-900 border-b-2 border-indigo-700 shadow-lg"
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0)',
           backgroundSize: '20px 20px'

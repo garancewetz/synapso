@@ -34,7 +34,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 pb-safe md:hidden shadow-lg"
+      className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t-2 border-gray-200 pb-safe md:hidden shadow-lg"
       aria-label="Navigation principale"
     >
       <div className="px-1">

@@ -40,10 +40,12 @@ export function useCategoryStats(): UseCategoryStatsReturn {
   // ⚡ OPTIMISATION: Utiliser les exercices qui ont déjà `completedToday` calculé
   // Le serveur calcule `completedToday` pour la date de référence (targetDate)
   // via useExercices qui utilise TimeContext pour déterminer la date de référence
+  // ⚡ NOTE: TimeContext invalide déjà les queries d'exercices quand la date change,
+  // donc pas besoin de refetch explicite ici
   const { exercices, loading: exercicesLoading } = useExercices();
 
   // ⚡ CALCUL: Compter les exercices complétés pour la date de référence par catégorie
-  // ⚡ FIX: Ajouter referenceDateKey comme dépendance pour forcer le recalcul quand la date change
+  // ⚡ FIX ROBUSTE: Forcer le recalcul en utilisant referenceDateKey comme clé de dépendance
   // ⚡ FIX: Pendant le chargement, retourner des stats à zéro pour éviter d'afficher les anciennes données
   const stats = useMemo(() => {
     const newStats: Record<ExerciceCategory, number> = { ...initialStats };
@@ -58,10 +60,12 @@ export function useCategoryStats(): UseCategoryStatsReturn {
       return newStats;
     }
     
-    // Compter les exercices avec completedToday === true par catégorie
+    // ⚡ FIX ROBUSTE: Filtrer les exercices pour ne compter que ceux avec completedToday === true
     // completedToday est calculé côté serveur pour la date de référence (referenceDateKey)
+    // On utilise une boucle explicite pour garantir que le calcul se fait bien
     exercices.forEach((exercice) => {
-      if (exercice.completedToday && exercice.category && exercice.category in newStats) {
+      // ⚡ FIX: Vérifier explicitement que completedToday est true (pas undefined ou null)
+      if (exercice.completedToday === true && exercice.category && exercice.category in newStats) {
         newStats[exercice.category as ExerciceCategory]++;
       }
     });

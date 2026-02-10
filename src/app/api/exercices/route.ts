@@ -108,6 +108,12 @@ export async function GET(request: NextRequest) {
       user.resetFrequency,
     ]);
 
+    // ⚡ SOLUTION ROBUSTE: Réduire le cache en mode sablier pour garantir des données fraîches
+    // Le cache est déjà isolé par date (targetDateKey dans cacheKey), donc chaque date a son propre cache
+    // En mode sablier, on veut des données fraîches immédiatement (cache de 1 seconde)
+    // En mode normal, on garde 30 secondes pour la performance
+    const cacheRevalidate = targetDateParam ? 1 : 30;
+    
     const formattedExercices = await cacheApiResponse(
       cacheKey,
       async () => {
@@ -211,10 +217,11 @@ export async function GET(request: NextRequest) {
         return formattedExercices;
       },
       {
-        // ⚡ PERFORMANCE: Cache côté serveur (30 secondes car les exercices peuvent changer)
+        // ⚡ SOLUTION ROBUSTE: Cache adaptatif selon le mode
+        // - Mode sablier (targetDate fourni) : cache de 1 seconde pour données fraîches
+        // - Mode normal : cache de 30 secondes pour performance
         // ⚡ NOTE: Chaque date a sa propre clé de cache (targetDateKey dans cacheKey), donc le cache est isolé par date
-        // Le cache ne devrait pas causer de problème car chaque date a sa propre entrée de cache
-        revalidate: 30, // 30 secondes (les exercices peuvent changer rapidement)
+        revalidate: cacheRevalidate,
         tags: [
           CACHE_TAGS.EXERCICES,
           CACHE_TAGS.USER_EXERCICES(userId),

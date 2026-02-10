@@ -105,23 +105,32 @@ export function TimeProvider({ children }: PropsWithChildren) {
     return () => clearTimeout(timeoutId);
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
-  // ⚡ FIX: Invalider les queries d'exercices et categoryStats quand la date change
-  // pour forcer le refetch avec la nouvelle referenceDateKey (aujourd'hui ou date sélectionnée)
+  // ⚡ FIX ROBUSTE: Invalider TOUTES les queries liées à la date quand la date change
+  // Cela garantit que toutes les données sont recalculées pour la nouvelle date de référence
+  // Solution simple et robuste : invalider tout ce qui dépend de la date
   useEffect(() => {
     if (!effectiveUser?.id) return;
     
-    // Invalider les queries d'exercices quand la date change (entrée ou sortie du mode sablier)
-    // Cela force le refetch avec la nouvelle targetDate et met à jour completedToday
+    // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
+    // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
     // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
+    
+    // 1. Invalider les exercices (contient completedToday calculé pour la date)
     queryClient.invalidateQueries({
       queryKey: queryKeys.exercices.all,
       refetchType: 'active', // Forcer le refetch immédiat des queries actives
     });
     
-    // Invalider aussi les queries de categoryStats pour forcer le recalcul
+    // 2. Invalider le compteur d'exercices complétés (dépend de la date)
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.todayCompletedCount.all,
+      refetchType: 'active',
+    });
+    
+    // 3. Invalider les stats par catégorie (dépendent de completedToday)
     queryClient.invalidateQueries({
       queryKey: queryKeys.categoryStats.all,
-      refetchType: 'active', // Forcer le refetch immédiat des queries actives
+      refetchType: 'active',
     });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 

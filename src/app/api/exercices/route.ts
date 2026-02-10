@@ -6,7 +6,7 @@ import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory, Prisma } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, setHours, setMinutes, setSeconds } from 'date-fns';
+import { addDays, startOfDay, setHours, setMinutes, setSeconds, format } from 'date-fns';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 
 type ExerciceWithArchived = {
@@ -148,12 +148,14 @@ export async function GET(request: NextRequest) {
         const completedInPeriod = weeklyCompletions.length > 0;
         
         // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
-        const startOfTargetDay = startOfDay(now);
-        const endOfTargetDay = startOfDay(addDays(now, 1));
+        // ⚡ FIX: Comparer les dates par leur clé (yyyy-MM-dd) pour éviter les problèmes de timezone
+        // C'est plus simple et plus fiable que de comparer les dates normalisées
+        const targetDateKey = format(startOfDay(now), 'yyyy-MM-dd');
         const hasTargetDayHistory = exercice.history.some(
           (h) => {
             const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
-            return completedDate >= startOfTargetDay && completedDate < endOfTargetDay;
+            const completedDateKey = format(startOfDay(completedDate), 'yyyy-MM-dd');
+            return completedDateKey === targetDateKey;
           }
         );
         const completedToday = hasTargetDayHistory;
@@ -209,10 +211,10 @@ export async function GET(request: NextRequest) {
         return formattedExercices;
       },
       {
-        // ⚡ FIX: Réduire le cache en mode sablier (targetDate fourni) pour éviter les données obsolètes
-        // En mode sablier, on veut des données fraîches immédiatement, pas de cache de 30 secondes
-        // En mode normal, on garde 30 secondes pour la performance
-        revalidate: targetDateParam ? 0 : 30, // 0 seconde en mode sablier, 30 secondes en mode normal
+        // ⚡ PERFORMANCE: Cache côté serveur (30 secondes car les exercices peuvent changer)
+        // ⚡ NOTE: Chaque date a sa propre clé de cache (targetDateKey dans cacheKey), donc le cache est isolé par date
+        // Le cache ne devrait pas causer de problème car chaque date a sa propre entrée de cache
+        revalidate: 30, // 30 secondes (les exercices peuvent changer rapidement)
         tags: [
           CACHE_TAGS.EXERCICES,
           CACHE_TAGS.USER_EXERCICES(userId),
@@ -220,16 +222,7 @@ export async function GET(request: NextRequest) {
       }
     );
     
-    // ⚡ FIX: En mode sablier, ajouter des headers pour éviter le cache navigateur/CDN
-    const response = NextResponse.json(formattedExercices);
-    if (targetDateParam) {
-      // Mode sablier : forcer le refetch en évitant le cache navigateur/CDN
-      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
-    }
-    
-    return response;
+    return NextResponse.json(formattedExercices);
   } catch (error) {
     logError('Error fetching exercices', error);
     return NextResponse.json(

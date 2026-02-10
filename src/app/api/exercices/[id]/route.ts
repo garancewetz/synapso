@@ -6,7 +6,7 @@ import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { isCompletedToday, getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay } from 'date-fns';
+import { addDays, startOfDay, format } from 'date-fns';
 import { deleteExerciceMedia, deletePhoto } from '@/app/utils/cloudinary.utils';
 import { CACHE_TAGS } from '@/app/lib/cache';
 
@@ -121,10 +121,15 @@ export async function GET(
     const completedInPeriod = weeklyCompletions.length > 0;
     
     // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
-    const startOfTargetDay = startOfDay(now);
-    const endOfTargetDay = startOfDay(addDays(now, 1));
+    // ⚡ FIX: Comparer les dates par leur clé (yyyy-MM-dd) pour éviter les problèmes de timezone
+    // C'est plus simple et plus fiable que de comparer les dates normalisées
+    const targetDateKey = format(startOfDay(now), 'yyyy-MM-dd');
     const hasTargetDayHistory = exercice.history.some(
-      (h) => h.completedAt >= startOfTargetDay && h.completedAt < endOfTargetDay
+      (h) => {
+        const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
+        const completedDateKey = format(startOfDay(completedDate), 'yyyy-MM-dd');
+        return completedDateKey === targetDateKey;
+      }
     );
     const completedToday = hasTargetDayHistory;
 

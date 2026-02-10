@@ -12,6 +12,7 @@ import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, BODYPART_COLORS, AVAILABLE_BODYPARTS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { CheckIcon } from '@/app/components/ui/icons';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
+import { useCategoryStats } from '@/app/hooks/useCategoryStats';
 import { MediaUploader } from '@/app/components/MediaUploader';
 import { queryKeys } from '@/app/lib/api-queries';
 import clsx from 'clsx';
@@ -29,6 +30,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const { refreshHistory } = useHistoryContext();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const queryClient = useQueryClient();
+  const { refresh: refreshCategoryStats } = useCategoryStats();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -108,6 +110,10 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       
       // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
       refreshHistory();
+      
+      // ⚡ MODE SABLIER: Forcer le refresh des stats de catégorie pour mettre à jour les gauges
+      // après ajout d'un exercice en mode sablier
+      await refreshCategoryStats();
 
       if (onSuccess) {
         onSuccess();
@@ -159,6 +165,10 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       
       // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
       refreshHistory();
+      
+      // ⚡ MODE SABLIER: Forcer le refresh des stats de catégorie pour mettre à jour les gauges
+      // après suppression d'un exercice en mode sablier
+      await refreshCategoryStats();
 
       if (onSuccess) {
         onSuccess();

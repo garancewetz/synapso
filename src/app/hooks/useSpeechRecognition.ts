@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface UseSpeechRecognitionOptions {
+type UseSpeechRecognitionOptions = {
   onResult?: (transcript: string) => void;
   onError?: (error: string) => void;
   lang?: string;
-}
+};
 
-interface UseSpeechRecognitionReturn {
+type UseSpeechRecognitionReturn = {
   isListening: boolean;
   isSupported: boolean;
   /** Texte en cours de reconnaissance (temps réel) */
@@ -14,7 +14,7 @@ interface UseSpeechRecognitionReturn {
   startListening: () => void;
   stopListening: () => void;
   toggleListening: () => void;
-}
+};
 
 /**
  * Détecte la locale du navigateur pour la reconnaissance vocale

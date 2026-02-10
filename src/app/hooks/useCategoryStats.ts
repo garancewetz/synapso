@@ -6,11 +6,11 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { useExercices } from '@/app/hooks/useExercices';
 import { queryKeys } from '@/app/lib/api-queries';
 
-interface UseCategoryStatsReturn {
+type UseCategoryStatsReturn = {
   stats: Record<ExerciceCategory, number>;
   loading: boolean;
   refresh: () => Promise<void>;
-}
+};
 
 const initialStats: Record<ExerciceCategory, number> = {
   UPPER_BODY: 0,

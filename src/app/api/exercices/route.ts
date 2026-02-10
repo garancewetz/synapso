@@ -209,7 +209,10 @@ export async function GET(request: NextRequest) {
         return formattedExercices;
       },
       {
-        revalidate: 30, // 30 secondes (les exercices peuvent changer rapidement)
+        // ⚡ FIX: Réduire le cache en mode sablier (targetDate fourni) pour éviter les données obsolètes
+        // En mode sablier, on veut des données fraîches immédiatement, pas de cache de 30 secondes
+        // En mode normal, on garde 30 secondes pour la performance
+        revalidate: targetDateParam ? 0 : 30, // 0 seconde en mode sablier, 30 secondes en mode normal
         tags: [
           CACHE_TAGS.EXERCICES,
           CACHE_TAGS.USER_EXERCICES(userId),
@@ -217,7 +220,16 @@ export async function GET(request: NextRequest) {
       }
     );
     
-    return NextResponse.json(formattedExercices);
+    // ⚡ FIX: En mode sablier, ajouter des headers pour éviter le cache navigateur/CDN
+    const response = NextResponse.json(formattedExercices);
+    if (targetDateParam) {
+      // Mode sablier : forcer le refetch en évitant le cache navigateur/CDN
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    }
+    
+    return response;
   } catch (error) {
     logError('Error fetching exercices', error);
     return NextResponse.json(

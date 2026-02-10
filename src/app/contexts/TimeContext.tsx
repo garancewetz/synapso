@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { startOfDay, format } from 'date-fns';
 import { useSelectedDate } from './SelectedDateContext';
 import { useUser } from './UserContext';
-import { queryKeys, fetchTodayCompletedCount, fetchExercices } from '@/app/lib/api-queries';
+import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
 import { getDateFromKey, getDateKey } from '@/app/utils/date.utils';
 
 type TimeContextType = {
@@ -88,32 +88,7 @@ export function TimeProvider({ children }: PropsWithChildren) {
       
       const prevDayISO = prevDay.toISOString();
       const nextDayISO = nextDay.toISOString();
-      
-      // ⚡ TANSTACK QUERY: Précharger le compteur d'exercices complétés
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.todayCompletedCount.list({
-          userId: effectiveUser.id,
-          dateKey: prevDayKey,
-        }),
-        queryFn: () => fetchTodayCompletedCount({
-          userId: effectiveUser.id,
-          dateKey: prevDayKey,
-        }),
-      });
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.todayCompletedCount.list({
-          userId: effectiveUser.id,
-          dateKey: nextDayKey,
-        }),
-        queryFn: () => fetchTodayCompletedCount({
-          userId: effectiveUser.id,
-          dateKey: nextDayKey,
-        }),
-      });
 
-      // ⚡ AMÉLIORATION: Précharger aussi les exercices pour les jours adjacents
-      // Cela permet une navigation instantanée sans attendre le chargement
       queryClient.prefetchQuery({
         queryKey: queryKeys.exercices.list({
           targetDate: prevDayISO,
@@ -136,33 +111,18 @@ export function TimeProvider({ children }: PropsWithChildren) {
     return () => clearTimeout(timeoutId);
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
-  // ⚡ FIX ROBUSTE: Invalider TOUTES les queries liées à la date quand la date change
-  // Cela garantit que toutes les données sont recalculées pour la nouvelle date de référence
-  // Solution simple et robuste : invalider tout ce qui dépend de la date
-  // ⚡ FIX BUG SABLIER: Invalider IMMÉDIATEMENT même pendant la transition pour que les données se mettent à jour
-  // L'animation visuelle peut continuer, mais les données doivent être à jour
   useEffect(() => {
     if (!effectiveUser?.id) return;
+
+    const dateDependentQueryKeys = [
+      queryKeys.exercices.all,           // → useExercices, useCategoryStats, useTodayCompletedCount (via select)
+      queryKeys.history.all,             // → useHistory, WelcomeHeaderWrapper, HistoriquePageClient
+      queryKeys.categoryStats.all,       // → (déprécié, mais invalidé pour compatibilité)
+    ];
     
-    // ⚡ FIX BUG SABLIER CACHE: Supprimer complètement les entrées du cache pour forcer un nouveau fetch
-    // Le problème est que refetchType: 'active' ne force pas le refetch si les données sont encore dans staleTime
-    // En navigation privée, pas de cache donc ça fonctionne, mais en navigation normale le cache garde les anciennes données
-    // Solution : supprimer les entrées du cache pour forcer un nouveau fetch immédiat
-    
-    // 1. Supprimer les exercices du cache (contient completedToday calculé pour la date)
-    // removeQueries supprime complètement les entrées, forçant un nouveau fetch au prochain useQuery
-    queryClient.removeQueries({
-      queryKey: queryKeys.exercices.all,
-    });
-    
-    // 2. Supprimer le compteur d'exercices complétés du cache (dépend de la date)
-    queryClient.removeQueries({
-      queryKey: queryKeys.todayCompletedCount.all,
-    });
-    
-    // 3. Supprimer les stats par catégorie du cache (dépendent de completedToday)
-    queryClient.removeQueries({
-      queryKey: queryKeys.categoryStats.all,
+    // ⚡ BONNE PRATIQUE: Supprimer toutes les queries en une seule boucle
+    dateDependentQueryKeys.forEach((queryKey) => {
+      queryClient.removeQueries({ queryKey });
     });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 

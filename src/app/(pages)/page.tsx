@@ -6,7 +6,7 @@ import { WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
-import { useExercices, useCategoryStats } from '@/app/features/exercices';
+import { useExercices } from '@/app/features/exercices';
 import { useProgress, triggerProgressRefresh, useProgressModal } from '@/app/features/progress';
 import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
 import { useHomeTabs } from '@/app/hooks/useHomeTabs';
@@ -45,9 +45,8 @@ export default function Home() {
   // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
   usePrefetchCommonPages();
   
-  const { exercices, refetch: refetchExercices } = useExercices();
+  const { exercices, error: exercicesError, refetch: refetchExercices } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
-  const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats();
   const { refetch: refetchProgress } = useProgress();
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
 
@@ -72,14 +71,15 @@ export default function Home() {
 
   const handleProgressSuccess = useCallback(() => {
     // ⚡ TANSTACK QUERY: Invalider les queries concernées
+    // ⚡ NOTE: Les CategoryCardWithProgress utilisent maintenant useCategoryStats directement,
+    // donc l'invalidation du cache suffit pour les mettre à jour
     queryClient.invalidateQueries({ queryKey: queryKeys.progress.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.categoryStats.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
     triggerProgressRefresh();
     refetchProgress();
-    refreshCategoryStats();
     refetchExercices();
-  }, [queryClient, refetchProgress, refetchExercices, refreshCategoryStats]);
+  }, [queryClient, refetchProgress, refetchExercices]);
 
   return (
     <section>
@@ -90,7 +90,7 @@ export default function Home() {
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-12 md:pb-8">
           <AnimatePresence mode="wait">
-            {!effectiveUser && userLoading ? (
+            {userLoading ? (
               <MotionDiv
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -106,9 +106,15 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center justify-center py-12"
+                className="flex flex-col items-center justify-center py-12 gap-3"
               >
-                <div className="text-gray-500">Chargement...</div>
+                <div className="text-gray-500">Impossible de charger votre profil.</div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-sm text-blue-600 underline"
+                >
+                  Réessayer
+                </button>
               </MotionDiv>
             ) : (
               <MotionDiv
@@ -136,9 +142,8 @@ export default function Home() {
                   <>
                    <HomeExercicesTab
                     exercices={exercices}
-                    categoryStats={categoryStats}
                     relatedStretchingByCategory={relatedStretchingByCategory}
-                    loadingStats={loadingStats}
+                    error={exercicesError}
                   />
                   </>
 

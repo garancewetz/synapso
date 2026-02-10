@@ -6,13 +6,12 @@ import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
 import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { useCategoryStats } from '../hooks/useCategoryStats';
 
 type Props = {
   category: ExerciceCategory;
   /** Nombre total d'exercices dans cette catégorie */
   total: number;
-  /** Nombre d'exercices complétés dans la période */
-  completedCount: number;
   /** Nombre d'étirements liés à cette catégorie */
   relatedStretchingCount?: number;
 };
@@ -24,11 +23,13 @@ type Props = {
  * - Grande zone de clic
  * - Icône visuelle claire
  * - Progression visible directement
+ * 
+ * ⚡ FIX: Utilise useCategoryStats directement pour récupérer les stats de la catégorie
+ * Cela garantit que les gauges se mettent à jour correctement en mode sablier
  */
 export function CategoryCardWithProgress({ 
   category, 
   total, 
-  completedCount,
   relatedStretchingCount = 0
 }: Props) {
   const preserveDate = usePreserveDateParam();
@@ -36,12 +37,18 @@ export function CategoryCardWithProgress({
   const icon = CATEGORY_ICONS[category];
   const label = CATEGORY_LABELS[category];
   const href = CATEGORY_HREFS[category];
+  
+  // ⚡ FIX: Utiliser useCategoryStats directement pour récupérer les stats de cette catégorie
+  // Cela garantit que les gauges se mettent à jour correctement en mode sablier
+  const { stats, loading: loadingStats, error: statsError } = useCategoryStats();
+  const isLoading = loadingStats && !statsError;
+  const completedCount = isLoading ? null : (statsError ? 0 : stats[category]);
 
-  // Calculer le pourcentage de progression (max 100%)
-  const percentage = total > 0 ? Math.min((completedCount / total) * 100, 100) : 0;
-  const hasProgress = completedCount > 0;
-  const isComplete = completedCount >= total;
-  const hasBonus = completedCount > total;
+  const safeCount = completedCount ?? 0;
+  const percentage = total > 0 ? Math.min((safeCount / total) * 100, 100) : 0;
+  const hasProgress = safeCount > 0;
+  const isComplete = safeCount >= total;
+  const hasBonus = safeCount > total;
   
   // Texte adapté selon la catégorie
   const itemLabel = category === 'STRETCHING' ? 'étirement' : 'exercice';
@@ -50,7 +57,7 @@ export function CategoryCardWithProgress({
   return (
     <TouchLink 
       href={preserveDate(href)}
-      aria-label={`${label} - ${Math.min(completedCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? `, ${completedCount - total} ${itemLabelPlural} bonus` : ''}`}
+      aria-label={`${label} - ${Math.min(safeCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? `, ${safeCount - total} ${itemLabelPlural} bonus` : ''}`}
       aria-describedby={`progress-${category}`}
       className="block group"
     >
@@ -103,16 +110,20 @@ export function CategoryCardWithProgress({
           {/* Badge de progression */}
           <div className={clsx(
             'shrink-0 px-2.5 py-1 rounded-full font-bold text-xs flex items-center gap-1',
-            hasProgress ? `${styles.accent} text-white` : 'bg-gray-200 text-gray-500'
+            completedCount === null
+              ? 'bg-gray-200 animate-pulse'
+              : hasProgress ? `${styles.accent} text-white` : 'bg-gray-200 text-gray-500'
           )}>
-            {isComplete ? (
+            {completedCount === null ? (
+              <span className="w-6 h-3" />
+            ) : isComplete ? (
               <>
                 <span>✓</span>
                 <span>{total}/{total}</span>
-                {hasBonus && <span className="text-[10px] opacity-75">+{completedCount - total}</span>}
+                {hasBonus && <span className="text-[10px] opacity-75">+{safeCount - total}</span>}
               </>
             ) : (
-              <span>{completedCount}/{total}</span>
+              <span>{safeCount}/{total}</span>
             )}
           </div>
         </div>
@@ -122,18 +133,18 @@ export function CategoryCardWithProgress({
           <div 
             className="h-1.5 bg-white/60 rounded-full overflow-hidden" 
             role="progressbar" 
-            aria-valuenow={Math.min(completedCount, total)} 
-            aria-valuemin={0} 
-            aria-valuemax={total} 
-            aria-label={`Progression : ${Math.min(completedCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? ` (+${completedCount - total} bonus)` : ''}`} 
+            aria-valuenow={Math.min(safeCount, total)}
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-label={`Progression : ${Math.min(safeCount, total)} sur ${total} ${itemLabelPlural} complétés${hasBonus ? ` (+${safeCount - total} bonus)` : ''}`}
             id={`progress-${category}`}
           >
             <div
               className={clsx(
                 'h-full rounded-full transition-all duration-500 ease-out',
-                styles.accent
+                completedCount === null ? 'animate-pulse bg-gray-300' : styles.accent
               )}
-              style={{ width: `${percentage}%` }}
+              style={{ width: completedCount === null ? '30%' : `${percentage}%` }}
             />
           </div>
         </div>

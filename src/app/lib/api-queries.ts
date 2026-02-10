@@ -4,7 +4,6 @@ import type { HistoryEntry } from '@/app/types';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { isCompletedToday } from '@/app/utils/resetFrequency.utils';
 
 // ⚡ QUERY KEYS: Centraliser les clés de requête pour éviter les erreurs de typo
 export const queryKeys = {
@@ -107,10 +106,9 @@ export async function fetchExercices(filters: {
   return res.json();
 }
 
-export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: Date }): Promise<HistoryEntry[]> {
-  // ⚡ FIX MODE SABLIER: Utiliser referenceDate si fourni (mode sablier), sinon utiliser aujourd'hui
-  const baseDate = params.referenceDate || new Date();
-  
+export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: string }): Promise<HistoryEntry[]> {
+  const baseDate = params.referenceDate ? new Date(params.referenceDate) : new Date();
+
   const url = params.days !== null && params.days !== undefined
     ? `/api/history?since=${encodeURIComponent(subDays(baseDate, params.days).toISOString())}`
     : '/api/history';
@@ -185,44 +183,6 @@ export async function fetchCategoryStatsAggregated(params: {
   }
   
   return res.json();
-}
-
-export async function fetchTodayCompletedCount(params: {
-  userId: number;
-  dateKey: string | null;
-}): Promise<number> {
-  const urlParams = new URLSearchParams();
-  if (params.dateKey) {
-    const targetDate = new Date(params.dateKey + 'T00:00:00');
-    urlParams.append('targetDate', targetDate.toISOString());
-  }
-  
-  const url = urlParams.toString() 
-    ? `/api/exercices?${urlParams.toString()}`
-    : `/api/exercices`;
-  
-  const res = await fetch(url, { credentials: 'include' });
-  
-  if (!res.ok) {
-    throw new Error(`Erreur HTTP: ${res.status}`);
-  }
-  
-  const exercices = await res.json();
-  
-  if (!Array.isArray(exercices)) {
-    return 0;
-  }
-  
-  // Filtrer les exercices complétés pour la date concernée
-  if (params.dateKey) {
-    return exercices.filter((ex: { completedToday?: boolean }) => ex.completedToday === true).length;
-  } else {
-    return exercices.filter((ex: { completedAt?: string | Date | null }) => {
-      if (!ex.completedAt) return false;
-      const completedDate = ex.completedAt instanceof Date ? ex.completedAt : new Date(ex.completedAt);
-      return isCompletedToday(completedDate);
-    }).length;
-  }
 }
 
 type User = {

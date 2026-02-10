@@ -14,16 +14,14 @@ const MotionDiv = dynamic(
 
 type Props = {
   exercices: Exercice[];
-  categoryStats: Record<ExerciceCategory, number>;
   relatedStretchingByCategory: Record<ExerciceCategory, number>;
-  loadingStats: boolean;
+  error?: Error | null;
 };
 
 export const HomeExercicesTab = memo(function HomeExercicesTab({
   exercices,
-  categoryStats,
   relatedStretchingByCategory,
-  loadingStats,
+  error,
 }: Props) {
   // ⚡ PERFORMANCE: Mémoriser le filtrage des exercices par catégorie
   const exercicesByCategory = useMemo(() => {
@@ -39,6 +37,11 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
   }, [exercices]);
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          Impossible de charger les exercices. Tirez vers le bas pour réessayer.
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         {CATEGORY_ORDER.map((category, index) => {
           const categoryExercices = exercicesByCategory.get(category) || [];
@@ -53,7 +56,6 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
               <CategoryCardWithProgress
                 category={category}
                 total={categoryExercices.length}
-                completedCount={loadingStats ? 0 : categoryStats[category]}
                 relatedStretchingCount={relatedStretchingByCategory[category]}
               />
             </MotionDiv>

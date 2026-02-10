@@ -1,15 +1,17 @@
 'use client';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { useExercices } from './useExercices';
+import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
-import { queryKeys } from '@/app/lib/api-queries';
+import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
+import { dateKeyToISO } from '@/app/utils/date.utils';
 
 type UseCategoryStatsReturn = {
   stats: Record<ExerciceCategory, number>;
   loading: boolean;
+  error: Error | null;
   refresh: () => Promise<void>;
 };
 
@@ -21,72 +23,62 @@ const initialStats: Record<ExerciceCategory, number> = {
 };
 
 /**
- * Hook pour charger les statistiques d'exercices complétés par catégorie
- * pour la date de référence (aujourd'hui ou date sélectionnée en mode sablier)
+ * Hook pour calculer les stats par catégorie pour la date de référence
  * 
- * ⚡ OPTIMISATION: Utilise directement les exercices qui ont déjà `completedToday`
- * calculé côté serveur, au lieu de filtrer l'historique. Plus performant et fiable.
+ * ⚡ BONNE PRATIQUE REACT: Utilise directement TanStack Query avec `select` pour calculer
+ * les stats directement dans la query, évitant les dépendances en cascade et les race conditions.
  * 
- * ⚡ SIMPLIFICATION: Les paramètres userId et resetFrequency ne sont plus nécessaires
- * car le calcul se fait directement depuis les exercices qui ont déjà completedToday
- * calculé pour la date de référence (via useExercices qui utilise TimeContext).
- * 
- * ⚡ FIX: Utilise referenceDateKey comme dépendance pour forcer le recalcul quand la date change
+ * ⚡ STABILITÉ: La query key inclut referenceDateKey, donc les stats sont toujours synchronisées
+ * avec la date actuelle. Pas besoin de vérifier manuellement si les données sont obsolètes.
  */
 export function useCategoryStats(): UseCategoryStatsReturn {
   const queryClient = useQueryClient();
-  const { referenceDateKey } = useTimeContext();
+  const { effectiveUser } = useUser();
+  const { isTimeMachineMode, referenceDateKey } = useTimeContext();
   
-  // ⚡ OPTIMISATION: Utiliser les exercices qui ont déjà `completedToday` calculé
-  // Le serveur calcule `completedToday` pour la date de référence (targetDate)
-  // via useExercices qui utilise TimeContext pour déterminer la date de référence
-  // ⚡ NOTE: TimeContext invalide déjà les queries d'exercices quand la date change,
-  // donc pas besoin de refetch explicite ici
-  const { exercices, loading: exercicesLoading } = useExercices();
+  // ⚡ BONNE PRATIQUE: Calculer les filtres une seule fois
+  const filters = useMemo(() => {
+    let targetDate: string | undefined;
+    if (isTimeMachineMode && referenceDateKey) {
+      targetDate = dateKeyToISO(referenceDateKey);
+    }
+    
+    return {
+      targetDate,
+    };
+  }, [isTimeMachineMode, referenceDateKey]);
 
-  // ⚡ CALCUL: Compter les exercices complétés pour la date de référence par catégorie
-  // ⚡ FIX ROBUSTE: Forcer le recalcul en utilisant referenceDateKey comme clé de dépendance
-  // ⚡ FIX: Pendant le chargement, retourner des stats à zéro pour éviter d'afficher les anciennes données
-  // ⚡ OPTIMISATION: Mémoriser les exercices filtrés pour éviter les recalculs inutiles
-  // ⚡ FIX BUG SABLIER: Ajouter referenceDateKey comme dépendance pour forcer le recalcul quand la date change
-  const completedExercices = useMemo(() => {
-    if (exercicesLoading || !exercices.length) {
-      return [];
-    }
-    // Filtrer une seule fois les exercices complétés pour la date de référence
-    return exercices.filter(ex => ex.completedToday === true);
-  }, [exercices, exercicesLoading, referenceDateKey]);
-
-  const stats = useMemo(() => {
-    const newStats: Record<ExerciceCategory, number> = { ...initialStats };
-    
-    // ⚡ FIX: Si on charge, retourner des stats à zéro pour éviter d'afficher les anciennes données
-    // Cela garantit que les gauges se mettent à jour correctement quand on change de date
-    if (exercicesLoading) {
+  // ⚡ BONNE PRATIQUE: Utiliser la même query key que useExercices et `select` pour transformer
+  // les données directement. Cela garantit que les stats sont toujours synchronisées avec les exercices
+  // et partage le cache, évitant les race conditions et les doublons de requêtes
+  const exercicesQueryKey = queryKeys.exercices.list(filters);
+  const { data: stats = initialStats, isLoading, error } = useQuery({
+    queryKey: exercicesQueryKey,
+    queryFn: () => fetchExercices(filters),
+    enabled: !!effectiveUser,
+    // ⚡ BONNE PRATIQUE: Utiliser `select` pour transformer les données directement dans la query
+    // Cela garantit que les stats sont toujours calculées avec les données de la query actuelle
+    // ⚡ IMPORTANT: TanStack Query recalcule automatiquement les queries avec `select` quand les données de base changent
+    select: (exercices) => {
+      const newStats: Record<ExerciceCategory, number> = { ...initialStats };
+      exercices.forEach((exercice) => {
+        if (exercice.completedToday && exercice.category && exercice.category in newStats) {
+          newStats[exercice.category as ExerciceCategory]++;
+        }
+      });
       return newStats;
-    }
-    
-    if (!completedExercices.length) {
-      return newStats;
-    }
-    
-    // ⚡ OPTIMISATION: Compter uniquement les exercices déjà filtrés (plus rapide)
-    // completedToday est calculé côté serveur pour la date de référence (referenceDateKey)
-    completedExercices.forEach((exercice) => {
-      // ⚡ FIX: Vérifier explicitement que la catégorie est valide
-      if (exercice.category && exercice.category in newStats) {
-        newStats[exercice.category as ExerciceCategory]++;
-      }
-    });
-    
-    return newStats;
-  }, [completedExercices, referenceDateKey, exercicesLoading]);
+    },
+    // ⚡ FIX: Ne pas utiliser placeholderData en mode sablier pour éviter d'afficher les anciennes données
+    placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
+    staleTime: 10000,
+    gcTime: 2 * 60 * 1000,
+  });
 
   return {
     stats,
-    loading: exercicesLoading,
+    loading: isLoading,
+    error: error as Error | null,
     refresh: async () => {
-      // Invalider les queries d'exercices pour forcer le refetch
       await queryClient.invalidateQueries({
         queryKey: queryKeys.exercices.all,
         refetchType: 'active',

@@ -27,7 +27,7 @@ type Props = {
 
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
-  const { selectedDate, selectedDateKey, isDateSelected } = useSelectedDate();
+  const { selectedDate, isDateSelected } = useSelectedDate();
   const { refreshHistory } = useHistoryContext();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const queryClient = useQueryClient();
@@ -87,32 +87,22 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       // ⚡ CACHE INVALIDATION: Invalider les queries concernées et forcer le refetch
       // Utiliser refetchType: 'active' pour forcer le refetch immédiat des queries actives
       await Promise.all([
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
-          refetchType: 'active', // Forcer le refetch des queries actives
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.history.all,
-          refetchType: 'active', // Forcer le refetch des queries actives (heatmap)
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.todayCompletedCount.list({
-            userId: effectiveUser?.id || 0,
-            dateKey: selectedDateKey,
-          }),
           refetchType: 'active',
         }),
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.history.all,
+          refetchType: 'active',
+        }),
+        queryClient.invalidateQueries({
           queryKey: queryKeys.categoryStats.all,
           refetchType: 'active',
         }),
       ]);
-      
-      // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
+
       refreshHistory();
-      
-      // ⚡ MODE SABLIER: Forcer le refresh des stats de catégorie pour mettre à jour les gauges
-      // après ajout d'un exercice en mode sablier
+
       await refreshCategoryStats();
 
       if (onSuccess) {
@@ -139,25 +129,16 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError(err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice');
     },
     onSuccess: async () => {
-      // ⚡ CACHE INVALIDATION: Invalider les queries concernées et forcer le refetch
-      // Utiliser refetchType: 'active' pour forcer le refetch immédiat des queries actives
       await Promise.all([
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
-          refetchType: 'active', // Forcer le refetch des queries actives
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.history.all,
-          refetchType: 'active', // Forcer le refetch des queries actives (heatmap)
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.todayCompletedCount.list({
-            userId: effectiveUser?.id || 0,
-            dateKey: selectedDateKey,
-          }),
           refetchType: 'active',
         }),
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.history.all,
+          refetchType: 'active',
+        }),
+        queryClient.invalidateQueries({
           queryKey: queryKeys.categoryStats.all,
           refetchType: 'active',
         }),

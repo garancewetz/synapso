@@ -7,6 +7,7 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
+import { dateKeyToISO } from '@/app/utils/date.utils';
 
 type UseExercicesOptions = {
   category?: ExerciceCategory;
@@ -32,20 +33,26 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
   const { isTimeMachineMode, referenceDate, referenceDateKey } = useTimeContext();
   const queryClient = useQueryClient();
   
-  // ⚡ OPTIMISATION: Calculer les filtres une seule fois pour éviter la duplication
-  // ⚡ FIX BUG SABLIER: Utiliser referenceDateKey comme dépendance pour garantir que les filtres se mettent à jour
-  // quand la date change, même si referenceDate (objet Date) reste le même objet en mémoire
-  const filters = useMemo(() => ({
-    category,
-    equipments,
-    includeArchived,
-    targetDate: isTimeMachineMode && referenceDate ? referenceDate.toISOString() : undefined,
-  }), [category, equipments, includeArchived, isTimeMachineMode, referenceDate, referenceDateKey]);
+  // ⚡ SIMPLICITÉ: Utiliser referenceDateKey directement pour construire targetDate
+  // Cela garantit que la query key change quand la date change
+  const filters = useMemo(() => {
+    let targetDate: string | undefined;
+    if (isTimeMachineMode && referenceDateKey) {
+      targetDate = dateKeyToISO(referenceDateKey);
+    }
+    
+    return {
+      category,
+      equipments,
+      includeArchived,
+      targetDate,
+    };
+  }, [category, equipments, includeArchived, isTimeMachineMode, referenceDateKey]);
   
   // ⚡ TANSTACK QUERY: Utiliser useQuery pour gérer le fetch et le cache
   // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
   // TanStack Query démarrera automatiquement la requête dès que effectiveUser est disponible
-  const { data: exercices = [], isLoading, error, refetch } = useQuery({
+  const { data: exercices = [], isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.exercices.list(filters),
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
@@ -74,7 +81,9 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     exercices,
     // ⚡ PARALLEL QUERIES: Ne plus inclure userLoading dans le loading
     // car les requêtes démarrent en parallèle dès que l'utilisateur est disponible
-    loading: isLoading,
+    // ⚡ FIX: Utiliser isFetching pour détecter quand on charge de nouvelles données
+    // même si on a déjà des données en cache (important pour le mode sablier)
+    loading: isLoading || isFetching,
     error: error as Error | null,
     refetch: async () => {
       await refetch();

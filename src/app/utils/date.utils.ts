@@ -103,3 +103,12 @@ export function getDateFromKey(dateKey: string | null): Date | null {
   const date = new Date(dateKey + 'T00:00:00');
   return startOfDay(date);
 }
+
+/**
+ * Convertit un dateKey (yyyy-MM-dd) en ISO string normalisé pour les API
+ * Garantit un format cohérent pour tous les appels API qui acceptent une date
+ */
+export function dateKeyToISO(dateKey: string): string | undefined {
+  const date = getDateFromKey(dateKey);
+  return date?.toISOString();
+}

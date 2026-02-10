@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Exercice } from '@/app/types';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
-import { useUser } from '@/app/contexts/UserContext';
 import { queryKeys } from '@/app/lib/api-queries';
 
 type UseCompleteExerciceOptions = {
@@ -25,8 +24,7 @@ export function useCompleteExercice({
   onCompleted,
 }: UseCompleteExerciceOptions): UseCompleteExerciceReturn {
   const [showSuccess, setShowSuccess] = useState(false);
-  const { selectedDate, selectedDateKey } = useSelectedDate();
-  const { effectiveUser } = useUser();
+  const { selectedDate } = useSelectedDate();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -97,25 +95,6 @@ export function useCompleteExercice({
         }
       );
 
-      // ⚡ OPTIMISATION: Mettre à jour aussi todayCompletedCount dans l'optimistic update
-      // pour une UI encore plus réactive
-      // ⚡ FIX: Utiliser completedToday au lieu de completed pour calculer le changement
-      // car completedToday indique si l'exercice compte pour la date cible (aujourd'hui ou date sélectionnée)
-      const wasCompletedToday = exercice.completedToday ?? false;
-      const countChange = newCompletedToday && !wasCompletedToday ? 1 : (!newCompletedToday && wasCompletedToday ? -1 : 0);
-      if (countChange !== 0) {
-        queryClient.setQueryData<number>(
-          queryKeys.todayCompletedCount.list({
-            userId: effectiveUser?.id || 0,
-            dateKey: selectedDateKey,
-          }),
-          (old) => {
-            if (old === null || old === undefined) return old;
-            return Math.max(0, old + countChange);
-          }
-        );
-      }
-      
       return { previousExercicesQueries };
     },
     onError: (error, variables, context) => {
@@ -157,25 +136,16 @@ export function useCompleteExercice({
           return old.map(ex => ex.id === exercice.id ? updatedExercice : ex);
         }
       );
-
-      // ⚡ OPTIMISATION: Mettre à jour directement les stats au lieu de les invalider
-      // Cela évite les refetch et rend l'UI instantanée
-      // ⚡ FIX: Utiliser completedToday au lieu de completed pour calculer le changement
-      // car completedToday indique si l'exercice compte pour la date cible (aujourd'hui ou date sélectionnée)
-      const isNowCompletedToday = updatedExercice.completedToday ?? false;
-      const countChange = isNowCompletedToday && !wasCompletedToday ? 1 : (!isNowCompletedToday && wasCompletedToday ? -1 : 0);
-
-      // Mettre à jour todayCompletedCount directement
-      queryClient.setQueryData<number>(
-        queryKeys.todayCompletedCount.list({
-          userId: effectiveUser?.id || 0,
-          dateKey: selectedDateKey,
-        }),
-        (old) => {
-          if (old === null || old === undefined) return old;
-          return Math.max(0, old + countChange);
-        }
-      );
+      
+      // ⚡ BONNE PRATIQUE TANSTACK QUERY: Quand on utilise `select` dans une query,
+      // TanStack Query recalcule automatiquement les queries avec `select` quand les données de base changent.
+      // Mais pour s'assurer que les composants se mettent à jour immédiatement, on force le recalcul
+      // en invalidant les queries avec `refetchType: 'none'`. Cela marque les queries comme stale
+      // et force le recalcul des `select` sans refetch.
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.exercices.all,
+        refetchType: 'none', // Ne pas refetch, mais forcer le recalcul des `select`
+      });
 
       // ⚡ CACHE INVALIDATION: Invalider les queries qui nécessitent un recalcul complexe
       // ⚡ PERFORMANCE: Utiliser refetchType: 'none' pour éviter les refetches bloquants
@@ -183,10 +153,6 @@ export function useCompleteExercice({
       // Cela rend l'UI plus réactive car l'optimistic update est déjà appliqué
       queryClient.invalidateQueries({ 
         queryKey: queryKeys.history.all,
-        refetchType: 'none', // Ne pas forcer le refetch immédiat (plus rapide)
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.categoryStats.all,
         refetchType: 'none', // Ne pas forcer le refetch immédiat (plus rapide)
       });
       

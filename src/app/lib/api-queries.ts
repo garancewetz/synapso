@@ -21,7 +21,7 @@ export const queryKeys = {
   history: {
     all: ['history'] as const,
     lists: () => [...queryKeys.history.all, 'list'] as const,
-    list: (params: { since?: string; days?: number }) => 
+    list: (params: { since?: string; days?: number; referenceDate?: string }) => 
       [...queryKeys.history.lists(), params] as const,
   },
   progress: {
@@ -107,9 +107,12 @@ export async function fetchExercices(filters: {
   return res.json();
 }
 
-export async function fetchHistory(params: { since?: string; days?: number }): Promise<HistoryEntry[]> {
+export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: Date }): Promise<HistoryEntry[]> {
+  // ⚡ FIX MODE SABLIER: Utiliser referenceDate si fourni (mode sablier), sinon utiliser aujourd'hui
+  const baseDate = params.referenceDate || new Date();
+  
   const url = params.days !== null && params.days !== undefined
-    ? `/api/history?since=${encodeURIComponent(subDays(new Date(), params.days).toISOString())}`
+    ? `/api/history?since=${encodeURIComponent(subDays(baseDate, params.days).toISOString())}`
     : '/api/history';
   
   const res = await fetch(url, { credentials: 'include' });

@@ -13,6 +13,9 @@ import { ExerciceCardHeader } from '@/app/components/ExerciceCardHeader';
 import { ExerciceCardTags } from '@/app/components/ExerciceCardTags';
 import { ExerciceCardExpandable } from '@/app/components/ExerciceCardExpandable';
 import { ExerciceMedia } from '@/app/components/ExerciceMedia';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
+import { isToday } from 'date-fns';
 
 type Props = {
     exercice: Exercice;
@@ -33,6 +36,8 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     const { effectiveUser } = useUser();
     const { archiveExercice } = useArchiveExercice();
     const { handleShare } = useShareExercice(exercice, cardRef);
+    const { selectedDate, isDateSelected } = useSelectedDate();
+    const isTimeMachineMode = isDateSelected && selectedDate && !isToday(selectedDate);
 
     const categoryStyle = useMemo(
         () => CATEGORY_COLORS[exercice.category],
@@ -95,8 +100,25 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
             ariaExpanded={isExpanded}
             aria-label={`${exercice.name} - ${exercice.completedToday ? 'Fait aujourd\'hui' : 'À faire'}`}
         >
-            <BaseCard.Accent color={categoryStyle.accent} />
+            {/* Double accent : couleur catégorie + indigo en mode sablier */}
+            <div className="flex shrink-0">
+                <BaseCard.Accent color={categoryStyle.accent} />
+             
+            </div>
             <BaseCard.Content className="flex flex-col relative">
+                {/* Indicateur mode sablier - emoji sablier visible pour accessibilité cognitive */}
+                {isTimeMachineMode && (
+                    <div 
+                        className="absolute top-3 right-3 z-50 flex items-center justify-center size-7 bg-indigo-600/95 backdrop-blur-sm rounded-full shadow-lg border-2 border-amber-400/50"
+                        title="Mode sablier actif - Tu es sur une date passée"
+                        aria-label="Mode sablier actif"
+                        style={{ pointerEvents: 'none' }}
+                    >
+                        <span className="text-base text-amber-300 drop-shadow-lg leading-none">
+                            {NAVIGATION_EMOJIS.HOURGLASS}
+                        </span>
+                    </div>
+                )}
                 <div className="flex-1 p-4 md:p-5">
                     <ExerciceCardHeader
                         exercice={exercice}

@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { NavBar } from '@/app/components/NavBar';
 import { BottomNavBar } from '@/app/components/BottomNavBar';
 import { SelectedDateBanner } from '@/app/components/SelectedDateBanner';
-import { SelectedDateBannerSpacer } from '@/app/components/SelectedDateBannerSpacer';
 import { TimeMachineWrapper } from '@/app/components/TimeMachineWrapper';
 
 // ⚡ PERFORMANCE: Lazy load des composants non critiques
@@ -32,7 +31,6 @@ export function LayoutComponents({ children }: LayoutComponentsProps) {
       <TimeMachineTransition />
       <TimeMachineWrapper>
         <SelectedDateBanner />
-        <SelectedDateBannerSpacer />
         <NavBar />
         <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
           {children}

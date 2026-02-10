@@ -21,10 +21,10 @@ export function TimeMachineWrapper({ children }: Props) {
         'relative min-h-screen transition-all duration-300',
         // ⚡ MODE SABLIER: Fond blanc maintenu pour simplicité et clarté
         'bg-white',
-        // ⚡ MODE SABLIER: Cadre indigo discret pour distinction claire du mode sablier
+        // ⚡ MODE SABLIER: Cadre indigo discret avec effet de lueur cosmique subtil
         isTimeMachineMode && [
           'border-2 border-indigo-500/40',
-          'shadow-[0_0_0_1px_rgba(99,102,241,0.15)]',
+          'shadow-[0_0_0_1px_rgba(99,102,241,0.15),0_0_20px_rgba(99,102,241,0.08)]',
           'ring-1 ring-indigo-400/20'
         ]
       )}

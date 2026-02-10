@@ -118,8 +118,8 @@ export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, prog
         
         {/* Indicateur sablier pour le jour sélectionné en mode sablier - badge en coin supérieur droit pour plus de visibilité */}
         {isSelectedDay && (
-          <div className="absolute -top-2 -right-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 rounded-full p-2 shadow-2xl border-2 border-amber-400 z-20 flex items-center justify-center">
-            <span className="text-base md:text-lg drop-shadow-lg font-bold text-white">
+          <div className="absolute -top-1 -right-1 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 rounded-full p-0.5 sm:p-1 md:p-2 shadow-2xl border border-amber-400 sm:border-2 z-20 flex items-center justify-center">
+            <span className="text-xs sm:text-sm md:text-lg drop-shadow-lg font-bold text-white">
               {NAVIGATION_EMOJIS.HOURGLASS}
             </span>
           </div>

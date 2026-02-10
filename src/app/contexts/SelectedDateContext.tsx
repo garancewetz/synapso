@@ -16,6 +16,7 @@ type SelectedDateContextType = {
   isDateSelected: boolean;
   isTimeMachineMode: boolean; // Mode sablier actif (date passée)
   isTransitioning: boolean; // Indique qu'une transition est en cours (pour retarder le changement de vue)
+  transitionType: 'enter' | 'exit' | null; // Type de transition en cours
 };
 
 const SelectedDateContext = createContext<SelectedDateContextType | undefined>(undefined);
@@ -25,18 +26,25 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionType, setTransitionType] = useState<'enter' | 'exit' | null>(null);
   const previousDateKeyRef = useRef<string | null>(null);
   const previousDateParamRef = useRef<string | null>(null);
   
   // ⚡ URL-BASED: Lire la date depuis l'URL (paramètre `date` au format yyyy-MM-dd)
   const dateParam = searchParams.get('date');
   
-  // ⚡ FIX: Stocker la dernière valeur valide de dateParam pour éviter les faux positifs lors de la navigation
+  // ⚡ FIX: Initialiser previousDateParamRef au montage uniquement pour éviter les faux positifs au chargement
+  // On utilise un ref pour savoir si c'est le premier rendu
+  const isFirstRenderRef = useRef(true);
   useEffect(() => {
-    if (dateParam) {
-      previousDateParamRef.current = dateParam;
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      if (dateParam) {
+        previousDateParamRef.current = dateParam;
+      }
     }
-  }, [dateParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Uniquement au montage, dateParam n'est pas nécessaire car on ne veut l'initialiser qu'une fois
   
   // ⚡ PERFORMANCE: Clé stable basée sur la date depuis l'URL
   // Valider et normaliser la date depuis l'URL
@@ -190,19 +198,33 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
   const isDateSelected = useMemo(() => normalizedSelectedDate !== null, [normalizedSelectedDate]);
 
   // ⚡ FIX: Détecter quand on passe en mode sablier ou qu'on en sort pour déclencher la transition
+  // ⚡ FIX: Détecter le changement AVANT que isTimeMachineMode ne change pour déclencher l'animation en premier
   useEffect(() => {
     // ⚡ FIX: Utiliser la dernière valeur valide de dateParam stockée dans le ref
     // pour éviter les faux positifs lors de la navigation (searchParams peut être temporairement vide)
     const effectiveDateParam = dateParam || previousDateParamRef.current;
     const hasDateParam = effectiveDateParam !== null && effectiveDateParam !== '';
     const currentDateKey = isTimeMachineMode && selectedDateKey ? selectedDateKey : null;
-    const wasInTimeMachine = previousDateKeyRef.current !== null;
-    const isEnteringTimeMachine = !previousDateKeyRef.current && currentDateKey && hasDateParam;
+    
+    // ⚡ FIX: Détecter l'entrée en mode sablier en comparant dateParam avec previousDateParamRef
+    // Vérifier directement si la date est passée (pas aujourd'hui) pour détecter AVANT que isTimeMachineMode ne soit calculé
+    const wasDateParam = previousDateParamRef.current !== null && previousDateParamRef.current !== '';
+    let isEnteringTimeMachine = false;
+    if (!wasDateParam && hasDateParam && dateParam && selectedDateKey) {
+      // Vérifier directement si la date est passée (pas aujourd'hui) sans passer par isTimeMachineMode
+      const parsedDate = parse(dateParam, 'yyyy-MM-dd', new Date());
+      if (isValid(parsedDate)) {
+        const normalizedDate = startOfDay(parsedDate);
+        const today = startOfDay(new Date());
+        // Entrer en mode sablier seulement si la date est passée (pas aujourd'hui)
+        isEnteringTimeMachine = !isToday(normalizedDate) && !isAfter(normalizedDate, today);
+      }
+    }
     
     // ⚡ FIX: Ne déclencher la sortie que si le paramètre date a vraiment disparu de l'URL
     // Vérifier directement dans window.location.search pour éviter les faux positifs lors de la navigation
     let isExitingTimeMachine = false;
-    if (wasInTimeMachine && !dateParam) {
+    if (wasDateParam && !dateParam) {
       // Vérifier directement dans l'URL réelle (pas searchParams qui peut être temporairement vide)
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
@@ -215,12 +237,15 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
       }
     }
     
-    // Si on entre en mode sablier, déclencher la transition
+    // ⚡ FIX: Déclencher la transition IMMÉDIATEMENT quand on détecte le changement
+    // Cela permet à l'animation de se jouer AVANT que le TimeContext ne mette à jour referenceDate
     if (isEnteringTimeMachine) {
+      setTransitionType('enter');
       setIsTransitioning(true);
       // La transition durera 1.5 secondes (durée de l'animation d'entrée)
       const timer = setTimeout(() => {
         setIsTransitioning(false);
+        setTransitionType(null);
         previousDateKeyRef.current = currentDateKey;
         if (dateParam) {
           previousDateParamRef.current = dateParam;
@@ -232,10 +257,12 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
     
     // ⚡ NOUVEAU: Si on sort du mode sablier, déclencher la transition de sortie
     if (isExitingTimeMachine) {
+      setTransitionType('exit');
       setIsTransitioning(true);
       // La transition de sortie durera 1.5 secondes (durée de l'animation de sortie)
       const timer = setTimeout(() => {
         setIsTransitioning(false);
+        setTransitionType(null);
         previousDateKeyRef.current = null;
         previousDateParamRef.current = null;
       }, 1500);
@@ -262,7 +289,8 @@ export function SelectedDateProvider({ children }: PropsWithChildren) {
     isDateSelected,
     isTimeMachineMode,
     isTransitioning,
-  }), [normalizedSelectedDate, selectedDateKey, debouncedSelectedDateKey, setSelectedDate, clearSelectedDate, isDateSelected, isTimeMachineMode, isTransitioning]);
+    transitionType,
+  }), [normalizedSelectedDate, selectedDateKey, debouncedSelectedDateKey, setSelectedDate, clearSelectedDate, isDateSelected, isTimeMachineMode, isTransitioning, transitionType]);
 
   return (
     <SelectedDateContext.Provider value={contextValue}>

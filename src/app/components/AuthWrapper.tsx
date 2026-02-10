@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { SiteProtection } from '@/app/components/SiteProtection';
+import { SiteProtection } from '@/app/features/auth';
 import { AdminUserSwitcher } from '@/app/components/AdminUserSwitcher';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';

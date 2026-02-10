@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { CategoryCardWithProgress, MenuLink } from '@/app/components';
+import { CategoryCardWithProgress } from '@/app/features/exercices';
+import { MenuLink } from '@/app/components';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import type { Exercice } from '@/app/types/exercice';

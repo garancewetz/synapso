@@ -3,8 +3,8 @@
 import { isToday, isYesterday, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
-import { ActivityHeatmapCell } from '@/app/components/historique/ActivityHeatmapCell';
+import type { HeatmapDay } from '@/app/features/historique';
+import { ActivityHeatmapCell } from '@/app/features/historique/components/ActivityHeatmapCell';
 
 type Props = {
   weekData: HeatmapDay[];

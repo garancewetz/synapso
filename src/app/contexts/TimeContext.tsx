@@ -144,28 +144,25 @@ export function TimeProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!effectiveUser?.id) return;
     
-    // ⚡ FIX BUG SABLIER: Invalider immédiatement sans debouncing pour que les gauges se mettent à jour
-    // Le debouncing causait un décalage où les gauges affichaient les valeurs du jour d'avant
-    // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
-    // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
-    // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
+    // ⚡ FIX BUG SABLIER CACHE: Supprimer complètement les entrées du cache pour forcer un nouveau fetch
+    // Le problème est que refetchType: 'active' ne force pas le refetch si les données sont encore dans staleTime
+    // En navigation privée, pas de cache donc ça fonctionne, mais en navigation normale le cache garde les anciennes données
+    // Solution : supprimer les entrées du cache pour forcer un nouveau fetch immédiat
     
-    // 1. Invalider les exercices (contient completedToday calculé pour la date)
-    queryClient.invalidateQueries({
+    // 1. Supprimer les exercices du cache (contient completedToday calculé pour la date)
+    // removeQueries supprime complètement les entrées, forçant un nouveau fetch au prochain useQuery
+    queryClient.removeQueries({
       queryKey: queryKeys.exercices.all,
-      refetchType: 'active', // Forcer le refetch immédiat des queries actives
     });
     
-    // 2. Invalider le compteur d'exercices complétés (dépend de la date)
-    queryClient.invalidateQueries({
+    // 2. Supprimer le compteur d'exercices complétés du cache (dépend de la date)
+    queryClient.removeQueries({
       queryKey: queryKeys.todayCompletedCount.all,
-      refetchType: 'active',
     });
     
-    // 3. Invalider les stats par catégorie (dépendent de completedToday)
-    queryClient.invalidateQueries({
+    // 3. Supprimer les stats par catégorie du cache (dépendent de completedToday)
+    queryClient.removeQueries({
       queryKey: queryKeys.categoryStats.all,
-      refetchType: 'active',
     });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 

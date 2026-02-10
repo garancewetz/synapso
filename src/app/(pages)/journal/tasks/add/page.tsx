@@ -1,9 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { JournalTaskForm } from '@/app/components/JournalTaskForm';
+import { JournalTaskForm, useJournalCheck } from '@/app/features/journal';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
-import { useJournalCheck } from '@/app/hooks/useJournalCheck';
 
 export default function JournalTaskAddPage() {
   const router = useRouter();

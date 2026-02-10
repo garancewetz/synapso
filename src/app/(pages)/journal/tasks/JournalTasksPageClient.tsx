@@ -1,9 +1,8 @@
 'use client';
 
-import { JournalTasksList } from '@/app/components/JournalTasksList';
+import { JournalTasksList, useJournalCheck } from '@/app/features/journal';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { AddButton } from '@/app/components/ui/AddButton';
-import { useJournalCheck } from '@/app/hooks/useJournalCheck';
 
 export function JournalTasksPageClient() {
   const { hasAccess } = useJournalCheck();

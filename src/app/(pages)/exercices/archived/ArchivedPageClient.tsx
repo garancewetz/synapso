@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ExerciceCard } from '@/app/components/ExerciceCard';
+import { ExerciceCard, useExercices, useExerciceHandlers } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
 import { AddButton } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -11,8 +11,6 @@ import {
   CATEGORY_ORDER, 
   CATEGORY_ICONS,
 } from '@/app/constants/exercice.constants';
-import { useExercices } from '@/app/hooks/useExercices';
-import { useExerciceHandlers } from '@/app/hooks/useExerciceHandlers';
 import type { Exercice, ExerciceCategory } from '@/app/types/exercice';
 
 export function ArchivedPageClient() {

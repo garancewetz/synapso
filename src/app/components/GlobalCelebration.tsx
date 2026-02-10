@@ -1,6 +1,6 @@
 'use client';
 
-import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
+import { useTodayCompletedCount } from '@/app/features/exercices';
 import { useCelebration } from '@/app/hooks/useCelebration';
 import { ConfettiRain } from '@/app/components/ConfettiRain';
 

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { subDays, format, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import type { HeatmapDay } from '@/app/features/historique';
 import type { HistoryEntry } from '@/app/types/history';
-import { getHeatmapData } from '@/app/utils/historique.utils';
+import { getHeatmapData } from '@/app/features/historique';
 
 type HeatmapNavigationResult = {
   heatmapData: HeatmapDay[];

@@ -1,10 +1,9 @@
 'use client';
 
-import { JournalNotesList } from '@/app/components/JournalNotesList';
+import { JournalNotesList, useJournalCheck } from '@/app/features/journal';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { AddButton } from '@/app/components/ui/AddButton';
 import { JOURNAL_EMOJI } from '@/app/constants/emoji.constants';
-import { useJournalCheck } from '@/app/hooks/useJournalCheck';
 
 export function JournalNotesPageClient() {
   const { hasAccess } = useJournalCheck();

@@ -8,10 +8,8 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
-import { useProgressModal } from '@/app/hooks/useProgressModal';
-import { useHistory } from '@/app/hooks/useHistory';
-import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
-import { useProgressStats } from '@/app/hooks/useProgressStats';
+import { useHistory } from '@/app/features/historique';
+import { useProgress, triggerProgressRefresh, useProgressStats, useProgressModal } from '@/app/features/progress';
 import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
 import { useHeatmapNavigation } from '@/app/hooks/useHeatmapNavigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,11 +20,11 @@ import {
   ActivityLineChart,
   ProgressTimeline,
   ProgressStatsChart,
-} from '@/app/components/historique';
+} from '@/app/features/historique';
 
 // ⚡ PERFORMANCE: Charger dynamiquement les composants lourds avec loading
 const ProgressBottomSheet = dynamic(
-  () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
+  () => import('@/app/features/progress').then(mod => ({ default: mod.ProgressBottomSheet })),
   { ssr: false, loading: () => null }
 );
 
@@ -48,14 +46,14 @@ import { BackButton } from '@/app/components/ui/BackButton';
 import { SegmentedControl, Loader, Card } from '@/app/components/ui';
 import { ProgressButton } from '@/app/components/ui/ProgressButton';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatProgressForWhatsApp } from '@/app/utils/share.utils';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
   calculateCurrentStreak,
-} from '@/app/utils/historique.utils';
+} from '@/app/features/historique';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
 type ActiveTab = 'statistiques' | 'progres';

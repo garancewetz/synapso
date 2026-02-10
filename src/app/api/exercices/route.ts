@@ -155,13 +155,14 @@ export async function GET(request: NextRequest) {
         
         // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
         // ⚡ FIX: Comparer les dates par leur clé (yyyy-MM-dd) pour éviter les problèmes de timezone
-        // C'est plus simple et plus fiable que de comparer les dates normalisées
-        const targetDateKey = format(startOfDay(now), 'yyyy-MM-dd');
+        // ⚡ FIX BUG SABLIER: Utiliser targetDate (déjà normalisé avec startOfDay) au lieu de now
+        // pour garantir que completedToday est calculé pour la bonne date (date sélectionnée en mode sablier)
+        const targetDateKeyForComparison = format(targetDate, 'yyyy-MM-dd');
         const hasTargetDayHistory = exercice.history.some(
           (h) => {
             const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
             const completedDateKey = format(startOfDay(completedDate), 'yyyy-MM-dd');
-            return completedDateKey === targetDateKey;
+            return completedDateKey === targetDateKeyForComparison;
           }
         );
         const completedToday = hasTargetDayHistory;

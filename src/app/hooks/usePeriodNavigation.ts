@@ -3,7 +3,7 @@ import { addMonths, format, startOfDay, endOfDay, eachDayOfInterval } from 'date
 import { fr } from 'date-fns/locale';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import type { HeatmapDay } from '@/app/features/historique';
 import type { HistoryEntry } from '@/app/types/history';
 
 type PeriodNavigationResult = {

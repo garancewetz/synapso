@@ -6,10 +6,8 @@ import { WelcomeHeaderWrapper } from '@/app/components';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
-import { useExercices } from '@/app/hooks/useExercices';
-import { useProgressModal } from '@/app/hooks/useProgressModal';
-import { useCategoryStats } from '@/app/hooks/useCategoryStats';
-import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
+import { useExercices, useCategoryStats } from '@/app/features/exercices';
+import { useProgress, triggerProgressRefresh, useProgressModal } from '@/app/features/progress';
 import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
 import { useHomeTabs } from '@/app/hooks/useHomeTabs';
 import { usePrefetchPreviousDates } from '@/app/hooks/usePrefetchPreviousDates';
@@ -31,7 +29,7 @@ const MotionDiv = dynamic(
 );
 
 const ProgressBottomSheet = dynamic(
-  () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
+  () => import('@/app/features/progress').then(mod => ({ default: mod.ProgressBottomSheet })),
   { ssr: false }
 );
 

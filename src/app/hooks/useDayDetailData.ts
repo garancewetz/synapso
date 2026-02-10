@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { format, startOfDay } from 'date-fns';
-import { useHistory } from '@/app/hooks/useHistory';
-import { useProgress } from '@/app/hooks/useProgress';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { useHistory, type HeatmapDay } from '@/app/features/historique';
+import { useProgress } from '@/app/features/progress';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 type DayExercise = {

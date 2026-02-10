@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExerciceCard } from '@/app/components/ExerciceCard';
+import { ExerciceCard, useExercices, useExerciceStatusFilter, useExerciceHandlers } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
 import { StatusFilterSection, EquipmentFilterBadge, AddButton, FilterBadge } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -15,9 +15,6 @@ import {
 } from '@/app/constants/exercice.constants';
 import { getEquipmentIcon } from '@/app/constants/equipment.constants';
 import { useEquipmentMetadata } from '@/app/hooks/useEquipmentMetadata';
-import { useExercices } from '@/app/hooks/useExercices';
-import { useExerciceStatusFilter } from '@/app/hooks/useExerciceStatusFilter';
-import { useExerciceHandlers } from '@/app/hooks/useExerciceHandlers';
 import type { Exercice, ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
 
 export function EquipmentsPageClient() {

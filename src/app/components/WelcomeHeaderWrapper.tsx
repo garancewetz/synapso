@@ -8,13 +8,12 @@ import { getDateKey } from '@/app/utils/date.utils';
 import { WelcomeHeader } from '@/app/components/WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
-import { useHistory } from '@/app/hooks/useHistory';
-import { useTodayCompletedCount } from '@/app/hooks/useTodayCompletedCount';
-import { useProgress } from '@/app/hooks/useProgress';
+import { useHistory } from '@/app/features/historique';
+import { useTodayCompletedCount } from '@/app/features/exercices';
+import { useProgress } from '@/app/features/progress';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
-import { getCurrentWeekData, getLast7DaysData } from '@/app/utils/historique.utils';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import { getCurrentWeekData, getLast7DaysData, type HeatmapDay } from '@/app/features/historique';
 
 /**
  * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles

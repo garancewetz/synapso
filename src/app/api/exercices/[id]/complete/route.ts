@@ -6,7 +6,7 @@ import { logError } from '@/app/lib/logger';
 import {
   parseCompletedAtFromBody,
   toggleExerciceCompletion,
-} from '@/app/utils/exercice-complete.utils';
+} from '@/app/features/exercices/utils/exercice-complete.utils';
 import { CACHE_TAGS } from '@/app/lib/cache';
 
 export async function PATCH(

@@ -1,12 +1,9 @@
 'use client';
 
-import { JournalSectionHeader } from '@/app/components/JournalSectionHeader';
-import { JournalNotesList } from '@/app/components/JournalNotesList';
-import { JournalTasksList } from '@/app/components/JournalTasksList';
+import { JournalSectionHeader, JournalNotesList, JournalTasksList, useJournalCheck } from '@/app/features/journal';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { AddButton } from '@/app/components/ui/AddButton';
 import { JOURNAL_EMOJI } from '@/app/constants/emoji.constants';
-import { useJournalCheck } from '@/app/hooks/useJournalCheck';
 import { useUser } from '@/app/contexts/UserContext';
 import { Card } from '@/app/components/ui/Card';
 

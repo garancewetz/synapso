@@ -1,10 +1,10 @@
 'use client';
 
 import clsx from 'clsx';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import type { HeatmapDay } from '@/app/features/historique';
 import { useCelebration } from '@/app/hooks/useCelebration';
 import { WelcomeHeaderGreeting } from '@/app/components/WelcomeHeaderGreeting';
-import { DailyGoalProgress } from '@/app/components/DailyGoalProgress';
+import { DailyGoalProgress } from '@/app/features/exercices';
 import { WelcomeHeaderCelebration } from '@/app/components/WelcomeHeaderCelebration';
 import { WeekCalendar } from '@/app/components/WeekCalendar';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';

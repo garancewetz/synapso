@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ExerciceForm } from '@/app/components/ExerciceForm';
+import { ExerciceForm } from '@/app/features/exercices';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';

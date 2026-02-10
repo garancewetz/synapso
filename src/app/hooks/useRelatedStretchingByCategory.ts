@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useExercices } from './useExercices';
+import { useExercices } from '@/app/features/exercices';
 import { CATEGORY_ORDER, AVAILABLE_BODYPARTS, BODYPART_TO_CATEGORY } from '@/app/constants/exercice.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 

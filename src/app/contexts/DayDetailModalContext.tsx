@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from 'react';
 import type { PropsWithChildren } from 'react';
-import type { HeatmapDay } from '@/app/utils/historique.utils';
+import type { HeatmapDay } from '@/app/features/historique';
 
 type DayDetailModalContextType = {
   selectedDay: HeatmapDay | null;

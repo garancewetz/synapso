@@ -3,9 +3,10 @@
 import { createContext, useContext, useMemo, useEffect } from 'react';
 import type { PropsWithChildren } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { startOfDay, format } from 'date-fns';
 import { useSelectedDate } from './SelectedDateContext';
 import { useUser } from './UserContext';
-import { queryKeys, fetchTodayCompletedCount } from '@/app/lib/api-queries';
+import { queryKeys, fetchTodayCompletedCount, fetchExercices } from '@/app/lib/api-queries';
 import { getDateFromKey, getDateKey } from '@/app/utils/date.utils';
 
 type TimeContextType = {
@@ -28,9 +29,11 @@ export function TimeProvider({ children }: PropsWithChildren) {
   // ⚡ FIX: Pendant la transition, garder les anciennes données pour que l'animation se joue avant le changement
   const timeContextValue = useMemo<TimeContextType>(() => {
     // Par défaut : aujourd'hui
-    let referenceDate = new Date();
-    referenceDate.setHours(0, 0, 0, 0);
-    let referenceDateKey = referenceDate.toISOString().split('T')[0];
+    // ⚡ FIX PREPROD: Utiliser startOfDay pour normaliser correctement la date
+    // En production, le timezone du serveur peut être différent, startOfDay garantit la cohérence
+    const today = new Date();
+    let referenceDate = startOfDay(today);
+    let referenceDateKey = format(referenceDate, 'yyyy-MM-dd');
     
     // Mode sablier : utiliser la date sélectionnée
     // ⚡ FIX: Ne pas mettre à jour pendant la transition pour que l'animation se joue d'abord
@@ -58,6 +61,7 @@ export function TimeProvider({ children }: PropsWithChildren) {
   // ⚡ PERFORMANCE: Précharger les jours adjacents en arrière-plan avec TanStack Query
   // ⚡ OPTIMISATION: Utiliser un timeout pour éviter de précharger immédiatement après chaque changement
   // Cela évite de ralentir les opérations de complétion d'exercices
+  // ⚡ AMÉLIORATION: Précharger aussi les exercices pour une navigation instantanée
   useEffect(() => {
     if (!isTimeMachineMode || !selectedDateKey || !effectiveUser?.id) return;
     
@@ -78,7 +82,10 @@ export function TimeProvider({ children }: PropsWithChildren) {
       
       if (!prevDayKey || !nextDayKey) return;
       
-      // ⚡ TANSTACK QUERY: Précharger avec prefetchQuery (non-bloquant)
+      const prevDayISO = prevDay.toISOString();
+      const nextDayISO = nextDay.toISOString();
+      
+      // ⚡ TANSTACK QUERY: Précharger le compteur d'exercices complétés
       queryClient.prefetchQuery({
         queryKey: queryKeys.todayCompletedCount.list({
           userId: effectiveUser.id,
@@ -100,6 +107,26 @@ export function TimeProvider({ children }: PropsWithChildren) {
           dateKey: nextDayKey,
         }),
       });
+
+      // ⚡ AMÉLIORATION: Précharger aussi les exercices pour les jours adjacents
+      // Cela permet une navigation instantanée sans attendre le chargement
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.exercices.list({
+          targetDate: prevDayISO,
+        }),
+        queryFn: () => fetchExercices({
+          targetDate: prevDayISO,
+        }),
+      });
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.exercices.list({
+          targetDate: nextDayISO,
+        }),
+        queryFn: () => fetchExercices({
+          targetDate: nextDayISO,
+        }),
+      });
     }, 500); // Délai de 500ms pour laisser les autres opérations se terminer
     
     return () => clearTimeout(timeoutId);
@@ -108,30 +135,37 @@ export function TimeProvider({ children }: PropsWithChildren) {
   // ⚡ FIX ROBUSTE: Invalider TOUTES les queries liées à la date quand la date change
   // Cela garantit que toutes les données sont recalculées pour la nouvelle date de référence
   // Solution simple et robuste : invalider tout ce qui dépend de la date
+  // ⚡ AMÉLIORATION: Debouncing pour éviter les invalidations multiples lors de changements rapides
   useEffect(() => {
     if (!effectiveUser?.id) return;
     
-    // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
-    // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
-    // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
+    // ⚡ OPTIMISATION: Debouncing pour les changements rapides de date (évite les invalidations multiples)
+    // Si l'utilisateur change rapidement de date, on attend un peu avant d'invalider
+    const timeoutId = setTimeout(() => {
+      // ⚡ SOLUTION ROBUSTE: Invalider toutes les queries qui dépendent de la date
+      // Cela force le refetch avec la nouvelle referenceDateKey et met à jour toutes les données
+      // Utiliser selectedDateKey comme dépendance car c'est la source de vérité qui change
+      
+      // 1. Invalider les exercices (contient completedToday calculé pour la date)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.exercices.all,
+        refetchType: 'active', // Forcer le refetch immédiat des queries actives
+      });
+      
+      // 2. Invalider le compteur d'exercices complétés (dépend de la date)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.todayCompletedCount.all,
+        refetchType: 'active',
+      });
+      
+      // 3. Invalider les stats par catégorie (dépendent de completedToday)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.categoryStats.all,
+        refetchType: 'active',
+      });
+    }, 50); // Délai de 50ms pour debouncer les changements rapides (assez court pour rester réactif)
     
-    // 1. Invalider les exercices (contient completedToday calculé pour la date)
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.exercices.all,
-      refetchType: 'active', // Forcer le refetch immédiat des queries actives
-    });
-    
-    // 2. Invalider le compteur d'exercices complétés (dépend de la date)
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.todayCompletedCount.all,
-      refetchType: 'active',
-    });
-    
-    // 3. Invalider les stats par catégorie (dépendent de completedToday)
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.categoryStats.all,
-      refetchType: 'active',
-    });
+    return () => clearTimeout(timeoutId);
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
   return (

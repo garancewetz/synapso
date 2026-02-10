@@ -85,6 +85,8 @@ export function getDateKey(date: Date | string | null): string | null {
  * Crée une Date depuis une clé de date (yyyy-MM-dd)
  * Plus rapide que parse() de date-fns pour ce cas d'usage
  * 
+ * ⚡ FIX: Utilise startOfDay pour normaliser la date et éviter les problèmes de timezone
+ * 
  * @param dateKey Clé de date au format yyyy-MM-dd
  * @returns Date normalisée (début de journée)
  */
@@ -97,6 +99,7 @@ export function getDateFromKey(dateKey: string | null): Date | null {
     return null;
   }
   
-  // Créer la date depuis la clé (plus rapide que parse)
-  return new Date(dateKey + 'T00:00:00');
+  // Créer la date depuis la clé et normaliser avec startOfDay pour éviter les problèmes de timezone
+  const date = new Date(dateKey + 'T00:00:00');
+  return startOfDay(date);
 }

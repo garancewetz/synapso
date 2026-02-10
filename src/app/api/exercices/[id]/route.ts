@@ -60,8 +60,12 @@ export async function GET(
     if (targetDateParam) {
       const parsedDate = new Date(targetDateParam);
       if (!isNaN(parsedDate.getTime())) {
-        targetDate = parsedDate;
+        // ⚡ FIX: Normaliser la date avec startOfDay pour éviter les problèmes de timezone
+        targetDate = startOfDay(parsedDate);
       }
+    } else {
+      // ⚡ FIX: Normaliser aussi la date par défaut (aujourd'hui)
+      targetDate = startOfDay(targetDate);
     }
     
     const now = targetDate;

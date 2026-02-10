@@ -79,8 +79,13 @@ export async function GET(request: NextRequest) {
     if (targetDateParam) {
       const parsedDate = new Date(targetDateParam);
       if (!isNaN(parsedDate.getTime())) {
-        targetDate = parsedDate;
+        // ⚡ FIX: Normaliser la date avec startOfDay pour éviter les problèmes de timezone
+        // Cela garantit que targetDate représente bien le début de la journée, peu importe le timezone
+        targetDate = startOfDay(parsedDate);
       }
+    } else {
+      // ⚡ FIX: Normaliser aussi la date par défaut (aujourd'hui)
+      targetDate = startOfDay(targetDate);
     }
     
     // Calculer la période de réinitialisation pour la date cible

@@ -47,8 +47,11 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     queryKey: queryKeys.exercices.list(filters),
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
-    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
-    placeholderData: (previousData) => previousData,
+    // ⚡ FIX: Ne pas utiliser placeholderData en mode sablier pour éviter d'afficher les anciennes données
+    // placeholderData garde les données même si la query key change (targetDate différent),
+    // ce qui cause des bugs en prod où les gauges affichent les mauvaises données
+    // En mode sablier, on préfère un bref chargement plutôt que des données incorrectes
+    placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
     // ⚡ OPTIMISATION: Données qui changent souvent, cache plus court
     staleTime: 10000, // 10 secondes
     gcTime: 2 * 60 * 1000, // 2 minutes

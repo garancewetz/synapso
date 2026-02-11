@@ -4,10 +4,10 @@ import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { ExerciceCategory } from '@/app/types/exercice';
-import { ExerciceCategory as PrismaExerciceCategory, Prisma } from '@prisma/client';
+import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, setHours, setMinutes, setSeconds, format } from 'date-fns';
-import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
+import { addDays, startOfDay, format } from 'date-fns';
+import { CACHE_TAGS } from '@/app/lib/cache';
 
 type ExerciceWithArchived = {
   archived?: boolean;
@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    // Récupérer l'userId effectif depuis le cookie (gère l'impersonation admin)
     const userId = await getEffectiveUserId(request);
     
     if (!userId) {
@@ -33,16 +32,16 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category') as ExerciceCategory | null;
     const equipmentsParam = searchParams.get('equipments');
-    
-    // Parser les équipements depuis le paramètre URL (format: "Lit/Tapis,Chaise" ou "Lit/Tapis")
+    const includeArchived = searchParams.get('includeArchived') === 'true';
+    const targetDateParam = searchParams.get('targetDate');
+
     const selectedEquipments = equipmentsParam
       ? equipmentsParam.split(',').map(eq => decodeURIComponent(eq).trim()).filter(Boolean)
       : [];
 
-    // Vérifier que l'utilisateur existe et récupérer son resetFrequency
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, resetFrequency: true },
+      select: { resetFrequency: true },
     });
 
     if (!user) {
@@ -52,10 +51,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Récupérer le paramètre includeArchived
-    const includeArchived = searchParams.get('includeArchived') === 'true';
+    const targetDate = targetDateParam
+      ? new Date(targetDateParam + 'T12:00:00.000Z')
+      : new Date(format(new Date(), 'yyyy-MM-dd') + 'T12:00:00.000Z');
 
-    // Construire le filtre
+    const startOfPeriod = getStartOfPeriod(user.resetFrequency, targetDate);
+    const endOfPeriod = user.resetFrequency === 'DAILY'
+      ? startOfDay(addDays(targetDate, 1))
+      : startOfDay(addDays(startOfPeriod, 7));
+
     const whereClause: {
       userId: number;
       category?: PrismaExerciceCategory;
@@ -68,88 +72,34 @@ export async function GET(request: NextRequest) {
       whereClause.category = category as PrismaExerciceCategory;
     }
 
-    // Filtrer les exercices archivés par défaut (sauf si includeArchived=true)
     if (!includeArchived) {
       whereClause.archived = false;
     }
 
-    // Récupérer la date cible depuis les query params (optionnel, par défaut maintenant)
-    const targetDateParam = searchParams.get('targetDate');
-    let targetDate = new Date();
-
-    console.log('[DEBUG-PROD] API /exercices → raw:', {
-      targetDateParam,
-      serverNow: new Date().toISOString(),
-      serverTimezoneOffset: new Date().getTimezoneOffset(),
-    });
-
-    if (targetDateParam) {
-      // ⚡ FIX TIMEZONE: Détecter si c'est un dateKey (yyyy-MM-dd) ou un ISO string
-      // Le client envoie maintenant un dateKey directement pour éviter les décalages de timezone
-      // On parse avec T12:00:00.000Z (midi UTC) pour que startOfDay() donne le bon jour
-      // quel que soit le timezone du serveur (UTC en prod, CET en local)
-      const isDateKey = /^\d{4}-\d{2}-\d{2}$/.test(targetDateParam);
-      if (isDateKey) {
-        targetDate = new Date(targetDateParam + 'T12:00:00.000Z');
-      } else {
-        // Fallback pour les anciens appels avec ISO string
-        const parsedDate = new Date(targetDateParam);
-        if (!isNaN(parsedDate.getTime())) {
-          targetDate = new Date(format(startOfDay(parsedDate), 'yyyy-MM-dd') + 'T12:00:00.000Z');
-        }
-      }
-      console.log('[DEBUG-PROD] API /exercices → parsed targetDate:', {
-        targetDateParam,
-        isDateKey,
-        targetDate: targetDate.toISOString(),
-      });
-    } else {
-      // ⚡ FIX TIMEZONE: Pour "aujourd'hui", utiliser format() pour extraire la dateKey locale
-      // puis recréer à midi UTC pour cohérence
-      const todayKey = format(new Date(), 'yyyy-MM-dd');
-      targetDate = new Date(todayKey + 'T12:00:00.000Z');
-      console.log('[DEBUG-PROD] API /exercices → default today:', {
-        todayKey,
-        targetDate: targetDate.toISOString(),
-      });
-    }
-    
-    // Calculer la période de réinitialisation pour la date cible
-    const now = targetDate;
-    const startOfPeriod = getStartOfPeriod(user.resetFrequency, now);
-    const endOfPeriod = user.resetFrequency === 'DAILY'
-      ? startOfDay(addDays(now, 1))
-      : startOfDay(addDays(startOfPeriod, 7));
-
-    // ⚡ PERFORMANCE: Cache côté serveur (30 secondes car les exercices peuvent changer)
-    // La clé de cache inclut tous les paramètres pour garantir l'unicité
-    const targetDateKey = targetDate.toISOString().split('T')[0]; // yyyy-MM-dd
-    const cacheKey = generateCacheKey([
-      'exercices',
-      userId,
-      category || 'all',
-      selectedEquipments.sort().join(','),
-      includeArchived ? 'archived' : 'active',
-      targetDateKey,
-      user.resetFrequency,
-    ]);
-
-    // ⚡ SOLUTION ROBUSTE: Réduire le cache en mode sablier pour garantir des données fraîches
-    // Le cache est déjà isolé par date (targetDateKey dans cacheKey), donc chaque date a son propre cache
-    // En mode sablier, on veut des données fraîches immédiatement (cache de 1 seconde)
-    // En mode normal, on garde 30 secondes pour la performance
-    const cacheRevalidate = targetDateParam ? 1 : 30;
-    
-    const formattedExercices = await cacheApiResponse(
-      cacheKey,
-      async () => {
-        // Utiliser Prisma Query Builder natif
-        const exercices = await prisma.exercice.findMany({
+    const exercices = await prisma.exercice.findMany({
       where: whereClause,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        descriptionText: true,
+        descriptionComment: true,
+        workoutRepeat: true,
+        workoutSeries: true,
+        workoutDuration: true,
+        equipments: true,
+        category: true,
+        completedAt: true,
+        pinned: true,
+        media: true,
+        archived: true,
+        archivedAt: true,
         bodyparts: {
-          include: {
-            bodypart: true,
+          select: {
+            bodypart: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         history: {
@@ -158,6 +108,9 @@ export async function GET(request: NextRequest) {
               gte: startOfPeriod,
               lt: endOfPeriod,
             },
+          },
+          select: {
+            completedAt: true,
           },
           orderBy: {
             completedAt: 'asc',
@@ -170,45 +123,18 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Reformater les données et filtrer par équipements si nécessaire
+    const targetDateKeyForComparison = format(targetDate, 'yyyy-MM-dd');
+
     const formattedExercices = exercices
       .map((exercice) => {
-        // Extraire les dates de complétion de la période (pour mode WEEKLY)
         const weeklyCompletions = exercice.history.map((h) => h.completedAt);
-        
-        // Un exercice est complété dans la période s'il a au moins une entrée dans l'historique de la période
         const completedInPeriod = weeklyCompletions.length > 0;
         
-        // Un exercice est complété le jour cible si il y a une entrée dans l'historique pour ce jour
-        // ⚡ FIX: Comparer les dates par leur clé (yyyy-MM-dd) pour éviter les problèmes de timezone
-        // ⚡ FIX BUG SABLIER: Utiliser targetDate (déjà normalisé avec startOfDay) au lieu de now
-        // pour garantir que completedToday est calculé pour la bonne date (date sélectionnée en mode sablier)
-        const targetDateKeyForComparison = format(targetDate, 'yyyy-MM-dd');
-        const hasTargetDayHistory = exercice.history.some(
-          (h) => {
-            const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
-            const completedDateKey = format(startOfDay(completedDate), 'yyyy-MM-dd');
-            return completedDateKey === targetDateKeyForComparison;
-          }
-        );
-        const completedToday = hasTargetDayHistory;
+        const hasTargetDayHistory = exercice.history.some((h) => {
+          const completedDateKey = format(startOfDay(h.completedAt), 'yyyy-MM-dd');
+          return completedDateKey === targetDateKeyForComparison;
+        });
 
-        // Log uniquement pour les exercices ayant de l'historique (éviter le spam)
-        if (exercice.history.length > 0) {
-          console.log('[DEBUG-PROD] API /exercices → completedToday:', {
-            exerciceName: exercice.name,
-            targetDateKey: targetDateKeyForComparison,
-            historyDates: exercice.history.map(h => {
-              const d = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
-              return { raw: d.toISOString(), key: format(startOfDay(d), 'yyyy-MM-dd') };
-            }),
-            completedToday,
-            startOfPeriod: startOfPeriod.toISOString(),
-            endOfPeriod: endOfPeriod.toISOString(),
-          });
-        }
-
-        // Parser les équipements
         let equipmentsParsed: string[] = [];
         try {
           equipmentsParsed = JSON.parse(exercice.equipments || '[]');
@@ -216,11 +142,7 @@ export async function GET(request: NextRequest) {
           equipmentsParsed = [];
         }
 
-        // Extraire les noms des bodyparts
         const bodypartsNames = exercice.bodyparts.map((eb) => eb.bodypart.name);
-
-        // Les médias sont déjà un objet JSON (type Json de Prisma)
-        const mediaParsed = exercice.media ?? null;
 
         return {
           id: exercice.id,
@@ -238,241 +160,27 @@ export async function GET(request: NextRequest) {
           bodyparts: bodypartsNames,
           category: exercice.category as ExerciceCategory,
           completed: completedInPeriod,
-          completedToday: completedToday,
+          completedToday: hasTargetDayHistory,
           completedAt: exercice.completedAt,
           pinned: exercice.pinned ?? false,
           weeklyCompletions: weeklyCompletions,
-          media: mediaParsed,
+          media: exercice.media ?? null,
           archived: (exercice as ExerciceWithArchived).archived ?? false,
           archivedAt: (exercice as ExerciceWithArchived).archivedAt,
         };
-        })
-        // Filtrer par équipements si spécifié (au moins un équipement doit correspondre)
-        .filter((exercice) => {
-          if (selectedEquipments.length === 0) {
-            return true;
-          }
-          // Vérifier si l'exercice contient au moins un des équipements sélectionnés
-          return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
-        });
-
-        return formattedExercices;
-      },
-      {
-        // ⚡ SOLUTION ROBUSTE: Cache adaptatif selon le mode
-        // - Mode sablier (targetDate fourni) : cache de 1 seconde pour données fraîches
-        // - Mode normal : cache de 30 secondes pour performance
-        // ⚡ NOTE: Chaque date a sa propre clé de cache (targetDateKey dans cacheKey), donc le cache est isolé par date
-        revalidate: cacheRevalidate,
-        tags: [
-          CACHE_TAGS.EXERCICES,
-          CACHE_TAGS.USER_EXERCICES(userId),
-        ],
-      }
-    );
+      })
+      .filter((exercice) => {
+        if (selectedEquipments.length === 0) {
+          return true;
+        }
+        return selectedEquipments.some(selectedEq => exercice.equipments.includes(selectedEq));
+      });
     
     return NextResponse.json(formattedExercices);
   } catch (error) {
     logError('Error fetching exercices', error);
     return NextResponse.json(
       { error: 'Failed to fetch exercices' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
-
-  try {
-    // Récupérer l'userId effectif depuis le cookie
-    const userId = await getEffectiveUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
-
-    const data = await request.json();
-
-    // Constantes de validation
-    const MAX_EXERCICE_NAME_LENGTH = 200;
-    const MAX_DESCRIPTION_LENGTH = 5000;
-    const MAX_WORKOUT_FIELD_LENGTH = 500;
-
-    // Valider le nom
-    if (!data.name || !data.name.trim()) {
-      return NextResponse.json(
-        { error: 'Le nom de l\'exercice est obligatoire' },
-        { status: 400 }
-      );
-    }
-
-    const trimmedName = data.name.trim();
-    if (trimmedName.length > MAX_EXERCICE_NAME_LENGTH) {
-      return NextResponse.json(
-        { error: `Le nom de l'exercice ne peut pas dépasser ${MAX_EXERCICE_NAME_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    // Valider la longueur de la description
-    if (data.description?.text && data.description.text.length > MAX_DESCRIPTION_LENGTH) {
-      return NextResponse.json(
-        { error: `La description ne peut pas dépasser ${MAX_DESCRIPTION_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    if (data.description?.comment && data.description.comment.length > MAX_DESCRIPTION_LENGTH) {
-      return NextResponse.json(
-        { error: `Le commentaire ne peut pas dépasser ${MAX_DESCRIPTION_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    // Valider les champs workout
-    if (data.workout?.repeat && data.workout.repeat.length > MAX_WORKOUT_FIELD_LENGTH) {
-      return NextResponse.json(
-        { error: `Le champ repeat ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    if (data.workout?.series && data.workout.series.length > MAX_WORKOUT_FIELD_LENGTH) {
-      return NextResponse.json(
-        { error: `Le champ series ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    if (data.workout?.duration && data.workout.duration.length > MAX_WORKOUT_FIELD_LENGTH) {
-      return NextResponse.json(
-        { error: `Le champ duration ne peut pas dépasser ${MAX_WORKOUT_FIELD_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    // Valider la catégorie
-    const category = (data.category || 'UPPER_BODY') as ExerciceCategory;
-    if (!['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(category)) {
-      return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
-        { status: 400 }
-      );
-    }
-
-    // Si une date de création est fournie (mode sablier), l'utiliser à midi
-    let createdAtDate: Date | undefined;
-    if (data.createdAt) {
-      const parsedDate = new Date(data.createdAt);
-      if (!isNaN(parsedDate.getTime())) {
-        // Mettre la date à midi (12:00:00)
-        createdAtDate = setSeconds(setMinutes(setHours(parsedDate, 12), 0), 0);
-      }
-    }
-
-    // Utiliser une transaction pour garantir l'intégrité des données
-    const result = await prisma.$transaction(async (tx) => {
-      // Créer l'exercice avec la date personnalisée si fournie
-      const exerciceData: {
-        name: string;
-        descriptionText: string;
-        descriptionComment: string | null;
-        workoutRepeat: string | null;
-        workoutSeries: string | null;
-        workoutDuration: string | null;
-        equipments: string;
-        category: PrismaExerciceCategory;
-        userId: number;
-        media?: Prisma.InputJsonValue;
-        createdAt?: Date;
-      } = {
-        name: trimmedName,
-        descriptionText: data.description?.text || '',
-        descriptionComment: data.description?.comment || null,
-        workoutRepeat: data.workout?.repeat || null,
-        workoutSeries: data.workout?.series || null,
-        workoutDuration: data.workout?.duration || null,
-        equipments: JSON.stringify(data.equipments || []),
-        category: category as PrismaExerciceCategory,
-        userId: userId,
-        ...(data.media && { media: data.media as Prisma.InputJsonValue }),
-      };
-
-      // Ajouter la date de création personnalisée si fournie
-      if (createdAtDate) {
-        exerciceData.createdAt = createdAtDate;
-      }
-
-      const exercice = await tx.exercice.create({
-        data: exerciceData,
-      });
-
-      // Créer les relations bodyparts en parallèle si fournies
-      if (data.bodyparts && Array.isArray(data.bodyparts) && data.bodyparts.length > 0) {
-        await Promise.all(data.bodyparts.map(async (bodypartName: string) => {
-          // Trouver ou créer le bodypart
-          const bodypart = await tx.bodypart.upsert({
-            where: { name: bodypartName },
-            update: {},
-            create: { name: bodypartName },
-          });
-          
-          // Créer la relation
-          await tx.exerciceBodypart.create({
-            data: {
-              exerciceId: exercice.id,
-              bodypartId: bodypart.id,
-            },
-          });
-        }));
-      }
-
-      return exercice;
-    });
-
-    // Les médias sont déjà un objet JSON (type Json de Prisma)
-    const mediaParsed = result.media ?? null;
-
-    // Reformater les données
-    const formattedExercice = {
-      id: result.id,
-      name: result.name,
-      description: {
-        text: result.descriptionText,
-        comment: result.descriptionComment,
-      },
-      workout: {
-        repeat: result.workoutRepeat,
-        series: result.workoutSeries,
-        duration: result.workoutDuration,
-      },
-      equipments: JSON.parse(result.equipments),
-      bodyparts: data.bodyparts || [],
-      category: result.category as ExerciceCategory,
-      completed: result.completed,
-      completedAt: result.completedAt,
-      pinned: result.pinned,
-      media: mediaParsed,
-      archived: (result as ExerciceWithArchived).archived ?? false,
-      archivedAt: (result as ExerciceWithArchived).archivedAt,
-    };
-
-    // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après création
-    revalidateTag(CACHE_TAGS.EXERCICES, 'max');
-    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId), 'max');
-    revalidateTag(CACHE_TAGS.METADATA, 'max');
-    revalidateTag(CACHE_TAGS.USER_METADATA(userId), 'max');
-
-    return NextResponse.json(formattedExercice, { status: 201 });
-  } catch (error) {
-    logError('Error creating exercice', error);
-    return NextResponse.json(
-      { error: 'Failed to create exercice' },
       { status: 500 }
     );
   }

@@ -10,84 +10,44 @@ import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
 import { getDateFromKey, getDateKey } from '@/app/utils/date.utils';
 
 type TimeContextType = {
-  referenceDate: Date; // Date de référence (aujourd'hui ou date sélectionnée)
-  referenceDateKey: string; // Clé stable (yyyy-MM-dd) pour réactivité
-  isTimeMachineMode: boolean; // Mode sablier actif
-  isToday: boolean; // Est-ce que referenceDate = aujourd'hui ?
+  referenceDate: Date;
+  referenceDateKey: string;
+  isTimeMachineMode: boolean;
+  isToday: boolean;
 };
 
 const TimeContext = createContext<TimeContextType | undefined>(undefined);
 
 export function TimeProvider({ children }: PropsWithChildren) {
-  // ⚡ PERFORMANCE: Utiliser selectedDateKey directement (pas selectedDate)
-  // Évite les recalculs de toDateString() et garantit des dépendances stables
-  const { selectedDateKey, isTimeMachineMode, isTransitioning } = useSelectedDate();
+  const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
   const { effectiveUser } = useUser();
   const queryClient = useQueryClient();
 
-  // Calculer la date de référence UNE SEULE FOIS avec dépendances stables
-  // ⚡ FIX BUG SABLIER: Mettre à jour referenceDate même pendant la transition pour que les données soient correctes
-  // L'animation visuelle peut continuer, mais les données doivent être à jour immédiatement
   const timeContextValue = useMemo<TimeContextType>(() => {
-    // Par défaut : aujourd'hui
-    // ⚡ FIX PREPROD: Utiliser startOfDay pour normaliser correctement la date
-    // En production, le timezone du serveur peut être différent, startOfDay garantit la cohérence
     const today = new Date();
     let referenceDate = startOfDay(today);
     let referenceDateKey = format(referenceDate, 'yyyy-MM-dd');
 
-    console.log('[DEBUG-PROD] TimeContext.useMemo:', {
-      rawToday: today.toISOString(),
-      startOfDayToday: referenceDate.toISOString(),
-      todayKey: referenceDateKey,
-      isTimeMachineMode,
-      selectedDateKey,
-      timezoneOffset: today.getTimezoneOffset(),
-      locale: typeof navigator !== 'undefined' ? navigator.language : 'N/A',
-    });
-
-    // Mode sablier : utiliser la date sélectionnée
-    // ⚡ FIX BUG SABLIER: Mettre à jour même pendant la transition pour que les gauges affichent les bonnes valeurs
-    // L'animation visuelle (isTimeMachineMode) peut être retardée, mais les données doivent être à jour
     if (isTimeMachineMode && selectedDateKey) {
-      // ⚡ OPTIMISATION: Utiliser getDateFromKey() pour éviter la duplication de logique
       const dateFromKey = getDateFromKey(selectedDateKey);
       if (dateFromKey) {
         referenceDate = dateFromKey;
         referenceDateKey = selectedDateKey;
-        console.log('[DEBUG-PROD] TimeContext → mode sablier actif:', {
-          selectedDateKey,
-          referenceDate: referenceDate.toISOString(),
-          referenceDateKey,
-        });
       }
     }
-
-    // ⚡ PERFORMANCE: isToday calculé sans appel à date-fns (plus rapide)
-    // ⚡ FIX BUG SABLIER: Calculer isToday basé sur la vraie date de référence (pas la transition)
-    const isTodayValue = !isTimeMachineMode;
 
     return {
       referenceDate,
       referenceDateKey,
-      // ⚡ FIX BUG SABLIER: Garder isTimeMachineMode basé sur la vraie date (pas la transition)
-      // L'animation visuelle peut être gérée ailleurs, mais les données doivent être correctes
       isTimeMachineMode,
-      isToday: isTodayValue,
+      isToday: !isTimeMachineMode,
     };
-  }, [isTimeMachineMode, selectedDateKey]); // ⚡ FIX: Retirer isTransitioning des dépendances pour que referenceDate se mette à jour immédiatement
+  }, [isTimeMachineMode, selectedDateKey]);
 
-  // ⚡ PERFORMANCE: Précharger les jours adjacents en arrière-plan avec TanStack Query
-  // ⚡ OPTIMISATION: Utiliser un timeout pour éviter de précharger immédiatement après chaque changement
-  // Cela évite de ralentir les opérations de complétion d'exercices
-  // ⚡ AMÉLIORATION: Précharger aussi les exercices pour une navigation instantanée
   useEffect(() => {
     if (!isTimeMachineMode || !selectedDateKey || !effectiveUser?.id) return;
     
-    // Délai pour éviter de précharger immédiatement (permet aux autres opérations de se terminer)
     const timeoutId = setTimeout(() => {
-      // Précharger les jours adjacents en arrière-plan
-      // ⚡ OPTIMISATION: Utiliser getDateFromKey() et getDateKey() pour éviter la duplication
       const currentDate = getDateFromKey(selectedDateKey);
       if (!currentDate) return;
       
@@ -96,51 +56,23 @@ export function TimeProvider({ children }: PropsWithChildren) {
       const nextDay = new Date(currentDate);
       nextDay.setDate(nextDay.getDate() + 1);
       
-      // ⚡ FIX TIMEZONE: Utiliser les dateKeys directement au lieu de toISOString()
       const prevDayKey = getDateKey(prevDay);
       const nextDayKey = getDateKey(nextDay);
 
       if (!prevDayKey || !nextDayKey) return;
 
       queryClient.prefetchQuery({
-        queryKey: queryKeys.exercices.list({
-          targetDate: prevDayKey,
-        }),
-        queryFn: () => fetchExercices({
-          targetDate: prevDayKey,
-        }),
+        queryKey: queryKeys.exercices.list({ targetDate: prevDayKey }),
+        queryFn: () => fetchExercices({ targetDate: prevDayKey }),
       });
 
       queryClient.prefetchQuery({
-        queryKey: queryKeys.exercices.list({
-          targetDate: nextDayKey,
-        }),
-        queryFn: () => fetchExercices({
-          targetDate: nextDayKey,
-        }),
+        queryKey: queryKeys.exercices.list({ targetDate: nextDayKey }),
+        queryFn: () => fetchExercices({ targetDate: nextDayKey }),
       });
-    }, 500); // Délai de 500ms pour laisser les autres opérations se terminer
+    }, 500);
     
     return () => clearTimeout(timeoutId);
-  }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
-
-  useEffect(() => {
-    if (!effectiveUser?.id) return;
-
-    const dateDependentQueryKeys = [
-      queryKeys.exercices.all,           // → useExercices, useCategoryStats, useTodayCompletedCount (via select)
-      queryKeys.history.all,             // → useHistory, WelcomeHeaderWrapper, HistoriquePageClient
-      queryKeys.categoryStats.all,       // → (déprécié, mais invalidé pour compatibilité)
-    ];
-    
-    // ⚡ FIX BUG HARD REFRESH: Toujours forcer un refetch actif pour garantir que les données
-    // sont à jour immédiatement. Même en mode normal, on veut les dernières données après navigation.
-    // Le changement de query key dans les hooks (useExercices, useCategoryStats) déclenche
-    // automatiquement un fetch, mais l'invalidation avec refetchType: 'active' garantit
-    // que les queries actives sont refetchées immédiatement.
-    dateDependentQueryKeys.forEach((queryKey) => {
-      queryClient.invalidateQueries({ queryKey, refetchType: 'active' });
-    });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 
   return (

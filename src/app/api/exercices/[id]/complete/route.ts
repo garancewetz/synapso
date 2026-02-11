@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
-import {
-  parseCompletedAtFromBody,
-  toggleExerciceCompletion,
-} from '@/app/features/exercices/utils/exercice-complete.utils';
-import { CACHE_TAGS } from '@/app/lib/cache';
+import { startOfDay, addDays } from 'date-fns';
 
 export async function PATCH(
   request: NextRequest,
@@ -25,7 +20,6 @@ export async function PATCH(
     }
 
     const userId = await getEffectiveUserId(request);
-
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
@@ -34,15 +28,8 @@ export async function PATCH(
     }
 
     const exercice = await prisma.exercice.findFirst({
-      where: {
-        id,
-        userId: userId,
-      },
-      include: {
-        user: {
-          select: { resetFrequency: true },
-        },
-      },
+      where: { id, userId },
+      select: { id: true },
     });
 
     if (!exercice) {
@@ -52,45 +39,68 @@ export async function PATCH(
       );
     }
 
-    const resetFrequency = exercice.user.resetFrequency || 'DAILY';
-    const { completedAt, checkDateForCompletedToday } =
-      await parseCompletedAtFromBody(request);
-
-    // ⚡ PERFORMANCE CRITIQUE: Transaction avec timeout adapté
-    // Tous les calculs complexes seront faits après la transaction
-    const result = await prisma.$transaction(
-      async (tx) => {
-        return toggleExerciceCompletion(tx, {
-          exerciceId: id,
-          completedAt,
-          resetFrequency: resetFrequency as 'DAILY' | 'WEEKLY',
-          checkDateForCompletedToday,
-        });
-      },
-      {
-        maxWait: 5000, // Temps d'attente pour démarrer la transaction
-        timeout: 10000, // Timeout de 10s pour les transactions longues (deleteMany + findFirst peuvent être lents)
+    let completedAt = new Date();
+    try {
+      const body = await request.json();
+      if (body?.completedAt && /^\d{4}-\d{2}-\d{2}$/.test(body.completedAt)) {
+        completedAt = new Date(body.completedAt + 'T12:00:00.000Z');
       }
-    );
+    } catch {
+      // Body vide, utiliser la date actuelle
+    }
 
-    // ⚡ CACHE INVALIDATION: Invalider le cache côté serveur après complétion
-    const targetDateKey = completedAt ? new Date(completedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-    revalidateTag(CACHE_TAGS.EXERCICES, 'max');
-    revalidateTag(CACHE_TAGS.EXERCICE(id), 'max');
-    revalidateTag(CACHE_TAGS.USER_EXERCICES(userId), 'max');
-    revalidateTag(CACHE_TAGS.HISTORY, 'max');
-    revalidateTag(CACHE_TAGS.USER_HISTORY(userId), 'max');
-    revalidateTag(CACHE_TAGS.STATS, 'max');
-    revalidateTag(CACHE_TAGS.USER_STATS(userId, targetDateKey), 'max');
+    const targetDate = startOfDay(completedAt);
+    const endOfTargetDate = startOfDay(addDays(completedAt, 1));
 
-    // ⚡ PERFORMANCE: Retourner immédiatement avec les valeurs calculées
-    // Les valeurs manquantes seront mises à jour par le refetch automatique
-    return NextResponse.json({
-      ...result.exercice,
-      completed: result.completed,
-      completedToday: result.completedToday,
-      weeklyCompletions: result.weeklyCompletions,
+    const deleted = await prisma.history.deleteMany({
+      where: {
+        exerciceId: id,
+        completedAt: { gte: targetDate, lt: endOfTargetDate },
+      },
     });
+
+    if (deleted.count > 0) {
+      const lastHistory = await prisma.history.findFirst({
+        where: { exerciceId: id },
+        orderBy: { completedAt: 'desc' },
+        select: { completedAt: true },
+      });
+
+      await prisma.exercice.update({
+        where: { id },
+        data: {
+          completed: !!lastHistory,
+          completedAt: lastHistory?.completedAt || null,
+        },
+      });
+
+      return NextResponse.json({
+        completed: !!lastHistory,
+        completedToday: false,
+        completedAt: lastHistory?.completedAt || null,
+        weeklyCompletions: [],
+      });
+    } else {
+      await Promise.all([
+        prisma.history.create({
+          data: { exerciceId: id, completedAt },
+        }),
+        prisma.exercice.update({
+          where: { id },
+          data: {
+            completed: true,
+            completedAt,
+          },
+        }),
+      ]);
+
+      return NextResponse.json({
+        completed: true,
+        completedToday: true,
+        completedAt,
+        weeklyCompletions: [],
+      });
+    }
   } catch (error) {
     logError('Erreur lors de la mise à jour', error);
     return NextResponse.json(
@@ -99,4 +109,3 @@ export async function PATCH(
     );
   }
 }
-

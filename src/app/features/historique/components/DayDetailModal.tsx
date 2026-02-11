@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_ICONS, CATEGORY_COLORS } from '@/app/constants/exercice.constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER, CATEGORY_LABELS } from '@/app/constants/exercice.constants';
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
@@ -26,13 +26,14 @@ type Props = {
   date: Date | null;
   exercises: DayExercise[];
   progress: Progress[];
+  categoryStats?: Record<ExerciceCategory, number>;
 };
 
 /**
  * Modale affichant le détail d'une journée du parcours
  * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
  */
-export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: Props) {
+export function DayDetailModal({ isOpen, onClose, date, exercises, progress, categoryStats }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
   const hasContent = exercises.length > 0 || progress.length > 0;
   const { setSelectedDate, clearSelectedDate, isTimeMachineMode } = useSelectedDate();
@@ -132,6 +133,43 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress }: P
         {/* Contenu normal (seulement si pas un jour futur) */}
         {!isFutureDay && (
           <>
+            {/* Résumé des stats par catégorie (cohérent avec les gauges) */}
+            {/* ⚡ COHÉRENCE: Ces stats utilisent la même logique que les gauges (completedToday basé sur resetFrequency) */}
+            {/* En mode WEEKLY, cela peut inclure des exercices faits d'autres jours de la semaine */}
+            {categoryStats && Object.values(categoryStats).some(count => count > 0) && (
+              <section className="bg-white rounded-xl border border-gray-200 p-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Exercices faits par catégorie</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {CATEGORY_ORDER.map((category) => {
+                    const count = categoryStats[category] || 0;
+                    if (count === 0) return null;
+                    const styles = CATEGORY_COLORS[category];
+                    const icon = CATEGORY_ICONS[category];
+                    const label = CATEGORY_LABELS[category];
+                    
+                    return (
+                      <div
+                        key={category}
+                        className={clsx(
+                          'flex items-center gap-2 px-3 py-2 rounded-lg',
+                          styles.bg,
+                          styles.border
+                        )}
+                      >
+                        <span className="text-lg">{icon}</span>
+                        <span className={clsx('text-sm font-medium flex-1', styles.text)}>
+                          {label}
+                        </span>
+                        <span className={clsx('text-sm font-bold', styles.text)}>
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* Section Progrès */}
         {progress.length > 0 && (
           <section className="space-y-2">

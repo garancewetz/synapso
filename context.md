@@ -3254,8 +3254,25 @@ Le système de design est excellent avec quelques améliorations mineures recomm
 ---
 
 **Dernière mise à jour** : 15 janvier 2026  
-**Version de l'application** : 0.1.11 (corrections hard refresh et gauges)  
+**Version de l'application** : 0.1.12 (simplification du code)  
 **Auteur du contexte** : Documentation générée par analyse du projet Synapso
+
+### Modifications récentes (v0.1.12)
+
+- **Simplification drastique du code** :
+  - **useCompleteExercice** : Refactorisation complète pour éliminer la complexité inutile
+    - Suppression de toutes les fonctions helper complexes (`matchesTargetDate`, `matchesHistoryDate`, `createOptimisticEntry`, `calculateNewState`)
+    - Suppression de tous les `useMemo` inutiles (calculs directs au lieu de mémorisation)
+    - Simplification de `targetDate` : utilisation directe de `referenceDateKey` (undefined = aujourd'hui)
+    - Suppression de `isTimeMachineMode` : utilisation directe de `referenceDateKey`
+    - Logique simplifiée : toggle `completedToday` → ajouter/supprimer de l'historique → invalider les queries
+    - Rollback simplifié : `forEach` sur une ligne
+    - Code réduit de 207 lignes à 146 lignes (-30%)
+  - **useCategoryStats** : Simplification du calcul des stats
+    - Remplacement de `filter` + `forEach` par une simple boucle `for...of`
+    - Nettoyage des commentaires verbeux
+    - Code réduit de 74 lignes à 63 lignes (-15%)
+  - **Résultat** : Code plus simple, direct, sans boucles de rendu, plus facile à maintenir
 
 ### Modifications récentes (v0.1.11)
 

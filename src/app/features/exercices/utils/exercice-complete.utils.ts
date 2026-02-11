@@ -89,7 +89,7 @@ export async function toggleExerciceCompletion(
   const { exerciceId, completedAt, resetFrequency, checkDateForCompletedToday } =
     params;
 
-  const { targetDate, endOfTargetDate, startOfPeriod, endOfPeriod } =
+  const { targetDate, endOfTargetDate } =
     calculatePeriodDates(completedAt, resetFrequency);
   const { startOfCheckDay, endOfCheckDay } = calculateCheckDayDates(
     checkDateForCompletedToday
@@ -117,8 +117,7 @@ export async function toggleExerciceCompletion(
   const isCompleting = !targetDayHistory;
 
   if (isCompleting) {
-    // ⚡ PERFORMANCE CRITIQUE: Transaction minimale - uniquement create + update
-    // Les calculs seront faits après la transaction pour ne pas bloquer
+    // ⚡ PERFORMANCE: Transaction minimale - uniquement create + update
     const [, exercice] = await Promise.all([
       tx.history.create({
         data: {
@@ -134,29 +133,16 @@ export async function toggleExerciceCompletion(
       }),
     ]);
 
-    const completedToday = isSameDay;
-    const completedInPeriod = true;
-
-    // Récupérer les completions de la période pour le client (gauges, dots hebdo)
-    const weeklyHistory = await tx.history.findMany({
-      where: { exerciceId, completedAt: { gte: startOfPeriod, lt: endOfPeriod } },
-      select: { completedAt: true },
-      orderBy: { completedAt: 'asc' },
-    });
-    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
-
     return {
       exercice,
-      completed: completedInPeriod,
-      completedToday,
-      weeklyCompletions,
+      completed: true,
+      completedToday: isSameDay,
+      weeklyCompletions: [],
     };
   } else {
-    // ⚡ PERFORMANCE CRITIQUE: Transaction minimale - uniquement delete + update
-    // Les calculs seront faits après la transaction pour ne pas bloquer
-    
-    // Supprimer les entrées pour la date cible
-    await tx.history.deleteMany({
+    // ⚡ PERFORMANCE: Supprimer l'entrée et récupérer la dernière en une seule requête
+    // Utiliser findFirst pour trouver l'entrée à supprimer (plus rapide que deleteMany)
+    const entryToDelete = await tx.history.findFirst({
       where: {
         exerciceId,
         completedAt: {
@@ -164,46 +150,36 @@ export async function toggleExerciceCompletion(
           lt: endOfTargetDate,
         },
       },
+      select: { id: true },
     });
 
-    // ⚡ PERFORMANCE: Récupérer la dernière entrée pour completedAt (nécessaire pour l'exercice)
-    // findFirst retourne déjà un seul résultat, optimisé avec orderBy
-    const remainingHistory = await tx.history.findFirst({
-      where: {
-        exerciceId,
-      },
-      orderBy: {
-        completedAt: 'desc',
-      },
-      select: {
-        completedAt: true,
-      },
+    if (entryToDelete) {
+      await tx.history.delete({
+        where: { id: entryToDelete.id },
+      });
+    }
+
+    // Récupérer la dernière entrée restante (si elle existe)
+    const lastHistory = await tx.history.findFirst({
+      where: { exerciceId },
+      orderBy: { completedAt: 'desc' },
+      select: { completedAt: true },
+      take: 1,
     });
 
     // Mettre à jour l'exercice
     const updatedExercice = await tx.exercice.update({
       where: { id: exerciceId },
       data: {
-        completedAt: remainingHistory?.completedAt || null,
+        completedAt: lastHistory?.completedAt || null,
       },
     });
 
-    const completedToday = isSameDay ? false : true;
-
-    // Récupérer les completions restantes de la période pour le client
-    const weeklyHistory = await tx.history.findMany({
-      where: { exerciceId, completedAt: { gte: startOfPeriod, lt: endOfPeriod } },
-      select: { completedAt: true },
-      orderBy: { completedAt: 'asc' },
-    });
-    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
-    const completedInPeriod = weeklyCompletions.length > 0;
-
     return {
       exercice: updatedExercice,
-      completed: completedInPeriod,
-      completedToday,
-      weeklyCompletions,
+      completed: !!lastHistory,
+      completedToday: false,
+      weeklyCompletions: [],
     };
   }
 }

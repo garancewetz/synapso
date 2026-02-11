@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Query } from '@tanstack/react-query';
-import { format, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import type { Exercice, HistoryEntry } from '@/app/types';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys } from '@/app/lib/api-queries';
 
@@ -21,55 +19,29 @@ type UseCompleteExerciceReturn = {
   showSuccess: boolean;
 };
 
-/**
- * Prédicat pour cibler uniquement les queries exercices du jour sélectionné.
- * Évite de corrompre le cache des autres jours lors des optimistic updates.
- */
-function matchesTargetDate(query: Query, targetDateForQuery: string | undefined): boolean {
-  // Query key: ['exercices', 'list', { targetDate?: string, ... }]
-  if (query.queryKey.length < 3) return false;
-  const filters = query.queryKey[2] as { targetDate?: string } | undefined;
-  return (filters?.targetDate ?? undefined) === targetDateForQuery;
-}
-
 export function useCompleteExercice({
   exercice,
   userId,
   onCompleted,
 }: UseCompleteExerciceOptions): UseCompleteExerciceReturn {
   const [showSuccess, setShowSuccess] = useState(false);
-  const { selectedDate } = useSelectedDate();
-  const { isTimeMachineMode, referenceDateKey } = useTimeContext();
+  const { referenceDateKey } = useTimeContext();
   const queryClient = useQueryClient();
 
-  // ⚡ FIX BUG 1: Calculer le targetDate pour les query keys avec la MÊME logique que useExercices
-  // Garantit que les optimistic updates ciblent les mêmes queries que l'affichage
-  const targetDateForQuery = useMemo(() => {
-    return isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
-  }, [isTimeMachineMode, referenceDateKey]);
+  const targetDate = referenceDateKey || format(new Date(), 'yyyy-MM-dd');
+  const isCompleting = !exercice.completedToday;
 
-  // DateKey pour l'API et les comparaisons de dates
-  const targetDateKey = useMemo(() => {
-    return targetDateForQuery || format(new Date(), 'yyyy-MM-dd');
-  }, [targetDateForQuery]);
-
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      const fetchOptions: RequestInit = {
-        method: 'PATCH',
-        credentials: 'include',
-      };
-
-      // ⚡ FIX: Utiliser isTimeMachineMode + referenceDateKey (cohérent avec les query keys)
-      // au lieu de selectedDateKey qui peut être défini même quand isTimeMachineMode = false
-      if (isTimeMachineMode && referenceDateKey) {
-        fetchOptions.headers = {
-          'Content-Type': 'application/json',
-        };
-        fetchOptions.body = JSON.stringify({ completedAt: referenceDateKey });
-      }
-
-      const response = await fetch(`/api/exercices/${exercice.id}/complete?userId=${userId}`, fetchOptions);
+      const response = await fetch(
+        `/api/exercices/${exercice.id}/complete?userId=${userId}`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ completedAt: targetDate }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -79,164 +51,113 @@ export function useCompleteExercice({
       return response.json();
     },
     onMutate: async () => {
-      // Annuler les requêtes en cours pour éviter les conflits
-      await queryClient.cancelQueries({ queryKey: queryKeys.exercices.all });
-      await queryClient.cancelQueries({ queryKey: queryKeys.history.all });
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: queryKeys.exercices.all }),
+        queryClient.cancelQueries({ queryKey: queryKeys.history.all }),
+      ]);
 
-      // ⚡ FIX BUG 1: Snapshot uniquement des queries du jour ciblé (pour rollback)
-      const exercicesQueryFilter = {
-        queryKey: queryKeys.exercices.lists(),
-        predicate: (query: Query) => matchesTargetDate(query, targetDateForQuery),
+      const previousExercices = queryClient.getQueriesData<Exercice[]>({ queryKey: queryKeys.exercices.all });
+      const previousHistory = queryClient.getQueriesData<HistoryEntry[]>({ queryKey: queryKeys.history.all });
+
+      const optimisticEntry: HistoryEntry = {
+        id: -Date.now(),
+        completedAt: targetDate + 'T12:00:00.000Z',
+        exercice: {
+          id: exercice.id,
+          name: exercice.name,
+          category: exercice.category,
+          bodyparts: exercice.bodyparts.map(name => ({ id: 0, name })),
+          equipments: exercice.equipments,
+        },
       };
-      const previousExercicesQueries = queryClient.getQueriesData<Exercice[]>(exercicesQueryFilter);
-      const previousHistoryQueries = queryClient.getQueriesData({ queryKey: queryKeys.history.all });
 
-      // ⚡ FIX MODE SABLIER: Le serveur toggle basé sur l'existence d'une entrée pour le JOUR cible
-      // (= completedToday), pas sur "complété dans la période" (= completed).
-      const newCompletedToday = !(exercice.completedToday ?? false);
-
-      // ⚡ FIX BUG 2: Calculer completed en tenant compte du mode WEEKLY
-      // En mode WEEKLY, décompleter un jour ne signifie pas que l'exercice n'est plus complété
-      // si d'autres jours de la semaine ont des completions
-      const currentWeeklyCompletions = exercice.weeklyCompletions || [];
-      const newWeeklyCompletions = newCompletedToday
-        ? [...currentWeeklyCompletions, new Date(targetDateKey + 'T12:00:00.000Z')]
-        : currentWeeklyCompletions.filter(d => {
-            const key = format(new Date(d), 'yyyy-MM-dd');
-            return key !== targetDateKey;
-          });
-      const newCompleted = newCompletedToday ? true : newWeeklyCompletions.length > 0;
-
-      const newCompletedAt = newCompleted ? (selectedDate || new Date()) : null;
-
-      // ⚡ FIX BUG 1: Optimistic update uniquement pour les queries du jour ciblé
       queryClient.setQueriesData<Exercice[]>(
-        exercicesQueryFilter,
+        { predicate: (query) => query.queryKey[0] === 'exercices' },
+        (old) => old?.map(ex =>
+          ex.id === exercice.id
+            ? { ...ex, completedToday: isCompleting, completed: isCompleting }
+            : ex
+        ) ?? []
+      );
+
+      queryClient.setQueriesData<HistoryEntry[]>(
+        { predicate: (query) => query.queryKey[0] === 'history' },
         (old) => {
-          if (!old) return old;
-          return old.map(ex =>
-            ex.id === exercice.id
-              ? {
-                  ...ex,
-                  completed: newCompleted,
-                  completedToday: newCompletedToday,
-                  completedAt: newCompletedAt,
-                  weeklyCompletions: newWeeklyCompletions,
-                }
-              : ex
-          );
+          if (isCompleting) {
+            const existing = old?.some(
+              entry =>
+                entry.exercice.id === exercice.id &&
+                format(new Date(entry.completedAt), 'yyyy-MM-dd') === targetDate
+            );
+            if (existing) return old ?? [];
+            return old ? [...old, optimisticEntry] : [optimisticEntry];
+          }
+          return old?.filter(
+            entry =>
+              entry.exercice.id !== exercice.id ||
+              format(new Date(entry.completedAt), 'yyyy-MM-dd') !== targetDate
+          ) ?? [];
         }
       );
 
-      // Optimistic update heatmap (l'historique est global, filtré par date dans l'updater)
-      const isAddingToHistory = newCompletedToday;
-
-      if (isAddingToHistory) {
-        const optimisticEntry: HistoryEntry = {
-          id: -Date.now(),
-          completedAt: targetDateKey + 'T12:00:00.000Z',
-          exercice: {
-            id: exercice.id,
-            name: exercice.name,
-            category: exercice.category,
-            bodyparts: exercice.bodyparts.map(name => ({ id: 0, name })),
-            equipments: exercice.equipments,
-          },
-        };
-        queryClient.setQueriesData<HistoryEntry[]>(
-          { queryKey: queryKeys.history.all },
-          (old) => old ? [...old, optimisticEntry] : [optimisticEntry]
-        );
-      } else {
-        queryClient.setQueriesData<HistoryEntry[]>(
-          { queryKey: queryKeys.history.all },
-          (old) => {
-            if (!old) return old;
-            return old.filter(entry => {
-              if (entry.exercice.id !== exercice.id) return true;
-              const entryDateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
-              return entryDateKey !== targetDateKey;
-            });
-          }
-        );
-      }
-
-      return { previousExercicesQueries, previousHistoryQueries };
+      return { previousExercices, previousHistory };
     },
     onError: (error, _variables, context) => {
-      console.error('Erreur lors de la mise à jour de l\'exercice:', error);
-
-      // Rollback : restaurer les données précédentes
-      if (context?.previousExercicesQueries) {
-        context.previousExercicesQueries.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
+      // ⚡ ROLLBACK: Restaurer les données précédentes en cas d'erreur
+      // C'est critique pour éviter que l'UI reste dans un état optimiste incorrect
+      if (context?.previousExercices) {
+        context.previousExercices.forEach(([queryKey, data]) => {
+          if (data !== undefined) {
+            queryClient.setQueryData(queryKey, data);
+          }
         });
       }
-      if (context?.previousHistoryQueries) {
-        context.previousHistoryQueries.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
+      if (context?.previousHistory) {
+        context.previousHistory.forEach(([queryKey, data]) => {
+          if (data !== undefined) {
+            queryClient.setQueryData(queryKey, data);
+          }
         });
       }
+      
+      // Log l'erreur pour le debugging
+      console.error('Erreur lors de la complétion de l\'exercice:', error);
     },
     onSuccess: (data) => {
-      const wasCompletedToday = exercice.completedToday ?? false;
-
+      const wasCompleted = exercice.completedToday ?? false;
       const updatedExercice: Exercice = {
         ...exercice,
         completed: data.completed,
         completedToday: data.completedToday ?? false,
         completedAt: data.completedAt ? new Date(data.completedAt) : null,
-        // ⚡ FIX BUG 4: [] est truthy en JS, utiliser .length pour détecter un tableau vide
-        weeklyCompletions: data.weeklyCompletions?.length > 0
-          ? data.weeklyCompletions
-          : exercice.weeklyCompletions,
+        weeklyCompletions: data.weeklyCompletions || [],
       };
 
-      if (!wasCompletedToday && updatedExercice.completedToday) {
+      if (!wasCompleted && updatedExercice.completedToday) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 1500);
       }
 
-      if (onCompleted) {
-        onCompleted(updatedExercice);
-      }
+      onCompleted?.(updatedExercice);
 
-      // ⚡ FIX BUG 1: Mettre à jour uniquement les queries du jour ciblé avec les données serveur
-      queryClient.setQueriesData<Exercice[]>(
-        {
-          queryKey: queryKeys.exercices.lists(),
-          predicate: (query: Query) => matchesTargetDate(query, targetDateForQuery),
-        },
-        (old) => {
-          if (!old) return old;
-          return old.map(ex => ex.id === exercice.id ? updatedExercice : ex);
-        }
-      );
-
-      // Invalidation différée : marquer stale après 2s
-      // Le refetch se fera au prochain montage/focus
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.exercices.all,
-          refetchType: 'none',
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.history.all,
-          refetchType: 'none',
-        });
-      }, 2000);
+      queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'history' });
     },
   });
 
-  const handleComplete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!userId) return;
-    mutation.mutate();
-  };
+  const handleComplete = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (userId) {
+        mutate();
+      }
+    },
+    [userId, mutate]
+  );
 
   return {
     handleComplete,
-    isCompleting: mutation.isPending,
+    isCompleting: isPending,
     showSuccess,
   };
 }

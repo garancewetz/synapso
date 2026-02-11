@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
@@ -60,7 +60,7 @@ export function useCategoryStats(): UseCategoryStatsReturn {
     queryKey: JSON.stringify(exercicesQueryKey),
   });
 
-  const { data: stats = initialStats, isLoading, error } = useQuery({
+  const queryResult = useQuery({
     queryKey: exercicesQueryKey,
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser,
@@ -78,18 +78,57 @@ export function useCategoryStats(): UseCategoryStatsReturn {
         totalExercices: exercices.length,
         completedToday: exercices.filter(e => e.completedToday).map(e => ({ name: e.name, category: e.category })),
         stats: newStats,
+        referenceDateKey,
       });
       return newStats;
     },
-    // ⚡ FIX: Ne pas utiliser placeholderData en mode sablier pour éviter d'afficher les anciennes données
+    // ⚡ FIX BUG GAUGES: Ne jamais utiliser placeholderData en mode sablier pour éviter d'afficher les anciennes données
+    // Quand on change de jour, la query key change (referenceDateKey différent), mais TanStack Query
+    // peut encore avoir les anciennes données en cache. En utilisant undefined, on force un état de chargement
+    // plutôt que d'afficher des données incorrectes.
+    // En mode normal (aujourd'hui), on peut utiliser placeholderData pour une meilleure UX.
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
-    staleTime: 10000,
+    // ⚡ FIX BUG HARD REFRESH: Réduire drastiquement staleTime pour forcer un refetch plus fréquent
+    // Cela garantit que les données sont toujours à jour, même après navigation
+    staleTime: 0, // Toujours considérer comme stale pour forcer le refetch
     gcTime: 2 * 60 * 1000,
+    // ⚡ FIX BUG HARD REFRESH: Forcer le refetch au montage pour garantir des données fraîches
+    // Cela évite d'avoir besoin d'un hard refresh pour voir les dernières données
+    refetchOnMount: true,
+    // ⚡ FIX BUG HARD REFRESH: Refetch aussi quand la fenêtre reprend le focus
+    // Utile quand on revient sur l'onglet après avoir complété un exercice ailleurs
+    refetchOnWindowFocus: true,
   });
 
+  const { data: stats, isLoading, error, isFetching, refetch } = queryResult;
+
+  // ⚡ FIX BUG HARD REFRESH: Forcer un refetch explicite quand referenceDateKey change
+  // TanStack Query devrait automatiquement refetch quand la query key change, mais parfois
+  // le cache peut interférer. Ce useEffect garantit un refetch explicite.
+  useEffect(() => {
+    if (!effectiveUser) return;
+    
+    // Forcer un refetch quand la date change (même en mode normal, pour garantir des données fraîches)
+    // Utiliser un petit délai pour éviter les refetchs multiples lors du montage initial
+    const timeoutId = setTimeout(() => {
+      refetch();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [referenceDateKey, effectiveUser, refetch]);
+
+  // ⚡ FIX BUG GAUGES: Utiliser les stats calculées ou initialStats si pas encore chargé
+  // En mode sablier, si isLoading est true, on retourne initialStats (tous à 0) plutôt que
+  // d'utiliser des données potentiellement incorrectes d'une autre date
+  const finalStats = stats ?? initialStats;
+  
+  // ⚡ FIX BUG GAUGES: En mode sablier, considérer comme loading si on est en train de fetch
+  // Cela évite d'afficher des données incorrectes pendant le changement de jour
+  const isActuallyLoading = isTimeMachineMode ? (isLoading || isFetching) : isLoading;
+
   return {
-    stats,
-    loading: isLoading,
+    stats: finalStats,
+    loading: isActuallyLoading,
     error: error as Error | null,
     refresh: async () => {
       await queryClient.invalidateQueries({

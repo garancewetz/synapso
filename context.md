@@ -3254,8 +3254,24 @@ Le système de design est excellent avec quelques améliorations mineures recomm
 ---
 
 **Dernière mise à jour** : 15 janvier 2026  
-**Version de l'application** : 0.1.0 (migration TanStack Query + optimisations)  
+**Version de l'application** : 0.1.11 (corrections hard refresh et gauges)  
 **Auteur du contexte** : Documentation générée par analyse du projet Synapso
+
+### Modifications récentes (v0.1.11)
+
+- **Corrections du problème de hard refresh et des gauges** :
+  - **Problème résolu** : Les données nécessitaient un hard refresh pour se mettre à jour, et les gauges affichaient parfois des données incorrectes lors du changement de jour
+  - **Refetch explicite** : Ajout d'un `useEffect` dans `useCategoryStats` et `useExercices` qui force un refetch explicite quand `referenceDateKey` change
+    - Délai de 100ms pour éviter les refetchs multiples lors du montage initial
+    - Garantit que les données sont toujours à jour même si TanStack Query ne détecte pas automatiquement le changement
+  - **Configuration agressive des queries** :
+    - `staleTime: 0` : Les données sont toujours considérées comme stale pour forcer le refetch
+    - `refetchOnMount: true` : Refetch automatique au montage du composant
+    - `refetchOnWindowFocus: true` : Refetch quand la fenêtre reprend le focus (utile si on complète un exercice dans un autre onglet)
+  - **Invalidation toujours active** : Dans `TimeContext`, toujours forcer `refetchType: 'active'` pour garantir un refetch immédiat lors du changement de jour (même en mode normal)
+  - **Gestion du placeholderData** : En mode sablier, ne jamais utiliser `placeholderData` pour éviter d'afficher les anciennes données d'une autre date
+  - **État de chargement amélioré** : En mode sablier, considérer comme loading si `isLoading` ou `isFetching` pour éviter d'afficher des données incorrectes pendant le changement de jour
+  - **Résultat** : Plus besoin de hard refresh, les données se mettent à jour automatiquement au changement de jour, à la navigation entre pages, et au retour sur l'onglet
 
 ### Modifications récentes (v0.1.10)
 

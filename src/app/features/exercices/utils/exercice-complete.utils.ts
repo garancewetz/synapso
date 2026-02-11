@@ -32,7 +32,12 @@ export async function parseCompletedAtFromBody(
   try {
     const body = await request.json();
     if (body && body.completedAt) {
-      customCompletedAt = new Date(body.completedAt);
+      // ⚡ FIX TIMEZONE: Détecter si c'est un dateKey (yyyy-MM-dd) et utiliser le noon UTC trick
+      // pour éviter les décalages de timezone (cohérent avec GET /api/exercices)
+      const isDateKey = /^\d{4}-\d{2}-\d{2}$/.test(body.completedAt);
+      customCompletedAt = isDateKey
+        ? new Date(body.completedAt + 'T12:00:00.000Z')
+        : new Date(body.completedAt);
       if (isNaN(customCompletedAt.getTime())) {
         customCompletedAt = null;
       } else {
@@ -84,8 +89,7 @@ export async function toggleExerciceCompletion(
   const { exerciceId, completedAt, resetFrequency, checkDateForCompletedToday } =
     params;
 
-  // ⚡ PERFORMANCE: Calculer uniquement les dates nécessaires pour la transaction minimale
-  const { targetDate, endOfTargetDate } =
+  const { targetDate, endOfTargetDate, startOfPeriod, endOfPeriod } =
     calculatePeriodDates(completedAt, resetFrequency);
   const { startOfCheckDay, endOfCheckDay } = calculateCheckDayDates(
     checkDateForCompletedToday
@@ -130,14 +134,16 @@ export async function toggleExerciceCompletion(
       }),
     ]);
 
-    // ⚡ PERFORMANCE: Calculer les valeurs de manière optimiste
-    // completedToday = true si même jour (on vient de créer l'entrée), sinon sera recalculé
-    // completedInPeriod = true (on vient de créer une entrée dans la période)
     const completedToday = isSameDay;
     const completedInPeriod = true;
-    
-    // ⚡ PERFORMANCE: weeklyCompletions sera calculé après la transaction pour ne pas bloquer
-    const weeklyCompletions: Date[] = [];
+
+    // Récupérer les completions de la période pour le client (gauges, dots hebdo)
+    const weeklyHistory = await tx.history.findMany({
+      where: { exerciceId, completedAt: { gte: startOfPeriod, lt: endOfPeriod } },
+      select: { completedAt: true },
+      orderBy: { completedAt: 'asc' },
+    });
+    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
 
     return {
       exercice,
@@ -182,15 +188,16 @@ export async function toggleExerciceCompletion(
       },
     });
 
-    // ⚡ PERFORMANCE: Calculer les valeurs de manière optimiste
-    // completedToday = false si même jour (on vient de supprimer)
-    // completedInPeriod sera recalculé après la transaction (on ne sait pas encore)
-    // Pour l'instant, on retourne false pour completedInPeriod, il sera mis à jour par le refetch
-    const completedToday = isSameDay ? false : true; // Optimiste : on assume qu'il y a d'autres entrées
-    const completedInPeriod = true; // Optimiste : on assume qu'il reste des entrées dans la période
-    
-    // ⚡ PERFORMANCE: weeklyCompletions sera calculé après la transaction pour ne pas bloquer
-    const weeklyCompletions: Date[] = [];
+    const completedToday = isSameDay ? false : true;
+
+    // Récupérer les completions restantes de la période pour le client
+    const weeklyHistory = await tx.history.findMany({
+      where: { exerciceId, completedAt: { gte: startOfPeriod, lt: endOfPeriod } },
+      select: { completedAt: true },
+      orderBy: { completedAt: 'asc' },
+    });
+    const weeklyCompletions = weeklyHistory.map(h => h.completedAt);
+    const completedInPeriod = weeklyCompletions.length > 0;
 
     return {
       exercice: updatedExercice,

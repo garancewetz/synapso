@@ -133,17 +133,13 @@ export function TimeProvider({ children }: PropsWithChildren) {
       queryKeys.categoryStats.all,       // → (déprécié, mais invalidé pour compatibilité)
     ];
     
-    // ⚡ FIX: Utiliser invalidateQueries au lieu de removeQueries
-    // removeQueries supprimait les queries actives de la nouvelle date, causant un double-fetch
-    // et l'affichage de placeholders au lieu des données lors du changement de jour
-    // invalidateQueries marque les queries comme stale → refetch en arrière-plan sans perdre le cache
-    console.log('[DEBUG-PROD] TimeContext → invalidation queries:', {
-      selectedDateKey,
-      isTimeMachineMode,
-      keys: dateDependentQueryKeys.map(k => k.join('.')),
-    });
+    // ⚡ FIX BUG HARD REFRESH: Toujours forcer un refetch actif pour garantir que les données
+    // sont à jour immédiatement. Même en mode normal, on veut les dernières données après navigation.
+    // Le changement de query key dans les hooks (useExercices, useCategoryStats) déclenche
+    // automatiquement un fetch, mais l'invalidation avec refetchType: 'active' garantit
+    // que les queries actives sont refetchées immédiatement.
     dateDependentQueryKeys.forEach((queryKey) => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey, refetchType: 'active' });
     });
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);
 

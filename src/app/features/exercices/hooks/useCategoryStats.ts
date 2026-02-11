@@ -52,6 +52,14 @@ export function useCategoryStats(): UseCategoryStatsReturn {
   // les données directement. Cela garantit que les stats sont toujours synchronisées avec les exercices
   // et partage le cache, évitant les race conditions et les doublons de requêtes
   const exercicesQueryKey = queryKeys.exercices.list(filters);
+
+  console.log('[DEBUG-PROD] useCategoryStats:', {
+    isTimeMachineMode,
+    referenceDateKey,
+    filters,
+    queryKey: JSON.stringify(exercicesQueryKey),
+  });
+
   const { data: stats = initialStats, isLoading, error } = useQuery({
     queryKey: exercicesQueryKey,
     queryFn: () => fetchExercices(filters),
@@ -65,6 +73,11 @@ export function useCategoryStats(): UseCategoryStatsReturn {
         if (exercice.completedToday && exercice.category && exercice.category in newStats) {
           newStats[exercice.category as ExerciceCategory]++;
         }
+      });
+      console.log('[DEBUG-PROD] useCategoryStats → select:', {
+        totalExercices: exercices.length,
+        completedToday: exercices.filter(e => e.completedToday).map(e => ({ name: e.name, category: e.category })),
+        stats: newStats,
       });
       return newStats;
     },

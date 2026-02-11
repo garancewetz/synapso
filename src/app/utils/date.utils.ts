@@ -71,14 +71,22 @@ export function getDayName(date: Date | string | null): string {
  */
 export function getDateKey(date: Date | string | null): string | null {
   if (!date) return null;
-  
+
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   if (isNaN(dateObj.getTime())) {
     return null;
   }
-  
-  return format(startOfDay(dateObj), 'yyyy-MM-dd');
+
+  const normalized = startOfDay(dateObj);
+  const key = format(normalized, 'yyyy-MM-dd');
+  console.log('[DEBUG-PROD] getDateKey:', {
+    input: date instanceof Date ? date.toISOString() : date,
+    startOfDay: normalized.toISOString(),
+    key,
+    timezoneOffset: new Date().getTimezoneOffset(),
+  });
+  return key;
 }
 
 /**
@@ -92,16 +100,23 @@ export function getDateKey(date: Date | string | null): string | null {
  */
 export function getDateFromKey(dateKey: string | null): Date | null {
   if (!dateKey) return null;
-  
+
   // Validation du format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(dateKey)) {
     return null;
   }
-  
+
   // Créer la date depuis la clé et normaliser avec startOfDay pour éviter les problèmes de timezone
   const date = new Date(dateKey + 'T00:00:00');
-  return startOfDay(date);
+  const normalized = startOfDay(date);
+  console.log('[DEBUG-PROD] getDateFromKey:', {
+    dateKey,
+    rawDate: date.toISOString(),
+    normalized: normalized.toISOString(),
+    timezoneOffset: new Date().getTimezoneOffset(),
+  });
+  return normalized;
 }
 
 /**
@@ -110,5 +125,7 @@ export function getDateFromKey(dateKey: string | null): Date | null {
  */
 export function dateKeyToISO(dateKey: string): string | undefined {
   const date = getDateFromKey(dateKey);
-  return date?.toISOString();
+  const iso = date?.toISOString();
+  console.log('[DEBUG-PROD] dateKeyToISO:', { dateKey, iso, timezoneOffset: new Date().getTimezoneOffset() });
+  return iso;
 }

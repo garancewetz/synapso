@@ -76,16 +76,31 @@ export async function GET(request: NextRequest) {
     // Récupérer la date cible depuis les query params (optionnel, par défaut maintenant)
     const targetDateParam = searchParams.get('targetDate');
     let targetDate = new Date();
+
+    console.log('[DEBUG-PROD] API /exercices → raw:', {
+      targetDateParam,
+      serverNow: new Date().toISOString(),
+      serverTimezoneOffset: new Date().getTimezoneOffset(),
+    });
+
     if (targetDateParam) {
       const parsedDate = new Date(targetDateParam);
       if (!isNaN(parsedDate.getTime())) {
         // ⚡ FIX: Normaliser la date avec startOfDay pour éviter les problèmes de timezone
         // Cela garantit que targetDate représente bien le début de la journée, peu importe le timezone
         targetDate = startOfDay(parsedDate);
+        console.log('[DEBUG-PROD] API /exercices → parsed targetDate:', {
+          targetDateParam,
+          parsedDate: parsedDate.toISOString(),
+          startOfDay: targetDate.toISOString(),
+        });
       }
     } else {
       // ⚡ FIX: Normaliser aussi la date par défaut (aujourd'hui)
       targetDate = startOfDay(targetDate);
+      console.log('[DEBUG-PROD] API /exercices → default today:', {
+        startOfDay: targetDate.toISOString(),
+      });
     }
     
     // Calculer la période de réinitialisation pour la date cible
@@ -166,6 +181,21 @@ export async function GET(request: NextRequest) {
           }
         );
         const completedToday = hasTargetDayHistory;
+
+        // Log uniquement pour les exercices ayant de l'historique (éviter le spam)
+        if (exercice.history.length > 0) {
+          console.log('[DEBUG-PROD] API /exercices → completedToday:', {
+            exerciceName: exercice.name,
+            targetDateKey: targetDateKeyForComparison,
+            historyDates: exercice.history.map(h => {
+              const d = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
+              return { raw: d.toISOString(), key: format(startOfDay(d), 'yyyy-MM-dd') };
+            }),
+            completedToday,
+            startOfPeriod: startOfPeriod.toISOString(),
+            endOfPeriod: endOfPeriod.toISOString(),
+          });
+        }
 
         // Parser les équipements
         let equipmentsParsed: string[] = [];

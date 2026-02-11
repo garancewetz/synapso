@@ -35,7 +35,17 @@ export function TimeProvider({ children }: PropsWithChildren) {
     const today = new Date();
     let referenceDate = startOfDay(today);
     let referenceDateKey = format(referenceDate, 'yyyy-MM-dd');
-    
+
+    console.log('[DEBUG-PROD] TimeContext.useMemo:', {
+      rawToday: today.toISOString(),
+      startOfDayToday: referenceDate.toISOString(),
+      todayKey: referenceDateKey,
+      isTimeMachineMode,
+      selectedDateKey,
+      timezoneOffset: today.getTimezoneOffset(),
+      locale: typeof navigator !== 'undefined' ? navigator.language : 'N/A',
+    });
+
     // Mode sablier : utiliser la date sélectionnée
     // ⚡ FIX BUG SABLIER: Mettre à jour même pendant la transition pour que les gauges affichent les bonnes valeurs
     // L'animation visuelle (isTimeMachineMode) peut être retardée, mais les données doivent être à jour
@@ -45,13 +55,18 @@ export function TimeProvider({ children }: PropsWithChildren) {
       if (dateFromKey) {
         referenceDate = dateFromKey;
         referenceDateKey = selectedDateKey;
+        console.log('[DEBUG-PROD] TimeContext → mode sablier actif:', {
+          selectedDateKey,
+          referenceDate: referenceDate.toISOString(),
+          referenceDateKey,
+        });
       }
     }
-    
+
     // ⚡ PERFORMANCE: isToday calculé sans appel à date-fns (plus rapide)
     // ⚡ FIX BUG SABLIER: Calculer isToday basé sur la vraie date de référence (pas la transition)
     const isTodayValue = !isTimeMachineMode;
-    
+
     return {
       referenceDate,
       referenceDateKey,
@@ -124,6 +139,11 @@ export function TimeProvider({ children }: PropsWithChildren) {
     // removeQueries supprimait les queries actives de la nouvelle date, causant un double-fetch
     // et l'affichage de placeholders au lieu des données lors du changement de jour
     // invalidateQueries marque les queries comme stale → refetch en arrière-plan sans perdre le cache
+    console.log('[DEBUG-PROD] TimeContext → invalidation queries:', {
+      selectedDateKey,
+      isTimeMachineMode,
+      keys: dateDependentQueryKeys.map(k => k.join('.')),
+    });
     dateDependentQueryKeys.forEach((queryKey) => {
       queryClient.invalidateQueries({ queryKey });
     });

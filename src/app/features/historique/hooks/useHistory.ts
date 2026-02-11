@@ -25,6 +25,13 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
   const referenceDateISO = isTimeMachineMode && referenceDateKey ? dateKeyToISO(referenceDateKey) : undefined;
 
+  console.log('[DEBUG-PROD] useHistory:', {
+    isTimeMachineMode,
+    referenceDateKey,
+    referenceDateISO,
+    days,
+  });
+
   const { data: history = [], isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.history.list({ days: days || undefined, referenceDate: referenceDateISO }),
     queryFn: () => fetchHistory({ days: days || undefined, referenceDate: referenceDateISO }),

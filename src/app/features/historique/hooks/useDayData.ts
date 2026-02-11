@@ -64,8 +64,8 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
   // Filtrer les exercices pour cette date
   const exercises = useMemo(() => {
     if (!dateKey || !history.length) return [];
-    
-    return history
+
+    const filtered = history
       .filter(entry => {
         // Utiliser la même logique de normalisation que getHeatmapData
         // pour éviter les problèmes de fuseau horaire
@@ -78,6 +78,18 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
         category: entry.exercice.category!,
         completedAt: entry.completedAt,
       }));
+
+    console.log('[DEBUG-PROD] useDayData → filtrage:', {
+      dateKey,
+      totalHistory: history.length,
+      matchingExercises: filtered.length,
+      sampleEntries: history.slice(0, 3).map(e => ({
+        completedAt: e.completedAt,
+        dateKey: format(startOfDay(new Date(e.completedAt)), 'yyyy-MM-dd'),
+      })),
+    });
+
+    return filtered;
   }, [history, dateKey]);
   
   // Filtrer les progrès pour cette date

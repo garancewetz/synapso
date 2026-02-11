@@ -92,10 +92,12 @@ export async function fetchExercices(filters: {
     params.append('targetDate', filters.targetDate);
   }
   
-  const url = params.toString() 
+  const url = params.toString()
     ? `/api/exercices?${params.toString()}`
     : `/api/exercices`;
-  
+
+  console.log('[DEBUG-PROD] fetchExercices → URL:', url, '| filters:', filters);
+
   const res = await fetch(url, { credentials: 'include' });
   
   if (!res.ok) {
@@ -112,7 +114,9 @@ export async function fetchHistory(params: { since?: string; days?: number; refe
   const url = params.days !== null && params.days !== undefined
     ? `/api/history?since=${encodeURIComponent(subDays(baseDate, params.days).toISOString())}`
     : '/api/history';
-  
+
+  console.log('[DEBUG-PROD] fetchHistory → URL:', url, '| params:', params, '| baseDate:', baseDate.toISOString());
+
   const res = await fetch(url, { credentials: 'include' });
   
   if (!res.ok) {

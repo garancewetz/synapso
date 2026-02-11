@@ -5,7 +5,7 @@ import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
-import { dateKeyToISO } from '@/app/utils/date.utils';
+// ⚡ FIX TIMEZONE: On envoie le dateKey (yyyy-MM-dd) directement, pas un ISO string
 
 type UseHistoryOptions = {
   days?: number | null;
@@ -23,18 +23,20 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
   const { effectiveUser } = useUser();
   const { referenceDateKey, isTimeMachineMode } = useTimeContext();
 
-  const referenceDateISO = isTimeMachineMode && referenceDateKey ? dateKeyToISO(referenceDateKey) : undefined;
+  // ⚡ FIX TIMEZONE: Envoyer le dateKey directement au lieu de l'ISO string
+  // new Date('2026-02-06') est parsé comme UTC midnight par la spec JS, ce qui est correct
+  const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
 
   console.log('[DEBUG-PROD] useHistory:', {
     isTimeMachineMode,
     referenceDateKey,
-    referenceDateISO,
+    referenceDateForQuery,
     days,
   });
 
   const { data: history = [], isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: queryKeys.history.list({ days: days || undefined, referenceDate: referenceDateISO }),
-    queryFn: () => fetchHistory({ days: days || undefined, referenceDate: referenceDateISO }),
+    queryKey: queryKeys.history.list({ days: days || undefined, referenceDate: referenceDateForQuery }),
+    queryFn: () => fetchHistory({ days: days || undefined, referenceDate: referenceDateForQuery }),
     enabled: !!effectiveUser,
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
     staleTime: 10000,

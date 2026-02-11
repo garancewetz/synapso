@@ -7,7 +7,8 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
-import { dateKeyToISO } from '@/app/utils/date.utils';
+// ⚡ FIX TIMEZONE: On envoie le dateKey (yyyy-MM-dd) directement, pas un ISO string
+// Voir CLAUDE.md → section "Timezone" pour comprendre pourquoi
 
 type UseExercicesOptions = {
   category?: ExerciceCategory;
@@ -38,7 +39,7 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
   const filters = useMemo(() => {
     let targetDate: string | undefined;
     if (isTimeMachineMode && referenceDateKey) {
-      targetDate = dateKeyToISO(referenceDateKey);
+      targetDate = referenceDateKey;
     }
     
     return {

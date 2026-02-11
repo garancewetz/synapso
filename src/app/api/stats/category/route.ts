@@ -3,7 +3,7 @@ import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay } from 'date-fns';
+import { addDays, startOfDay, format } from 'date-fns';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
@@ -44,10 +44,22 @@ export async function GET(request: NextRequest) {
     const targetDateParam = searchParams.get('targetDate');
     let targetDate = new Date();
     if (targetDateParam) {
-      const parsedDate = new Date(targetDateParam);
-      if (!isNaN(parsedDate.getTime())) {
-        targetDate = parsedDate;
+      // ⚡ FIX TIMEZONE: Détecter si c'est un dateKey (yyyy-MM-dd) ou un ISO string
+      // Parser avec T12:00:00.000Z (midi UTC) pour que startOfDay() donne le bon jour
+      // quel que soit le timezone du serveur
+      const isDateKey = /^\d{4}-\d{2}-\d{2}$/.test(targetDateParam);
+      if (isDateKey) {
+        targetDate = new Date(targetDateParam + 'T12:00:00.000Z');
+      } else {
+        const parsedDate = new Date(targetDateParam);
+        if (!isNaN(parsedDate.getTime())) {
+          targetDate = new Date(format(startOfDay(parsedDate), 'yyyy-MM-dd') + 'T12:00:00.000Z');
+        }
       }
+    } else {
+      // ⚡ FIX TIMEZONE: Pour "aujourd'hui", utiliser format() pour la dateKey locale puis midi UTC
+      const todayKey = format(new Date(), 'yyyy-MM-dd');
+      targetDate = new Date(todayKey + 'T12:00:00.000Z');
     }
 
     // Calculer la période de réinitialisation (pour référence future si nécessaire)

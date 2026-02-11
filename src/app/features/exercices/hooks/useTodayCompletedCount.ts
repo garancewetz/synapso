@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
-import { dateKeyToISO } from '@/app/utils/date.utils';
+// ⚡ FIX TIMEZONE: On envoie le dateKey (yyyy-MM-dd) directement, pas un ISO string
 
 export function useTodayCompletedCount() {
   const { effectiveUser } = useUser();
@@ -14,7 +14,7 @@ export function useTodayCompletedCount() {
   const filters = useMemo(() => {
     let targetDate: string | undefined;
     if (isTimeMachineMode && referenceDateKey) {
-      targetDate = dateKeyToISO(referenceDateKey);
+      targetDate = referenceDateKey;
     }
     return { targetDate };
   }, [isTimeMachineMode, referenceDateKey]);

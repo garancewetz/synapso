@@ -84,22 +84,33 @@ export async function GET(request: NextRequest) {
     });
 
     if (targetDateParam) {
-      const parsedDate = new Date(targetDateParam);
-      if (!isNaN(parsedDate.getTime())) {
-        // ⚡ FIX: Normaliser la date avec startOfDay pour éviter les problèmes de timezone
-        // Cela garantit que targetDate représente bien le début de la journée, peu importe le timezone
-        targetDate = startOfDay(parsedDate);
-        console.log('[DEBUG-PROD] API /exercices → parsed targetDate:', {
-          targetDateParam,
-          parsedDate: parsedDate.toISOString(),
-          startOfDay: targetDate.toISOString(),
-        });
+      // ⚡ FIX TIMEZONE: Détecter si c'est un dateKey (yyyy-MM-dd) ou un ISO string
+      // Le client envoie maintenant un dateKey directement pour éviter les décalages de timezone
+      // On parse avec T12:00:00.000Z (midi UTC) pour que startOfDay() donne le bon jour
+      // quel que soit le timezone du serveur (UTC en prod, CET en local)
+      const isDateKey = /^\d{4}-\d{2}-\d{2}$/.test(targetDateParam);
+      if (isDateKey) {
+        targetDate = new Date(targetDateParam + 'T12:00:00.000Z');
+      } else {
+        // Fallback pour les anciens appels avec ISO string
+        const parsedDate = new Date(targetDateParam);
+        if (!isNaN(parsedDate.getTime())) {
+          targetDate = new Date(format(startOfDay(parsedDate), 'yyyy-MM-dd') + 'T12:00:00.000Z');
+        }
       }
+      console.log('[DEBUG-PROD] API /exercices → parsed targetDate:', {
+        targetDateParam,
+        isDateKey,
+        targetDate: targetDate.toISOString(),
+      });
     } else {
-      // ⚡ FIX: Normaliser aussi la date par défaut (aujourd'hui)
-      targetDate = startOfDay(targetDate);
+      // ⚡ FIX TIMEZONE: Pour "aujourd'hui", utiliser format() pour extraire la dateKey locale
+      // puis recréer à midi UTC pour cohérence
+      const todayKey = format(new Date(), 'yyyy-MM-dd');
+      targetDate = new Date(todayKey + 'T12:00:00.000Z');
       console.log('[DEBUG-PROD] API /exercices → default today:', {
-        startOfDay: targetDate.toISOString(),
+        todayKey,
+        targetDate: targetDate.toISOString(),
       });
     }
     

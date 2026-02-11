@@ -96,29 +96,27 @@ export function TimeProvider({ children }: PropsWithChildren) {
       const nextDay = new Date(currentDate);
       nextDay.setDate(nextDay.getDate() + 1);
       
+      // ⚡ FIX TIMEZONE: Utiliser les dateKeys directement au lieu de toISOString()
       const prevDayKey = getDateKey(prevDay);
       const nextDayKey = getDateKey(nextDay);
-      
+
       if (!prevDayKey || !nextDayKey) return;
-      
-      const prevDayISO = prevDay.toISOString();
-      const nextDayISO = nextDay.toISOString();
 
       queryClient.prefetchQuery({
         queryKey: queryKeys.exercices.list({
-          targetDate: prevDayISO,
+          targetDate: prevDayKey,
         }),
         queryFn: () => fetchExercices({
-          targetDate: prevDayISO,
+          targetDate: prevDayKey,
         }),
       });
-      
+
       queryClient.prefetchQuery({
         queryKey: queryKeys.exercices.list({
-          targetDate: nextDayISO,
+          targetDate: nextDayKey,
         }),
         queryFn: () => fetchExercices({
-          targetDate: nextDayISO,
+          targetDate: nextDayKey,
         }),
       });
     }, 500); // Délai de 500ms pour laisser les autres opérations se terminer

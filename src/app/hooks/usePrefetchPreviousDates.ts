@@ -34,15 +34,15 @@ export function usePrefetchPreviousDates() {
     daysToPrefetch.forEach((daysAgo) => {
       const targetDate = subDays(today, daysAgo);
       const dateKey = format(targetDate, 'yyyy-MM-dd');
-      const targetDateISO = targetDate.toISOString();
 
-      // ⚡ PREFETCH: Précharger les exercices pour cette date
+      // ⚡ FIX TIMEZONE: Utiliser le dateKey directement au lieu de toISOString()
+      // toISOString() convertit en UTC, ce qui décale d'un jour sur les serveurs UTC
       queryClient.prefetchQuery({
         queryKey: queryKeys.exercices.list({
-          targetDate: targetDateISO,
+          targetDate: dateKey,
         }),
         queryFn: () => fetchExercices({
-          targetDate: targetDateISO,
+          targetDate: dateKey,
         }),
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
@@ -79,16 +79,16 @@ export function usePrefetchDate(date: Date | null) {
     if (!effectiveUser || !date) return;
 
     const resetFrequency = effectiveUser.resetFrequency || 'DAILY';
+    // ⚡ FIX TIMEZONE: Utiliser le dateKey directement au lieu de toISOString()
     const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-    const targetDateISO = startOfDay(date).toISOString();
 
     // ⚡ PREFETCH: Précharger les exercices pour cette date
     queryClient.prefetchQuery({
       queryKey: queryKeys.exercices.list({
-        targetDate: targetDateISO,
+        targetDate: dateKey,
       }),
       queryFn: () => fetchExercices({
-        targetDate: targetDateISO,
+        targetDate: dateKey,
       }),
       staleTime: 5 * 60 * 1000, // 5 minutes
     });

@@ -89,20 +89,53 @@ synapso/
 │       │   ├── exercices/      # Vues par catégorie
 │       │   ├── historique/     # Suivi de progression et victoires
 │       │   └── settings/       # Paramètres utilisateur
-│       ├── api/                # Routes API (Next.js API Routes)
-│       │   ├── exercices/      # CRUD exercices
-│       │   ├── progress/       # CRUD progrès
-│       │   ├── history/        # Historique des complétions
-│       │   ├── users/          # Gestion des utilisateurs
+│       ├── api/                # Routes API (Next.js API Routes - wrappers HTTP)
+│       │   ├── exercices/      # Routes exercices (appellent features/exercices/api/)
+│       │   ├── progress/       # Routes progrès (appellent features/progress/api/)
+│       │   ├── history/        # Route historique (appelle features/historique/api/)
+│       │   ├── journal/        # Routes journal (appellent features/journal/api/)
+│       │   ├── auth/           # Routes auth (appellent features/auth/api/)
+│       │   ├── users/          # Routes utilisateurs (appellent features/auth/api/)
+│       │   ├── metadata/       # Métadonnées (appelle features/exercices/api/)
+│       │   ├── stats/          # Statistiques (appelle features/historique/api/)
+│       │   ├── bodyparts/      # Bodyparts (appellent features/exercices/api/)
+│       │   ├── equipments/     # Équipements (appelle features/exercices/api/)
+│       │   ├── admin/          # Routes admin
+│       │   └── dev/            # Routes dev
+│       ├── features/           # Features organisées par domaine métier
+│       │   ├── exercices/      # Exercices de rééducation
+│       │   │   ├── api/        # Logique métier des routes API
+│       │   │   ├── components/ # Composants (ExerciceCard, ExerciceForm, etc.)
+│       │   │   ├── hooks/      # Hooks (useExercices, useCompleteExercice, etc.)
+│       │   │   └── utils/      # Utilitaires spécifiques
+│       │   ├── historique/     # Historique et visualisations
+│       │   │   ├── api/        # Logique métier des routes API
+│       │   │   ├── components/ # Composants (ActivityHeatmap, BarChart, etc.)
+│       │   │   ├── hooks/      # Hooks (useHistory, useDayDetailData, etc.)
+│       │   │   └── utils/      # Utilitaires spécifiques
+│       │   ├── progress/       # Progrès et victoires
+│       │   │   ├── components/ # Composants (ProgressFAB, ProgressCard, etc.)
+│       │   │   └── hooks/      # Hooks (useProgress, etc.)
+│       │   ├── home/           # Page d'accueil
+│       │   │   ├── components/ # Composants (WelcomeHeader, HomeTabs, etc.)
+│       │   │   └── hooks/      # Hooks (useHomeTabs)
+│       │   ├── journal/        # Module journal
+│       │   │   ├── components/ # Composants (JournalTaskCard, etc.)
+│       │   │   └── hooks/      # Hooks (useJournalTasks, etc.)
+│       │   ├── time-machine/   # Mode sablier (remonter le temps)
+│       │   │   ├── components/ # Composants (SelectedDateBanner, etc.)
+│       │   │   └── hooks/      # Hooks (usePrefetchPreviousDates, etc.)
 │       │   └── auth/           # Authentification
-│       ├── components/         # Composants React
-│       │   ├── ui/             # Composants UI réutilisables
-│       │   └── historique/     # Composants de visualisation de données
+│       │       ├── api/        # Logique métier des routes API
+│       │       ├── components/ # Composants (AuthScreen, UserSetup, etc.)
+│       │       └── hooks/      # Hooks spécifiques
+│       ├── components/         # Composants React réutilisables
+│       │   ├── ui/             # Composants UI de base (Button, Card, Badge, etc.)
+│       │   └── ...             # Composants partagés (NavBar, BottomNavBar, etc.)
 │       ├── contexts/           # Contextes React (état global)
 │       │   ├── UserContext.tsx        # Utilisateur courant
-│       │   ├── CategoryContext.tsx    # Catégorie active
+│       │   ├── ToastContext.tsx       # Notifications globales
 │       │   ├── DayDetailModalContext.tsx # Modal détail du jour
-│       │   ├── HistoryContext.tsx     # Historique des exercices (heatmap)
 │       │   ├── SelectedDateContext.tsx # Date sélectionnée (mode sablier)
 │       │   └── TimeContext.tsx        # Contexte temporel global
 │       ├── hooks/              # Hooks personnalisés
@@ -116,6 +149,47 @@ synapso/
 ├── public/                     # Fichiers statiques (PWA assets)
 └── scripts/                    # Scripts utilitaires
 ```
+
+---
+
+### Organisation par Features
+
+**Principe** : L'application est organisée par **features** (domaines métier) plutôt que par type technique. Chaque feature contient tous les éléments nécessaires à sa fonctionnalité (composants, hooks, utils, types).
+
+**Avantages** :
+- **Cohésion** : Tous les éléments d'une feature sont regroupés
+- **Maintenabilité** : Facile de trouver et modifier le code d'une fonctionnalité
+- **Scalabilité** : Ajout de nouvelles features sans impacter les existantes
+- **Réutilisabilité** : Export centralisé via `index.ts` dans chaque feature
+
+**Structure d'une feature** :
+```
+features/[feature-name]/
+├── components/    # Composants spécifiques à la feature
+├── hooks/         # Hooks spécifiques à la feature
+├── api/           # Logique métier API (server-side, fonctions pures)
+│   ├── getXxx.ts  # Fonctions de récupération
+│   ├── createXxx.ts
+│   ├── updateXxx.ts
+│   ├── deleteXxx.ts
+│   └── index.ts   # Exports centralisés
+├── utils/         # Utilitaires spécifiques à la feature
+├── types/         # Types TypeScript spécifiques (optionnel)
+└── index.ts       # Exports centralisés
+```
+
+**Features principales** :
+- `exercices/` : Gestion des exercices de rééducation (ExerciceCard, ExerciceForm, complétion, etc.)
+- `historique/` : Visualisations et historique (heatmap, graphiques, statistiques)
+- `progress/` : Progrès et victoires (ProgressFAB, ProgressCard, célébrations)
+- `home/` : Page d'accueil (WelcomeHeader, onglets, dashboard)
+- `journal/` : Module journal (tâches, notes)
+- `time-machine/` : Mode sablier (remonter le temps, SelectedDateBanner)
+- `auth/` : Authentification (AuthScreen, UserSetup)
+
+**Composants partagés** : Les composants réutilisables entre features restent dans `components/` (UI de base, NavBar, BottomNavBar, etc.)
+
+**Routes API** : Les routes API (`route.ts`) restent dans `app/api/` (obligatoire pour Next.js) mais appellent la logique métier extraite dans `features/[feature]/api/`. Les routes deviennent des wrappers minces qui gèrent l'authentification, la validation HTTP et les réponses.
 
 ---
 
@@ -691,7 +765,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Série en cours (current streak) : nombre de jours consécutifs avec activité
 - **Interactif** : Clic sur un jour → modal avec détail du jour
 
-**Composant** : `ActivityHeatmap` (`src/app/components/historique/ActivityHeatmap.tsx`)
+**Composant** : `ActivityHeatmap` (`src/app/features/historique/components/ActivityHeatmap.tsx`)
 
 ##### 2. Graphique des progrès (ProgressStatsChart)
 
@@ -699,7 +773,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Graphique en aires empilées (Recharts)
 - Affichage uniquement si ≥2 progrès
 
-**Composant** : `ProgressStatsChart` (`src/app/components/historique/ProgressStatsChart.tsx`)
+**Composant** : `ProgressStatsChart` (`src/app/features/historique/components/ProgressStatsChart.tsx`)
 
 ##### 3. Graphique en ligne d'activité (ActivityLineChart)
 
@@ -707,7 +781,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Graphique en ligne (Recharts)
 - Affichage de la régularité et des tendances
 
-**Composant** : `ActivityLineChart` (`src/app/components/historique/ActivityLineChart.tsx`)
+**Composant** : `ActivityLineChart` (`src/app/features/historique/components/ActivityLineChart.tsx`)
 
 ##### 4. Graphique en barres de régularité (BarChart)
 
@@ -716,7 +790,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Indicateur de série en cours (current streak)
 - Points dorés (⭐) pour les jours avec progrès
 
-**Composant** : `BarChart` (`src/app/components/historique/BarChart.tsx`)
+**Composant** : `BarChart` (`src/app/features/historique/components/BarChart.tsx`)
 
 ##### 5. Graphique en donut des zones travaillées (DonutChart)
 
@@ -725,7 +799,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Filtre période : Cette semaine / Ce mois-ci / Tout
 - Légende interactive (toggle zones)
 
-**Composant** : `DonutChart` (`src/app/components/historique/DonutChart.tsx`)
+**Composant** : `DonutChart` (`src/app/features/historique/components/DonutChart.tsx`)
 
 #### Page Roadmap (40 derniers jours)
 
@@ -735,7 +809,7 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - Calendrier visuel avec code couleur
 - Liste détaillée des exercices par jour (accordéons)
 
-**Composant** : `WeekAccordionList` (`src/app/components/historique/WeekAccordionNew.tsx`)
+**Composant** : `WeekAccordionList` (`src/app/features/historique/components/WeekAccordionNew.tsx`)
 
 #### Page Progrès
 
@@ -780,7 +854,7 @@ Les **progrès** sont au cœur de l'aspect motivationnel de l'app. Un progrès p
 - Variante "golden" : confettis dorés + emojis de célébration (🏆⭐🌟✨💫👑)
 - Animation Framer Motion de 3.2s avec chute fluide
 
-**Composant** : `ConfettiRain` (`src/app/components/ConfettiRain.tsx`)
+**Composant** : `ConfettiRain` (`src/app/features/exercices/components/ConfettiRain.tsx`)
 
 #### Affichage des progrès
 
@@ -796,7 +870,7 @@ Les **progrès** sont au cœur de l'aspect motivationnel de l'app. Un progrès p
 
 #### Authentification (`AuthScreen`)
 
-**Composant** : `AuthScreen` (`src/app/components/AuthScreen.tsx`)
+**Composant** : `AuthScreen` (`src/app/features/auth/components/AuthScreen.tsx`)
 
 **Fonctionnalités** :
 - **Connexion** : Authentification avec nom d'utilisateur et mot de passe
@@ -813,7 +887,7 @@ Les **progrès** sont au cœur de l'aspect motivationnel de l'app. Un progrès p
 
 #### Setup initial (`UserSetup`)
 
-**Composant** : `UserSetup` (`src/app/components/UserSetup.tsx`)
+**Composant** : `UserSetup` (`src/app/features/auth/components/UserSetup.tsx`)
 
 **Affiché après** : Création d'un nouveau compte
 
@@ -1046,7 +1120,7 @@ export function useExercices() {
 **API / Data Fetching (TanStack Query)** :
 - `useExercices` : Récupération et mise à jour des exercices (utilise `useQuery` et `useMutation`)
 - `useHistory` : Historique de complétion (utilise `useQuery`, avec options personnalisées)
-- `useHistoryContext` : Historique centralisé avec rafraîchissement automatique (préféré pour le heatmap)
+- `useHistory` : Historique avec TanStack Query (utilisé partout maintenant)
 - `useProgress` : Progrès de l'utilisateur (utilise `useQuery`)
 - `useJournalTasks` : Tâches du journal
 - `useJournalNotes` : Notes du journal
@@ -1086,7 +1160,7 @@ export function useExercices() {
 - **Transitions fluides** : `placeholderData` pour garder les données précédentes pendant le chargement
 - **DevTools** : `ReactQueryDevtools` disponible en développement pour le debugging
 
-**Contexts principaux** :
+**Contexts principaux** (5 contexts optimisés) :
 
 #### 1. UserContext
 
@@ -1114,16 +1188,25 @@ const { currentUser, users, loading } = useUser();
 - Utilisateur par défaut : "Calypso"
 - Rechargement automatique au montage
 
-#### 2. CategoryContext
+#### 2. ToastContext
 
-**Responsabilité** : Gestion de la catégorie active (navigation entre catégories)
+**Responsabilité** : Gestion des notifications globales (toasts)
 
 ```typescript
-type CategoryContextType = {
-  activeCategory: ExerciceCategory | null;
-  setActiveCategory: (category: ExerciceCategory | null) => void;
+type ToastContextType = {
+  showToast: (message: string) => void;
 };
 ```
+
+**Usage** :
+```typescript
+const { showToast } = useToast();
+showToast('Message de succès !');
+```
+
+**Particularités** :
+- Affichage de notifications temporaires en haut de l'écran
+- Gestion automatique de l'affichage et de la disparition
 
 #### 3. DayDetailModalContext
 
@@ -1131,42 +1214,22 @@ type CategoryContextType = {
 
 ```typescript
 type DayDetailModalContextType = {
-  isOpen: boolean;
   selectedDay: HeatmapDay | null;
   openDayDetail: (day: HeatmapDay) => void;
   closeDayDetail: () => void;
 };
 ```
 
-#### 4. HistoryContext
-
-**Responsabilité** : Gestion centralisée de l'historique des exercices avec rafraîchissement automatique
-
-```typescript
-type HistoryContextType = {
-  history: HistoryEntry[];
-  loading: boolean;
-  error: Error | null;
-  refreshHistory: () => void;
-};
-```
-
 **Usage** :
 ```typescript
-const { history, loading, refreshHistory } = useHistoryContext();
+const { selectedDay, openDayDetail, closeDayDetail } = useDayDetailModal();
 ```
 
 **Particularités** :
-- Charge automatiquement les 40 derniers jours d'historique
-- Se rafraîchit automatiquement quand un exercice est complété (via `refreshHistory()`)
-- Utilisé par `WelcomeHeaderWrapper` pour le heatmap de la page d'accueil
-- **Note** : Ce contexte utilise encore `useState`/`useEffect` pour la compatibilité. Les hooks `useHistory` et autres utilisent maintenant TanStack Query.
+- Partage de l'état de la modal entre composants distants (WelcomeHeaderWrapper, HistoriquePageClient, DayDetailModalWrapper)
+- Pattern simple et efficace pour éviter le props drilling
 
-**Quand utiliser** :
-- `useHistoryContext()` : Pour le heatmap et les composants qui doivent réagir aux changements d'exercices
-- `useHistory()` : Pour des cas avancés nécessitant des options personnalisées (ex: charger tout l'historique) - **utilise TanStack Query**
-
-#### 5. SelectedDateContext
+#### 4. SelectedDateContext
 
 **Responsabilité** : Gestion de la date sélectionnée pour le mode sablier (remonter le temps)
 
@@ -1174,21 +1237,23 @@ const { history, loading, refreshHistory } = useHistoryContext();
 type SelectedDateContextType = {
   selectedDate: Date | null;
   selectedDateKey: string | null; // Clé stable (yyyy-MM-dd)
-  debouncedSelectedDateKey: string | null; // Pour calculs coûteux
   setSelectedDate: (date: Date | null) => void;
   clearSelectedDate: () => void;
   isDateSelected: boolean;
-  isTimeMachineMode: boolean; // Mode sablier actif
+  isTimeMachineMode: boolean; // Mode sablier actif (date passée)
+  isTransitioning: boolean; // Indique qu'une transition est en cours
+  transitionType: 'enter' | 'exit' | null; // Type de transition en cours
 };
 ```
 
 **Particularités** :
 - **URL-based** : La date sélectionnée est stockée dans l'URL (`?date=yyyy-MM-dd`) pour partage de liens et navigation navigateur
-- **Validation** : Limite à 28 jours en arrière (`MAX_TIME_MACHINE_DAYS`)
-- **Debouncing** : `debouncedSelectedDateKey` pour les calculs coûteux (100ms de délai)
+- **Validation** : Limite à 28 jours en arrière (`MAX_TIME_MACHINE_DAYS`), validation centralisée dans `dateValidation.utils.ts`
+- **Transitions** : Gestion des animations d'entrée/sortie du mode sablier
 - **Nettoyage automatique** : La date est réinitialisée quand l'utilisateur change
+- **Simplifié** : Code réduit de 309 à 177 lignes (-43%) grâce à l'extraction de la validation et la simplification de la logique de transitions
 
-#### 6. TimeContext
+#### 5. TimeContext
 
 **Responsabilité** : Contexte temporel global pour toute l'application (date de référence)
 
@@ -2063,7 +2128,7 @@ npm run dev
 
 **Usage** : Répartition des zones travaillées
 
-**Composant** : `DonutChart` (`src/app/components/historique/DonutChart.tsx`)
+**Composant** : `DonutChart` (`src/app/features/historique/components/DonutChart.tsx`)
 
 **Props** :
 - `data` : Tableau de `{ name: string, value: number, fill: string }`
@@ -2081,7 +2146,7 @@ npm run dev
 
 **Usage** : Évolution des victoires au fil du temps
 
-**Composant** : `ProgressStatsChart` (`src/app/components/historique/ProgressStatsChart.tsx`)
+**Composant** : `ProgressStatsChart` (`src/app/features/historique/components/ProgressStatsChart.tsx`)
 
 **Type** : Area Chart (graphique en aires)
 
@@ -2099,7 +2164,7 @@ npm run dev
 
 **Usage** : Visualisation de l'évolution de l'activité au fil du temps
 
-**Composant** : `ActivityLineChart` (`src/app/components/historique/ActivityLineChart.tsx`)
+**Composant** : `ActivityLineChart` (`src/app/features/historique/components/ActivityLineChart.tsx`)
 
 **Type** : Line Chart (graphique en ligne)
 
@@ -2112,7 +2177,7 @@ npm run dev
 
 **Usage** : Visualisation de la régularité quotidienne
 
-**Composant** : `BarChart` (`src/app/components/historique/BarChart.tsx`)
+**Composant** : `BarChart` (`src/app/features/historique/components/BarChart.tsx`)
 
 **Type** : Bar Chart (graphique en barres)
 
@@ -2127,7 +2192,7 @@ npm run dev
 
 **Usage** : Visualisation des 40 derniers jours
 
-**Composant** : `ActivityHeatmap` (`src/app/components/historique/ActivityHeatmap.tsx`)
+**Composant** : `ActivityHeatmap` (`src/app/features/historique/components/ActivityHeatmap.tsx`)
 
 **Affichage** :
 - Grille de jours avec code couleur par catégorie
@@ -2303,7 +2368,7 @@ Les composants lourds utilisant Recharts (~200KB) sont chargés à la demande po
 - `LazyDonutChart` : Graphique en donut (zones travaillées)
 - `LazyProgressStatsChart` : Graphique de progression
 
-**Fichiers** : `src/app/components/historique/LazyDonutChart.tsx`, `LazyProgressStatsChart.tsx`
+**Fichiers** : `src/app/features/historique/components/LazyDonutChart.tsx`, `LazyProgressStatsChart.tsx`
 
 ```typescript
 // Utilisation de next/dynamic pour le lazy loading
@@ -2997,29 +3062,28 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 
 #### Composants essentiels
 - `src/app/components/ui/CompleteButton.tsx` : Bouton de complétion d'exercice
-- `src/app/components/ProgressBottomSheet.tsx` : Modal de création de progrès
-- `src/app/components/ConfettiRain.tsx` : Animation de confettis
+- `src/app/features/progress/components/ProgressBottomSheet.tsx` : Modal de création de progrès
+- `src/app/features/exercices/components/ConfettiRain.tsx` : Animation de confettis
 - `src/app/components/AuthWrapper.tsx` : Protection par mot de passe
-- `src/app/components/JournalTaskCard.tsx` : Carte de tâche du journal
-- `src/app/components/JournalNoteCard.tsx` : Carte de note du journal
-- `src/app/components/JournalTasksList.tsx` : Liste des tâches
-- `src/app/components/JournalNotesList.tsx` : Liste des notes
+- `src/app/features/journal/components/JournalTaskCard.tsx` : Carte de tâche du journal
+- `src/app/features/journal/components/JournalNoteCard.tsx` : Carte de note du journal
+- `src/app/features/journal/components/JournalTasksList.tsx` : Liste des tâches
+- `src/app/features/journal/components/JournalNotesList.tsx` : Liste des notes
 
 #### Hooks importants
-- `src/app/hooks/useExercices.ts` : Récupération des exercices (avec support mode sablier)
-- `src/app/hooks/useProgress.ts` : Récupération des progrès
-- `src/app/hooks/useJournalTasks.ts` : Récupération des tâches du journal
-- `src/app/hooks/useJournalNotes.ts` : Récupération des notes du journal
-- `src/app/hooks/useJournalCheck.ts` : Vérification de l'accès au module journal
+- `src/app/features/exercices/hooks/useExercices.ts` : Récupération des exercices (avec support mode sablier)
+- `src/app/features/exercices/hooks/useCompleteExercice.ts` : Complétion d'exercice (avec support mode sablier)
+- `src/app/features/progress/hooks/useProgress.ts` : Récupération des progrès
+- `src/app/features/journal/hooks/useJournalTasks.ts` : Récupération des tâches du journal
+- `src/app/features/journal/hooks/useJournalNotes.ts` : Récupération des notes du journal
+- `src/app/features/journal/hooks/useJournalCheck.ts` : Vérification de l'accès au module journal
 - `src/app/hooks/usePageFocus.ts` : Gestion du focus (accessibilité)
 - `src/app/hooks/useSpeechRecognition.ts` : Reconnaissance vocale
-- `src/app/hooks/useCompleteExercice.ts` : Complétion d'exercice (avec support mode sablier)
 
 #### Contextes
 - `src/app/contexts/UserContext.tsx` : Utilisateur courant (utilise `queryClient.clear()` pour nettoyer le cache)
-- `src/app/contexts/CategoryContext.tsx` : Catégorie active
+- `src/app/contexts/ToastContext.tsx` : Notifications globales
 - `src/app/contexts/DayDetailModalContext.tsx` : Modal détail du jour
-- `src/app/contexts/HistoryContext.tsx` : Historique des exercices (heatmap)
 - `src/app/contexts/SelectedDateContext.tsx` : Date sélectionnée pour le mode sablier (URL-based)
 - `src/app/contexts/TimeContext.tsx` : Contexte temporel global (date de référence, préchargement)
 
@@ -3028,6 +3092,13 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 
 #### Bibliothèques
 - `src/app/lib/api-queries.ts` : Query keys centralisées et fonctions de fetch réutilisables pour TanStack Query
+
+#### Logique métier API (par feature)
+- `src/app/features/exercices/api/` : Fonctions de gestion des exercices (getExercices, createExercice, updateExercice, deleteExercice, completeExercice, archiveExercice, pinExercice, uploadMedia, getMetadata, getBodyparts, getBodypart, createBodypart, updateBodypart, deleteBodypart, getEquipments)
+- `src/app/features/progress/api/` : Fonctions de gestion des progrès (getProgress, createProgress, updateProgress, deleteProgress)
+- `src/app/features/journal/api/` : Fonctions de gestion du journal (getJournalTasks, createJournalTask, updateJournalTask, deleteJournalTask, getJournalNotes, createJournalNote, updateJournalNote, deleteJournalNote)
+- `src/app/features/historique/api/` : Fonctions de gestion de l'historique (getHistory, getCategoryStats)
+- `src/app/features/auth/api/` : Fonctions d'authentification et gestion utilisateurs (login, register, checkAuth, getUsers, getUser, updateUser, deleteUser, updateUserPassword)
 
 ---
 
@@ -3254,7 +3325,7 @@ Le système de design est excellent avec quelques améliorations mineures recomm
 ---
 
 **Dernière mise à jour** : 15 janvier 2026  
-**Version de l'application** : 0.1.12 (simplification du code)  
+**Version de l'application** : 0.1.14 (correction gauges mode sablier)  
 **Auteur du contexte** : Documentation générée par analyse du projet Synapso
 
 ### Modifications récentes (v0.1.12)
@@ -3273,6 +3344,35 @@ Le système de design est excellent avec quelques améliorations mineures recomm
     - Nettoyage des commentaires verbeux
     - Code réduit de 74 lignes à 63 lignes (-15%)
   - **Résultat** : Code plus simple, direct, sans boucles de rendu, plus facile à maintenir
+
+### Modifications récentes (v0.1.14)
+
+- **Correction du problème de mise à jour des gauges en mode sablier** :
+  - **Problème identifié** : Les gauges ne se mettaient pas à jour en mode sablier après avoir complété un exercice, alors que cela fonctionnait en mode "aujourd'hui"
+  - **Cause** : La query `useCategoryStats` n'était pas toujours active au moment de l'invalidation, donc `refetchOnMount: true` seul ne suffisait pas en mode sablier
+  - **Solution** :
+    - `refetchOnMount: 'always'` : Force le refetch au montage même si les données ne sont pas stale
+    - `useEffect` en mode sablier : Force un refetch explicite au montage en mode sablier pour garantir des données fraîches
+    - `refetchOnWindowFocus: true` : Refetch aussi quand la fenêtre reprend le focus
+  - **Fichiers modifiés** :
+    - `src/app/features/exercices/hooks/useCategoryStats.ts` : Ajout de `refetchOnMount: 'always'`, `refetchOnWindowFocus: true` et `useEffect` pour forcer le refetch en mode sablier
+    - `src/app/features/exercices/hooks/useCompleteExercice.ts` : Invalidation de toutes les queries history (actives et inactives) avec `refetchType: 'active'`
+  - **Résultat** : Les gauges se mettent à jour correctement dans les deux modes (aujourd'hui et sablier)
+
+### Modifications récentes (v0.1.13)
+
+- **Optimisation de l'architecture** :
+  - **Suppression de HistoryContext** : Remplacé par `useHistory` (TanStack Query) - réactivité gérée automatiquement via invalidations
+  - **Suppression de CategoryContext** : Non utilisé (aucune utilisation trouvée)
+  - **Optimisation de l'ordre des providers** : Réduction de 7 à 5 providers, ordre optimisé pour réduire les re-renders
+  - **Simplification de SelectedDateContext** : 
+    - Suppression de `debouncedSelectedDateKey` (non utilisé)
+    - Simplification de `normalizedSelectedDate` (suppression du ref inutile)
+    - Simplification de la logique de transitions (1 ref au lieu de 3)
+    - Extraction de la validation dans `dateValidation.utils.ts`
+    - **Résultat** : Code réduit de 309 à 177 lignes (-43%)
+  - **Résultat global** : -30% de providers, -277 lignes de code, réduction estimée de 20-30% des re-renders
+  - **Architecture finale** : 5 contexts nécessaires et justifiés (UserContext, ToastContext, DayDetailModalContext, SelectedDateContext, TimeContext)
 
 ### Modifications récentes (v0.1.11)
 

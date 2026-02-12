@@ -3,8 +3,9 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import type { Exercice, HistoryEntry } from '@/app/types';
+import type { Exercice } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
+import { useUser } from '@/app/contexts/UserContext';
 import { queryKeys } from '@/app/lib/api-queries';
 
 type UseCompleteExerciceOptions = {
@@ -26,10 +27,11 @@ export function useCompleteExercice({
 }: UseCompleteExerciceOptions): UseCompleteExerciceReturn {
   const [showSuccess, setShowSuccess] = useState(false);
   const { referenceDateKey } = useTimeContext();
+  const { effectiveUser } = useUser();
   const queryClient = useQueryClient();
 
   const targetDate = referenceDateKey || format(new Date(), 'yyyy-MM-dd');
-  const isCompleting = !exercice.completedToday;
+  const willComplete = !exercice.completedToday;
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
@@ -50,81 +52,15 @@ export function useCompleteExercice({
 
       return response.json();
     },
-    onMutate: async () => {
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: queryKeys.exercices.all }),
-        queryClient.cancelQueries({ queryKey: queryKeys.history.all }),
-      ]);
-
-      const previousExercices = queryClient.getQueriesData<Exercice[]>({ queryKey: queryKeys.exercices.all });
-      const previousHistory = queryClient.getQueriesData<HistoryEntry[]>({ queryKey: queryKeys.history.all });
-
-      const optimisticEntry: HistoryEntry = {
-        id: -Date.now(),
-        completedAt: targetDate + 'T12:00:00.000Z',
-        exercice: {
-          id: exercice.id,
-          name: exercice.name,
-          category: exercice.category,
-          bodyparts: exercice.bodyparts.map(name => ({ id: 0, name })),
-          equipments: exercice.equipments,
-        },
-      };
-
-      queryClient.setQueriesData<Exercice[]>(
-        { predicate: (query) => query.queryKey[0] === 'exercices' },
-        (old) => old?.map(ex =>
-          ex.id === exercice.id
-            ? { ...ex, completedToday: isCompleting, completed: isCompleting }
-            : ex
-        ) ?? []
-      );
-
-      queryClient.setQueriesData<HistoryEntry[]>(
-        { predicate: (query) => query.queryKey[0] === 'history' },
-        (old) => {
-          if (isCompleting) {
-            const existing = old?.some(
-              entry =>
-                entry.exercice.id === exercice.id &&
-                format(new Date(entry.completedAt), 'yyyy-MM-dd') === targetDate
-            );
-            if (existing) return old ?? [];
-            return old ? [...old, optimisticEntry] : [optimisticEntry];
-          }
-          return old?.filter(
-            entry =>
-              entry.exercice.id !== exercice.id ||
-              format(new Date(entry.completedAt), 'yyyy-MM-dd') !== targetDate
-          ) ?? [];
-        }
-      );
-
-      return { previousExercices, previousHistory };
-    },
-    onError: (error, _variables, context) => {
-      // ⚡ ROLLBACK: Restaurer les données précédentes en cas d'erreur
-      // C'est critique pour éviter que l'UI reste dans un état optimiste incorrect
-      if (context?.previousExercices) {
-        context.previousExercices.forEach(([queryKey, data]) => {
-          if (data !== undefined) {
-            queryClient.setQueryData(queryKey, data);
-          }
-        });
-      }
-      if (context?.previousHistory) {
-        context.previousHistory.forEach(([queryKey, data]) => {
-          if (data !== undefined) {
-            queryClient.setQueryData(queryKey, data);
-          }
-        });
-      }
-      
-      // Log l'erreur pour le debugging
-      console.error('Erreur lors de la complétion de l\'exercice:', error);
-    },
     onSuccess: (data) => {
-      const wasCompleted = exercice.completedToday ?? false;
+      console.log('[COMPLETE] ✅ Serveur a retourné:', {
+        exerciceId: exercice.id,
+        exerciceName: exercice.name,
+        completed: data.completed,
+        completedToday: data.completedToday,
+        targetDate,
+      });
+
       const updatedExercice: Exercice = {
         ...exercice,
         completed: data.completed,
@@ -133,15 +69,64 @@ export function useCompleteExercice({
         weeklyCompletions: data.weeklyCompletions || [],
       };
 
-      if (!wasCompleted && updatedExercice.completedToday) {
+      if (!exercice.completedToday && updatedExercice.completedToday) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 1500);
       }
 
       onCompleted?.(updatedExercice);
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'history' });
+      // ⚡ CACHE INVALIDATION CIBLÉE: Invalider uniquement les queries de la date concernée
+      // Cela évite de refetch toutes les dates et améliore les performances
+      
+      // Invalider toutes les queries exercices avec ce targetDate (toutes les variantes de filtres)
+      queryClient.invalidateQueries({ 
+        queryKey: ['exercices', 'list'],
+        predicate: (query) => {
+          const filters = query.queryKey[2] as { targetDate?: string } | undefined;
+          return filters?.targetDate === targetDate;
+        },
+        refetchType: 'active',
+      });
+      
+      // ⚡ FIX: Invalider toutes les queries history (actives et inactives)
+      // Le problème : si on complète un exercice en mode sablier puis qu'on retourne sur la home,
+      // la query history utilisée par useCategoryStats doit être invalidée et refetchée
+      // Solution : invalider toutes les queries history (sans refetchType pour marquer comme invalidées)
+      // + refetchOnMount: true dans useCategoryStats garantit le refetch au prochain montage
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.history.all,
+        // ⚡ FIX: Ne pas utiliser refetchType pour invalider toutes les queries (actives et inactives)
+        // Par défaut, seules les queries actives sont refetchées immédiatement,
+        // mais toutes les queries sont marquées comme invalidées
+        // refetchOnMount: true dans useCategoryStats garantit le refetch au prochain montage
+        refetchType: 'active', // Refetch immédiat des queries actives
+        // Toutes les queries (actives et inactives) sont marquées comme invalidées
+        // et seront refetchées au prochain montage grâce à refetchOnMount: true
+      });
+      
+      // Invalider categoryStats pour cette date spécifique
+      if (effectiveUser?.id && effectiveUser?.resetFrequency) {
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.categoryStats.list({
+            userId: effectiveUser.id,
+            resetFrequency: effectiveUser.resetFrequency,
+            referenceDateKey: targetDate,
+          }),
+          refetchType: 'active',
+        });
+      }
+      
+      // Invalider todayCompletedCount pour cette date spécifique
+      if (effectiveUser?.id) {
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.todayCompletedCount.list({
+            userId: effectiveUser.id,
+            dateKey: targetDate,
+          }),
+          refetchType: 'active',
+        });
+      }
     },
   });
 
@@ -149,10 +134,16 @@ export function useCompleteExercice({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       if (userId) {
+        console.log('[COMPLETE] 🖱️ Click:', {
+          exerciceId: exercice.id,
+          exerciceName: exercice.name,
+          action: willComplete ? 'COMPLÉTER' : 'DÉCOMPLÉTER',
+          targetDate,
+        });
         mutate();
       }
     },
-    [userId, mutate]
+    [userId, mutate, exercice.id, exercice.name, willComplete, targetDate]
   );
 
   return {

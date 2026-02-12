@@ -1,4 +1,4 @@
-import { startOfDay, startOfWeek, isSameDay, isAfter, isEqual } from 'date-fns';
+import { startOfDay, startOfWeek, isSameDay, isAfter, isEqual, isBefore } from 'date-fns';
 
 type ResetFrequency = 'DAILY' | 'WEEKLY';
 
@@ -38,6 +38,31 @@ export function isCompletedInPeriod(
   const startOfPeriod = getStartOfPeriod(resetFrequency, referenceDate);
   // Vérifier si completedDate est après ou égal à startOfPeriod
   return isAfter(completedDate, startOfPeriod) || isEqual(completedDate, startOfPeriod);
+}
+
+/**
+ * Vérifie si une date est dans la période de réinitialisation (entre le début et la fin inclus)
+ * @param completedDate - Date de complétion à vérifier
+ * @param resetFrequency - Fréquence de réinitialisation
+ * @param referenceDate - Date de référence (par défaut: maintenant)
+ * @returns true si la date est dans la période (début <= date <= fin)
+ */
+export function isDateInPeriodRange(
+  completedDate: Date | null,
+  resetFrequency: ResetFrequency | string,
+  referenceDate: Date = new Date()
+): boolean {
+  if (!completedDate) return false;
+  
+  const periodStart = getStartOfPeriod(resetFrequency, referenceDate);
+  const periodEnd = startOfDay(referenceDate);
+  const entryDate = startOfDay(completedDate);
+  
+  // Vérifier si entryDate est dans la période (periodStart <= entryDate <= periodEnd)
+  return (
+    (isAfter(entryDate, periodStart) || isEqual(entryDate, periodStart)) &&
+    (isBefore(entryDate, periodEnd) || isEqual(entryDate, periodEnd))
+  );
 }
 
 /**

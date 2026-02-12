@@ -60,7 +60,7 @@ export async function updateExercice(params: UpdateExerciceParams) {
         workoutDuration: data.workoutDuration,
         equipments: data.equipments ? JSON.stringify(data.equipments) : undefined,
         category: data.category as PrismaExerciceCategory | undefined,
-        media: data.media !== undefined ? (data.media ?? null) : undefined,
+        ...(data.media !== undefined && data.media !== null && { media: data.media }),
         archived: data.archived !== undefined ? data.archived : undefined,
         archivedAt: data.archived !== undefined ? (data.archived ? new Date() : null) : undefined,
       },

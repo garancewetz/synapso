@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { title, completed } = data;
+    const { title } = data;
 
     if (!title || !title.trim()) {
       return NextResponse.json(
@@ -61,12 +61,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const task = await prisma.journalTask.create({
-      data: {
-        title: title.trim(),
-        completed: completed || false,
-        userId: userId,
-      },
+    const task = await createJournalTask({
+      title: title.trim(),
+      userId: userId,
     });
 
     return NextResponse.json(task, { status: 201 });

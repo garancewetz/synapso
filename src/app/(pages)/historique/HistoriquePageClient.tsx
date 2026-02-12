@@ -28,7 +28,7 @@ const ProgressBottomSheet = dynamic(
 );
 
 const ConfettiRain = dynamic(
-  () => import('@/app/components/ConfettiRain').then(mod => ({ default: mod.ConfettiRain })),
+  () => import('@/app/features/exercices').then(mod => ({ default: mod.ConfettiRain })),
   { ssr: false, loading: () => null }
 );
 

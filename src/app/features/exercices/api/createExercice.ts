@@ -20,7 +20,7 @@ type CreateExerciceData = {
 };
 
 export async function createExercice(data: CreateExerciceData) {
-  const { userId, bodyparts, createdAt, ...exerciceData } = data;
+  const { userId, bodyparts, createdAt, media, ...exerciceData } = data;
 
   const resetFrequency = (await prisma.user.findUnique({
     where: { id: userId },
@@ -45,7 +45,7 @@ export async function createExercice(data: CreateExerciceData) {
         category: exerciceData.category as PrismaExerciceCategory,
         userId,
         createdAt: createdDate,
-        media: exerciceData.media ?? null,
+        ...(media !== undefined && media !== null && { media }),
       },
     });
 

@@ -61,12 +61,17 @@ export function useCompleteExercice({
         targetDate,
       });
 
+      const weeklyCompletionsRaw = data.weeklyCompletions || [];
+      const weeklyCompletions = weeklyCompletionsRaw.map((d: Date | string) =>
+        typeof d === 'string' ? new Date(d) : d
+      );
+
       const updatedExercice: Exercice = {
         ...exercice,
         completed: data.completed,
         completedToday: data.completedToday ?? false,
         completedAt: data.completedAt ? new Date(data.completedAt) : null,
-        weeklyCompletions: data.weeklyCompletions || [],
+        weeklyCompletions,
       };
 
       if (!exercice.completedToday && updatedExercice.completedToday) {

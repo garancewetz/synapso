@@ -35,20 +35,20 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
   const queryClient = useQueryClient();
   
   // ⚡ SIMPLICITÉ: Utiliser referenceDateKey directement pour construire targetDate
-  // Cela garantit que la query key change quand la date change
+  // ⚡ MODES: Inclure resetFrequency dans la clé pour que le cache soit distinct par mode (DAILY/WEEKLY)
   const filters = useMemo(() => {
     let targetDate: string | undefined;
     if (isTimeMachineMode && referenceDateKey) {
       targetDate = referenceDateKey;
     }
-    
     return {
       category,
       equipments,
       includeArchived,
       targetDate,
+      resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
     };
-  }, [category, equipments, includeArchived, isTimeMachineMode, referenceDateKey]);
+  }, [category, equipments, includeArchived, isTimeMachineMode, referenceDateKey, effectiveUser?.resetFrequency]);
   
   // ⚡ TANSTACK QUERY: Utiliser useQuery pour gérer le fetch et le cache
   // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle

@@ -13,6 +13,8 @@ type Props = {
   onClick: () => void;
   ariaLabel?: string;
   showCloseIcon?: boolean;
+  /** Blanc pour les badges équipement, couleurs de catégorie sinon */
+  variant?: 'category' | 'white';
 };
 
 /**
@@ -28,6 +30,7 @@ export function FilterBadge({
   onClick,
   ariaLabel,
   showCloseIcon = false,
+  variant = 'category',
 }: Props) {
   const categoryColors = CATEGORY_COLORS[category];
   const isAllLabel = label === 'Toutes';
@@ -43,6 +46,32 @@ export function FilterBadge({
     focusRing: 'focus:ring-gray-400',
   };
 
+  // Badges blancs (ex. filtre équipement)
+  const whiteColors = {
+    activeBg: 'bg-gray-900',
+    activeRing: 'ring-gray-300',
+    inactiveBg: 'bg-white',
+    inactiveText: 'text-gray-800',
+    inactiveBorder: 'border-gray-300',
+    inactiveTag: 'bg-gray-100 text-gray-700',
+    focusRing: 'focus:ring-gray-400',
+  };
+
+  const colors =
+    variant === 'white'
+      ? whiteColors
+      : isAllLabel
+        ? anthraciteColors
+        : {
+            activeBg: categoryColors.accent,
+            activeRing: categoryColors.focusRing.replace('focus:', ''),
+            inactiveBg: categoryColors.bg,
+            inactiveText: categoryColors.text,
+            inactiveBorder: categoryColors.border,
+            inactiveTag: categoryColors.tag,
+            focusRing: categoryColors.focusRing,
+          };
+
   return (
     <BaseFilterBadge
       label={label}
@@ -52,19 +81,7 @@ export function FilterBadge({
       onClick={onClick}
       ariaLabel={ariaLabel}
       showCloseIcon={showCloseIcon}
-      colors={
-        isAllLabel
-          ? anthraciteColors
-          : {
-              activeBg: categoryColors.accent,
-              activeRing: categoryColors.focusRing.replace('focus:', ''),
-              inactiveBg: categoryColors.bg,
-              inactiveText: categoryColors.text,
-              inactiveBorder: categoryColors.border,
-              inactiveTag: categoryColors.tag,
-              focusRing: categoryColors.focusRing,
-            }
-      }
+      colors={colors}
     />
   );
 }

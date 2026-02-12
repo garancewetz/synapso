@@ -23,17 +23,17 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
   relatedStretchingByCategory,
   error,
 }: Props) {
+  const activeExercices = useMemo(() => exercices.filter(e => !e.archived), [exercices]);
+
   const exercicesByCategory = useMemo(() => {
     const map = new Map<ExerciceCategory, Exercice[]>();
     CATEGORY_ORDER.forEach(category => {
-      map.set(category, exercices.filter(e => e.category === category));
+      map.set(category, activeExercices.filter(e => e.category === category));
     });
     return map;
-  }, [exercices]);
+  }, [activeExercices]);
 
-  const archivedCount = useMemo(() => {
-    return exercices.filter(e => e.archived === true).length;
-  }, [exercices]);
+  const archivedCount = useMemo(() => exercices.filter(e => e.archived === true).length, [exercices]);
   
   return (
     <div className="space-y-4">

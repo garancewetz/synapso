@@ -42,7 +42,7 @@ export default function Home() {
   // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
   usePrefetchCommonPages();
   
-  const { exercices, error: exercicesError } = useExercices();
+  const { exercices, error: exercicesError } = useExercices({ includeArchived: true });
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
 

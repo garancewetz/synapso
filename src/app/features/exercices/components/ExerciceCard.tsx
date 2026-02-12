@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useCallback, useMemo, memo, useRef } from "react";
-import clsx from 'clsx';
+import { useState, useCallback, useMemo, memo, useRef, useLayoutEffect } from "react";
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useCompleteExercice } from '../hooks/useCompleteExercice';
 import { useArchiveExercice } from '../hooks/useArchiveExercice';
-import { useShareExercice } from '@/app/features/exercices';
+import { useShareExercice, ConfettiValidate } from '@/app/features/exercices';
 import { CompleteButton, BaseCard, DotMenu } from '@/app/components/ui';
 import { ExerciceCardHeader } from './ExerciceCardHeader';
 import { ExerciceCardTags } from './ExerciceCardTags';
@@ -32,7 +31,9 @@ type Props = {
 const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted, onArchive }: Props) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [confettiCenter, setConfettiCenter] = useState({ x: 50, y: 50 });
     const cardRef = useRef<HTMLDivElement>(null);
+    const completeButtonRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
     const { archiveExercice } = useArchiveExercice();
     const { handleShare } = useShareExercice(exercice, cardRef);
@@ -85,13 +86,20 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
         }
     }, [exercice.media]);
 
+    useLayoutEffect(() => {
+        if (showSuccess && completeButtonRef.current) {
+            const rect = completeButtonRef.current.getBoundingClientRect();
+            setConfettiCenter({
+                x: ((rect.left + rect.width / 2) / window.innerWidth) * 100,
+                y: ((rect.top + rect.height / 2) / window.innerHeight) * 100,
+            });
+        }
+    }, [showSuccess]);
+
     return (
         <div ref={cardRef} className="relative h-full">
             <BaseCard
-            className={clsx(
-                'exercise-card h-full',
-                showSuccess && 'success-animation'
-            )}
+            className="exercise-card h-full"
             fullHeight
             onClick={toggleExpand}
             onKeyDown={handleKeyDown}
@@ -134,23 +142,34 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                 </div>
                 <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
                     <DotMenu
+                        containerRef={cardRef}
                         onArchive={handleArchive}
                         onEdit={handleEdit}
                         onShare={handleShareClick}
                         isArchived={exercice.archived ?? false}
                     />
 
-                    <CompleteButton
-                        onClick={handleComplete}
-                        isCompleted={exercice.completed}
-                        isCompletedToday={exercice.completedToday}
-                        isLoading={isCompleting}
-                        weeklyCount={exercice.weeklyCompletions?.length || 0}
-                    />
+                    <div ref={completeButtonRef} className="flex-1 flex min-w-0">
+                        <CompleteButton
+                            onClick={handleComplete}
+                            isCompleted={exercice.completed}
+                            isCompletedToday={exercice.completedToday}
+                            isLoading={isCompleting}
+                            weeklyCount={exercice.weeklyCompletions?.length || 0}
+                        />
+                    </div>
                 </BaseCard.Footer>
             </BaseCard.Content>
             </BaseCard>
             
+            {showSuccess && (
+                <ConfettiValidate
+                    show
+                    centerX={confettiCenter.x}
+                    centerY={confettiCenter.y}
+                />
+            )}
+
             {/* Lightbox - rendu en dehors de la carte pour être plein écran */}
             {exercice.media && exercice.media.photos && exercice.media.photos.length > 0 && lightboxIndex !== null && (
                 <ExerciceMedia

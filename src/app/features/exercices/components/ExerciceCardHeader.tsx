@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { Badge, WeeklyCompletionIndicator } from '@/app/components/ui';
-import { getDayName } from '@/app/utils/date.utils';
 import { EyeIcon } from '@/app/components/ui/icons';
 
 type Props = {
@@ -20,9 +19,14 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
     [exercice.media]
   );
 
+  const isWeekly = effectiveUserResetFrequency === 'WEEKLY';
+  const weeklyCount = exercice.weeklyCompletions?.length ?? 0;
+  const showWeeklyBadge = isWeekly && weeklyCount > 0;
+  const showDailyBadge = !isWeekly && exercice.completedToday;
+
   return (
-    <div className="flex items-start justify-between gap-3 mb-3">
-      <div className="flex-1 min-w-0 flex items-center gap-2">
+    <div className="relative mb-3 pr-24">
+      <div className="flex items-center gap-2 min-w-0">
         {hasMedia && (
           <button
             type="button"
@@ -44,24 +48,17 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
             <EyeIcon className="w-4 h-4" strokeWidth={2} />
           </button>
         )}
-        <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight">
+        <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight min-w-0">
           {exercice.name}
         </h3>
       </div>
 
-      <div className="flex items-center gap-2">
-        {effectiveUserResetFrequency === 'WEEKLY' && 
-         exercice.weeklyCompletions && 
-         exercice.weeklyCompletions.length > 0 ? (
-          <WeeklyCompletionIndicator 
-            completions={exercice.weeklyCompletions}
-          />
-        ) : (
-          exercice.completedToday && (
-            <Badge variant="completed">
-              {exercice.completedToday ? 'Fait' : getDayName(exercice.completedAt)}
-            </Badge>
-          )
+      <div className="absolute top-0 right-0 flex items-center justify-end min-w-20">
+        {showWeeklyBadge && (
+          <WeeklyCompletionIndicator completions={exercice.weeklyCompletions ?? []} />
+        )}
+        {showDailyBadge && (
+          <Badge variant="completed">Fait</Badge>
         )}
       </div>
     </div>

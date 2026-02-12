@@ -106,7 +106,7 @@ synapso/
 │       │   ├── exercices/      # Exercices de rééducation
 │       │   │   ├── api/        # Logique métier des routes API
 │       │   │   ├── components/ # Composants (ExerciceCard, ExerciceForm, etc.)
-│       │   │   ├── hooks/      # Hooks (useExercices, useCompleteExercice, etc.)
+│       │   │   ├── hooks/      # Hooks (useExercices, useCompleteExercice, useCategoryFilters, etc.)
 │       │   │   └── utils/      # Utilitaires spécifiques
 │       │   ├── historique/     # Historique et visualisations
 │       │   │   ├── api/        # Logique métier des routes API
@@ -179,7 +179,7 @@ features/[feature-name]/
 ```
 
 **Features principales** :
-- `exercices/` : Gestion des exercices de rééducation (ExerciceCard, ExerciceForm, complétion, etc.)
+- `exercices/` : Gestion des exercices de rééducation (ExerciceCard, ExerciceForm, complétion, ConfettiValidate, CategoryAffinerSection, useCategoryFilters, etc.)
 - `historique/` : Visualisations et historique (heatmap, graphiques, statistiques)
 - `progress/` : Progrès et victoires (ProgressFAB, ProgressCard, célébrations)
 - `home/` : Page d'accueil (WelcomeHeader, onglets, dashboard)
@@ -396,16 +396,22 @@ Interface unifiée avec système d'onglets :
 - `CompleteButton` : Bouton intelligent qui affiche l'état de complétion
   - Non fait : "Fait aujourd'hui" (gris)
   - Fait aujourd'hui : "Fait" (vert émeraude)
-  - Fait cette semaine : "Fait cette semaine" (vert clair)
-  - Mode hebdomadaire avec compteur : "Fait (3× cette semaine)"
+  - Mode hebdomadaire avec compteur : "Fait (3× cette semaine)" quand `weeklyCount > 1`
   - **Mode sablier** : "Fait le [date]" (adapte le label selon la date sélectionnée)
-- `StatusFilterBadge` : Badges de filtre d'état (Tous / Non faits / Faits)
-- `FilterBadge` : Badges de filtre de parties du corps avec icônes et compteurs
+- `StatusFilterSection` : Filtre d'état (Tous / Non faits / Faits)
+- `CategoryAffinerSection` : Bloc repliable "Affiner la liste" contenant les filtres partie du corps et équipement (réduit la charge cognitive, zone tactile 44px, transition fluide)
+- `FilterBadge` : Badges partie du corps (couleurs catégorie) et équipement (variant blanc)
+- `useCategoryFilters` : Hook qui centralise l'état et la logique des filtres (bodyparts, équipements, listes filtrées, étirements liés)
 
 **Filtres disponibles** :
-- **Filtre d'état** : Tous / Non faits / Faits (sans compteurs pour simplifier)
-- **Filtre par partie du corps** : Badges pour chaque partie du corps de la catégorie (avec compteurs stables)
-- Badge "Tous" pour réinitialiser les filtres de parties du corps (sans compteur)
+- **Filtre d'état** : Tous / Non faits / Faits (toujours visible)
+- **Affiner (repliable)** : Partie du corps + Équipement. Seuls les équipements et parties du corps présents dans les cartes de la catégorie sont proposés. Badge avec le nombre de filtres actifs quand au moins un est sélectionné.
+
+**ExerciceCard / Header** :
+- En **mode DAILY** : badge vert "Fait" en haut à droite quand `completedToday` (position absolue + `pr-24` pour éviter le saut du titre à l'affichage).
+- En **mode WEEKLY** : `WeeklyCompletionIndicator` (badge N× cliquable + calendrier des 7 jours). Pas de badge "Fait" séparé ; le compteur hebdomadaire suffit.
+
+**Célébration** : À la confirmation serveur d'une complétion, `ConfettiValidate` déclenche une explosion de confettis émeraude depuis le bouton (animation courte, expansion horizontale, disparition en fondu). Pas de contour vert sur la carte (évite le doublon).
 
 **Note** : Pour la logique détaillée des compteurs dans les badges de filtre, voir la section "Logique des compteurs dans les badges de filtre" dans la page filtrage par équipement.
 
@@ -512,12 +518,16 @@ Cette simplification garantit que :
 **Logique** :
 1. Clic sur `CompleteButton` → Création d'une entrée `History`
 2. Mise à jour de `completed = true` et `completedAt = now()`
-3. Si déjà complété → Suppression de l'entrée `History` correspondante
+3. Si déjà complété (décompléter) → Suppression de l'entrée `History` correspondante
 4. Réinitialisation automatique selon `resetFrequency` :
    - `DAILY` : à minuit chaque jour
    - `WEEKLY` : le lundi à minuit chaque semaine
 
-**Hook** : `useExercices` centralise la récupération et la mise à jour
+**API `PATCH /api/exercices/[id]/complete`** :
+- Accepte `completedAt` dans le body (date cible, ex. jour en mode sablier).
+- Retourne toujours `weeklyCompletions` : tableau des dates de complétion de la **semaine** contenant `completedAt` (calcul via `getStartOfPeriod('WEEKLY', completedAt)`). Ainsi en mode WEEKLY, après compléter ou décompléter, le front reçoit le bon compteur (x1, x2, x3…) et met à jour le cache sans incohérence.
+
+**Hook** : `useCompleteExercice` (TanStack `useMutation`) : appelle l'API, reçoit `completed`, `completedToday`, `completedAt`, `weeklyCompletions` ; convertit les dates ISO en `Date` ; met à jour le cache via `onCompleted(updatedExercice)` et invalide `exercices`, `history`, `categoryStats`, `todayCompletedCount`. `useExercices` fournit `updateExercice` pour le `setQueryData` local.
 
 #### Mode "Sablier" (Remonter le temps)
 
@@ -587,7 +597,7 @@ Cette simplification garantit que :
 **Modifications API** :
 - `/api/exercices` : Accepte `targetDate` query param pour calculer `completedToday` pour un jour spécifique
 - `/api/exercices/[id]` : Accepte `targetDate` query param pour calculer `completedToday` pour un jour spécifique
-- `/api/exercices/[id]/complete` : Accepte `completedAt` dans le body pour marquer un exercice comme fait pour un jour passé
+- `/api/exercices/[id]/complete` : Accepte `completedAt` dans le body ; retourne `completed`, `completedToday`, `completedAt`, `weeklyCompletions` (complétions de la semaine) pour cohérence mode WEEKLY
 - `/api/exercices` (POST) : Accepte `createdAt` dans le body pour créer un exercice avec une date de création personnalisée (fixée à midi)
 
 **Hooks modifiés** :
@@ -2390,15 +2400,8 @@ export const LazyDonutChart = dynamic<DonutChartProps>(
 - `retry: 2` : 2 tentatives en cas d'erreur
 
 **Query Keys** : Centralisées dans `src/app/lib/api-queries.ts` :
-```typescript
-export const queryKeys = {
-  exercices: { all: ['exercices'], list: (filters) => [...] },
-  history: { all: ['history'], list: (params) => [...] },
-  progress: { all: ['progress'], list: (params) => [...] },
-  categoryStats: { all: ['categoryStats'], list: (params) => [...] },
-  todayCompletedCount: { all: ['todayCompletedCount'], list: (params) => [...] },
-};
-```
+- `exercices.list(filters)` : `filters` inclut `category`, `equipments`, `includeArchived`, `targetDate`, **`resetFrequency`** (DAILY | WEEKLY). Inclure `resetFrequency` permet d’avoir un cache distinct par mode : au changement de mode en paramètres, la clé change et les listes sont refetchées avec la bonne période (jour vs semaine).
+- `history`, `progress`, `categoryStats`, `todayCompletedCount` : voir `api-queries.ts`.
 
 **Fetch Functions** : Fonctions réutilisables dans `api-queries.ts` :
 - `fetchExercices(filters)` : Récupération des exercices
@@ -2497,12 +2500,12 @@ Les composants de carte utilisent `React.memo` pour éviter les re-renders quand
 
 ### Optimisation des animations (Confettis)
 
-Le composant `ConfettiRain` est optimisé pour les performances mobiles :
+**ConfettiRain** (pluie globale, objectif du jour, etc.) : Réduction des particules sur mobile, `will-change: transform, opacity`, animations GPU-friendly.
 
-**Adaptations** :
-- **Réduction des particules sur mobile** : 3 emojis + 12 confettis (vs 5 + 20 sur desktop)
-- **GPU acceleration** : Utilisation de `will-change: transform, opacity`
-- **Animations GPU-friendly** : Uniquement `transform` et `opacity` (pas de `width`, `height`, etc.)
+**ConfettiValidate** (célébration complétion d’exercice) :
+- Déclenché à la **confirmation serveur** (réponse PATCH complete), depuis le bouton "Fait aujourd'hui".
+- Couleurs émeraude uniquement ; confettis plus petits ; expansion plutôt horizontale (×1.35) et moins verticale (×0.5) ; animation courte (1.6 s) avec disparition en fondu (opacité).
+- Composant dédié `features/exercices/components/ConfettiValidate.tsx` ; pas de contour vert sur la carte (évite le doublon).
 
 ### Optimisation des fonts
 
@@ -3071,8 +3074,10 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 - `src/app/features/journal/components/JournalNotesList.tsx` : Liste des notes
 
 #### Hooks importants
-- `src/app/features/exercices/hooks/useExercices.ts` : Récupération des exercices (avec support mode sablier)
-- `src/app/features/exercices/hooks/useCompleteExercice.ts` : Complétion d'exercice (avec support mode sablier)
+- `src/app/features/exercices/hooks/useExercices.ts` : Récupération des exercices (query key inclut `resetFrequency` pour cohérence DAILY/WEEKLY)
+- `src/app/features/exercices/hooks/useCompleteExercice.ts` : Complétion d'exercice ; réception de `weeklyCompletions` pour le mode WEEKLY
+- `src/app/features/exercices/hooks/useCategoryFilters.ts` : Filtres page catégorie (bodyparts, équipements, listes dérivées)
+- `src/app/features/exercices/api/completeExercice.ts` : Retourne `weeklyCompletions` (semaine de `completedAt`) pour le front
 - `src/app/features/progress/hooks/useProgress.ts` : Récupération des progrès
 - `src/app/features/journal/hooks/useJournalTasks.ts` : Récupération des tâches du journal
 - `src/app/features/journal/hooks/useJournalNotes.ts` : Récupération des notes du journal

@@ -7,6 +7,7 @@ export { ExerciceCardTags } from './components/ExerciceCardTags';
 export { ExerciceTags } from './components/ExerciceTags';
 export { ExerciceMedia } from './components/ExerciceMedia';
 export { CategoryCardWithProgress } from './components/CategoryCardWithProgress';
+export { CategoryAffinerSection } from './components/CategoryAffinerSection';
 export { DailyGoalProgress } from './components/DailyGoalProgress';
 
 // ExerciceForm sub-components
@@ -23,6 +24,7 @@ export { usePinExercice } from './hooks/usePinExercice';
 export { useArchiveExercice } from './hooks/useArchiveExercice';
 export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 export { useExerciceStatusFilter } from './hooks/useExerciceStatusFilter';
+export { useCategoryFilters } from './hooks/useCategoryFilters';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
 export { useShareExercice } from './hooks/useShareExercice';
@@ -35,4 +37,5 @@ export * from './utils/exercice-complete.utils';
 export { GlobalCelebration } from './components/GlobalCelebration';
 export { ConfettiRain } from './components/ConfettiRain';
 export { ConfettiExplosion } from './components/ConfettiExplosion';
+export { ConfettiValidate } from './components/ConfettiValidate';
 export { MediaUploader } from './components/MediaUploader';

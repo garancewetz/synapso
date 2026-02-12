@@ -15,6 +15,7 @@ type Props = {
   onShare?: () => void;
   isArchived?: boolean;
   className?: string;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 /**
@@ -23,12 +24,13 @@ type Props = {
  * 
  * Le dropdown suit le bouton lors du scroll et se ferme automatiquement après un délai
  */
-export function DotMenu({ 
-  onArchive, 
-  onEdit, 
-  onShare, 
+export function DotMenu({
+  onArchive,
+  onEdit,
+  onShare,
   isArchived = false,
-  className = ''
+  className = '',
+  containerRef,
 }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -51,6 +53,7 @@ export function DotMenu({
     dropdownRef,
     itemCount,
     onClose: () => setIsOpen(false),
+    containerRef,
   });
 
   useEffect(() => {
@@ -93,12 +96,16 @@ export function DotMenu({
       className={clsx(
         'fixed z-50',
         'bg-white rounded-lg shadow-lg border border-gray-200',
-        'min-w-[160px] py-1',
-        'overflow-hidden'
+        'overflow-hidden',
+        containerRef ? 'py-1.5' : 'min-w-[200px] py-1.5'
       )}
-      style={dropdownStyle}
+      style={{
+        top: dropdownStyle.top,
+        left: dropdownStyle.left,
+        ...(dropdownStyle.width !== undefined && { width: dropdownStyle.width }),
+      }}
       role="menu"
-      aria-orientation="vertical"
+      aria-orientation={containerRef ? 'horizontal' : 'vertical'}
     >
       <DotMenuActions
         onArchive={onArchive}
@@ -107,6 +114,7 @@ export function DotMenu({
         isArchived={isArchived}
         onActionClick={handleAction}
         variant="dropdown"
+        layout={containerRef ? 'grid' : 'stack'}
       />
     </div>
   );

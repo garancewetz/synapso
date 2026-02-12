@@ -14,7 +14,8 @@ export const queryKeys = {
       category?: ExerciceCategory;
       equipments?: string[];
       includeArchived?: boolean;
-      targetDate?: string; // ISO string
+      targetDate?: string;
+      resetFrequency?: 'DAILY' | 'WEEKLY';
     }) => [...queryKeys.exercices.lists(), filters] as const,
   },
   history: {

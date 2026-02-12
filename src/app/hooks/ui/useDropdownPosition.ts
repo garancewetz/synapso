@@ -4,6 +4,7 @@ const SCROLL_CLOSE_DELAY = 2000;
 const ITEM_HEIGHT_ESTIMATE = 50;
 const GAP = 4;
 const MIN_MARGIN = 8;
+const GRID_ROW_HEIGHT = 56;
 
 type UseDropdownPositionProps = {
   isOpen: boolean;
@@ -11,11 +12,13 @@ type UseDropdownPositionProps = {
   dropdownRef: React.RefObject<HTMLElement | null>;
   itemCount: number;
   onClose: () => void;
+  containerRef?: React.RefObject<HTMLElement | null>;
 };
 
 type DropdownStyle = {
   top: number;
   left: number;
+  width?: number;
 } | null;
 
 type UseDropdownPositionReturn = {
@@ -33,6 +36,7 @@ export function useDropdownPosition({
   dropdownRef,
   itemCount,
   onClose,
+  containerRef,
 }: UseDropdownPositionProps): UseDropdownPositionReturn {
   const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
   const [dropdownStyle, setDropdownStyle] = useState<DropdownStyle>(null);
@@ -40,8 +44,11 @@ export function useDropdownPosition({
   const updatePositionRef = useRef<number | null>(null);
 
   const calculateEstimatedHeight = useCallback(() => {
+    if (containerRef?.current) {
+      return GRID_ROW_HEIGHT + GAP;
+    }
     return itemCount * ITEM_HEIGHT_ESTIMATE + GAP;
-  }, [itemCount]);
+  }, [itemCount, containerRef]);
 
   const updateDropdownPosition = useCallback(() => {
     if (!isOpen || !buttonRef.current) {
@@ -49,6 +56,7 @@ export function useDropdownPosition({
     }
 
     const buttonRect = buttonRef.current.getBoundingClientRect();
+    const containerRect = containerRef?.current?.getBoundingClientRect();
 
     if (!dropdownRef.current) {
       const estimatedHeight = calculateEstimatedHeight();
@@ -65,8 +73,11 @@ export function useDropdownPosition({
         top = buttonRect.bottom + GAP;
       }
 
+      const style: DropdownStyle = containerRect
+        ? { top, left: containerRect.left, width: containerRect.width }
+        : { top, left: buttonRect.left };
       setPosition(newPosition);
-      setDropdownStyle({ top, left: buttonRect.left });
+      setDropdownStyle(style);
       return;
     }
 
@@ -76,6 +87,7 @@ export function useDropdownPosition({
 
     let top: number;
     let left: number;
+    let width: number | undefined;
     let newPosition: 'bottom' | 'top' = position;
 
     if (position === 'bottom' && spaceBelow < dropdownRect.height && spaceAbove > spaceBelow) {
@@ -90,20 +102,24 @@ export function useDropdownPosition({
       top = buttonRect.top - dropdownRect.height - GAP;
     }
 
-    left = buttonRect.left;
-
-    if (left + dropdownRect.width > window.innerWidth) {
-      left = window.innerWidth - dropdownRect.width - MIN_MARGIN;
-    }
-    if (left < MIN_MARGIN) {
-      left = MIN_MARGIN;
+    if (containerRect) {
+      left = containerRect.left;
+      width = containerRect.width;
+    } else {
+      left = buttonRect.left;
+      if (left + dropdownRect.width > window.innerWidth) {
+        left = window.innerWidth - dropdownRect.width - MIN_MARGIN;
+      }
+      if (left < MIN_MARGIN) {
+        left = MIN_MARGIN;
+      }
     }
 
     if (newPosition !== position) {
       setPosition(newPosition);
     }
-    setDropdownStyle({ top, left });
-  }, [isOpen, position, buttonRef, dropdownRef, calculateEstimatedHeight]);
+    setDropdownStyle(width !== undefined ? { top, left, width } : { top, left });
+  }, [isOpen, position, buttonRef, dropdownRef, containerRef, calculateEstimatedHeight]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -165,6 +181,7 @@ export function useDropdownPosition({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
+      const containerRect = containerRef?.current?.getBoundingClientRect();
       const estimatedHeight = calculateEstimatedHeight();
       const spaceBelow = window.innerHeight - buttonRect.bottom;
       const spaceAbove = buttonRect.top;
@@ -179,8 +196,11 @@ export function useDropdownPosition({
         top = buttonRect.bottom + GAP;
       }
 
+      const initialStyle: DropdownStyle = containerRect
+        ? { top, left: containerRect.left, width: containerRect.width }
+        : { top, left: buttonRect.left };
       setPosition(initialPosition);
-      setDropdownStyle({ top, left: buttonRect.left });
+      setDropdownStyle(initialStyle);
 
       requestAnimationFrame(() => {
         updateDropdownPosition();
@@ -188,7 +208,7 @@ export function useDropdownPosition({
     } else if (!isOpen) {
       setDropdownStyle(null);
     }
-  }, [isOpen, buttonRef, calculateEstimatedHeight, updateDropdownPosition]);
+  }, [isOpen, buttonRef, containerRef, calculateEstimatedHeight, updateDropdownPosition]);
 
   return {
     position,

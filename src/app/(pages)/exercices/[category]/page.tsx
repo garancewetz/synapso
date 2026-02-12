@@ -3,216 +3,83 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExerciceCard, useExercices, useExerciceStatusFilter, useExerciceHandlers } from '@/app/features/exercices';
+import {
+  ExerciceCard,
+  useExercices,
+  useExerciceStatusFilter,
+  useExerciceHandlers,
+  useCategoryFilters,
+  CategoryAffinerSection,
+} from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
-import { FilterBadge, StatusFilterSection } from '@/app/components/ui';
+import { StatusFilterSection } from '@/app/components/ui';
 import type { ExerciceCategory, ExerciceStatusFilter, Exercice } from '@/app/types/exercice';
-import { 
-  CATEGORY_LABELS, 
-  CATEGORY_ORDER,
-  BODYPART_TO_CATEGORY,
-  BODYPART_ICONS,
-  AVAILABLE_BODYPARTS
-} from '@/app/constants/exercice.constants';
+import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
 
 export default function CategoryPage() {
   const [filter, setFilter] = useState<ExerciceStatusFilter>('all');
-  const [selectedBodyparts, setSelectedBodyparts] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
 
-  // ⚡ PERFORMANCE: Mémoriser la conversion du paramètre URL en catégorie
-  // pour éviter les recalculs et les re-renders en boucle
   const categoryParam = useMemo(() => {
-    const category = (params.category as string)?.toUpperCase() as ExerciceCategory;
-    return category;
+    return (params.category as string)?.toUpperCase() as ExerciceCategory;
   }, [params.category]);
 
-  const isValidCategory = useMemo(() => {
-    return CATEGORY_ORDER.includes(categoryParam);
-  }, [categoryParam]);
+  const isValidCategory = useMemo(() => CATEGORY_ORDER.includes(categoryParam), [categoryParam]);
 
-  // Ne charger les exercices que si le user est chargé et disponible ET que la catégorie est valide
-  // ⚡ PERFORMANCE: Attendre que params.category soit disponible avant de charger les exercices
   const { exercices, loading: loadingExercices, updateExercice } = useExercices({
-    category: (params.category && isValidCategory) ? categoryParam : undefined,
+    category: params.category && isValidCategory ? categoryParam : undefined,
   });
 
-  // Charger aussi les exercices d'étirement pour la section "Étirements liés"
-  // ⚡ PERFORMANCE: Attendre que params.category soit disponible avant de charger les étirements
   const { exercices: stretchingExercices, updateExercice: updateStretchingExercice } = useExercices({
-    category: (params.category && categoryParam !== 'STRETCHING') ? 'STRETCHING' : undefined,
+    category:
+      params.category && categoryParam !== 'STRETCHING' ? 'STRETCHING' : undefined,
   });
 
   useEffect(() => {
-    // ⚡ PERFORMANCE: Ne rediriger que si params.category est défini et que la catégorie n'est pas valide
-    // Cela évite de rediriger pendant le chargement initial où params.category pourrait être undefined
     if (params.category && !isValidCategory) {
       router.push('/');
     }
   }, [params.category, isValidCategory, router]);
 
-  // Utiliser les hooks partagés
   const { filteredExercices: baseFilteredExercices, completedCount } = useExerciceStatusFilter({
     exercices,
     filter,
   });
 
-  // Créer un handler de complétion qui met à jour les deux listes
-  const handleCompleted = useCallback((updatedExercice: Exercice) => {
-    // Mettre à jour la liste principale
-    updateExercice(updatedExercice);
-    
-    // Si c'est un étirement, mettre à jour aussi la liste des étirements
-    if (updatedExercice.category === 'STRETCHING') {
-      updateStretchingExercice(updatedExercice);
-    }
-  }, [updateExercice, updateStretchingExercice]);
-
-  const { handleEditClick } = useExerciceHandlers({
-    updateExercice,
+  const filters = useCategoryFilters({
+    exercices,
+    stretchingExercices,
+    baseFilteredExercices,
+    categoryParam,
+    filter,
   });
 
-  const handleArchive = (updatedExercice: Exercice) => {
-    updateExercice(updatedExercice);
-  };
+  const handleCompleted = useCallback(
+    (updatedExercice: Exercice) => {
+      updateExercice(updatedExercice);
+      if (updatedExercice.category === 'STRETCHING') {
+        updateStretchingExercice(updatedExercice);
+      }
+    },
+    [updateExercice, updateStretchingExercice]
+  );
 
-  // Calculer les bodyparts disponibles pour cette catégorie avec leurs compteurs
-  const bodypartsWithCounts = useMemo(() => {
-    // Pour STRETCHING, on prend tous les bodyparts présents dans les exercices
-    // Pour les autres catégories, on filtre par BODYPART_TO_CATEGORY
-    const isStretching = categoryParam === 'STRETCHING';
+  const { handleEditClick } = useExerciceHandlers({ updateExercice });
 
-    // Obtenir les bodyparts de cette catégorie
-    const categoryBodyparts = isStretching
-      ? AVAILABLE_BODYPARTS
-      : AVAILABLE_BODYPARTS.filter(bp => BODYPART_TO_CATEGORY[bp] === categoryParam);
+  const handleArchive = useCallback(
+    (updatedExercice: Exercice) => {
+      updateExercice(updatedExercice);
+    },
+    [updateExercice]
+  );
 
-    // Compter les exercices par bodypart (catégorie principale)
-    const counts: Record<string, number> = {};
-    exercices.forEach(ex => {
-      ex.bodyparts.forEach(bp => {
-        if (isStretching || BODYPART_TO_CATEGORY[bp] === categoryParam) {
-          counts[bp] = (counts[bp] || 0) + 1;
-        }
-      });
-    });
-
-    // Pour les catégories non-étirement, aussi compter les bodyparts des étirements qui ciblent cette catégorie
-    if (!isStretching && stretchingExercices.length > 0) {
-      stretchingExercices.forEach(ex => {
-        ex.bodyparts.forEach(bp => {
-          // Si l'étirement cible un bodypart de cette catégorie, l'inclure dans les compteurs
-          if (categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number])) {
-            counts[bp] = (counts[bp] || 0) + 1;
-          }
-        });
-      });
-    }
-
-    // Retourner uniquement les bodyparts qui ont au moins un exercice
-    const bodypartsToShow = categoryBodyparts.filter(bp => counts[bp] > 0);
-
-    return bodypartsToShow
-      .map(bp => ({
-        value: bp,
-        label: bp,
-        icon: BODYPART_ICONS[bp] || '',
-        count: counts[bp],
-      }))
-      .sort((a, b) => b.count - a.count); // Trier par nombre décroissant
-  }, [exercices, stretchingExercices, categoryParam]);
-
-  // Filtrer les exercices selon les bodyparts sélectionnés
-  const filteredExercices = useMemo(() => {
-    if (selectedBodyparts.length === 0) {
-      return baseFilteredExercices;
-    }
-
-    // Filtrer par bodyparts si sélectionnés (l'exercice doit cibler au moins un des bodyparts sélectionnés)
-    return baseFilteredExercices.filter(e => 
-      e.bodyparts.some(bp => selectedBodyparts.includes(bp))
-    );
-  }, [baseFilteredExercices, selectedBodyparts]);
-
-  // Calculer les exercices d'étirement liés (qui ciblent les mêmes bodyparts que la catégorie actuelle)
-  const relatedStretchingExercices = useMemo(() => {
-    if (categoryParam === 'STRETCHING' || !stretchingExercices.length) {
-      return [];
-    }
-
-    // Obtenir les bodyparts de cette catégorie
-    const categoryBodyparts = AVAILABLE_BODYPARTS.filter(
-      bp => BODYPART_TO_CATEGORY[bp] === categoryParam
-    );
-
-    // Filtrer les étirements qui ciblent au moins un bodypart de cette catégorie
-    let filtered = stretchingExercices.filter(ex =>
-      ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
-    );
-
-    // Filtrer par état (comme pour les exercices principaux)
-    if (filter === 'notCompleted') {
-      filtered = filtered.filter(e => !e.completed);
-    } else if (filter === 'completed') {
-      filtered = filtered.filter(e => e.completed);
-    }
-
-    // Filtrer par bodyparts si sélectionnés (l'étirement doit cibler au moins un des bodyparts sélectionnés)
-    if (selectedBodyparts.length > 0) {
-      filtered = filtered.filter(ex =>
-        ex.bodyparts.some(bp => selectedBodyparts.includes(bp))
-      );
-    }
-
-    return filtered;
-  }, [categoryParam, stretchingExercices, selectedBodyparts, filter]);
-
-  // Calculer le nombre total d'étirements associés à cette catégorie (sans tenir compte du filtre)
-  const totalStretchingCount = useMemo(() => {
-    if (categoryParam === 'STRETCHING' || !stretchingExercices.length) {
-      return 0;
-    }
-
-    // Obtenir les bodyparts de cette catégorie
-    const categoryBodyparts = AVAILABLE_BODYPARTS.filter(
-      bp => BODYPART_TO_CATEGORY[bp] === categoryParam
-    );
-
-    // Filtrer les étirements qui ciblent au moins un bodypart de cette catégorie
-    let filtered = stretchingExercices.filter(ex =>
-      ex.bodyparts.some(bp => categoryBodyparts.includes(bp as typeof AVAILABLE_BODYPARTS[number]))
-    );
-
-    // Filtrer par bodyparts si sélectionnés
-    if (selectedBodyparts.length > 0) {
-      filtered = filtered.filter(ex =>
-        ex.bodyparts.some(bp => selectedBodyparts.includes(bp))
-      );
-    }
-
-    return filtered.length;
-  }, [categoryParam, stretchingExercices, selectedBodyparts]);
-
-  // Vérifier si le badge "Tous" est actif (aucun bodypart sélectionné)
-  const isAllBodypartsSelected = useMemo(() => {
-    return selectedBodyparts.length === 0;
-  }, [selectedBodyparts.length]);
-
-  // Fonction pour réinitialiser les bodyparts (sélectionner "Tous")
-  const handleSelectAllBodyparts = () => {
-    setSelectedBodyparts([]);
-  };
-
-  // ⚡ PERFORMANCE: Ne pas retourner null si params.category n'est pas encore chargé
-  // Attendre que params.category soit disponible avant de décider si la catégorie est valide
   if (params.category && !isValidCategory) {
     return null;
   }
 
-  // Afficher un loader pendant le chargement initial
   if (!params.category) {
     return (
       <section className="pb-12 md:pb-8">
@@ -228,7 +95,6 @@ export default function CategoryPage() {
   return (
     <section className="pb-12 md:pb-8">
       <div className="max-w-5xl mx-auto pt-2 md:pt-4">
-        {/* Header - toujours visible */}
         <div className="px-4 mb-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -241,74 +107,50 @@ export default function CategoryPage() {
                 </p>
               ) : exercices.length > 0 ? (
                 <p className="text-gray-500 mt-1">
-                  {completedCount}/{exercices.length} {categoryParam === 'STRETCHING' ? 'étirements' : 'exercices'} complétés
-                  {totalStretchingCount > 0 && categoryParam !== 'STRETCHING' && (
-                    <span className="text-gray-400"> et {totalStretchingCount} étirement{totalStretchingCount > 1 ? 's' : ''}</span>
+                  {completedCount}/{exercices.length}{' '}
+                  {categoryParam === 'STRETCHING' ? 'étirements' : 'exercices'} complétés
+                  {filters.totalStretchingCount > 0 && categoryParam !== 'STRETCHING' && (
+                    <span className="text-gray-400">
+                      {' '}
+                      et {filters.totalStretchingCount} étirement
+                      {filters.totalStretchingCount > 1 ? 's' : ''}
+                    </span>
                   )}
                 </p>
               ) : null}
             </div>
-            <AddButton 
-              href="/exercice/add" 
+            <AddButton
+              href="/exercice/add"
               queryParams={{ category: categoryParam.toLowerCase() }}
               addFromParam
               className="shrink-0"
             />
           </div>
-          
-          {/* Filtres - toujours visible */}
-          <div className="mt-4 space-y-4">
-            {/* Filtre principal : Tous / Non faits / Faits */}
-            <StatusFilterSection filter={filter} onFilterChange={setFilter} />
 
-            {/* Filtre par partie du corps - affiché seulement s'il y a des bodyparts disponibles */}
-            {bodypartsWithCounts.length > 0 && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">
-                  Partie du corps
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {/* Badge "Tous" */}
-                  <FilterBadge
-                    label="Tous"
-                    isActive={isAllBodypartsSelected}
-                    category={categoryParam}
-                    onClick={handleSelectAllBodyparts}
-                  />
-                  {bodypartsWithCounts.map(({ value, label, icon, count }) => {
-                    const isSelected = selectedBodyparts.includes(value);
-                    return (
-                      <FilterBadge
-                        key={value}
-                        label={label}
-                        icon={icon}
-                        count={count}
-                        isActive={isSelected}
-                        category={categoryParam}
-                        onClick={() => {
-                          setSelectedBodyparts(prev => 
-                            isSelected 
-                              ? prev.filter(bp => bp !== value)
-                              : [...prev, value]
-                          );
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-          
-              </div>
-            )}
+          <div className="mt-4 space-y-4">
+            <StatusFilterSection filter={filter} onFilterChange={setFilter} />
+            <CategoryAffinerSection
+              categoryParam={categoryParam}
+              bodypartsWithCounts={filters.bodypartsWithCounts}
+              equipmentsWithCounts={filters.equipmentsWithCounts}
+              selectedBodyparts={filters.selectedBodyparts}
+              setSelectedBodyparts={filters.setSelectedBodyparts}
+              selectedEquipments={filters.selectedEquipments}
+              setSelectedEquipments={filters.setSelectedEquipments}
+              isAllBodypartsSelected={filters.isAllBodypartsSelected}
+              isAllEquipmentsSelected={filters.isAllEquipmentsSelected}
+              onSelectAllBodyparts={filters.handleSelectAllBodyparts}
+              onSelectAllEquipments={filters.handleSelectAllEquipments}
+            />
           </div>
         </div>
 
-        {/* Contenu principal */}
         <div className="px-4">
           {loadingExercices ? (
             <div className="flex items-center justify-center min-h-screen py-12">
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
-          ) : filteredExercices.length === 0 ? (
+          ) : filters.filteredExercices.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -318,19 +160,21 @@ export default function CategoryPage() {
                 icon={NAVIGATION_EMOJIS.FOLDER_OPEN}
                 title={
                   filter === 'notCompleted'
-                    ? "Tous les exercices sont faits !"
+                    ? 'Tous les exercices sont faits !'
                     : filter === 'completed'
-                    ? "Aucun exercice fait"
-                    : `Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`
+                      ? 'Aucun exercice fait'
+                      : `Aucun exercice ${CATEGORY_LABELS[categoryParam].toLowerCase()}`
                 }
                 message={
                   filter === 'notCompleted'
-                    ? "Félicitations, vous avez complété tous les exercices de cette catégorie."
+                    ? 'Félicitations, vous avez complété tous les exercices de cette catégorie.'
                     : filter === 'completed'
-                    ? "Vous n'avez pas encore complété d'exercices dans cette catégorie."
-                    : "Cette catégorie est vide pour le moment."
+                      ? "Vous n'avez pas encore complété d'exercices dans cette catégorie."
+                      : 'Cette catégorie est vide pour le moment.'
                 }
-                subMessage={filter === 'all' ? "Ajoutez des exercices depuis le menu." : undefined}
+                subMessage={
+                  filter === 'all' ? 'Ajoutez des exercices depuis le menu.' : undefined
+                }
               />
             </motion.div>
           ) : (
@@ -340,7 +184,7 @@ export default function CategoryPage() {
               transition={{ duration: 0.15 }}
               className="grid gap-3 grid-cols-1 lg:grid-cols-2"
             >
-              {filteredExercices.map((exercice) => (
+              {filters.filteredExercices.map((exercice) => (
                 <div key={exercice.id} className="h-full">
                   <ExerciceCard
                     exercice={exercice}
@@ -353,8 +197,7 @@ export default function CategoryPage() {
             </motion.div>
           )}
 
-          {/* Section "Étirements liés" - affichée seulement si on n'est pas dans la catégorie étirement et qu'il y a des étirements liés */}
-          {relatedStretchingExercices.length > 0 && (
+          {filters.relatedStretchingExercices.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -370,7 +213,7 @@ export default function CategoryPage() {
                 </p>
               </div>
               <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-                {relatedStretchingExercices.map((exercice) => (
+                {filters.relatedStretchingExercices.map((exercice) => (
                   <div key={exercice.id} className="h-full">
                     <ExerciceCard
                       exercice={exercice}
@@ -385,10 +228,9 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Bouton "Ajouter un exercice" - centré en bas de page */}
       <div className="flex justify-center mt-8 mb-6">
-        <AddButton 
-          href="/exercice/add" 
+        <AddButton
+          href="/exercice/add"
           label="Ajouter un exercice"
           queryParams={{ category: categoryParam.toLowerCase() }}
           addFromParam

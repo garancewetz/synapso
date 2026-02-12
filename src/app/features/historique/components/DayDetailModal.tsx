@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER, CATEGORY_LABELS } from '@/app/constants/exercice.constants';
+import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
@@ -145,7 +145,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
                     if (count === 0) return null;
                     const styles = CATEGORY_COLORS[category];
                     const icon = CATEGORY_ICONS[category];
-                    const label = CATEGORY_LABELS[category];
+                    const label = CATEGORY_LABELS_SHORT[category];
                     
                     return (
                       <div

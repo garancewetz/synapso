@@ -96,17 +96,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     const currentUserId = effectiveUser?.id ?? null;
-    
+
     // Ne vider le cache que si l'utilisateur a vraiment changé (pas au premier rendu)
     if (previousUserIdRef.current !== null && previousUserIdRef.current !== currentUserId) {
-      // Vider tout le cache TanStack Query pour éviter d'afficher les données de l'ancien utilisateur
-      // Mais garder la query de l'utilisateur pour éviter un rechargement infini
-      queryClient.clear();
-      
+      // Supprimer toutes les queries SAUF la query user pour éviter d'afficher les données
+      // de l'ancien utilisateur tout en évitant un refetch user → userLoading = true → loader 2s
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== queryKeys.user.all[0],
+      });
+
       // Déclencher le rafraîchissement de tous les hooks qui dépendent de l'utilisateur
       window.dispatchEvent(new CustomEvent('user-changed'));
     }
-    
+
     previousUserIdRef.current = currentUserId;
   }, [effectiveUser?.id, queryClient]);
 

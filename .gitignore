@@ -13,6 +13,14 @@
 # testing
 /coverage
 
+# E2E tests
+/tests/e2e/
+/tests/e2e/**/*
+/test-results/
+/playwright-report/
+/playwright/.cache/
+playwright.config.ts
+
 # next.js
 /.next/
 /out/
@@ -46,6 +54,3 @@ next-env.d.ts
 prisma/*.db
 prisma/*.db-journal
 prisma/migrations/
-
-# documentation locale
-context.md

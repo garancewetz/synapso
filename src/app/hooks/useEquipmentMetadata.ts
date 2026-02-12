@@ -98,7 +98,7 @@ export function useEquipmentMetadata(): UseEquipmentMetadataReturn {
     } finally {
       setLoading(false);
     }
-  }, [effectiveUser, userLoading]);
+  }, [effectiveUser?.id, userLoading]);
 
   useEffect(() => {
     fetchMetadata();

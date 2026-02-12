@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getJournalNoteById, updateJournalNote, deleteJournalNote } from '@/app/features/journal/api';
 
 export async function GET(
   request: NextRequest,
@@ -31,22 +31,19 @@ export async function GET(
       );
     }
     
-    const note = await prisma.journalNote.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
+    const note = await getJournalNoteById({
+      noteId: id,
+      userId,
     });
-    
-    if (!note) {
+
+    return NextResponse.json(note);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Journal note not found') {
       return NextResponse.json(
         { error: 'Journal note not found' },
         { status: 404 }
       );
     }
-
-    return NextResponse.json(note);
-  } catch (error) {
     logError('Error fetching journal note', error);
     return NextResponse.json(
       { error: 'Failed to fetch journal note' },
@@ -85,22 +82,6 @@ export async function PUT(
 
     const updatedData = await request.json();
 
-    // Vérifier que la note appartient à l'utilisateur
-    const existingNote = await prisma.journalNote.findFirst({
-      where: {
-        id,
-        userId: userId,
-      },
-    });
-
-    if (!existingNote) {
-      return NextResponse.json(
-        { error: 'Journal note not found' },
-        { status: 404 }
-      );
-    }
-
-    // Valider le champ requis
     if (!updatedData.content || !updatedData.content.trim()) {
       return NextResponse.json(
         { error: 'content is required' },
@@ -108,7 +89,6 @@ export async function PUT(
       );
     }
 
-    // Convertir la date string (YYYY-MM-DD) en DateTime si fournie
     let dateValue: Date | null = null;
     if (updatedData.date) {
       const parsedDate = new Date(updatedData.date);
@@ -117,8 +97,9 @@ export async function PUT(
       }
     }
 
-    const note = await prisma.journalNote.update({
-      where: { id },
+    const note = await updateJournalNote({
+      noteId: id,
+      userId,
       data: {
         content: updatedData.content.trim(),
         title: updatedData.title !== undefined ? (updatedData.title ? updatedData.title.trim() : null) : undefined,
@@ -128,6 +109,12 @@ export async function PUT(
 
     return NextResponse.json(note);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Journal note not found') {
+      return NextResponse.json(
+        { error: 'Journal note not found' },
+        { status: 404 }
+      );
+    }
     logError('Error updating journal note', error);
     return NextResponse.json(
       { error: 'Failed to update journal note' },
@@ -164,27 +151,19 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que la note appartient à l'utilisateur
-    const existingNote = await prisma.journalNote.findFirst({
-      where: {
-        id,
-        userId: userId,
-      },
+    await deleteJournalNote({
+      noteId: id,
+      userId,
     });
 
-    if (!existingNote) {
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Journal note not found') {
       return NextResponse.json(
         { error: 'Journal note not found' },
         { status: 404 }
       );
     }
-    
-    await prisma.journalNote.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
     logError('Error deleting journal note', error);
     return NextResponse.json(
       { error: 'Failed to delete journal note' },

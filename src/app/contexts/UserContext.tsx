@@ -1,8 +1,10 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { queryKeys, fetchUser } from '@/app/lib/api-queries';
 
 type User = {
   id: number;
@@ -57,50 +59,56 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
+
+  // ⚡ TANSTACK QUERY: Utiliser useQuery pour charger l'utilisateur
+  // Cela permet aux autres requêtes de démarrer en parallèle dès que l'utilisateur est disponible
+  const { data: userData, isLoading: userLoading, refetch: refetchUser } = useQuery({
+    queryKey: queryKeys.user.current(),
+    queryFn: fetchUser,
+    // ⚡ PERFORMANCE: Cache long pour l'utilisateur (ne change pas souvent)
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
+    placeholderData: (previousData) => previousData,
+    // ⚡ FIX: Ne pas retry en cas d'erreur (l'utilisateur n'est peut-être pas authentifié)
+    retry: false,
+    // ⚡ FIX: Ne pas utiliser initialData car cela force authenticated: false au premier rendu
+    // Laisser TanStack Query gérer l'état initial (undefined pendant le chargement)
+  });
+
+  // Extraire les données de l'utilisateur depuis la réponse
+  // ⚡ FIX: Gérer le cas où userData est undefined (pendant le chargement initial)
+  const currentUser = userData?.authenticated && userData?.user ? userData.user : null;
+  const impersonatedUser = userData?.impersonatedUser || null;
+  const isAdmin = userData?.isAdmin || false;
+  // ⚡ FIX: Utiliser userLoading directement (TanStack Query gère déjà l'état de chargement)
+  const loading = userLoading;
 
   // ⚡ PERFORMANCE: Mémoriser effectiveUser pour éviter les recalculs inutiles
   // L'utilisateur effectif est l'impersonné si présent, sinon le connecté
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
-
-  // Charger les infos de l'utilisateur connecté
-  const loadUser = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/check', { credentials: 'include' });
+  
+  // ⚡ NETTOYAGE: Vider le cache TanStack Query quand l'utilisateur change
+  // ⚡ FIX: Utiliser un ref pour éviter de vider le cache au premier rendu
+  const previousUserIdRef = useRef<number | null>(null);
+  
+  useEffect(() => {
+    const currentUserId = effectiveUser?.id ?? null;
+    
+    // Ne vider le cache que si l'utilisateur a vraiment changé (pas au premier rendu)
+    if (previousUserIdRef.current !== null && previousUserIdRef.current !== currentUserId) {
+      // Vider tout le cache TanStack Query pour éviter d'afficher les données de l'ancien utilisateur
+      // Mais garder la query de l'utilisateur pour éviter un rechargement infini
+      queryClient.clear();
       
-      if (!res.ok) {
-        setCurrentUser(null);
-        setImpersonatedUser(null);
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      const data = await res.json();
-      
-      if (data.authenticated && data.user) {
-        setCurrentUser(data.user);
-        setIsAdmin(data.isAdmin);
-        setImpersonatedUser(data.impersonatedUser || null);
-      } else {
-        setCurrentUser(null);
-        setImpersonatedUser(null);
-        setIsAdmin(false);
-      }
-      
-      setLoading(false);
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'utilisateur:', error);
-      setCurrentUser(null);
-      setImpersonatedUser(null);
-      setIsAdmin(false);
-      setLoading(false);
+      // Déclencher le rafraîchissement de tous les hooks qui dépendent de l'utilisateur
+      window.dispatchEvent(new CustomEvent('user-changed'));
     }
-  }, []);
+    
+    previousUserIdRef.current = currentUserId;
+  }, [effectiveUser?.id, queryClient]);
 
   // Charger la liste de tous les utilisateurs (admin only)
   const loadAllUsers = useCallback(async () => {
@@ -124,11 +132,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [isAdmin]);
 
-  // Charger l'utilisateur au montage
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
-
   // Charger la liste des utilisateurs quand on devient admin
   useEffect(() => {
     if (isAdmin) {
@@ -138,8 +141,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Recharger les infos utilisateur
   const refreshUser = useCallback(async () => {
-    await loadUser();
-  }, [loadUser]);
+    await refetchUser();
+  }, [refetchUser]);
 
   // Recharger la liste des utilisateurs (admin only)
   const refreshAllUsers = useCallback(async () => {
@@ -148,13 +151,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Mettre à jour l'utilisateur effectif (après modification de ses settings)
   const updateEffectiveUser = useCallback((updatedUser: User) => {
-    if (impersonatedUser && impersonatedUser.id === updatedUser.id) {
-      // On modifie l'utilisateur impersonné
-      setImpersonatedUser(updatedUser);
-    } else if (currentUser && currentUser.id === updatedUser.id) {
-      // On modifie notre propre compte
-      setCurrentUser(updatedUser);
-    }
+    // ⚡ TANSTACK QUERY: Mettre à jour le cache directement
+    queryClient.setQueryData<typeof userData>(queryKeys.user.current(), (old) => {
+      if (!old) return old;
+      
+      const newData = { ...old };
+      
+      if (impersonatedUser && impersonatedUser.id === updatedUser.id) {
+        // On modifie l'utilisateur impersonné
+        newData.impersonatedUser = updatedUser;
+      } else if (currentUser && currentUser.id === updatedUser.id) {
+        // On modifie notre propre compte
+        newData.user = updatedUser;
+      }
+      
+      return newData;
+    });
     
     // Mettre à jour dans la liste allUsers si admin
     if (isAdmin) {
@@ -162,7 +174,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         prevUsers.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u)
       );
     }
-  }, [currentUser, impersonatedUser, isAdmin]);
+  }, [currentUser, impersonatedUser, isAdmin, queryClient]);
 
   // Déconnexion
   const logout = useCallback(async () => {
@@ -172,9 +184,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
       
-      setCurrentUser(null);
-      setImpersonatedUser(null);
-      setIsAdmin(false);
+      // ⚡ TANSTACK QUERY: Invalider la query utilisateur
+      queryClient.setQueryData(queryKeys.user.current(), {
+        authenticated: false,
+        user: null,
+        isAdmin: false,
+        impersonatedUser: null,
+      });
+      
       setAllUsers([]);
       
       // Recharger la page pour afficher l'écran de connexion
@@ -182,7 +199,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     }
-  }, [router]);
+  }, [router, queryClient]);
 
   // Impersonner un utilisateur (admin only)
   const impersonate = useCallback(async (userId: number) => {
@@ -197,13 +214,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        setImpersonatedUser(data.impersonatedUser);
+        // ⚡ FIX: Invalider la query pour forcer un refetch avec les nouvelles données
+        // Cela garantit que toutes les données sont à jour (effectiveUser, etc.)
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.user.current(),
+          refetchType: 'active',
+        });
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Erreur lors de l\'impersonation' }));
+        throw new Error(error.error || 'Erreur lors de l\'impersonation');
       }
     } catch (error) {
       console.error('Erreur lors de l\'impersonation:', error);
+      throw error; // Propager l'erreur pour affichage dans le composant
     }
-  }, [isAdmin]);
+  }, [isAdmin, queryClient]);
 
   // Arrêter l'impersonation (admin only)
   const stopImpersonation = useCallback(async () => {
@@ -216,12 +241,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       });
 
       if (res.ok) {
-        setImpersonatedUser(null);
+        // ⚡ FIX: Invalider la query pour forcer un refetch avec les nouvelles données
+        // Cela garantit que toutes les données sont à jour (effectiveUser, etc.)
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.user.current(),
+          refetchType: 'active',
+        });
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Erreur lors de l\'arrêt de l\'impersonation' }));
+        throw new Error(error.error || 'Erreur lors de l\'arrêt de l\'impersonation');
       }
     } catch (error) {
       console.error('Erreur lors de l\'arrêt de l\'impersonation:', error);
+      throw error; // Propager l'erreur pour affichage dans le composant
     }
-  }, [isAdmin]);
+  }, [isAdmin, queryClient]);
 
   // Supprimer un compte utilisateur (pour supprimer son propre compte)
   const deleteAccount = useCallback(async (userId: number) => {
@@ -238,12 +272,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // Nettoyer le localStorage
     localStorage.removeItem('synapso_current_user');
     
-    // Réinitialiser l'état
-    setCurrentUser(null);
-    setImpersonatedUser(null);
-    setIsAdmin(false);
+    // ⚡ TANSTACK QUERY: Réinitialiser la query utilisateur
+    queryClient.setQueryData(queryKeys.user.current(), {
+      authenticated: false,
+      user: null,
+      isAdmin: false,
+      impersonatedUser: null,
+    });
+    
     setAllUsers([]);
-  }, []);
+  }, [queryClient]);
 
   // Supprimer un compte utilisateur (admin only - pour supprimer n'importe quel compte)
   const deleteUser = useCallback(async (userId: number) => {

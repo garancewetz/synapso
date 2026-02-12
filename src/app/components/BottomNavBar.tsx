@@ -13,6 +13,7 @@ import {
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useUser } from '@/app/contexts/UserContext';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 
 /**
  * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
@@ -21,6 +22,7 @@ import { useUser } from '@/app/contexts/UserContext';
 export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
+  const preserveDate = usePreserveDateParam();
   
   // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
   if (!effectiveUser || loading) {
@@ -32,14 +34,14 @@ export const BottomNavBar = memo(function BottomNavBar() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 pb-safe md:hidden shadow-lg"
+      className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t-2 border-gray-200 pb-safe md:hidden shadow-lg"
       aria-label="Navigation principale"
     >
       <div className="px-1">
         <div className="grid grid-cols-5 gap-1">
           {/* Icône maison pour la page d'accueil */}
           <TouchLink
-            href="/"
+            href={preserveDate('/')}
             aria-label="Accueil"
             className="flex flex-col items-center justify-center gap-1.5 py-2 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"
           >
@@ -84,7 +86,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
             return (
               <TouchLink
                 key={category}
-                href={href}
+                href={preserveDate(href)}
                 aria-label={label}
                 aria-current={isActive ? 'page' : undefined}
                 className="flex flex-col items-center justify-center gap-1.5 py-2 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"

@@ -95,6 +95,12 @@ export const ORTHOPHONIE_COLORS = {
   inactive: 'bg-yellow-50',
 } as const;
 
+// Couleurs pour la catégorie Autre (amber/gold)
+export const AUTRE_COLORS = {
+  active: 'bg-amber-200 ring-2 ring-amber-500',
+  inactive: 'bg-amber-50',
+} as const;
+
 // ============================================================================
 // HELPERS
 // ============================================================================

@@ -1,7 +1,10 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 
 type Props = {
   href: string;
@@ -35,6 +38,7 @@ export function MenuLink({
   iconSize = 'md',
   variant = 'horizontal',
 }: Props) {
+  const preserveDate = usePreserveDateParam();
   const iconSizeClasses = {
     sm: 'text-xl',
     md: 'text-2xl',
@@ -103,7 +107,7 @@ export function MenuLink({
   return (
     <div className={clsx(isSecondary && 'opacity-90')}>
       <TouchLink
-        href={href}
+        href={preserveDate(href)}
         onClick={handleClick}
         tabIndex={tabIndex}
         className="block group"

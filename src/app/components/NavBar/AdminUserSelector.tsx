@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { UserDeleteButton } from '@/app/components/AdminUserSwitcher/UserDeleteButton';
+import { UserDeleteButton } from '@/app/components/AdminUserSwitcher';
 import clsx from 'clsx';
 
 type Props = {
@@ -63,14 +63,19 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
   }
 
   const handleUserSelect = async (userId: number) => {
-    if (userId === currentUser.id) {
-      // Revenir à son propre compte
-      await stopImpersonation();
-    } else {
-      // Impersonner cet utilisateur
-      await impersonate(userId);
+    try {
+      if (userId === currentUser.id) {
+        // Revenir à son propre compte
+        await stopImpersonation();
+      } else {
+        // Impersonner cet utilisateur
+        await impersonate(userId);
+      }
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la sélection de l\'utilisateur:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Erreur lors de la sélection de l\'utilisateur');
     }
-    setIsOpen(false);
   };
 
   const handleDeleteUser = async (userId: number, userName: string) => {
@@ -208,7 +213,7 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
 
                   {/* Bouton de suppression (sauf pour soi-même) */}
                   {!isCurrentUser && (
-                    <div className="pr-2 flex-shrink-0">
+                    <div className="pr-2 shrink-0">
                       <UserDeleteButton
                         onDelete={() => handleDeleteUser(user.id, user.name)}
                         disabled={isDeleting}

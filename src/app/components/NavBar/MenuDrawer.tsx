@@ -44,7 +44,7 @@ export function MenuDrawer({
       {/* Overlay sombre */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+          className="fixed inset-0 bg-black/50 z-[105] transition-opacity"
           onClick={() => {
             // Si on a déjà géré un événement tactile, ignorer le click
             // pour éviter le double déclenchement sur mobile
@@ -77,7 +77,7 @@ export function MenuDrawer({
         id="main-menu"
         data-menu="true"
         className={clsx(
-          'fixed top-0 h-full w-72 bg-white z-50 shadow-xl flex flex-col',
+          'fixed top-0 h-full w-72 bg-white z-[110] shadow-xl flex flex-col',
           'transform transition-transform duration-300 ease-out',
           getMenuPositionClasses(isOpen)
         )}

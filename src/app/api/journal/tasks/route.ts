@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getJournalTasks, createJournalTask } from '@/app/features/journal/api';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -18,15 +18,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const tasks = await prisma.journalTask.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: [
-        { completed: 'asc' },
-        { createdAt: 'desc' },
-      ],
-    });
+    const tasks = await getJournalTasks({ userId });
 
     return NextResponse.json(tasks);
   } catch (error) {
@@ -60,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { title, completed } = data;
+    const { title } = data;
 
     if (!title || !title.trim()) {
       return NextResponse.json(
@@ -69,12 +61,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const task = await prisma.journalTask.create({
-      data: {
-        title: title.trim(),
-        completed: completed || false,
-        userId: userId,
-      },
+    const task = await createJournalTask({
+      title: title.trim(),
+      userId: userId,
     });
 
     return NextResponse.json(task, { status: 201 });

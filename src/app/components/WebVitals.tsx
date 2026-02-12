@@ -40,16 +40,30 @@ export function WebVitals() {
         console.log(`${emoji} [Web Vitals] ${report.name}: ${Math.round(report.value)}ms (${report.rating})`);
       }
 
-      // En production, on pourrait envoyer à un service d'analytics
-      // Exemple avec Google Analytics :
-      // if (typeof window !== 'undefined' && (window as any).gtag) {
-      //   (window as any).gtag('event', metric.name, {
-      //     value: Math.round(metric.value),
-      //     metric_id: metric.id,
-      //     metric_value: metric.value,
-      //     metric_delta: metric.delta,
-      //   });
-      // }
+      // ⚡ PRODUCTION: Envoyer les métriques à un service d'analytics si configuré
+      // Pour l'instant, on log uniquement en développement
+      // TODO: Implémenter l'envoi vers un service d'analytics (ex: Vercel Analytics, Google Analytics)
+      if (process.env.NODE_ENV === 'production') {
+        // Exemple avec Vercel Analytics (si disponible) :
+        // if (typeof window !== 'undefined' && (window as any).va) {
+        //   (window as any).va('event', {
+        //     name: metric.name,
+        //     value: metric.value,
+        //     id: metric.id,
+        //     delta: metric.delta,
+        //   });
+        // }
+        
+        // Exemple avec Google Analytics :
+        // if (typeof window !== 'undefined' && (window as any).gtag) {
+        //   (window as any).gtag('event', metric.name, {
+        //     value: Math.round(metric.value),
+        //     metric_id: metric.id,
+        //     metric_value: metric.value,
+        //     metric_delta: metric.delta,
+        //   });
+        // }
+      }
     };
 
     // Mesurer toutes les métriques Core Web Vitals

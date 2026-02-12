@@ -1,20 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NavBar } from "@/app/components/NavBar";
-import { BottomNavBar } from "@/app/components/BottomNavBar";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
-import { PWARegister } from "@/app/components/PWARegister";
+import { LayoutComponents } from "@/app/components/LayoutComponents";
+import { LayoutUtils } from "@/app/components/LayoutUtils";
+import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
-import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
-import { HistoryProvider } from "@/app/contexts/HistoryContext";
+import { SelectedDateProvider } from "@/app/contexts/SelectedDateContext";
+import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
-import { DayDetailModalWrapper } from "@/app/components/DayDetailModalWrapper";
-import { GlobalCelebration } from "@/app/components/GlobalCelebration";
-import { WebVitals } from "@/app/components/WebVitals";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -69,28 +67,29 @@ export default function RootLayout({
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
-        <WebVitals />
-        <PWARegister />
-        <UserProvider>
-          <HistoryProvider>
-            <CategoryProvider>
+        <LayoutUtils />
+        <QueryProvider>
+          <UserProvider>
+            <ToastProvider>
               <DayDetailModalProvider>
-                <ToastProvider>
-                  <DevBanner />
-                  <AuthWrapper>
-                    <NavBar />
-                    <main className="flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8">
-                      {children}
-                    </main>
-                    <BottomNavBar />
-                    <DayDetailModalWrapper />
-                    <GlobalCelebration />
-                  </AuthWrapper>
-                </ToastProvider>
+                {/* Suspense pour gérer useSearchParams() dans les composants enfants */}
+                {/* fallback={null} car on ne veut pas bloquer le rendu de l'application */}
+                <Suspense fallback={null}>
+                  <SelectedDateProvider>
+                    <TimeProvider>
+                      <DevBanner />
+                      <AuthWrapper>
+                        <LayoutComponents>
+                          {children}
+                        </LayoutComponents>
+                      </AuthWrapper>
+                    </TimeProvider>
+                  </SelectedDateProvider>
+                </Suspense>
               </DayDetailModalProvider>
-            </CategoryProvider>
-          </HistoryProvider>
-        </UserProvider>
+            </ToastProvider>
+          </UserProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -38,6 +38,11 @@ export const ORTHOPHONIE_PROGRESS_EMOJI = '🎯' as const;
 export const JOURNAL_EMOJI = '📔' as const;
 
 /**
+ * Emoji utilisé pour les progrès de catégorie "Autre"
+ */
+export const AUTRE_PROGRESS_EMOJI = '✨' as const;
+
+/**
  * Emojis pour la navigation et la progression
  */
 export const NAVIGATION_EMOJIS = {
@@ -55,5 +60,7 @@ export const NAVIGATION_EMOJIS = {
   FOLDER_OPEN: '🌳',
   /** Blé/champ - utilisée pour les listes et progression (récolte, résultat de la croissance) */
   CLIPBOARD: '🌾',
+  /** Sablier - utilisée pour le mode "machine à remonter le temps" (sablier) */
+  HOURGLASS: '⏳',
 } as const;
 

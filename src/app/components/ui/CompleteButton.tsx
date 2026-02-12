@@ -4,6 +4,9 @@ import type { ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
 import { CheckIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { Button } from './Button';
+import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { isToday } from 'date-fns';
+import { formatShortDate } from '@/app/utils/date.utils';
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   isCompleted: boolean;
@@ -22,6 +25,10 @@ export function CompleteButton({
   className = '',
   ...props 
 }: Props) {
+  const { selectedDate, isDateSelected } = useSelectedDate();
+  const isTimeMachineMode = isDateSelected && selectedDate && !isToday(selectedDate);
+  const targetDateFormatted = isTimeMachineMode && selectedDate ? formatShortDate(selectedDate) : null;
+
   const getLabel = (): React.ReactNode => {
     if (variant === 'challenge') {
       return isCompleted ? 'Maîtrisé' : 'Marquer maîtrisé';
@@ -29,6 +36,11 @@ export function CompleteButton({
     
     if (variant === 'task') {
       return isCompleted ? 'Fait' : 'Marquer comme fait';
+    }
+    
+    // En mode sablier, afficher "Fait le [date]" si fait, sinon "Fait le [date]" (le style indique l'état)
+    if (isTimeMachineMode && targetDateFormatted) {
+      return `Fait le ${targetDateFormatted}`;
     }
     
     // Afficher le compteur hebdomadaire si fait plusieurs fois cette semaine
@@ -47,6 +59,15 @@ export function CompleteButton({
     
     if (variant === 'task') {
       return isCompleted ? 'Démarquer' : 'Marquer comme fait';
+    }
+    
+    // ⚡ FIX: Le serveur calcule déjà completedToday pour la date cible (targetDate)
+    // En mode sablier, completedToday indique si l'exercice est complété pour la date sélectionnée
+    if (isTimeMachineMode && targetDateFormatted) {
+      if (isCompletedToday) {
+        return `Démarquer pour le ${targetDateFormatted}`;
+      }
+      return `Marquer comme fait le ${targetDateFormatted}`;
     }
     
     if (isCompletedToday) {
@@ -71,7 +92,10 @@ export function CompleteButton({
       return 'bg-gray-100 text-gray-700 border border-gray-300 md:hover:bg-gray-200 md:hover:border-gray-400 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
     }
     
-    // Pour les exercices : vert uniquement si fait aujourd'hui, sinon gris
+    // Pour les exercices : vert si fait aujourd'hui OU si fait pour la date sélectionnée en mode sablier
+    // ⚡ FIX: Le serveur calcule déjà completedToday pour la date cible (targetDate)
+    // En mode sablier, completedToday indique si l'exercice est complété pour la date sélectionnée
+    // Donc on peut toujours utiliser isCompletedToday, même en mode sablier
     if (isCompletedToday) {
       return '!bg-emerald-500 text-white md:hover:bg-emerald-600 border-0 md:hover:ring-2 md:hover:ring-emerald-400/60 md:hover:ring-offset-2';
     }
@@ -102,7 +126,14 @@ export function CompleteButton({
           ? (isCompleted ? 'Annuler maîtrise' : 'Marquer comme maîtrisé')
           : variant === 'task'
           ? (isCompleted ? 'Démarquer' : 'Marquer comme fait')
-          : (isCompletedToday ? 'Démarquer' : 'Marquer comme fait aujourd\'hui')
+          : (() => {
+              // ⚡ FIX: Le serveur calcule déjà completedToday pour la date cible (targetDate)
+              // En mode sablier, completedToday indique si l'exercice est complété pour la date sélectionnée
+              if (isTimeMachineMode && targetDateFormatted) {
+                return isCompletedToday ? `Démarquer pour le ${targetDateFormatted}` : `Marquer comme fait le ${targetDateFormatted}`;
+              }
+              return isCompletedToday ? 'Démarquer' : 'Marquer comme fait aujourd\'hui';
+            })()
       }
       disabled={isLoading}
       {...props}

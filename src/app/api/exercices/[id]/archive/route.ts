@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
-import { ExerciceCategory } from '@/app/types/exercice';
-import { Prisma } from '@prisma/client';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay } from 'date-fns';
+import { archiveExercice } from '@/app/features/exercices/api';
 
 export async function PATCH(
   request: NextRequest,
@@ -35,7 +32,6 @@ export async function PATCH(
       );
     }
 
-    // Parser le body
     const body = await request.json();
     const { archived } = body;
 
@@ -46,7 +42,6 @@ export async function PATCH(
       );
     }
 
-    // Récupérer l'utilisateur pour calculer les statuts
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { resetFrequency: true },
@@ -59,105 +54,21 @@ export async function PATCH(
       );
     }
 
-    // Vérifier que l'exercice appartient à l'utilisateur
-    const existingExercice = await prisma.exercice.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
+    const exercice = await archiveExercice({
+      exerciceId: id,
+      userId,
+      archived,
+      resetFrequency: user.resetFrequency || 'DAILY',
     });
 
-    if (!existingExercice) {
+    return NextResponse.json(exercice);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Exercice not found') {
       return NextResponse.json(
         { error: 'Exercice not found' },
         { status: 404 }
       );
     }
-
-    const now = new Date();
-    const startOfPeriod = getStartOfPeriod(user.resetFrequency, now);
-    const endOfPeriod = addDays(startOfPeriod, user.resetFrequency === 'DAILY' ? 1 : 7);
-    const startOfToday = startOfDay(now);
-    const endOfToday = startOfDay(addDays(now, 1));
-
-    // Mettre à jour l'exercice
-    const updated = await prisma.exercice.update({
-      where: { id },
-      data: {
-        archived,
-        archivedAt: archived ? new Date() : null,
-      } as Prisma.ExerciceUpdateInput,
-    });
-
-    // Récupérer les bodyparts séparément
-    const exerciceBodyparts = await prisma.exerciceBodypart.findMany({
-      where: { exerciceId: id },
-      include: {
-        bodypart: true,
-      },
-    });
-
-    // Récupérer l'historique pour calculer les statuts
-    const history = await prisma.history.findMany({
-      where: {
-        exerciceId: id,
-        completedAt: {
-          gte: startOfPeriod,
-          lt: endOfPeriod,
-        },
-      },
-      orderBy: {
-        completedAt: 'asc',
-      },
-    });
-
-    // Parser les équipements
-    let equipmentsParsed: string[] = [];
-    try {
-      equipmentsParsed = JSON.parse(updated.equipments || '[]');
-    } catch {
-      equipmentsParsed = [];
-    }
-
-    // Extraire les noms des bodyparts
-    const bodypartsNames = exerciceBodyparts.map((eb) => eb.bodypart.name);
-
-    // Calculer les statuts
-    const weeklyCompletions = history.map((h) => h.completedAt);
-    const completedInPeriod = weeklyCompletions.length > 0;
-    const hasTodayHistory = history.some(
-      (h) => h.completedAt >= startOfToday && h.completedAt < endOfToday
-    );
-    const completedToday = hasTodayHistory;
-
-    // Formater la réponse
-    const formattedExercice = {
-      id: updated.id,
-      name: updated.name,
-      description: {
-        text: updated.descriptionText,
-        comment: updated.descriptionComment,
-      },
-      workout: {
-        repeat: updated.workoutRepeat,
-        series: updated.workoutSeries,
-        duration: updated.workoutDuration,
-      },
-      equipments: equipmentsParsed,
-      bodyparts: bodypartsNames,
-      category: updated.category as ExerciceCategory,
-      completed: completedInPeriod,
-      completedToday: completedToday,
-      completedAt: updated.completedAt,
-      pinned: updated.pinned ?? false,
-      weeklyCompletions: weeklyCompletions,
-      media: updated.media ?? null,
-      archived: (updated as { archived?: boolean }).archived ?? false,
-      archivedAt: (updated as { archivedAt?: Date | null }).archivedAt ?? null,
-    };
-
-    return NextResponse.json(formattedExercice);
-  } catch (error) {
     logError('Error archiving exercice', error);
     return NextResponse.json(
       { error: 'Failed to archive exercice' },

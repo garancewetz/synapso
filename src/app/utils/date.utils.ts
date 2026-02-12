@@ -1,4 +1,4 @@
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 /**
@@ -59,3 +59,73 @@ export function getDayName(date: Date | string | null): string {
   return dayName.charAt(0).toUpperCase() + dayName.slice(1);
 }
 
+/**
+ * Convertit une Date en clé de date (yyyy-MM-dd)
+ * Utilisé pour les comparaisons et les clés de cache
+ * 
+ * ⚡ PERFORMANCE: Utilise startOfDay pour normaliser la date avant formatage
+ * pour éviter les problèmes de fuseau horaire
+ * 
+ * @param date Date à convertir
+ * @returns Clé de date au format yyyy-MM-dd
+ */
+export function getDateKey(date: Date | string | null): string | null {
+  if (!date) return null;
+
+  const dateObj = date instanceof Date ? date : new Date(date);
+
+  if (isNaN(dateObj.getTime())) {
+    return null;
+  }
+
+  const normalized = startOfDay(dateObj);
+  const key = format(normalized, 'yyyy-MM-dd');
+  console.log('[DEBUG-PROD] getDateKey:', {
+    input: date instanceof Date ? date.toISOString() : date,
+    startOfDay: normalized.toISOString(),
+    key,
+    timezoneOffset: new Date().getTimezoneOffset(),
+  });
+  return key;
+}
+
+/**
+ * Crée une Date depuis une clé de date (yyyy-MM-dd)
+ * Plus rapide que parse() de date-fns pour ce cas d'usage
+ * 
+ * ⚡ FIX: Utilise startOfDay pour normaliser la date et éviter les problèmes de timezone
+ * 
+ * @param dateKey Clé de date au format yyyy-MM-dd
+ * @returns Date normalisée (début de journée)
+ */
+export function getDateFromKey(dateKey: string | null): Date | null {
+  if (!dateKey) return null;
+
+  // Validation du format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateKey)) {
+    return null;
+  }
+
+  // Créer la date depuis la clé et normaliser avec startOfDay pour éviter les problèmes de timezone
+  const date = new Date(dateKey + 'T00:00:00');
+  const normalized = startOfDay(date);
+  console.log('[DEBUG-PROD] getDateFromKey:', {
+    dateKey,
+    rawDate: date.toISOString(),
+    normalized: normalized.toISOString(),
+    timezoneOffset: new Date().getTimezoneOffset(),
+  });
+  return normalized;
+}
+
+/**
+ * Convertit un dateKey (yyyy-MM-dd) en ISO string normalisé pour les API
+ * Garantit un format cohérent pour tous les appels API qui acceptent une date
+ */
+export function dateKeyToISO(dateKey: string): string | undefined {
+  const date = getDateFromKey(dateKey);
+  const iso = date?.toISOString();
+  console.log('[DEBUG-PROD] dateKeyToISO:', { dateKey, iso, timezoneOffset: new Date().getTimezoneOffset() });
+  return iso;
+}

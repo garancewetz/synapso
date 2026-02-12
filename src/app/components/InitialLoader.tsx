@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { ConfettiExplosion } from './ConfettiExplosion';
+import { ConfettiExplosion } from '@/app/features/exercices';
 
 type Explosion = {
   id: number;

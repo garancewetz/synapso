@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getBodypart, updateBodypart, deleteBodypart } from '@/app/features/exercices/api';
 
 export async function GET(
   request: NextRequest,
@@ -12,9 +12,16 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const bodypart = await prisma.bodypart.findUnique({
-      where: { id: parseInt(id) },
-    });
+    const bodypartId = parseInt(id);
+
+    if (isNaN(bodypartId)) {
+      return NextResponse.json(
+        { error: 'ID invalide' },
+        { status: 400 }
+      );
+    }
+
+    const bodypart = await getBodypart({ id: bodypartId });
 
     if (!bodypart) {
       return NextResponse.json(
@@ -45,16 +52,19 @@ export async function PUT(
 
   try {
     const { id } = await params;
+    const bodypartId = parseInt(id);
+
+    if (isNaN(bodypartId)) {
+      return NextResponse.json(
+        { error: 'ID invalide' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { name } = body;
 
-    const bodypart = await prisma.bodypart.update({
-      where: { id: parseInt(id) },
-      data: {
-        name,
-      },
-    });
-
+    const bodypart = await updateBodypart({ id: bodypartId, name });
     return NextResponse.json(bodypart);
   } catch (error) {
     logError('Erreur lors de la mise à jour du bodypart', error);
@@ -77,11 +87,17 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await prisma.bodypart.delete({
-      where: { id: parseInt(id) },
-    });
+    const bodypartId = parseInt(id);
 
-    return NextResponse.json({ message: 'Bodypart supprimé avec succès' });
+    if (isNaN(bodypartId)) {
+      return NextResponse.json(
+        { error: 'ID invalide' },
+        { status: 400 }
+      );
+    }
+
+    const result = await deleteBodypart({ id: bodypartId });
+    return NextResponse.json(result);
   } catch (error) {
     logError('Erreur lors de la suppression du bodypart', error);
     return NextResponse.json(

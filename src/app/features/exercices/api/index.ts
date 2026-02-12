@@ -1,0 +1,16 @@
+export { getExercices } from './getExercices';
+export { getExercice } from './getExercice';
+export { createExercice } from './createExercice';
+export { updateExercice } from './updateExercice';
+export { deleteExercice } from './deleteExercice';
+export { completeExercice } from './completeExercice';
+export { archiveExercice } from './archiveExercice';
+export { pinExercice } from './pinExercice';
+export { uploadMedia } from './uploadMedia';
+export { getMetadata } from './getMetadata';
+export { getBodyparts } from './getBodyparts';
+export { getBodypart } from './getBodypart';
+export { createBodypart } from './createBodypart';
+export { updateBodypart } from './updateBodypart';
+export { deleteBodypart } from './deleteBodypart';
+export { getEquipments } from './getEquipments';

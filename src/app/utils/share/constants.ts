@@ -5,32 +5,32 @@
 
 export const CANVAS_CONFIG = {
   PROGRESS: {
-    WIDTH: 800,
-    HEIGHT: 600,
+    WIDTH: 400,
+    HEIGHT: 500,
   },
   EXERCICE: {
-    WIDTH: 800,
-    PADDING: 20,
-    CARD_PADDING: 20,
-    ACCENT_WIDTH: 6,
-    BORDER_RADIUS: 16,
-    BOTTOM_PADDING: 40,
+    WIDTH: 400,
+    PADDING: 16,
+    CARD_PADDING: 16,
+    ACCENT_WIDTH: 4,
+    BORDER_RADIUS: 12,
+    BOTTOM_PADDING: 32,
   },
 } as const;
 
 export const TYPOGRAPHY = {
   TITLE: {
-    SIZE: 32,
+    SIZE: 24,
     WEIGHT: 'bold',
   },
   SUBTITLE: {
-    SIZE: 24,
+    SIZE: 18,
   },
   PROGRESS_TEXT: {
-    SIZE: 28,
+    SIZE: 20,
   },
   DATE: {
-    SIZE: 20,
+    SIZE: 16,
   },
   EXERCICE_NAME: {
     SIZE: 18,
@@ -52,9 +52,9 @@ export const TYPOGRAPHY = {
 
 export const SPACING = {
   LOGO: {
-    SIZE: 80,
-    X: 40,
-    Y: 40,
+    SIZE: 50,
+    X: 20,
+    Y: 20,
   },
   LINE_HEIGHT: {
     NORMAL: 24,

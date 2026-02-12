@@ -57,13 +57,15 @@ async function drawLogo(ctx: CanvasRenderingContext2D): Promise<void> {
 function drawTitle(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = COLORS.TEXT_PRIMARY;
   ctx.font = `${TYPOGRAPHY.TITLE.WEIGHT} ${TYPOGRAPHY.TITLE.SIZE}px ${FONT_FAMILY}`;
-  ctx.fillText('Synapso', 140, SPACING.LOGO.Y + 20);
+  const titleX = SPACING.LOGO.X + SPACING.LOGO.SIZE + 12;
+  ctx.fillText('Synapso', titleX, SPACING.LOGO.Y + SPACING.LOGO.SIZE / 2 + 8);
 }
 
 function drawIntroText(ctx: CanvasRenderingContext2D): void {
   ctx.font = `${TYPOGRAPHY.SUBTITLE.SIZE}px ${FONT_FAMILY}`;
   ctx.fillStyle = COLORS.TEXT_SECONDARY;
-  ctx.fillText("J'ai fait un nouveau progrès sur Synapso:", 40, 140);
+  const introY = SPACING.LOGO.Y + SPACING.LOGO.SIZE + SPACING.MARGIN.MEDIUM;
+  ctx.fillText("J'ai fait un nouveau progrès sur Synapso:", SPACING.LOGO.X, introY);
 }
 
 function drawProgressContent(
@@ -74,12 +76,12 @@ function drawProgressContent(
 ): void {
   ctx.font = `${TYPOGRAPHY.PROGRESS_TEXT.SIZE}px ${FONT_FAMILY}`;
   ctx.fillStyle = COLORS.TEXT_PRIMARY;
-  const progressY = 200;
+  const progressY = SPACING.LOGO.Y + SPACING.LOGO.SIZE + SPACING.MARGIN.MEDIUM + SPACING.MARGIN.MEDIUM;
   const progressText = `${emoji} ${content}`;
-  const maxWidth = canvasWidth - 80;
+  const maxWidth = canvasWidth - SPACING.LOGO.X * 2;
   const lines = wrapText(ctx, progressText, maxWidth);
   lines.forEach((line, index) => {
-    ctx.fillText(line, 40, progressY + (index * SPACING.LINE_HEIGHT.NORMAL));
+    ctx.fillText(line, SPACING.LOGO.X, progressY + (index * SPACING.LINE_HEIGHT.NORMAL));
   });
 }
 
@@ -92,8 +94,8 @@ function drawDate(
   ctx.font = `${TYPOGRAPHY.DATE.SIZE}px ${FONT_FAMILY}`;
   ctx.fillStyle = COLORS.TEXT_TERTIARY;
   
-  const progressY = 200;
-  const maxWidth = canvasWidth - 80;
+  const progressY = SPACING.LOGO.Y + SPACING.LOGO.SIZE + SPACING.MARGIN.MEDIUM + SPACING.MARGIN.MEDIUM;
+  const maxWidth = canvasWidth - SPACING.LOGO.X * 2;
   
   // Utiliser le contexte actuel pour calculer les lignes
   ctx.font = `${TYPOGRAPHY.PROGRESS_TEXT.SIZE}px ${FONT_FAMILY}`;
@@ -103,5 +105,5 @@ function drawDate(
   
   // Remettre la police pour la date
   ctx.font = `${TYPOGRAPHY.DATE.SIZE}px ${FONT_FAMILY}`;
-  ctx.fillText(date, 40, dateY);
+  ctx.fillText(date, SPACING.LOGO.X, dateY);
 }

@@ -2,20 +2,18 @@
 
 import { useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { WelcomeHeaderWrapper } from '@/app/components';
+import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
-import { useExercices } from '@/app/hooks/useExercices';
-import { useProgressModal } from '@/app/hooks/useProgressModal';
-import { useCategoryStats } from '@/app/hooks/useCategoryStats';
-import { useProgress, triggerProgressRefresh } from '@/app/hooks/useProgress';
-import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
-import { useHomeTabs } from '@/app/hooks/useHomeTabs';
-import { apiCache } from '@/app/utils/api-cache.utils';
-import { HomeExercicesTab } from '@/app/components/home/HomeExercicesTab';
-import { HomeJournalTab } from '@/app/components/home/HomeJournalTab';
-import { HomeProgressionTab } from '@/app/components/home/HomeProgressionTab';
+import { useExercices } from '@/app/features/exercices';
+import { useProgressModal } from '@/app/features/progress';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/lib/api-queries';
+import { useRelatedStretchingByCategory } from '@/app/features/exercices';
+import { usePrefetchPreviousDates } from '@/app/features/time-machine';
+import { useHomeTabs, HomeExercicesTab, HomeJournalTab, HomeProgressionTab } from '@/app/features/home';
+import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
@@ -28,22 +26,24 @@ const MotionDiv = dynamic(
 );
 
 const ProgressBottomSheet = dynamic(
-  () => import('@/app/components/ProgressBottomSheet').then(mod => ({ default: mod.ProgressBottomSheet })),
+  () => import('@/app/features/progress').then(mod => ({ default: mod.ProgressBottomSheet })),
   { ssr: false }
 );
 
 export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
+  const queryClient = useQueryClient();
   const hasJournal = effectiveUser?.hasJournal ?? false;
   
-  const { exercices, refetch: refetchExercices } = useExercices();
+  // ⚡ QUERY PREFETCHING: Précharger les données des dates précédentes en arrière-plan
+  usePrefetchPreviousDates();
+  
+  // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
+  usePrefetchCommonPages();
+  
+  const { exercices, error: exercicesError } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
-  const { stats: categoryStats, loading: loadingStats, refresh: refreshCategoryStats } = useCategoryStats({
-    userId: effectiveUser?.id ?? null,
-    resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
-  });
-  const { refetch: refetchProgress } = useProgress();
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
 
   const tabOptions = useMemo(() => {
@@ -66,12 +66,21 @@ export default function Home() {
   }, [tabOptionsData]);
 
   const handleProgressSuccess = useCallback(() => {
-    apiCache.invalidateByPrefix('/api/progress');
-    triggerProgressRefresh();
-    refetchProgress();
-    refreshCategoryStats();
-    refetchExercices();
-  }, [refetchProgress, refetchExercices, refreshCategoryStats]);
+    // ⚡ TANSTACK QUERY: Invalider les queries concernées
+    // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.progress.all,
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.categoryStats.all,
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.exercices.all,
+      refetchType: 'active',
+    });
+  }, [queryClient]);
 
   return (
     <section>
@@ -82,7 +91,7 @@ export default function Home() {
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-12 md:pb-8">
           <AnimatePresence mode="wait">
-            {!effectiveUser && userLoading ? (
+            {userLoading ? (
               <MotionDiv
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -98,9 +107,15 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center justify-center py-12"
+                className="flex flex-col items-center justify-center py-12 gap-3"
               >
-                <div className="text-gray-500">Chargement...</div>
+                <div className="text-gray-500">Impossible de charger votre profil.</div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-sm text-blue-600 underline"
+                >
+                  Réessayer
+                </button>
               </MotionDiv>
             ) : (
               <MotionDiv
@@ -125,12 +140,14 @@ export default function Home() {
                 )}
 
                 {activeTab === 'exercices' && (
-                  <HomeExercicesTab
+                  <>
+                   <HomeExercicesTab
                     exercices={exercices}
-                    categoryStats={categoryStats}
                     relatedStretchingByCategory={relatedStretchingByCategory}
-                    loadingStats={loadingStats}
+                    error={exercicesError}
                   />
+                  </>
+
                 )}
 
                 {activeTab === 'journal' && hasJournal && <HomeJournalTab />}

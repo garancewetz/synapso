@@ -55,7 +55,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5, // ♿ ACCESSIBILITÉ: Permettre le zoom jusqu'à 500% (WCAG 2.1 - niveau AA)
   userScalable: true, // ♿ ACCESSIBILITÉ: Permettre le zoom pour les utilisateurs malvoyants
-  themeColor: "#ffffff",
+  themeColor: "#F8FAFB",
   viewportFit: 'cover',
 };
 
@@ -66,7 +66,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={inter.variable}>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased`} style={{ backgroundColor: '#F8FAFB' }}>
         <LayoutUtils />
         <QueryProvider>
           <UserProvider>

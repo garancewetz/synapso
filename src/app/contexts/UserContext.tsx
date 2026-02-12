@@ -57,13 +57,51 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// ⚡ PERFORMANCE: Persistance du cache user en localStorage
+// PWA mobile-first : sessionStorage est détruit à la fermeture de l'app,
+// localStorage persiste et permet d'afficher l'app immédiatement à la réouverture
+const USER_CACHE_KEY = 'synapso_user_cache';
+
+function getCachedUserData() {
+  try {
+    const raw = localStorage.getItem(USER_CACHE_KEY);
+    if (!raw) return undefined;
+    const { data, timestamp } = JSON.parse(raw);
+    // Ignorer si le cache a plus de 10 minutes
+    if (Date.now() - timestamp > 10 * 60 * 1000) return undefined;
+    return { data, timestamp };
+  } catch {
+    return undefined;
+  }
+}
+
+function setCachedUserData(data: unknown) {
+  try {
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {
+    // localStorage plein ou indisponible — on ignore
+  }
+}
+
+export function clearCachedUserData() {
+  try {
+    localStorage.removeItem(USER_CACHE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
 
+  // Lire le cache sessionStorage une seule fois au mount
+  const cachedRef = useRef(getCachedUserData());
+
   // ⚡ TANSTACK QUERY: Utiliser useQuery pour charger l'utilisateur
-  // Cela permet aux autres requêtes de démarrer en parallèle dès que l'utilisateur est disponible
+  // initialData depuis sessionStorage → isLoading=false immédiatement si cache récent
+  // TanStack Query refetch en background grâce à initialDataUpdatedAt
   const { data: userData, isLoading: userLoading, refetch: refetchUser } = useQuery({
     queryKey: queryKeys.user.current(),
     queryFn: fetchUser,
@@ -74,9 +112,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
     placeholderData: (previousData) => previousData,
     // ⚡ FIX: Ne pas retry en cas d'erreur (l'utilisateur n'est peut-être pas authentifié)
     retry: false,
-    // ⚡ FIX: Ne pas utiliser initialData car cela force authenticated: false au premier rendu
-    // Laisser TanStack Query gérer l'état initial (undefined pendant le chargement)
+    // ⚡ PERFORMANCE: Pré-remplir avec le cache sessionStorage pour éviter le loader à la réouverture
+    // TanStack Query refetchera en background car initialDataUpdatedAt < staleTime
+    ...(cachedRef.current ? {
+      initialData: cachedRef.current.data,
+      initialDataUpdatedAt: cachedRef.current.timestamp,
+    } : {}),
   });
+
+  // Persister en sessionStorage à chaque fetch réussi
+  useEffect(() => {
+    if (userData && !userLoading) {
+      setCachedUserData(userData);
+    }
+  }, [userData, userLoading]);
 
   // Extraire les données de l'utilisateur depuis la réponse
   // ⚡ FIX: Gérer le cas où userData est undefined (pendant le chargement initial)
@@ -154,9 +203,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // Mettre à jour l'utilisateur effectif (après modification de ses settings)
   const updateEffectiveUser = useCallback((updatedUser: User) => {
     // ⚡ TANSTACK QUERY: Mettre à jour le cache directement
-    queryClient.setQueryData<typeof userData>(queryKeys.user.current(), (old) => {
+    queryClient.setQueryData(queryKeys.user.current(), (old: typeof userData) => {
       if (!old) return old;
-      
+
       const newData = { ...old };
       
       if (impersonatedUser && impersonatedUser.id === updatedUser.id) {
@@ -180,8 +229,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Déconnexion
   const logout = useCallback(async () => {
+    clearCachedUserData();
     try {
-      await fetch('/api/auth/logout', { 
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
@@ -271,9 +321,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       throw new Error(errorData.error || 'Erreur lors de la suppression');
     }
 
-    // Nettoyer le localStorage
+    // Nettoyer les caches
     localStorage.removeItem('synapso_current_user');
-    
+    clearCachedUserData();
+
     // ⚡ TANSTACK QUERY: Réinitialiser la query utilisateur
     queryClient.setQueryData(queryKeys.user.current(), {
       authenticated: false,

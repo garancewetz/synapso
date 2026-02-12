@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { ConfettiExplosion } from '@/app/features/exercices';
+import dynamic from 'next/dynamic';
+
+// Lazy-load : framer-motion (~40KB) n'est chargé que si l'utilisateur clique le logo
+const ConfettiExplosion = dynamic(
+  () => import('@/app/features/exercices/components/ConfettiExplosion').then(m => m.ConfettiExplosion),
+  { ssr: false }
+);
 
 type Explosion = {
   id: number;

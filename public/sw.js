@@ -67,9 +67,11 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const request = event.request;
   
-  // Exclure les routes API du cache pour éviter de stocker des données sensibles
-  // Les requêtes API doivent toujours passer par le réseau
-  if (url.pathname.startsWith('/api/')) {
+  // Exclure les routes API du cache (données sensibles)
+  // et les chunks Next.js (content-hashés, gérés par le framework — les cacher en
+  // cache-first cause des ChunkLoadError après déploiement car les anciens chunks
+  // référencent d'autres chunks qui ne sont plus ni en cache ni sur le serveur)
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/')) {
     event.respondWith(
       fetch(request).catch(() => {
         // Retourner une réponse d'erreur pour les API en mode offline

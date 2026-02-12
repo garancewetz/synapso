@@ -1,12 +1,13 @@
 {
+  "id": "/",
   "name": "Synapso - Caly",
   "short_name": "Synapso",
   "description": "Les exercices de Calypso",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#F8FAFB",
+  "theme_color": "#F8FAFB",
   "orientation": "portrait-primary",
   "categories": ["health", "fitness"],
   "icons": [

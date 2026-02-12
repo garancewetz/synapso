@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getJournalNotes, createJournalNote } from '@/app/features/journal/api';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -18,12 +18,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const notes = await prisma.journalNote.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const notes = await getJournalNotes({ userId });
 
     return NextResponse.json(notes);
   } catch (error) {
@@ -87,7 +82,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convertir la date string (YYYY-MM-DD) en DateTime si fournie
     let dateValue: Date | null = null;
     if (date) {
       const parsedDate = new Date(date);
@@ -96,13 +90,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const note = await prisma.journalNote.create({
-      data: {
-        content: trimmedContent,
-        title: title ? title.trim() : null,
-        date: dateValue,
-        userId: userId,
-      },
+    const note = await createJournalNote({
+      content: trimmedContent,
+      title: title ? title.trim() : null,
+      date: dateValue,
+      userId,
     });
 
     return NextResponse.json(note, { status: 201 });

@@ -74,22 +74,32 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     refetchOnWindowFocus: true,
   });
 
-  const { data: exercices = [], isLoading, isFetching, error, refetch } = queryResult;
+  const { data: exercices = [], isLoading, error, refetch } = queryResult;
 
-  // ⚡ FIX BUG HARD REFRESH: Forcer un refetch explicite quand referenceDateKey change
-  // TanStack Query devrait automatiquement refetch quand la query key change, mais parfois
-  // le cache peut interférer. Ce useEffect garantit un refetch explicite.
   useEffect(() => {
     if (!effectiveUser) return;
     
-    // Forcer un refetch quand la date change (même en mode normal, pour garantir des données fraîches)
-    // Utiliser un petit délai pour éviter les refetchs multiples lors du montage initial
     const timeoutId = setTimeout(() => {
       refetch();
     }, 100);
     
     return () => clearTimeout(timeoutId);
   }, [referenceDateKey, effectiveUser, refetch]);
+
+  useEffect(() => {
+    if (exercices.length > 0 || !isLoading) {
+      console.log('[EXERCICES] 📋 Exercices récupérés:', {
+        count: exercices.length,
+        targetDate: filters.targetDate,
+        exercices: exercices.map(ex => ({
+          id: ex.id,
+          name: ex.name,
+          completed: ex.completed,
+          completedToday: ex.completedToday,
+        })),
+      });
+    }
+  }, [exercices, filters.targetDate, isLoading]);
 
   // ⚡ OPTIMISTIC UPDATE: Mettre à jour le cache localement pour une UI réactive
   const updateExercice = useCallback((updatedExercice: Exercice) => {

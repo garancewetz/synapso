@@ -12,9 +12,6 @@ type UseExerciceHandlersReturn = {
   handleCompleted: (updatedExercice: Exercice) => void;
 };
 
-/**
- * Hook pour gérer les handlers communs des exercices (édition, complétion)
- */
 export function useExerciceHandlers({
   updateExercice,
   fromPath,

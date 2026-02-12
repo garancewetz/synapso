@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getProgress, createProgress } from '@/app/features/progress/api';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -21,12 +21,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
 
-    const progressList = await prisma.progress.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: { createdAt: 'desc' },
-      ...(limitParam && { take: parseInt(limitParam) }),
+    const progressList = await getProgress({
+      userId,
+      limit: limitParam ? parseInt(limitParam) : undefined,
     });
 
     return NextResponse.json(progressList);
@@ -64,14 +61,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const progress = await prisma.progress.create({
-      data: {
-        content: content.trim(),
-        emoji: emoji ? emoji.trim() : null,
-        tags: Array.isArray(tags) ? tags : [],
-        medias: Array.isArray(medias) ? medias : [],
-        userId: userId,
-      },
+    const progress = await createProgress({
+      content: content.trim(),
+      emoji: emoji ? emoji.trim() : null,
+      tags: Array.isArray(tags) ? tags : [],
+      medias: Array.isArray(medias) ? medias : [],
+      userId,
     });
 
     return NextResponse.json(progress, { status: 201 });

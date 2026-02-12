@@ -5,7 +5,7 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
-import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 import { useCategoryStats } from '../hooks/useCategoryStats';
 
 type Props = {

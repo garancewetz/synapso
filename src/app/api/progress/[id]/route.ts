@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { updateProgress, deleteProgress } from '@/app/features/progress/api';
 
 export async function PATCH(
   request: NextRequest,
@@ -34,21 +34,6 @@ export async function PATCH(
     const body = await request.json();
     const { content, emoji, tags, medias } = body;
 
-    // Vérifier que le progrès existe ET appartient à l'utilisateur
-    const existingProgress = await prisma.progress.findFirst({
-      where: {
-        id: progressId,
-        userId: userId,
-      },
-    });
-
-    if (!existingProgress) {
-      return NextResponse.json(
-        { error: 'Progress not found' },
-        { status: 404 }
-      );
-    }
-
     if (!content || !content.trim()) {
       return NextResponse.json(
         { error: 'Content is required' },
@@ -56,18 +41,25 @@ export async function PATCH(
       );
     }
 
-    const updatedProgress = await prisma.progress.update({
-      where: { id: progressId },
+    const updatedProgress = await updateProgress({
+      progressId,
+      userId,
       data: {
         content: content.trim(),
         emoji: emoji ? emoji.trim() : null,
-        tags: Array.isArray(tags) ? tags : existingProgress.tags || [],
-        medias: Array.isArray(medias) ? medias : existingProgress.medias || [],
+        tags: Array.isArray(tags) ? tags : undefined,
+        medias: Array.isArray(medias) ? medias : undefined,
       },
     });
 
     return NextResponse.json(updatedProgress);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Progress not found') {
+      return NextResponse.json(
+        { error: 'Progress not found' },
+        { status: 404 }
+      );
+    }
     logError('Error updating progress', error);
     return NextResponse.json(
       { error: 'Failed to update progress' },
@@ -104,28 +96,19 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que le progrès existe ET appartient à l'utilisateur
-    const existingProgress = await prisma.progress.findFirst({
-      where: {
-        id: progressId,
-        userId: userId,
-      },
+    await deleteProgress({
+      progressId,
+      userId,
     });
 
-    if (!existingProgress) {
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Progress not found') {
       return NextResponse.json(
         { error: 'Progress not found' },
         { status: 404 }
       );
     }
-
-    // Supprimer le progrès
-    await prisma.progress.delete({
-      where: { id: progressId },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
     logError('Error deleting progress', error);
     return NextResponse.json(
       { error: 'Failed to delete progress' },

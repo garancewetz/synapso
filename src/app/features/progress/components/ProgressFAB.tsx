@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
 import { ProgressBottomSheet } from './ProgressBottomSheet';
 import { ProgressButton } from '@/app/components/ui/ProgressButton';
-import { ConfettiRain } from '@/app/components/ConfettiRain';
+import { ConfettiRain } from '@/app/features/exercices';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {

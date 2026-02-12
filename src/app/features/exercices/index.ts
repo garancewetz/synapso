@@ -25,6 +25,14 @@ export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 export { useExerciceStatusFilter } from './hooks/useExerciceStatusFilter';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
+export { useShareExercice } from './hooks/useShareExercice';
+export { useRelatedStretchingByCategory } from './hooks/useRelatedStretchingByCategory';
 
 // Utils
 export * from './utils/exercice-complete.utils';
+
+// Celebration components
+export { GlobalCelebration } from './components/GlobalCelebration';
+export { ConfettiRain } from './components/ConfettiRain';
+export { ConfettiExplosion } from './components/ConfettiExplosion';
+export { MediaUploader } from './components/MediaUploader';

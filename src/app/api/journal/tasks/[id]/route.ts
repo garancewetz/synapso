@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getJournalTaskById, updateJournalTask, deleteJournalTask } from '@/app/features/journal/api';
 
 export async function GET(
   request: NextRequest,
@@ -31,22 +31,19 @@ export async function GET(
       );
     }
     
-    const task = await prisma.journalTask.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
+    const task = await getJournalTaskById({
+      taskId: id,
+      userId,
     });
-    
-    if (!task) {
+
+    return NextResponse.json(task);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Journal task not found') {
       return NextResponse.json(
         { error: 'Journal task not found' },
         { status: 404 }
       );
     }
-
-    return NextResponse.json(task);
-  } catch (error) {
     logError('Error fetching journal task', error);
     return NextResponse.json(
       { error: 'Failed to fetch journal task' },
@@ -85,32 +82,23 @@ export async function PUT(
 
     const updatedData = await request.json();
 
-    // Vérifier que la tâche appartient à l'utilisateur
-    const task = await prisma.journalTask.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
-    });
-
-    if (!task) {
-      return NextResponse.json(
-        { error: 'Journal task not found' },
-        { status: 404 }
-      );
-    }
-
-    const updatedTask = await prisma.journalTask.update({
-      where: { id },
+    const updatedTask = await updateJournalTask({
+      taskId: id,
+      userId,
       data: {
-        title: updatedData.title !== undefined ? updatedData.title.trim() : undefined,
-        completed: updatedData.completed !== undefined ? updatedData.completed : undefined,
-        completedAt: updatedData.completed === true ? new Date() : (updatedData.completed === false ? null : undefined),
+        title: updatedData.title,
+        completed: updatedData.completed,
       },
     });
 
     return NextResponse.json(updatedTask);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Journal task not found') {
+      return NextResponse.json(
+        { error: 'Journal task not found' },
+        { status: 404 }
+      );
+    }
     logError('Error updating journal task', error);
     return NextResponse.json(
       { error: 'Failed to update journal task' },
@@ -149,33 +137,22 @@ export async function PATCH(
 
     const { completed } = await request.json();
 
-    // Vérifier que la tâche appartient à l'utilisateur
-    const task = await prisma.journalTask.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
-    });
-
-    if (!task) {
-      return NextResponse.json(
-        { error: 'Journal task not found' },
-        { status: 404 }
-      );
-    }
-
-    // ❌ IMPORTANT: Ne PAS créer de progrès automatiquement
-    // Le toggle completed ne doit que mettre à jour la tâche
-    const updatedTask = await prisma.journalTask.update({
-      where: { id },
+    const updatedTask = await updateJournalTask({
+      taskId: id,
+      userId,
       data: {
-        completed: completed,
-        completedAt: completed ? new Date() : null,
+        completed,
       },
     });
 
     return NextResponse.json(updatedTask);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Journal task not found') {
+      return NextResponse.json(
+        { error: 'Journal task not found' },
+        { status: 404 }
+      );
+    }
     logError('Error updating journal task completion', error);
     return NextResponse.json(
       { error: 'Failed to update journal task completion' },
@@ -212,27 +189,19 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que la tâche appartient à l'utilisateur
-    const task = await prisma.journalTask.findFirst({
-      where: { 
-        id,
-        userId: userId,
-      },
+    await deleteJournalTask({
+      taskId: id,
+      userId,
     });
 
-    if (!task) {
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Journal task not found') {
       return NextResponse.json(
         { error: 'Journal task not found' },
         { status: 404 }
       );
     }
-    
-    await prisma.journalTask.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
     logError('Error deleting journal task', error);
     return NextResponse.json(
       { error: 'Failed to delete journal task' },

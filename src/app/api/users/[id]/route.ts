@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId, isAdmin, getImpersonatedUserId, clearImpersonateCookie } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getUser, updateUser, deleteUser } from '@/app/features/auth/api';
 
 export async function GET(
   request: NextRequest,
@@ -33,18 +33,7 @@ export async function GET(
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: requestedUserId },
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        resetFrequency: true,
-        dominantHand: true,
-        hasJournal: true,
-        createdAt: true,
-      },
-    });
+    const user = await getUser({ userId: requestedUserId });
 
     if (!user) {
       return NextResponse.json(
@@ -56,9 +45,11 @@ export async function GET(
     return NextResponse.json(user);
   } catch (error) {
     logError('Error fetching user', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch user';
+    const status = errorMessage.includes('non trouvé') ? 404 : 500;
     return NextResponse.json(
-      { error: 'Failed to fetch user' },
-      { status: 500 }
+      { error: errorMessage },
+      { status }
     );
   }
 }
@@ -94,80 +85,22 @@ export async function PATCH(
       );
     }
 
-    // Vérifier que resetFrequency est valide
-    if (data.resetFrequency && !['DAILY', 'WEEKLY'].includes(data.resetFrequency)) {
-      return NextResponse.json(
-        { error: 'resetFrequency doit être DAILY ou WEEKLY' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que dominantHand est valide
-    if (data.dominantHand && !['LEFT', 'RIGHT'].includes(data.dominantHand)) {
-      return NextResponse.json(
-        { error: 'dominantHand doit être LEFT ou RIGHT' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que le nom n'est pas vide s'il est fourni
-    if (data.name !== undefined && !data.name.trim()) {
-      return NextResponse.json(
-        { error: 'Le nom ne peut pas être vide' },
-        { status: 400 }
-      );
-    }
-
-    // Validation : le nom ne doit pas contenir d'espaces
-    if (data.name && data.name.trim().includes(' ')) {
-      return NextResponse.json(
-        { error: 'Le nom ne peut pas contenir d\'espaces' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que le nom n'est pas déjà pris par un autre utilisateur
-    if (data.name) {
-      const trimmedName = data.name.trim();
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          name: trimmedName,
-          id: { not: requestedUserId },
-        },
-      });
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'Ce nom est déjà utilisé par un autre utilisateur' },
-          { status: 400 }
-        );
-      }
-    }
-
-    const user = await prisma.user.update({
-      where: { id: requestedUserId },
-      data: {
-        ...(data.name && { name: data.name.trim() }),
-        ...(data.resetFrequency && { resetFrequency: data.resetFrequency }),
-        ...(data.dominantHand && { dominantHand: data.dominantHand }),
-        ...(data.hasJournal !== undefined && { hasJournal: data.hasJournal }),
-      },
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        resetFrequency: true,
-        dominantHand: true,
-        hasJournal: true,
-        createdAt: true,
-      },
+    const user = await updateUser({
+      userId: requestedUserId,
+      name: data.name,
+      resetFrequency: data.resetFrequency,
+      dominantHand: data.dominantHand,
+      hasJournal: data.hasJournal,
     });
 
     return NextResponse.json(user);
   } catch (error) {
     logError('Error updating user', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update user';
+    const status = errorMessage.includes('obligatoire') || errorMessage.includes('invalide') || errorMessage.includes('déjà utilisé') ? 400 : 500;
     return NextResponse.json(
-      { error: 'Failed to update user' },
-      { status: 500 }
+      { error: errorMessage },
+      { status }
     );
   }
 }
@@ -201,43 +134,11 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que ce n'est pas le dernier utilisateur
-    const userCount = await prisma.user.count();
-    if (userCount <= 1) {
-      return NextResponse.json(
-        { error: 'Impossible de supprimer le dernier utilisateur' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que ce n'est pas le seul admin
-    const user = await prisma.user.findUnique({
-      where: { id: requestedUserId },
-      select: { role: true },
-    });
-
-    if (user?.role === 'ADMIN') {
-      const adminCount = await prisma.user.count({
-        where: { role: 'ADMIN' },
-      });
-      if (adminCount <= 1) {
-        return NextResponse.json(
-          { error: 'Impossible de supprimer le dernier administrateur' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Vérifier si l'utilisateur supprimé est celui qui est impersonné
     const impersonatedUserId = getImpersonatedUserId(request);
     const isDeletingImpersonatedUser = impersonatedUserId === requestedUserId;
 
-    // Supprimer l'utilisateur (cascade automatique)
-    await prisma.user.delete({
-      where: { id: requestedUserId },
-    });
+    await deleteUser({ userId: requestedUserId });
 
-    // Si on supprimait l'utilisateur impersonné, supprimer le cookie d'impersonation
     const response = NextResponse.json({ success: true });
     if (isDeletingImpersonatedUser) {
       return clearImpersonateCookie(response);
@@ -246,9 +147,11 @@ export async function DELETE(
     return response;
   } catch (error) {
     logError('Error deleting user', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
+    const status = errorMessage.includes('Impossible') ? 400 : 500;
     return NextResponse.json(
-      { error: 'Failed to delete user' },
-      { status: 500 }
+      { error: errorMessage },
+      { status }
     );
   }
 }

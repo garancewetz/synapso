@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { getEquipments } from '@/app/features/exercices/api';
 
 /**
  * Route API pour récupérer tous les équipements uniques de la base de données
@@ -12,36 +12,8 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    // Récupérer tous les exercices avec leurs équipements (tous les utilisateurs)
-    const exercices = await prisma.exercice.findMany({
-      select: {
-        equipments: true,
-      },
-    });
-
-    const equipmentsSet = new Set<string>();
-    
-    exercices.forEach((exercice) => {
-      try {
-        const equipments = JSON.parse(exercice.equipments || '[]') as string[];
-        if (Array.isArray(equipments)) {
-          equipments.forEach((eq: string) => {
-            if (typeof eq === 'string' && eq.trim()) {
-              equipmentsSet.add(eq.trim());
-            }
-          });
-        }
-      } catch {
-        // Ignorer les erreurs de parsing, continuer avec les autres exercices
-      }
-    });
-
-    // Trier par ordre alphabétique
-    const allEquipments = Array.from(equipmentsSet).sort();
-
-    return NextResponse.json({
-      equipments: allEquipments,
-    });
+    const result = await getEquipments();
+    return NextResponse.json(result);
   } catch (error) {
     logError('Error fetching all equipments', error);
     return NextResponse.json(

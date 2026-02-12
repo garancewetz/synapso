@@ -1,34 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
-import type { ExerciceCategory } from '@/app/types/exercice';
-
-interface HistoryEntry {
-  id: number;
-  completedAt: Date;
-  exercice: {
-    id: number;
-    name: string;
-    category: ExerciceCategory;
-    descriptionText: string;
-    descriptionComment: string | null;
-    workoutRepeat: string | null;
-    workoutSeries: string | null;
-    workoutDuration: string | null;
-    equipments: string;
-    userId: number;
-    bodyparts: Array<{
-      exerciceId: number;
-      bodypartId: number;
-      bodypart: {
-        id: number;
-        name: string;
-      };
-    }>;
-  };
-}
+import { getHistory } from '@/app/features/historique/api';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -50,25 +24,9 @@ export async function GET(request: NextRequest) {
     const sinceParam = searchParams.get('since'); // ISO date string - filtre les entrées depuis cette date
     const limitParam = searchParams.get('limit'); // Nombre max d'entrées à retourner
 
-    // Construire le filtre
-    const whereClause: {
-      exercice: { userId: number };
-      completedAt?: { gte: Date };
-    } = {
-      exercice: {
-        userId: userId,
-      },
-    };
+    const sinceDate = sinceParam ? new Date(sinceParam) : undefined;
+    const limit = limitParam && !isNaN(parseInt(limitParam)) ? parseInt(limitParam) : undefined;
 
-    // Ajouter le filtre de date si fourni
-    if (sinceParam) {
-      const sinceDate = new Date(sinceParam);
-      if (!isNaN(sinceDate.getTime())) {
-        whereClause.completedAt = { gte: sinceDate };
-      }
-    }
-
-    // ⚡ PERFORMANCE: Utiliser le cache pour éviter les requêtes répétées
     const cacheKey = generateCacheKey([
       'history',
       userId,
@@ -79,57 +37,45 @@ export async function GET(request: NextRequest) {
     const formattedHistory = await cacheApiResponse(
       cacheKey,
       async () => {
-        const history = await prisma.history.findMany({
-          where: whereClause,
-          include: {
-            exercice: {
-              include: {
-                bodyparts: {
-                  include: {
-                    bodypart: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { completedAt: 'desc' },
-          ...(limitParam && !isNaN(parseInt(limitParam)) && { take: parseInt(limitParam) }),
-        }) as HistoryEntry[];
+        const history = await getHistory({
+          userId,
+          since: sinceDate && !isNaN(sinceDate.getTime()) ? sinceDate : undefined,
+          limit,
+        });
 
-        // Reformater les données
         return history.map((entry) => ({
-      id: entry.id,
-      completedAt: entry.completedAt,
-      exercice: {
-        id: entry.exercice.id,
-        name: entry.exercice.name,
-        category: entry.exercice.category,
-        description: {
-          text: entry.exercice.descriptionText,
-          comment: entry.exercice.descriptionComment,
-        },
-        workout: {
-          repeat: entry.exercice.workoutRepeat,
-          series: entry.exercice.workoutSeries,
-          duration: entry.exercice.workoutDuration,
-        },
-        equipments: (() => {
-          try {
-            const parsed = JSON.parse(entry.exercice.equipments || '[]');
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        })(),
-        bodyparts: entry.exercice.bodyparts.map((eb) => ({
-          id: eb.bodypart.id,
-          name: eb.bodypart.name,
-        })),
-      },
-    }));
+          id: entry.id,
+          completedAt: entry.completedAt,
+          exercice: {
+            id: entry.exercice.id,
+            name: entry.exercice.name,
+            category: entry.exercice.category,
+            description: {
+              text: entry.exercice.descriptionText,
+              comment: entry.exercice.descriptionComment,
+            },
+            workout: {
+              repeat: entry.exercice.workoutRepeat,
+              series: entry.exercice.workoutSeries,
+              duration: entry.exercice.workoutDuration,
+            },
+            equipments: (() => {
+              try {
+                const parsed = JSON.parse(entry.exercice.equipments || '[]');
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            })(),
+            bodyparts: entry.exercice.bodyparts.map((eb) => ({
+              id: eb.bodypart.id,
+              name: eb.bodypart.name,
+            })),
+          },
+        }));
       },
       {
-        revalidate: 10, // Cache de 10 secondes (données qui changent souvent)
+        revalidate: 10,
         tags: [CACHE_TAGS.HISTORY, CACHE_TAGS.USER_HISTORY(userId)],
       }
     );

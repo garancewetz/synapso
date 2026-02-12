@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
-import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 
 type Props = {
   href: string;

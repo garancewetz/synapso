@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/app/lib/auth';
-import { prisma } from '@/app/lib/prisma';
 import { logError } from '@/app/lib/logger';
+import { getUsers } from '@/app/features/auth/api';
 
 /**
  * GET /api/users
@@ -9,24 +9,11 @@ import { logError } from '@/app/lib/logger';
  * Pour les utilisateurs normaux, utiliser /api/auth/check
  */
 export async function GET(request: NextRequest) {
-  // Seuls les admins peuvent lister tous les utilisateurs
   const authError = await requireAdmin(request);
   if (authError) return authError;
 
   try {
-    const users = await prisma.user.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        resetFrequency: true,
-        dominantHand: true,
-        hasJournal: true,
-        createdAt: true,
-      },
-    });
-
+    const users = await getUsers();
     return NextResponse.json(users);
   } catch (error) {
     logError('Error fetching users', error);

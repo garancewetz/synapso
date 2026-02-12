@@ -45,6 +45,13 @@ export function TimeProvider({ children }: PropsWithChildren) {
   }, [isTimeMachineMode, selectedDateKey]);
 
   useEffect(() => {
+    console.log('[DATE] 📅 Reference date changée:', {
+      referenceDateKey: timeContextValue.referenceDateKey,
+      isTimeMachineMode: timeContextValue.isTimeMachineMode,
+    });
+  }, [timeContextValue.referenceDateKey, timeContextValue.isTimeMachineMode]);
+
+  useEffect(() => {
     if (!isTimeMachineMode || !selectedDateKey || !effectiveUser?.id) return;
     
     const timeoutId = setTimeout(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { Progress } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { queryKeys, fetchProgress } from '@/app/lib/api-queries';
@@ -18,17 +18,12 @@ type UseProgressReturn = {
   lastProgress: Progress | null;
 };
 
-// Événement personnalisé pour notifier tous les hooks useProgress
-const PROGRESS_REFRESH_EVENT = 'progress-refresh';
-
 /**
- * Déclenche un rafraîchissement de tous les hooks useProgress
- * Appelé après l'ajout, la modification ou la suppression d'un progrès
+ * @deprecated Utiliser queryClient.invalidateQueries({ queryKey: queryKeys.progress.all }) à la place
+ * TanStack Query gère automatiquement la réactivité via les invalidations
  */
 export function triggerProgressRefresh(): void {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(PROGRESS_REFRESH_EVENT));
-  }
+  console.warn('triggerProgressRefresh is deprecated. Use queryClient.invalidateQueries instead.');
 }
 
 /**
@@ -36,7 +31,7 @@ export function triggerProgressRefresh(): void {
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useProgress(options: UseProgressOptions = {}): UseProgressReturn {
-  const { effectiveUser, loading: userLoading } = useUser();
+  const { effectiveUser } = useUser();
   const { limit } = options;
 
   // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
@@ -52,17 +47,8 @@ export function useProgress(options: UseProgressOptions = {}): UseProgressReturn
     gcTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // ⚡ EVENT-DRIVEN: Écouter les événements de rafraîchissement
-  useEffect(() => {
-    const handleRefresh = () => {
-      refetch();
-    };
-
-    window.addEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
-    return () => {
-      window.removeEventListener(PROGRESS_REFRESH_EVENT, handleRefresh);
-    };
-  }, [refetch]);
+  // ⚡ TANSTACK QUERY: La réactivité est gérée automatiquement via les invalidations
+  // Plus besoin d'écouter des événements personnalisés - TanStack Query refetch automatiquement
 
   const lastProgress = useMemo(() => {
     return progressList.length > 0 ? progressList[0] : null;

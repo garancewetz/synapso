@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useUser } from '@/app/contexts/UserContext';
-import { UserDeleteButton } from '@/app/components/AdminUserSwitcher/UserDeleteButton';
+import { UserDeleteButton } from '@/app/components/AdminUserSwitcher';
 import clsx from 'clsx';
 
 type Props = {

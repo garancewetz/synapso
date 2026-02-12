@@ -10,7 +10,7 @@ import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
@@ -59,7 +59,7 @@ export function NavBar() {
         // ⚡ MODE SABLIER: Ajouter un padding-top pour laisser de la place à la bannière fixe
         // La bannière fait environ 70-80px de hauteur (py-2.5 + 2 lignes de texte + border)
         // On utilise pt-24 (96px) pour avoir une marge de sécurité
-        isBannerVisible && 'pt-24 sm:pt-28'
+        isBannerVisible && 'pt-20 sm:pt-24'
       )}>
         <div
           className={clsx(

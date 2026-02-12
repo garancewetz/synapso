@@ -7,7 +7,7 @@ import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useCompleteExercice } from '../hooks/useCompleteExercice';
 import { useArchiveExercice } from '../hooks/useArchiveExercice';
-import { useShareExercice } from '@/app/hooks/useShareExercice';
+import { useShareExercice } from '@/app/features/exercices';
 import { CompleteButton, BaseCard, DotMenu } from '@/app/components/ui';
 import { ExerciceCardHeader } from './ExerciceCardHeader';
 import { ExerciceCardTags } from './ExerciceCardTags';

@@ -96,8 +96,6 @@ export async function fetchExercices(filters: {
     ? `/api/exercices?${params.toString()}`
     : `/api/exercices`;
 
-  console.log('[DEBUG-PROD] fetchExercices → URL:', url, '| filters:', filters);
-
   const res = await fetch(url, { credentials: 'include' });
   
   if (!res.ok) {
@@ -105,7 +103,14 @@ export async function fetchExercices(filters: {
     throw new Error(data.error || `Erreur HTTP: ${res.status}`);
   }
   
-  return res.json();
+  const exercices = await res.json();
+  console.log('[FETCH-EXERCICES] 📥 Récupération:', {
+    url,
+    targetDate: filters.targetDate,
+    count: exercices.length,
+  });
+  
+  return exercices;
 }
 
 export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: string }): Promise<HistoryEntry[]> {

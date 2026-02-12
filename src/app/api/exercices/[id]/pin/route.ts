@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
-import { requireAuth } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { pinExercice } from '@/app/features/exercices/api';
 
 export async function PATCH(
   request: NextRequest,
@@ -13,8 +13,6 @@ export async function PATCH(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -23,45 +21,27 @@ export async function PATCH(
       );
     }
 
+    const userId = await getEffectiveUserId(request);
     if (!userId) {
       return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
       );
     }
 
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) {
-      return NextResponse.json(
-        { error: 'Invalid userId' },
-        { status: 400 }
-      );
-    }
-
-    const exercice = await prisma.exercice.findFirst({
-      where: { 
-        id,
-        userId: userIdNumber,
-      },
+    const result = await pinExercice({
+      exerciceId: id,
+      userId,
     });
 
-    if (!exercice) {
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Exercice non trouvé') {
       return NextResponse.json(
         { error: 'Exercice non trouvé' },
         { status: 404 }
       );
     }
-
-    // Toggle le statut pinned
-    const updatedExercice = await prisma.exercice.update({
-      where: { id },
-      data: {
-        pinned: !exercice.pinned,
-      },
-    });
-
-    return NextResponse.json({ pinned: updatedExercice.pinned });
-  } catch (error) {
     logError('Erreur lors de la mise à jour du pin', error);
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour du pin' },

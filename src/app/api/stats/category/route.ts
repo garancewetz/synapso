@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, format } from 'date-fns';
-import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
-import type { ExerciceCategory } from '@/app/types/exercice';
+import { prisma } from '@/app/lib/prisma';
+import { getCategoryStats } from '@/app/features/historique/api';
 
 /**
  * Route API pour les statistiques de complétion par catégorie
@@ -27,7 +24,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Récupérer l'utilisateur pour obtenir le resetFrequency
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { resetFrequency: true },
@@ -42,87 +38,12 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const targetDateParam = searchParams.get('targetDate');
-    let targetDate = new Date();
-    if (targetDateParam) {
-      // ⚡ FIX TIMEZONE: Détecter si c'est un dateKey (yyyy-MM-dd) ou un ISO string
-      // Parser avec T12:00:00.000Z (midi UTC) pour que startOfDay() donne le bon jour
-      // quel que soit le timezone du serveur
-      const isDateKey = /^\d{4}-\d{2}-\d{2}$/.test(targetDateParam);
-      if (isDateKey) {
-        targetDate = new Date(targetDateParam + 'T12:00:00.000Z');
-      } else {
-        const parsedDate = new Date(targetDateParam);
-        if (!isNaN(parsedDate.getTime())) {
-          targetDate = new Date(format(startOfDay(parsedDate), 'yyyy-MM-dd') + 'T12:00:00.000Z');
-        }
-      }
-    } else {
-      // ⚡ FIX TIMEZONE: Pour "aujourd'hui", utiliser format() pour la dateKey locale puis midi UTC
-      const todayKey = format(new Date(), 'yyyy-MM-dd');
-      targetDate = new Date(todayKey + 'T12:00:00.000Z');
-    }
 
-    // Calculer la période de réinitialisation (pour référence future si nécessaire)
-    const now = targetDate;
-    const startOfTargetDay = startOfDay(now);
-    const endOfTargetDay = startOfDay(addDays(now, 1));
-
-    // ⚡ PERFORMANCE: Cache côté serveur (30 secondes)
-    const cacheKey = generateCacheKey([
-      'stats-category',
+    const stats = await getCategoryStats({
       userId,
-      targetDate.toISOString().split('T')[0],
-      user.resetFrequency,
-    ]);
-
-    const stats = await cacheApiResponse(
-      cacheKey,
-      async () => {
-        // ⚡ AGRÉGATION SQL: Compter directement les exercices complétés par catégorie
-        // Utilise une requête SQL optimisée au lieu de transférer toutes les données
-        const statsResult = await prisma.$queryRaw<Array<{
-          category: ExerciceCategory;
-          count: bigint;
-        }>>`
-          SELECT 
-            e.category,
-            COUNT(DISTINCT e.id)::int as count
-          FROM "Exercice" e
-          INNER JOIN "History" h ON h."exerciceId" = e.id
-          WHERE 
-            e."userId" = ${userId}::int
-            AND e.archived = false
-            AND h."completedAt" >= ${startOfTargetDay}::timestamp
-            AND h."completedAt" < ${endOfTargetDay}::timestamp
-          GROUP BY e.category
-        `;
-
-        // Convertir le résultat en format attendu
-        const statsByCategory: Record<ExerciceCategory, number> = {
-          UPPER_BODY: 0,
-          LOWER_BODY: 0,
-          STRETCHING: 0,
-          CORE: 0,
-        };
-
-        statsResult.forEach((row) => {
-          if (row.category && row.category in statsByCategory) {
-            statsByCategory[row.category as ExerciceCategory] = Number(row.count);
-          }
-        });
-
-        return statsByCategory;
-      },
-      {
-        revalidate: 30, // 30 secondes (même stratégie que les exercices)
-        tags: [
-          CACHE_TAGS.STATS,
-          CACHE_TAGS.USER_STATS(userId, targetDate.toISOString().split('T')[0]),
-          CACHE_TAGS.EXERCICES, // Invalider aussi quand les exercices changent
-          CACHE_TAGS.HISTORY, // Invalider aussi quand l'historique change
-        ],
-      }
-    );
+      targetDate: targetDateParam || undefined,
+      resetFrequency: user.resetFrequency || 'DAILY',
+    });
 
     return NextResponse.json(stats);
   } catch (error) {

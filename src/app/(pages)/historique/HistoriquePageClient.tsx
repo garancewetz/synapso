@@ -9,9 +9,8 @@ import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
-import { useProgress, triggerProgressRefresh, useProgressStats, useProgressModal } from '@/app/features/progress';
-import { usePeriodNavigation } from '@/app/hooks/usePeriodNavigation';
-import { useHeatmapNavigation } from '@/app/hooks/useHeatmapNavigation';
+import { useProgress, useProgressStats, useProgressModal } from '@/app/features/progress';
+import { usePeriodNavigation, useHeatmapNavigation } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
 import { 
@@ -48,7 +47,7 @@ import { ProgressButton } from '@/app/components/ui/ProgressButton';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
-import { formatProgressForWhatsApp } from '@/app/utils/share.utils';
+import { formatProgressForWhatsApp } from '@/app/utils/share';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
@@ -77,7 +76,7 @@ export function HistoriquePageClient() {
   const { history, loading: loadingHistory } = useHistory();
 
   // Charger les progrès
-  const { progressList, loading: loadingProgress, refetch: refetchProgress } = useProgress();
+  const { progressList, loading: loadingProgress } = useProgress();
   const queryClient = useQueryClient();
 
   const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
@@ -175,10 +174,12 @@ export function HistoriquePageClient() {
   const handleProgressSuccess = useCallback(() => {
     setShowConfetti(true);
     // ⚡ TANSTACK QUERY: Invalider les queries concernées
-    queryClient.invalidateQueries({ queryKey: queryKeys.progress.all });
-    triggerProgressRefresh();
-    refetchProgress();
-  }, [queryClient, refetchProgress]);
+    // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.progress.all,
+      refetchType: 'active',
+    });
+  }, [queryClient]);
 
   // Handler pour le partage (optionnel, le partage est déjà géré par useShareProgress dans ProgressCard)
   const handleShare = useCallback(async (progress: typeof progressList[0]) => {

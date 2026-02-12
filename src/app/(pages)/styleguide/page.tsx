@@ -26,7 +26,7 @@ import {
   ViewAllLink,
   WeeklyCompletionIndicator
 } from '@/app/components/ui';
-import { WelcomeHeader } from '@/app/components/WelcomeHeader';
+import { WelcomeHeader } from '@/app/features/home';
 
 /**
  * Composant de carte pour afficher un composant UI dans le styleguide

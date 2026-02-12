@@ -2,21 +2,18 @@
 
 import { useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { WelcomeHeaderWrapper } from '@/app/components';
+import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices } from '@/app/features/exercices';
-import { useProgress, triggerProgressRefresh, useProgressModal } from '@/app/features/progress';
-import { useRelatedStretchingByCategory } from '@/app/hooks/useRelatedStretchingByCategory';
-import { useHomeTabs } from '@/app/hooks/useHomeTabs';
-import { usePrefetchPreviousDates } from '@/app/hooks/usePrefetchPreviousDates';
-import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
+import { useProgressModal } from '@/app/features/progress';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { HomeExercicesTab } from '@/app/components/home/HomeExercicesTab';
-import { HomeJournalTab } from '@/app/components/home/HomeJournalTab';
-import { HomeProgressionTab } from '@/app/components/home/HomeProgressionTab';
+import { useRelatedStretchingByCategory } from '@/app/features/exercices';
+import { usePrefetchPreviousDates } from '@/app/features/time-machine';
+import { useHomeTabs, HomeExercicesTab, HomeJournalTab, HomeProgressionTab } from '@/app/features/home';
+import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
@@ -45,9 +42,8 @@ export default function Home() {
   // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
   usePrefetchCommonPages();
   
-  const { exercices, error: exercicesError, refetch: refetchExercices } = useExercices();
+  const { exercices, error: exercicesError } = useExercices();
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
-  const { refetch: refetchProgress } = useProgress();
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
 
   const tabOptions = useMemo(() => {
@@ -71,15 +67,20 @@ export default function Home() {
 
   const handleProgressSuccess = useCallback(() => {
     // ⚡ TANSTACK QUERY: Invalider les queries concernées
-    // ⚡ NOTE: Les CategoryCardWithProgress utilisent maintenant useCategoryStats directement,
-    // donc l'invalidation du cache suffit pour les mettre à jour
-    queryClient.invalidateQueries({ queryKey: queryKeys.progress.all });
-    queryClient.invalidateQueries({ queryKey: queryKeys.categoryStats.all });
-    queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
-    triggerProgressRefresh();
-    refetchProgress();
-    refetchExercices();
-  }, [queryClient, refetchProgress, refetchExercices]);
+    // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.progress.all,
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.categoryStats.all,
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.exercices.all,
+      refetchType: 'active',
+    });
+  }, [queryClient]);
 
   return (
     <section>

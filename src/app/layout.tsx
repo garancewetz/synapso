@@ -9,9 +9,7 @@ import { LayoutComponents } from "@/app/components/LayoutComponents";
 import { LayoutUtils } from "@/app/components/LayoutUtils";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
-import { CategoryProvider } from "@/app/contexts/CategoryContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
-import { HistoryProvider } from "@/app/contexts/HistoryContext";
 import { SelectedDateProvider } from "@/app/contexts/SelectedDateContext";
 import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
@@ -72,29 +70,25 @@ export default function RootLayout({
         <LayoutUtils />
         <QueryProvider>
           <UserProvider>
-          <HistoryProvider>
-            <CategoryProvider>
+            <ToastProvider>
               <DayDetailModalProvider>
                 {/* Suspense pour gérer useSearchParams() dans les composants enfants */}
                 {/* fallback={null} car on ne veut pas bloquer le rendu de l'application */}
                 <Suspense fallback={null}>
                   <SelectedDateProvider>
                     <TimeProvider>
-                      <ToastProvider>
                       <DevBanner />
                       <AuthWrapper>
                         <LayoutComponents>
                           {children}
                         </LayoutComponents>
                       </AuthWrapper>
-                      </ToastProvider>
                     </TimeProvider>
                   </SelectedDateProvider>
                 </Suspense>
               </DayDetailModalProvider>
-            </CategoryProvider>
-          </HistoryProvider>
-        </UserProvider>
+            </ToastProvider>
+          </UserProvider>
         </QueryProvider>
       </body>
     </html>

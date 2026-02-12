@@ -1,7 +1,5 @@
 import { AdminUserSwitcher } from './AdminUserSwitcher';
 import { BottomNavBar } from './BottomNavBar';
-import { ConfettiRain } from './ConfettiRain';
-import { ConfettiExplosion } from './ConfettiExplosion';
 import { DevBanner } from './DevBanner';
 import { EmptyState } from './EmptyState';
 import { ErrorMessage } from './ErrorMessage';
@@ -15,8 +13,6 @@ import { PWARegister } from './PWARegister';
 import { SiteMapGroup } from './SiteMapGroup';
 import { StatBadge } from './StatBadge';
 import { ProgressButton } from './ui/ProgressButton';
-import { WelcomeHeader } from './WelcomeHeader';
-import { WelcomeHeaderWrapper } from './WelcomeHeaderWrapper';
 import { TouchLink } from './TouchLink';
 import { UserBadge } from './UserBadge';
 import { WebVitals } from './WebVitals';
@@ -30,8 +26,6 @@ export {
   BottomNavBar,
   Button,
   CalendarIcon,
-  ConfettiRain,
-  ConfettiExplosion,
   DevBanner,
   EmptyState,
   ErrorMessage,
@@ -53,7 +47,5 @@ export {
   TouchLink,
   UserBadge,
   ProgressButton,
-  WelcomeHeader,
-  WelcomeHeaderWrapper,
   WebVitals,
 };

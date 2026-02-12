@@ -13,7 +13,7 @@ import {
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useUser } from '@/app/contexts/UserContext';
-import { usePreserveDateParam } from '@/app/hooks/usePreserveDateParam';
+import { usePreserveDateParam } from '@/app/features/time-machine';
 
 /**
  * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles

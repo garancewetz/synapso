@@ -6,7 +6,7 @@ import type { Progress } from '@/app/types';
 import { EditIcon, EyeIcon, ChevronIcon } from '@/app/components/ui/icons';
 import { BaseCard, Button } from '@/app/components/ui';
 import { ShareIcon } from '@/app/components/ui/icons';
-import { useShareProgress } from '@/app/hooks/useShareProgress';
+import { useShareProgress } from '@/app/features/progress';
 import { formatVictoryDate } from '@/app/utils/date.utils';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress, ProgressMedia } from '@/app/features/progress';
 import { CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';

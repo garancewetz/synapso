@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/app/contexts/UserContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
-import { useHistoryContext } from '@/app/contexts/HistoryContext';
 import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
-import { useCategoryStats } from '../hooks/useCategoryStats';
-import { MediaUploader } from '@/app/components/MediaUploader';
+import { MediaUploader } from '@/app/features/exercices';
 import { queryKeys } from '@/app/lib/api-queries';
 import { ExerciceFormCategory } from './ExerciceForm/ExerciceFormCategory';
 import { ExerciceFormBodyparts } from './ExerciceForm/ExerciceFormBodyparts';
@@ -28,10 +26,8 @@ type Props = {
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
   const { selectedDate, isDateSelected } = useSelectedDate();
-  const { refreshHistory } = useHistoryContext();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const queryClient = useQueryClient();
-  const { refresh: refreshCategoryStats } = useCategoryStats();
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -84,8 +80,8 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice');
     },
     onSuccess: async () => {
-      // ⚡ CACHE INVALIDATION: Invalider les queries concernées et forcer le refetch
-      // Utiliser refetchType: 'active' pour forcer le refetch immédiat des queries actives
+      // ⚡ CACHE INVALIDATION: TanStack Query gère automatiquement la réactivité
+      // Invalider les queries concernées - TanStack Query refetch automatiquement les queries actives
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
@@ -100,10 +96,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
           refetchType: 'active',
         }),
       ]);
-
-      refreshHistory();
-
-      await refreshCategoryStats();
 
       if (onSuccess) {
         onSuccess();
@@ -129,6 +121,8 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError(err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice');
     },
     onSuccess: async () => {
+      // ⚡ CACHE INVALIDATION: TanStack Query gère automatiquement la réactivité
+      // Les invalidations avec refetchType: 'active' forcent le refetch immédiat des queries actives
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
@@ -143,13 +137,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
           refetchType: 'active',
         }),
       ]);
-      
-      // ⚡ OPTIMISATION: Les invalidations sont maintenant gérées directement par TanStack Query
-      refreshHistory();
-      
-      // ⚡ MODE SABLIER: Forcer le refresh des stats de catégorie pour mettre à jour les gauges
-      // après suppression d'un exercice en mode sablier
-      await refreshCategoryStats();
 
       if (onSuccess) {
         onSuccess();

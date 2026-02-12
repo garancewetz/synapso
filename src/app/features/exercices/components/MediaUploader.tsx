@@ -22,6 +22,57 @@ type Props = {
 
 const MAX_PHOTOS = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const COMPRESS_MAX_WIDTH = 1200;
+const COMPRESS_QUALITY = 0.8;
+
+/** Compresse et convertit l'image en JPEG via Canvas (résout les problèmes HEIC iOS + réduit la taille) */
+function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+      if (width > COMPRESS_MAX_WIDTH) {
+        height = Math.round((height * COMPRESS_MAX_WIDTH) / width);
+        width = COMPRESS_MAX_WIDTH;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas non disponible'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Échec de la compression'));
+          }
+        },
+        'image/jpeg',
+        COMPRESS_QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Impossible de charger l\'image'));
+    };
+
+    img.src = url;
+  });
+}
 
 export function MediaUploader({ value, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
@@ -30,36 +81,53 @@ export function MediaUploader({ value, onChange }: Props) {
   const photos = useMemo(() => value?.photos || [], [value?.photos]);
   const canAddPhotos = photos.length < MAX_PHOTOS;
 
-  const handleFileSelect = useCallback(async (file: File) => {
+  const handleFilesSelect = useCallback(async (files: File[]) => {
     setError('');
     setUploading(true);
 
     try {
-      if (file.size > MAX_IMAGE_SIZE) {
-        const maxSizeMB = MAX_IMAGE_SIZE / (1024 * 1024);
-        throw new Error(`Le fichier est trop volumineux. Taille maximale: ${maxSizeMB}MB`);
+      const remainingSlots = MAX_PHOTOS - photos.length;
+      const filesToUpload = files.slice(0, remainingSlots);
+
+      for (const file of filesToUpload) {
+        if (file.size > MAX_IMAGE_SIZE) {
+          const maxSizeMB = MAX_IMAGE_SIZE / (1024 * 1024);
+          throw new Error(`Le fichier "${file.name}" est trop volumineux. Taille maximale: ${maxSizeMB}MB`);
+        }
       }
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('resourceType', 'image');
+      // Compression + upload en parallèle
+      const uploadResults = await Promise.all(
+        filesToUpload.map(async (file) => {
+          const compressed = await compressImage(file);
 
-      const response = await fetch('/api/exercices/upload-media', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
+          const formData = new FormData();
+          formData.append('file', compressed, 'photo.jpg');
+          formData.append('resourceType', 'image');
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'upload');
-      }
+          const response = await fetch('/api/exercices/upload-media', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
 
-      const result = await response.json();
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erreur lors de l\'upload');
+          }
+
+          return response.json();
+        })
+      );
+
+      const newPhotos = uploadResults.map((result) => ({
+        url: result.url,
+        publicId: result.publicId,
+      }));
 
       onChange({
         ...value,
-        photos: [...photos, { url: result.url, publicId: result.publicId }],
+        photos: [...photos, ...newPhotos],
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'upload';
@@ -70,12 +138,12 @@ export function MediaUploader({ value, onChange }: Props) {
   }, [value, photos, onChange]);
 
   const handleImageInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      handleFilesSelect(files);
     }
     e.target.value = '';
-  }, [handleFileSelect]);
+  }, [handleFilesSelect]);
 
   const removePhoto = useCallback((index: number) => {
     const newPhotos = photos.filter((_, i) => i !== index);
@@ -123,10 +191,11 @@ export function MediaUploader({ value, onChange }: Props) {
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageInput}
               disabled={uploading}
               className="hidden"
-              aria-label="Ajouter un média"
+              aria-label="Ajouter des médias"
             />
             <div
               className={clsx(

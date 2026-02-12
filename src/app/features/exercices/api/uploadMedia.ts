@@ -13,6 +13,8 @@ function uploadToCloudinary(buffer: Buffer): Promise<{ secure_url: string; publi
     const uploadOptions = {
       resource_type: 'image' as const,
       folder: 'exercices',
+      quality: 'auto' as const,
+      fetch_format: 'auto' as const,
     };
 
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -45,7 +47,7 @@ export async function uploadMedia(params: UploadMediaParams) {
     throw new Error('Configuration Cloudinary manquante');
   }
 
-  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
   
   if (!allowedImageTypes.includes(file.type)) {
     throw new Error(`Type de fichier non autorisé. Types acceptés: ${allowedImageTypes.join(', ')}`);
@@ -63,8 +65,9 @@ export async function uploadMedia(params: UploadMediaParams) {
   const isPNG = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
   const isGIF = buffer.toString('ascii', 0, 3) === 'GIF';
   const isWebP = buffer.toString('ascii', 8, 12) === 'WEBP';
-  
-  if (!isJPEG && !isPNG && !isGIF && !isWebP) {
+  const isHEIC = buffer.toString('ascii', 4, 8) === 'ftyp';
+
+  if (!isJPEG && !isPNG && !isGIF && !isWebP && !isHEIC) {
     throw new Error('Le fichier n\'est pas une image valide');
   }
 

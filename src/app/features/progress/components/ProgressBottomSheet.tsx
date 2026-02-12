@@ -3,14 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { CATEGORY_ORDER, CATEGORY_ICONS, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { PROGRESS_TAGS, PROGRESS_CATEGORY_COLORS, ORTHOPHONIE_COLORS } from '@/app/constants/progress.constants';
-import { PROGRESS_EMOJIS, CATEGORY_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
+import { PROGRESS_CATEGORY_COLORS, AUTRE_COLORS } from '@/app/constants/progress.constants';
+import { PROGRESS_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI, AUTRE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '../utils/progress.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
 import { BottomSheetModal, Button } from '@/app/components/ui';
 import { useDeleteConfirmation } from '@/app/hooks/useDeleteConfirmation';
 import { ErrorMessage } from '@/app/components/ErrorMessage';
-import { useUser } from '@/app/contexts/UserContext';
 import { MediaUploaderProgress } from './MediaUploaderProgress';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Progress } from '@/app/types';
@@ -26,10 +25,9 @@ type Props = {
   initialEmoji?: string; // Emoji initial pour la création
 };
 
-type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE';
+type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE' | 'AUTRE';
 
 export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory, initialContent, initialEmoji }: Props) {
-  const { effectiveUser } = useUser();
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedMedias, setSelectedMedias] = useState<string[]>([]);
@@ -72,6 +70,8 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       // Utiliser les utilitaires factorisés pour déterminer la catégorie
       if (isOrthophonieProgress(progressToEdit.emoji)) {
         setSelectedCategory('ORTHOPHONIE');
+      } else if (progressToEdit.emoji === AUTRE_PROGRESS_EMOJI) {
+        setSelectedCategory('AUTRE');
       } else {
         const categoryFromEmoji = getExerciceCategoryFromEmoji(progressToEdit.emoji);
         setSelectedCategory(categoryFromEmoji || null);
@@ -85,6 +85,8 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       if (initialEmoji) {
         if (initialEmoji === ORTHOPHONIE_PROGRESS_EMOJI) {
           setSelectedCategory('ORTHOPHONIE');
+        } else if (initialEmoji === AUTRE_PROGRESS_EMOJI) {
+          setSelectedCategory('AUTRE');
         } else {
           // Chercher la catégorie correspondant à l'emoji
           const categoryFromEmoji = getExerciceCategoryFromEmoji(initialEmoji);
@@ -104,8 +106,8 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     }
   }, [isOpen, progressToEdit, defaultCategory, initialContent, initialEmoji]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
     if (!content.trim()) {
       setError('Le texte est obligatoire !');
@@ -120,9 +122,11 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       ? initialEmoji
       : selectedCategory === 'ORTHOPHONIE' 
         ? ORTHOPHONIE_PROGRESS_EMOJI 
-        : selectedCategory 
-          ? CATEGORY_ICONS[selectedCategory] 
-          : null;
+        : selectedCategory === 'AUTRE'
+          ? AUTRE_PROGRESS_EMOJI
+          : selectedCategory 
+            ? CATEGORY_ICONS[selectedCategory] 
+            : null;
 
     try {
       const url = isEditMode ? `/api/progress/${progressToEdit!.id}` : '/api/progress';
@@ -188,15 +192,6 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
     onClose();
   };
 
-  const handleTagClick = (label: string) => {
-    setSelectedTags(prev => {
-      if (prev.includes(label)) {
-        return prev.filter(tag => tag !== label);
-      } else {
-        return [...prev, label];
-      }
-    });
-  };
 
   return (
     <BottomSheetModal isOpen={isOpen} onClose={handleClose}>
@@ -208,7 +203,8 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-8 overflow-y-auto flex-1 min-h-0">
+        <form id="progress-form" onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="px-5 overflow-y-auto flex-1 min-h-0">
         {/* Zone de texte avec micro - OBLIGATOIRE */}
         <div className="mb-4">
           <label htmlFor="progress-content" className="block text-sm font-medium text-gray-700 mb-2">
@@ -252,7 +248,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
         </div>
 
         {/* Tags de progrès - moins proéminents */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <p className="text-xs text-gray-500 text-center mb-2">Tags (optionnel)</p>
           <div className="flex justify-center gap-2 flex-wrap">
             {PROGRESS_TAGS.map(({ label, emoji }) => {
@@ -276,7 +272,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               );
             })}
           </div>
-        </div>
+        </div> */}
 
         {/* Médias */}
         <div className="mb-4">
@@ -318,106 +314,114 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                   )}>
                     <span className="text-xl">{emoji}</span>
                   </div>
-                  <span className={`text-[10px] font-medium ${isSelected ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <span className={clsx(
+                    'text-[10px] font-medium',
+                    isSelected ? 'text-gray-900' : 'text-gray-500'
+                  )}>
                     {label}
                   </span>
                 </button>
               );
             })}
             
-            {/* Option Autre - à la fin avec couleur jaune (uniquement si l'utilisateur a le journal) */}
-            {effectiveUser?.hasJournal && (
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(selectedCategory === 'ORTHOPHONIE' ? null : 'ORTHOPHONIE')}
-                className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
-              >
-                <div className={clsx(
-                  'w-12 h-12 rounded-full flex items-center justify-center',
-                  'transition-all duration-150',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
-                  'active:scale-[0.98]',
-                  selectedCategory === 'ORTHOPHONIE' 
-                    ? clsx(ORTHOPHONIE_COLORS.active, 'ring-2 ring-offset-2 ring-gray-400')
-                    : clsx(ORTHOPHONIE_COLORS.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
-                )}>
-                  <span className="text-xl">{CATEGORY_EMOJIS.ORTHOPHONIE}</span>
-                </div>
-                <span className={`text-[10px] font-medium ${selectedCategory === 'ORTHOPHONIE' ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Autre
-                </span>
-              </button>
-            )}
+            {/* Option Autre - remplace Orthophonie */}
+            <button
+              type="button"
+              onClick={() => setSelectedCategory(selectedCategory === 'AUTRE' ? null : 'AUTRE')}
+              className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
+            >
+              <div className={clsx(
+                'w-12 h-12 rounded-full flex items-center justify-center',
+                'transition-all duration-150',
+                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
+                'active:scale-[0.98]',
+                selectedCategory === 'AUTRE' 
+                  ? clsx(AUTRE_COLORS.active, 'ring-2 ring-offset-2 ring-gray-400')
+                  : clsx(AUTRE_COLORS.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
+              )}>
+                <span className="text-xl">{AUTRE_PROGRESS_EMOJI}</span>
+              </div>
+              <span className={clsx(
+                'text-[10px] font-medium',
+                selectedCategory === 'AUTRE' ? 'text-gray-900' : 'text-gray-500'
+              )}>
+                Autre
+              </span>
+            </button>
           </div>
         </div>
 
         {/* Message d'erreur */}
         <ErrorMessage message={error} className="mb-3 rounded-xl text-center text-sm" />
-
-        {/* Boutons */}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleClose}
-            className={clsx(
-              'flex-1 py-4 px-4 rounded-2xl font-semibold text-gray-600',
-              'bg-gray-100 md:hover:bg-gray-200',
-              'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
-              'transition-all active:scale-[0.98] cursor-pointer',
-              'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
-            )}
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || !content.trim()}
-            className={clsx(
-              'flex-1 py-4 px-4 rounded-2xl font-bold text-amber-950',
-              'bg-linear-to-r from-amber-300 via-yellow-400 to-amber-500',
-              'shadow-md md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2',
-              'transition-all active:scale-[0.98]',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'flex items-center justify-center gap-2 cursor-pointer',
-              'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400'
-            )}
-          >
-            {isSubmitting ? (
-              <span className="animate-spin">⏳</span>
-            ) : isEditMode ? (
-              <>
-                <span>✅</span>
-                Modifier
-              </>
-            ) : (
-              <>
-                <span>🎉</span>
-                Noter !
-              </>
-            )}
-          </button>
         </div>
 
-        {/* Bouton supprimer (mode édition uniquement) */}
-        {isEditMode && (
-          <Button
-            type="button"
-            onClick={() => deleteConfirmation.handleClick(handleDelete)}
-            disabled={isSubmitting || deleteConfirmation.isDeleting}
-            variant={deleteConfirmation.showConfirm ? 'danger' : 'danger-outline'}
-            size="md"
-            rounded="lg"
-            className="mt-3 w-full"
-          >
-            {deleteConfirmation.isDeleting ? (
-              <span className="animate-spin">⏳</span>
-            ) : deleteConfirmation.showConfirm ? (
-              '⚠️ Confirmer la suppression'
-            ) : (
-              '🗑️ Supprimer ce progrès'
-            )}
-          </Button>
-        )}
+        {/* Boutons - toujours visibles en bas */}
+        <div className="px-5 pb-24 md:pb-8 pt-4 border-t border-gray-200 shrink-0 bg-white">
+          <div className="flex gap-3 mb-3">
+            <button
+              type="button"
+              onClick={handleClose}
+              className={clsx(
+                'flex-1 py-4 px-4 rounded-2xl font-semibold text-gray-600',
+                'bg-gray-100 md:hover:bg-gray-200',
+                'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
+                'transition-all active:scale-[0.98] cursor-pointer',
+                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
+              )}
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !content.trim()}
+              className={clsx(
+                'flex-1 py-4 px-4 rounded-2xl font-bold text-amber-950',
+                'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500',
+                'shadow-md md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2',
+                'transition-all active:scale-[0.98]',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'flex items-center justify-center gap-2 cursor-pointer',
+                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400'
+              )}
+            >
+              {isSubmitting ? (
+                <span className="animate-spin">⏳</span>
+              ) : isEditMode ? (
+                <>
+                  <span>✅</span>
+                  Modifier
+                </>
+              ) : (
+                <>
+                  <span>🎉</span>
+                  Noter !
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Bouton supprimer (mode édition uniquement) */}
+          {isEditMode && (
+            <Button
+              type="button"
+              onClick={() => deleteConfirmation.handleClick(handleDelete)}
+              disabled={isSubmitting || deleteConfirmation.isDeleting}
+              variant={deleteConfirmation.showConfirm ? 'danger' : 'danger-outline'}
+              size="md"
+              rounded="lg"
+              className="w-full"
+            >
+              {deleteConfirmation.isDeleting ? (
+                <span className="animate-spin">⏳</span>
+              ) : deleteConfirmation.showConfirm ? (
+                '⚠️ Confirmer la suppression'
+              ) : (
+                '🗑️ Supprimer ce progrès'
+              )}
+            </Button>
+          )}
+        </div>
         </form>
       </div>
     </BottomSheetModal>

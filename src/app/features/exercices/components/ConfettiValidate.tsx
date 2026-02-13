@@ -25,7 +25,7 @@ const EMERALD_COLORS = [
   '#0D9488',
 ];
 
-const ANIMATION_DURATION = 1.6;
+const ANIMATION_DURATION = 1.1;
 
 function ValidateConfetti({
   delay,
@@ -45,8 +45,8 @@ function ValidateConfetti({
   centerY: number;
 }) {
   const radians = (angle * Math.PI) / 180;
-  const endX = Math.cos(radians) * distance * 1.35;
-  const endY = Math.sin(radians) * distance * 0.5;
+  const endX = Math.cos(radians) * distance * 0.9;
+  const endY = Math.sin(radians) * distance * 0.35;
 
   return (
     <motion.div
@@ -91,7 +91,7 @@ export const ConfettiValidate = memo(function ConfettiValidate({
     if (!show) return [];
     return Array.from({ length: actualCount }, (_, i) => {
       const angle = Math.random() * 360;
-      const distance = 18 + Math.random() * 5;
+      const distance = 12 + Math.random() * 4;
       return {
         id: `validate-confetti-${i}`,
         angle,

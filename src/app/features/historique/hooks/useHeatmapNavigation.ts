@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { subDays, format, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { HeatmapDay } from '@/app/features/historique';
@@ -15,11 +15,23 @@ type HeatmapNavigationResult = {
   goToNextPeriod: () => void;
 };
 
+/**
+ * Calcule le nombre de jours d'historique nécessaires pour couvrir la période affichée.
+ * Le +2 (au lieu de +1) ajoute une période de lookahead pour que canGoBack
+ * détecte correctement s'il y a des données au-delà de la période affichée.
+ */
+export function getRequiredDaysForOffset(periodOffset: number, daysPerPeriod: number, minDays = 40): number {
+  return Math.max(minDays, (Math.abs(periodOffset) + 2) * daysPerPeriod);
+}
+
 export function useHeatmapNavigation(
   history: HistoryEntry[],
-  daysPerPeriod = 30
+  daysPerPeriod = 30,
+  externalOffset?: { value: number; set: Dispatch<SetStateAction<number>> }
 ): HeatmapNavigationResult {
-  const [periodOffset, setPeriodOffset] = useState(0);
+  const [internalOffset, setInternalOffset] = useState(0);
+  const periodOffset = externalOffset?.value ?? internalOffset;
+  const setPeriodOffset = externalOffset?.set ?? setInternalOffset;
 
   const navigationData = useMemo(() => {
     const today = new Date();

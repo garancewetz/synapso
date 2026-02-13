@@ -8,7 +8,7 @@ import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
-import { MediaUploader } from '@/app/features/exercices';
+import { MediaUploader } from '@/app/components/ui';
 import { queryKeys } from '@/app/lib/api-queries';
 import { ExerciceFormCategory } from './ExerciceForm/ExerciceFormCategory';
 import { ExerciceFormBodyparts } from './ExerciceForm/ExerciceFormBodyparts';
@@ -312,8 +312,8 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       />
 
       <MediaUploader
-        value={formData.media}
-        onChange={(media) => setFormData({ ...formData, media })}
+        value={formData.media?.photos || []}
+        onChange={(photos) => setFormData({ ...formData, media: photos.length > 0 ? { ...formData.media, photos } : null })}
       />
 
       <FormActions

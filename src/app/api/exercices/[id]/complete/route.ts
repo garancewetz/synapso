@@ -27,19 +27,24 @@ export async function PATCH(
     }
 
     let completedAt = new Date();
+    let resetFrequency: 'DAILY' | 'WEEKLY' = 'DAILY';
     try {
       const body = await request.json();
       if (body?.completedAt && /^\d{4}-\d{2}-\d{2}$/.test(body.completedAt)) {
         completedAt = new Date(body.completedAt + 'T12:00:00.000Z');
       }
+      if (body?.resetFrequency === 'WEEKLY') {
+        resetFrequency = 'WEEKLY';
+      }
     } catch {
-      // Body vide, utiliser la date actuelle
+      // Body vide, utiliser les valeurs par défaut
     }
 
     const result = await completeExercice({
       exerciceId: id,
       userId,
       completedAt,
+      resetFrequency,
     });
 
     console.log('[API-COMPLETE] ✅', result.completed ? 'COMPLÉTÉ' : 'DÉCOMPLÉTÉ', { exerciceId: id, result });

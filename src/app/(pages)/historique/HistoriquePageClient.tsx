@@ -10,7 +10,7 @@ import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
 import { useProgress, useProgressStats, useProgressModal } from '@/app/features/progress';
-import { usePeriodNavigation, useHeatmapNavigation } from '@/app/features/historique';
+import { usePeriodNavigation, useHeatmapNavigation, getRequiredDaysForOffset, getRequiredDaysForMonthOffset } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
 import { 
@@ -59,10 +59,12 @@ type ActiveTab = 'statistiques' | 'progres';
 
 // 28 jours pour le heatmap du mois
 const MONTH_HEATMAP_DAYS = 28;
+// 15 jours par période pour le graphique montagne
+const CHART_DAYS_PER_PERIOD = 15;
 
 export function HistoriquePageClient() {
   const [showConfetti, setShowConfetti] = useState(false);
-  const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('all');
+  const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('week');
   const [activeTab, setActiveTab] = useState<ActiveTab>('progres');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,8 +74,18 @@ export function HistoriquePageClient() {
   const { openForCreate } = progressModal;
   const displayName = effectiveUser?.name || "";
 
-  // Charger l'historique
-  const { history, loading: loadingHistory } = useHistory();
+  // States de navigation (remontés ici pour adapter le fetch dynamiquement)
+  const [heatmapOffset, setHeatmapOffset] = useState(0);
+  const [chartOffset, setChartOffset] = useState(0);
+
+  // "Tout" dans les zones travaillées → charger tout l'historique (days: null)
+  const historyDays = bodypartPeriod === 'all' ? null : Math.max(
+    getRequiredDaysForOffset(heatmapOffset, MONTH_HEATMAP_DAYS),
+    getRequiredDaysForMonthOffset(chartOffset, CHART_DAYS_PER_PERIOD),
+  );
+
+  // Charger l'historique (jours adaptés à la navigation des deux composants)
+  const { history, loading: loadingHistory } = useHistory({ days: historyDays });
 
   // Charger les progrès
   const { progressList, loading: loadingProgress } = useProgress();
@@ -221,7 +233,7 @@ export function HistoriquePageClient() {
     canGoForward: canGoForwardHeatmap,
     goToPreviousPeriod: goToPreviousHeatmapPeriod,
     goToNextPeriod: goToNextHeatmapPeriod,
-  } = useHeatmapNavigation(deferredHistory, MONTH_HEATMAP_DAYS);
+  } = useHeatmapNavigation(deferredHistory, MONTH_HEATMAP_DAYS, { value: heatmapOffset, set: setHeatmapOffset });
   
   const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData, referenceDate), [heatmapData, referenceDate]);
 
@@ -234,7 +246,7 @@ export function HistoriquePageClient() {
     canGoForward,
     goToPreviousPeriod,
     goToNextPeriod,
-  } = usePeriodNavigation(filteredHistory, 15);
+  } = usePeriodNavigation(filteredHistory, CHART_DAYS_PER_PERIOD, { value: chartOffset, set: setChartOffset });
 
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
 

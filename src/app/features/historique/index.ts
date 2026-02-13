@@ -26,8 +26,8 @@ export { useHistory } from './hooks/useHistory';
 export { useDayDetailData } from './hooks/useDayDetailData';
 export { useDayData } from './hooks/useDayData';
 export { useDayStats } from './hooks/useDayStats';
-export { useHeatmapNavigation } from './hooks/useHeatmapNavigation';
-export { usePeriodNavigation } from './hooks/usePeriodNavigation';
+export { useHeatmapNavigation, getRequiredDaysForOffset } from './hooks/useHeatmapNavigation';
+export { usePeriodNavigation, getRequiredDaysForMonthOffset } from './hooks/usePeriodNavigation';
 
 // Utils
 export * from './utils/historique.utils';

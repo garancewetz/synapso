@@ -40,4 +40,3 @@ export { GlobalCelebration } from './components/GlobalCelebration';
 export { ConfettiRain } from './components/ConfettiRain';
 export { ConfettiExplosion } from './components/ConfettiExplosion';
 export { ConfettiValidate } from './components/ConfettiValidate';
-export { MediaUploader } from './components/MediaUploader';

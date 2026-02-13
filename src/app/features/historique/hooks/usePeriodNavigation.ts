@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { addMonths, format, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useTimeContext } from '@/app/contexts/TimeContext';
@@ -16,12 +16,23 @@ type PeriodNavigationResult = {
   goToNextPeriod: () => void;
 };
 
+/**
+ * Calcule le nombre de jours d'historique nécessaires pour couvrir la période affichée.
+ * Utilise 31 jours par mois (conservateur) + lookahead d'un mois pour canGoBack.
+ */
+export function getRequiredDaysForMonthOffset(monthOffset: number, daysPerPeriod: number, minDays = 40): number {
+  return Math.max(minDays, (Math.abs(monthOffset) + 2) * 31 + daysPerPeriod);
+}
+
 export function usePeriodNavigation(
   history: HistoryEntry[],
-  daysPerPeriod = 20
+  daysPerPeriod = 20,
+  externalOffset?: { value: number; set: Dispatch<SetStateAction<number>> }
 ): PeriodNavigationResult {
   const { referenceDate } = useTimeContext();
-  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0);
+  const [internalOffset, setInternalOffset] = useState(0);
+  const selectedMonthOffset = externalOffset?.value ?? internalOffset;
+  const setSelectedMonthOffset = externalOffset?.set ?? setInternalOffset;
 
   const periodData = useMemo(() => {
     const now = referenceDate;

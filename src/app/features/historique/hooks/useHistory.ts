@@ -24,18 +24,18 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
   const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
 
-  const { data: history = [], isLoading, isFetching, error, refetch } = useQuery({
+  const { data: history = [], isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.history.list({ days: days || undefined, referenceDate: referenceDateForQuery }),
     queryFn: () => fetchHistory({ days: days || undefined, referenceDate: referenceDateForQuery }),
     enabled: !!effectiveUser,
-    placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
+    placeholderData: (previousData) => previousData,
     staleTime: 1000,
     gcTime: 2 * 60 * 1000,
   });
 
   return {
     history,
-    loading: isLoading || isFetching,
+    loading: isLoading,
     error: error as Error | null,
     refetch: () => { refetch(); },
   };

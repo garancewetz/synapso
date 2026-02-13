@@ -7,10 +7,9 @@ import { PROGRESS_CATEGORY_COLORS, AUTRE_COLORS } from '@/app/constants/progress
 import { PROGRESS_EMOJIS, ORTHOPHONIE_PROGRESS_EMOJI, AUTRE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress } from '../utils/progress.utils';
 import { useSpeechRecognition } from '@/app/hooks/useSpeechRecognition';
-import { BottomSheetModal, Button } from '@/app/components/ui';
+import { BottomSheetModal, Button, MediaUploader } from '@/app/components/ui';
 import { useDeleteConfirmation } from '@/app/hooks/useDeleteConfirmation';
 import { ErrorMessage } from '@/app/components/ErrorMessage';
-import { MediaUploaderProgress } from './MediaUploaderProgress';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { Progress } from '@/app/types';
 
@@ -276,9 +275,10 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
 
         {/* Médias */}
         <div className="mb-4">
-          <MediaUploaderProgress
-            value={selectedMedias}
-            onChange={setSelectedMedias}
+          <MediaUploader
+            value={selectedMedias.map(url => ({ url, publicId: url }))}
+            onChange={(items) => setSelectedMedias(items.map(i => i.url))}
+            maxItems={3}
           />
         </div>
 

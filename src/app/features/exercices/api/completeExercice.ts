@@ -6,19 +6,23 @@ type CompleteExerciceParams = {
   exerciceId: number;
   userId: number;
   completedAt?: Date;
+  resetFrequency?: 'DAILY' | 'WEEKLY';
 };
 
-async function getWeeklyCompletionsForExercice(
+async function getPeriodCompletionsForExercice(
   exerciceId: number,
-  referenceDate: Date
+  referenceDate: Date,
+  resetFrequency: 'DAILY' | 'WEEKLY' = 'DAILY'
 ): Promise<Date[]> {
-  const startOfWeekDate = getStartOfPeriod('WEEKLY', referenceDate);
-  const endOfWeekDate = startOfDay(addDays(startOfWeekDate, 7));
+  const startOfPeriod = getStartOfPeriod(resetFrequency, referenceDate);
+  const endOfPeriod = resetFrequency === 'DAILY'
+    ? startOfDay(addDays(referenceDate, 1))
+    : startOfDay(addDays(startOfPeriod, 7));
 
   const history = await prisma.history.findMany({
     where: {
       exerciceId,
-      completedAt: { gte: startOfWeekDate, lt: endOfWeekDate },
+      completedAt: { gte: startOfPeriod, lt: endOfPeriod },
     },
     select: { completedAt: true },
     orderBy: { completedAt: 'asc' },
@@ -28,7 +32,7 @@ async function getWeeklyCompletionsForExercice(
 }
 
 export async function completeExercice(params: CompleteExerciceParams) {
-  const { exerciceId, userId, completedAt = new Date() } = params;
+  const { exerciceId, userId, completedAt = new Date(), resetFrequency = 'DAILY' } = params;
 
   const exercice = await prisma.exercice.findFirst({
     where: { id: exerciceId, userId },
@@ -64,9 +68,10 @@ export async function completeExercice(params: CompleteExerciceParams) {
       },
     });
 
-    const weeklyCompletions = await getWeeklyCompletionsForExercice(
+    const weeklyCompletions = await getPeriodCompletionsForExercice(
       exerciceId,
-      completedAt
+      completedAt,
+      resetFrequency
     );
 
     return {
@@ -89,9 +94,10 @@ export async function completeExercice(params: CompleteExerciceParams) {
       }),
     ]);
 
-    const weeklyCompletions = await getWeeklyCompletionsForExercice(
+    const weeklyCompletions = await getPeriodCompletionsForExercice(
       exerciceId,
-      completedAt
+      completedAt,
+      resetFrequency
     );
 
     return {

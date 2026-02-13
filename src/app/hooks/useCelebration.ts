@@ -16,45 +16,40 @@ export function useCelebration(completedToday: number | null): UseCelebrationRet
   const [showCelebration, setShowCelebration] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const prevCompletedRef = useRef(completedToday);
-  const isAnimatingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup uniquement au unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current;
-    
-    // Ignorer si on charge ou si une animation est en cours
-    if (completedToday === null || isAnimatingRef.current) {
-      if (completedToday !== null) {
-        prevCompletedRef.current = completedToday;
-      }
-      return;
-    }
-    
-    // Ignorer si pas de changement ou régression
-    if (prevCompleted === completedToday || (prevCompleted !== null && completedToday < prevCompleted)) {
-      prevCompletedRef.current = completedToday;
-      return;
-    }
-    
-    // Déclencher uniquement quand on passe de moins de 5 à exactement 5
+
+    // Ignorer le chargement initial
+    if (completedToday === null) return;
+
+    // Mettre à jour la ref avant toute logique
+    prevCompletedRef.current = completedToday;
+
+    // Déclencher quand on passe de moins de 5 à exactement 5
     const wasBelowGoal = prevCompleted !== null && prevCompleted < DAILY_GOAL;
     const isExactlyGoal = completedToday === DAILY_GOAL;
-    
+
     if (wasBelowGoal && isExactlyGoal) {
-      isAnimatingRef.current = true;
-      prevCompletedRef.current = completedToday;
-      
+      // Annuler le timer précédent si re-trigger pendant l'animation
+      if (timerRef.current) clearTimeout(timerRef.current);
+
       setAnimationKey(prev => prev + 1);
       setShowCelebration(true);
-      
-      const timer = setTimeout(() => {
+
+      timerRef.current = setTimeout(() => {
         setShowCelebration(false);
-        isAnimatingRef.current = false;
+        timerRef.current = null;
       }, CELEBRATION_DURATION_MS);
-      
-      return () => clearTimeout(timer);
     }
-    
-    prevCompletedRef.current = completedToday;
   }, [completedToday]);
 
   return { showCelebration, animationKey };

@@ -8,6 +8,7 @@ export { ExerciceTags } from './components/ExerciceTags';
 export { ExerciceMedia } from './components/ExerciceMedia';
 export { CategoryCardWithProgress } from './components/CategoryCardWithProgress';
 export { CategoryAffinerSection } from './components/CategoryAffinerSection';
+export { CategoryActiveFiltersBar } from './components/CategoryActiveFiltersBar';
 export { DailyGoalProgress } from './components/DailyGoalProgress';
 
 // ExerciceForm sub-components
@@ -25,6 +26,7 @@ export { useArchiveExercice } from './hooks/useArchiveExercice';
 export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 export { useExerciceStatusFilter } from './hooks/useExerciceStatusFilter';
 export { useCategoryFilters } from './hooks/useCategoryFilters';
+export { useCategoryActiveFiltersBarHandlers } from './hooks/useCategoryActiveFiltersBarHandlers';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
 export { useShareExercice } from './hooks/useShareExercice';

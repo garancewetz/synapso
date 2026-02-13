@@ -34,6 +34,7 @@ type UseCategoryFiltersReturn = {
   isAllEquipmentsSelected: boolean;
   handleSelectAllBodyparts: () => void;
   handleSelectAllEquipments: () => void;
+  handleResetAllFilters: () => void;
 };
 
 export function useCategoryFilters({
@@ -186,6 +187,11 @@ export function useCategoryFilters({
     setSelectedEquipments([]);
   }, []);
 
+  const handleResetAllFilters = useCallback(() => {
+    setSelectedBodyparts([]);
+    setSelectedEquipments([]);
+  }, []);
+
   return {
     selectedBodyparts,
     setSelectedBodyparts,
@@ -200,5 +206,6 @@ export function useCategoryFilters({
     isAllEquipmentsSelected,
     handleSelectAllBodyparts,
     handleSelectAllEquipments,
+    handleResetAllFilters,
   };
 }

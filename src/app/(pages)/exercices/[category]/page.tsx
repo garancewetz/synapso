@@ -9,7 +9,9 @@ import {
   useExerciceStatusFilter,
   useExerciceHandlers,
   useCategoryFilters,
+  useCategoryActiveFiltersBarHandlers,
   CategoryAffinerSection,
+  CategoryActiveFiltersBar,
 } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
 import { StatusFilterSection } from '@/app/components/ui';
@@ -68,6 +70,11 @@ export default function CategoryPage() {
   );
 
   const { handleEditClick } = useExerciceHandlers({ updateExercice });
+
+  const activeFiltersBarHandlers = useCategoryActiveFiltersBarHandlers({
+    setFilter,
+    filters,
+  });
 
   const handleArchive = useCallback(
     (updatedExercice: Exercice) => {
@@ -144,7 +151,17 @@ export default function CategoryPage() {
             />
           </div>
         </div>
+      </div>
 
+      <CategoryActiveFiltersBar
+        categoryParam={categoryParam}
+        filter={filter}
+        selectedBodyparts={filters.selectedBodyparts}
+        selectedEquipments={filters.selectedEquipments}
+        {...activeFiltersBarHandlers}
+      />
+
+      <div className="max-w-5xl mx-auto">
         <div className="px-4">
           {loadingExercices ? (
             <div className="flex items-center justify-center min-h-screen py-12">

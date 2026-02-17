@@ -4,15 +4,15 @@ import { useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
-import { UserIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
+import { UserIcon, RocketIcon } from '@/app/components/ui/icons';
+import { BookmarkIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
-import { useExercices } from '@/app/features/exercices';
+import { useExercices, useExerciceHandlers, useRelatedStretchingByCategory } from '@/app/features/exercices';
 import { useProgressModal } from '@/app/features/progress';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { useRelatedStretchingByCategory } from '@/app/features/exercices';
 import { usePrefetchPreviousDates } from '@/app/features/time-machine';
-import { useHomeTabs, HomeExercicesTab, HomeJournalTab, HomeProgressionTab } from '@/app/features/home';
+import { useHomeTabs, HomeExercicesTab, HomeKineTab, HomePlusTab } from '@/app/features/home';
 import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
 
 const AnimatePresence = dynamic(
@@ -34,25 +34,32 @@ export default function Home() {
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
   const queryClient = useQueryClient();
-  const hasJournal = effectiveUser?.hasJournal ?? false;
-  
+
   // ⚡ QUERY PREFETCHING: Précharger les données des dates précédentes en arrière-plan
   usePrefetchPreviousDates();
-  
+
   // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
   usePrefetchCommonPages();
-  
-  const { exercices, error: exercicesError } = useExercices({ includeArchived: true });
+
+  const { exercices, updateExercice, error: exercicesError } = useExercices({ includeArchived: true });
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
-  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(hasJournal);
+  const pinnedExercices = useMemo(() => exercices.filter(e => !e.archived && e.pinned), [exercices]);
+  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length);
+
+  const { handleEditClick: handleKineEdit, handleCompleted: handleKineUpdate } = useExerciceHandlers({
+    updateExercice,
+    fromPath: '/',
+  });
+
+  const archivedCount = useMemo(() => exercices.filter(e => e.archived).length, [exercices]);
 
   const tabOptions = useMemo(() => {
-    const getIcon = (iconName: 'UserIcon' | 'BookIcon' | 'RocketIcon') => {
+    const getIcon = (iconName: 'UserIcon' | 'BookmarkIcon' | 'RocketIcon') => {
       switch (iconName) {
         case 'UserIcon':
           return <UserIcon className="w-5 h-5" />;
-        case 'BookIcon':
-          return <BookIcon className="w-5 h-5" />;
+        case 'BookmarkIcon':
+          return <BookmarkIcon className="w-5 h-5" />;
         case 'RocketIcon':
           return <RocketIcon className="w-5 h-5" />;
       }
@@ -66,17 +73,15 @@ export default function Home() {
   }, [tabOptionsData]);
 
   const handleProgressSuccess = useCallback(() => {
-    // ⚡ TANSTACK QUERY: Invalider les queries concernées
-    // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
-    queryClient.invalidateQueries({ 
+    queryClient.invalidateQueries({
       queryKey: queryKeys.progress.all,
       refetchType: 'active',
     });
-    queryClient.invalidateQueries({ 
+    queryClient.invalidateQueries({
       queryKey: queryKeys.categoryStats.all,
       refetchType: 'active',
     });
-    queryClient.invalidateQueries({ 
+    queryClient.invalidateQueries({
       queryKey: queryKeys.exercices.all,
       refetchType: 'active',
     });
@@ -87,7 +92,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         {/* Welcome Header - uniquement sur la page d'accueil */}
         <WelcomeHeaderWrapper />
-        
+
         {/* Contenu principal */}
         <div className="px-3 md:px-4 pb-12 md:pb-8">
           <AnimatePresence mode="wait">
@@ -140,19 +145,24 @@ export default function Home() {
                 )}
 
                 {activeTab === 'exercices' && (
-                  <>
-                   <HomeExercicesTab
+                  <HomeExercicesTab
                     exercices={exercices}
                     relatedStretchingByCategory={relatedStretchingByCategory}
+                    archivedCount={archivedCount}
                     error={exercicesError}
                   />
-                  </>
-
                 )}
 
-                {activeTab === 'journal' && hasJournal && <HomeJournalTab />}
+                {activeTab === 'kine' && (
+                  <HomeKineTab
+                    pinnedExercices={pinnedExercices}
+                    onEdit={handleKineEdit}
+                    onCompleted={handleKineUpdate}
+                    onArchive={handleKineUpdate}
+                  />
+                )}
 
-                {activeTab === 'progression' && <HomeProgressionTab />}
+                {activeTab === 'suivi' && <HomePlusTab />}
 
               </MotionDiv>
             )}

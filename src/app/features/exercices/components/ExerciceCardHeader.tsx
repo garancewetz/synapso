@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { Badge, WeeklyCompletionIndicator } from '@/app/components/ui';
-import { EyeIcon } from '@/app/components/ui/icons';
+import { EyeIcon, BookmarkIcon } from '@/app/components/ui/icons';
 
 type Props = {
   exercice: Exercice;
@@ -53,7 +53,10 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
         </h3>
       </div>
 
-      <div className="absolute top-0 right-0 flex items-center justify-end min-w-20">
+      <div className="absolute top-0 right-0 flex items-center justify-end gap-1.5 min-w-20">
+        {exercice.pinned && (
+          <BookmarkIcon className="w-4 h-4 text-amber-500" filled />
+        )}
         {showWeeklyBadge && (
           <WeeklyCompletionIndicator completions={exercice.weeklyCompletions ?? []} />
         )}

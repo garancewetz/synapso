@@ -15,12 +15,14 @@ const MotionDiv = dynamic(
 type Props = {
   exercices: Exercice[];
   relatedStretchingByCategory: Record<ExerciceCategory, number>;
+  archivedCount: number;
   error?: Error | null;
 };
 
 export const HomeExercicesTab = memo(function HomeExercicesTab({
   exercices,
   relatedStretchingByCategory,
+  archivedCount,
   error,
 }: Props) {
   const activeExercices = useMemo(() => exercices.filter(e => !e.archived), [exercices]);
@@ -33,8 +35,6 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
     return map;
   }, [activeExercices]);
 
-  const archivedCount = useMemo(() => exercices.filter(e => e.archived === true).length, [exercices]);
-  
   return (
     <div className="space-y-4">
       {error && (

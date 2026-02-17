@@ -1,41 +1,41 @@
 import { useState, useMemo } from 'react';
 
-type TabValue = 'exercices' | 'journal' | 'progression';
+type TabValue = 'exercices' | 'kine' | 'suivi';
 
 type TabOptionData = {
   value: TabValue;
   label: string;
-  iconName: 'UserIcon' | 'BookIcon' | 'RocketIcon';
+  iconName: 'UserIcon' | 'BookmarkIcon' | 'RocketIcon';
 };
 
-export function useHomeTabs(hasJournal: boolean) {
+export function useHomeTabs(pinnedCount: number) {
   const [activeTab, setActiveTab] = useState<TabValue>('exercices');
 
   const tabOptionsData = useMemo<TabOptionData[]>(() => {
     const options: TabOptionData[] = [];
-    
-    options.push({ 
-      value: 'exercices', 
+
+    options.push({
+      value: 'exercices',
       label: 'Exercices',
       iconName: 'UserIcon',
     });
-    
-    if (hasJournal) {
-      options.push({ 
-        value: 'journal', 
-        label: 'Journal',
-        iconName: 'BookIcon',
+
+    if (pinnedCount > 0) {
+      options.push({
+        value: 'kine',
+        label: `Kiné (${pinnedCount})`,
+        iconName: 'BookmarkIcon',
       });
     }
-    
-    options.push({ 
-      value: 'progression', 
-      label: 'Progression',
+
+    options.push({
+      value: 'suivi',
+      label: 'Suivi',
       iconName: 'RocketIcon',
     });
-    
+
     return options;
-  }, [hasJournal]);
+  }, [pinnedCount]);
 
   const currentActiveTab = useMemo(() => {
     const isTabAvailable = tabOptionsData.some(opt => opt.value === activeTab);

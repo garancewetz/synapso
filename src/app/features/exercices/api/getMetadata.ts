@@ -21,6 +21,7 @@ export async function getMetadata(params: GetMetadataParams) {
       const exercices = await prisma.exercice.findMany({
         where: {
           userId: userId,
+          archived: false,
         },
         select: {
           equipments: true,

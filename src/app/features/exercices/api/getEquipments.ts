@@ -2,6 +2,9 @@ import { prisma } from '@/app/lib/prisma';
 
 export async function getEquipments() {
   const exercices = await prisma.exercice.findMany({
+    where: {
+      archived: false,
+    },
     select: {
       equipments: true,
     },

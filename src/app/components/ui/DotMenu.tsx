@@ -13,7 +13,9 @@ type Props = {
   onArchive?: () => void;
   onEdit?: () => void;
   onShare?: () => void;
+  onPin?: () => void;
   isArchived?: boolean;
+  isPinned?: boolean;
   className?: string;
   containerRef?: React.RefObject<HTMLDivElement | null>;
 };
@@ -28,7 +30,9 @@ export function DotMenu({
   onArchive,
   onEdit,
   onShare,
+  onPin,
   isArchived = false,
+  isPinned = false,
   className = '',
   containerRef,
 }: Props) {
@@ -36,7 +40,7 @@ export function DotMenu({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const itemCount = [onArchive, onEdit, onShare].filter(Boolean).length;
+  const itemCount = [onArchive, onEdit, onShare, onPin].filter(Boolean).length;
 
   const {
     isOpen,
@@ -45,7 +49,7 @@ export function DotMenu({
     handleAction,
     handleKeyDown,
     hasActions,
-  } = useDotMenuActions({ onArchive, onEdit, onShare });
+  } = useDotMenuActions({ onArchive, onEdit, onShare, onPin });
 
   const { dropdownStyle } = useDropdownPosition({
     isOpen,
@@ -111,7 +115,9 @@ export function DotMenu({
         onArchive={onArchive}
         onEdit={onEdit}
         onShare={onShare}
+        onPin={onPin}
         isArchived={isArchived}
+        isPinned={isPinned}
         onActionClick={handleAction}
         variant="dropdown"
         layout={containerRef ? 'grid' : 'stack'}

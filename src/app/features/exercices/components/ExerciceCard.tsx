@@ -6,8 +6,10 @@ import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
 import { useCompleteExercice } from '../hooks/useCompleteExercice';
 import { useArchiveExercice } from '../hooks/useArchiveExercice';
+import { usePinExercice } from '../hooks/usePinExercice';
 import { useShareExercice, ConfettiValidate } from '@/app/features/exercices';
-import { CompleteButton, BaseCard, DotMenu } from '@/app/components/ui';
+import { CompleteButton, BaseCard, Button } from '@/app/components/ui';
+import { DotsIcon, EditIcon, ShareIcon, BookmarkIcon } from '@/app/components/ui/icons';
 import { ExerciceCardHeader } from './ExerciceCardHeader';
 import { ExerciceCardTags } from './ExerciceCardTags';
 import { ExerciceCardExpandable } from './ExerciceCardExpandable';
@@ -30,13 +32,19 @@ type Props = {
  */
 const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted, onArchive }: Props) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [confettiCenter, setConfettiCenter] = useState({ x: 50, y: 50 });
     const cardRef = useRef<HTMLDivElement>(null);
     const completeButtonRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
-    const { archiveExercice } = useArchiveExercice();
+    const { archiveExercice, isArchiving } = useArchiveExercice();
     const { handleShare } = useShareExercice(exercice, cardRef);
+    const { handlePin, isPinning } = usePinExercice({
+        exercice,
+        userId: effectiveUser?.id ?? 0,
+        onCompleted: onCompleted,
+    });
     const { selectedDate, isDateSelected } = useSelectedDate();
     const isTimeMachineMode = isDateSelected && selectedDate && !isToday(selectedDate);
 
@@ -52,6 +60,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     });
 
     const handleEdit = useCallback(() => {
+        setIsActionsOpen(false);
         if (onEdit) {
             onEdit(exercice.id);
         }
@@ -62,13 +71,26 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
         if (updated && onArchive) {
             onArchive(updated);
         }
+        setIsActionsOpen(false);
     }, [archiveExercice, exercice.id, exercice.archived, onArchive]);
+
+    const handlePinClick = useCallback(async () => {
+        await handlePin();
+        setIsActionsOpen(false);
+    }, [handlePin]);
 
     const handleShareClick = useCallback(() => {
         handleShare();
+        setIsActionsOpen(false);
     }, [handleShare]);
 
+    const toggleActions = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsActionsOpen(prev => !prev);
+    }, []);
+
     const toggleExpand = useCallback(() => {
+        setIsActionsOpen(false);
         setIsExpanded(prev => !prev);
     }, []);
 
@@ -140,25 +162,64 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                         onLightboxOpen={(index: number) => setLightboxIndex(index)}
                     />
                 </div>
-                <BaseCard.Footer onClick={(e) => e.stopPropagation()}>
-                    <DotMenu
-                        containerRef={cardRef}
-                        onArchive={handleArchive}
-                        onEdit={handleEdit}
-                        onShare={handleShareClick}
-                        isArchived={exercice.archived ?? false}
-                    />
+                <div onClick={(e) => e.stopPropagation()}>
+                    {/* Footer : bouton dots + CompleteButton — toujours stable */}
+                    <BaseCard.Footer>
+                        <Button
+                            iconOnly
+                            onClick={toggleActions}
+                            aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
+                            aria-expanded={isActionsOpen}
+                        >
+                            <DotsIcon className={`w-5 h-5 transition-transform duration-200 ${isActionsOpen ? 'rotate-90' : ''}`} />
+                        </Button>
 
-                    <div ref={completeButtonRef} className="flex-1 flex min-w-0">
-                        <CompleteButton
-                            onClick={handleComplete}
-                            isCompleted={exercice.completed}
-                            isCompletedToday={exercice.completedToday}
-                            isLoading={isCompleting}
-                            weeklyCount={exercice.weeklyCompletions?.length || 0}
-                        />
+                        <div ref={completeButtonRef} className="flex-1 flex min-w-0">
+                            <CompleteButton
+                                onClick={handleComplete}
+                                isCompleted={exercice.completed}
+                                isCompletedToday={exercice.completedToday}
+                                isLoading={isCompleting}
+                                weeklyCount={exercice.weeklyCompletions?.length || 0}
+                            />
+                        </div>
+                    </BaseCard.Footer>
+
+                    {/* Actions inline — s'ouvre en dessous du footer */}
+                    <div
+                        className="grid overflow-hidden transition-all duration-200 ease-out bg-gray-50/70"
+                        style={{ gridTemplateRows: isActionsOpen ? '1fr' : '0fr' }}
+                    >
+                        <div className="min-h-0">
+                            <div className="grid grid-cols-2 border-t border-gray-200">
+                                <button type="button" onClick={handleEdit} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-r border-b border-gray-200">
+                                    <EditIcon className="w-5 h-5" />
+                                    <span className="font-medium">Modifier</span>
+                                </button>
+                                <button type="button" onClick={handlePinClick} disabled={isPinning} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-b border-gray-200 disabled:opacity-50 disabled:pointer-events-none">
+                                    {isPinning ? (
+                                        <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                                    ) : (
+                                        <BookmarkIcon className="w-5 h-5" filled={exercice.pinned} />
+                                    )}
+                                    <span className="font-medium">{exercice.pinned ? 'Démarquer' : 'Pour le kiné'}</span>
+                                </button>
+                                <button type="button" onClick={handleShareClick} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-r border-gray-200">
+                                    <ShareIcon className="w-5 h-5" />
+                                    <span className="font-medium">Partager</span>
+                                </button>
+                                <button type="button" onClick={handleArchive} disabled={isArchiving} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] disabled:opacity-50 disabled:pointer-events-none">
+                                    {isArchiving ? (
+                                        <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                                    ) : (
+                                        <span className="text-xl">{exercice.archived ? '📤' : '📦'}</span>
+                                    )}
+                                    <span className="font-medium">{exercice.archived ? 'Désarchiver' : 'Archiver'}</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </BaseCard.Footer>
+                </div>
             </BaseCard.Content>
             </BaseCard>
             

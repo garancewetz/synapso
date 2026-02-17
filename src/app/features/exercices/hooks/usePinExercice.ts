@@ -8,7 +8,7 @@ type UsePinExerciceOptions = {
 };
 
 type UsePinExerciceReturn = {
-  handlePin: (e: React.MouseEvent) => Promise<void>;
+  handlePin: (e?: React.MouseEvent) => Promise<void>;
   isPinning: boolean;
 };
 
@@ -20,8 +20,8 @@ export function usePinExercice({
   const [isPinning, setIsPinning] = useState(false);
 
   const handlePin = useCallback(
-    async (e: React.MouseEvent) => {
-      e.stopPropagation();
+    async (e?: React.MouseEvent) => {
+      e?.stopPropagation();
 
       if (!userId) return;
 

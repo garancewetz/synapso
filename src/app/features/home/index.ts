@@ -1,6 +1,8 @@
 export { useHomeTabs } from './hooks/useHomeTabs';
 export { HomeExercicesTab } from './components/HomeExercicesTab';
 export { HomeJournalTab } from './components/HomeJournalTab';
+export { HomeKineTab } from './components/HomeKineTab';
+export { HomePlusTab } from './components/HomePlusTab';
 export { HomeProgressionTab } from './components/HomeProgressionTab';
 export { WelcomeHeader } from './components/WelcomeHeader';
 export { WelcomeHeaderWrapper } from './components/WelcomeHeaderWrapper';

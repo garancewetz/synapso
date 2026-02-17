@@ -4,6 +4,7 @@ type UseDotMenuActionsProps = {
   onArchive?: () => void;
   onEdit?: () => void;
   onShare?: () => void;
+  onPin?: () => void;
 };
 
 type UseDotMenuActionsReturn = {
@@ -23,6 +24,7 @@ export function useDotMenuActions({
   onArchive,
   onEdit,
   onShare,
+  onPin,
 }: UseDotMenuActionsProps): UseDotMenuActionsReturn {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,7 +53,7 @@ export function useDotMenuActions({
     }
   }, []);
 
-  const hasActions = Boolean(onArchive || onEdit || onShare);
+  const hasActions = Boolean(onArchive || onEdit || onShare || onPin);
 
   return {
     isOpen,

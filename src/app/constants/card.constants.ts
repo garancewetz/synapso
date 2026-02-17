@@ -20,8 +20,8 @@ export const GOLDEN_CARD_STYLES = {
 export const GOLDEN_ACCENT_STYLES = {
   // Gradient de la bande latérale plus chaud et festif
   gradient: 'bg-gradient-to-b from-amber-500 via-yellow-500 to-amber-600',
-  // Largeur de la bande légèrement plus épaisse
-  width: 'w-2.5',
+  // Largeur de la bande (alignée sur les autres cartes)
+  width: 'w-1.5',
 } as const;
 
 export const GOLDEN_FOOTER_STYLES = {

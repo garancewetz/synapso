@@ -22,6 +22,11 @@ import {
 } from '@/app/features/historique';
 
 // ⚡ PERFORMANCE: Charger dynamiquement les composants lourds avec loading
+const ProgressSlideshow = dynamic(
+  () => import('@/app/features/historique').then(mod => ({ default: mod.ProgressSlideshow })),
+  { ssr: false, loading: () => null }
+);
+
 const ProgressBottomSheet = dynamic(
   () => import('@/app/features/progress').then(mod => ({ default: mod.ProgressBottomSheet })),
   { ssr: false, loading: () => null }
@@ -64,6 +69,7 @@ const CHART_DAYS_PER_PERIOD = 15;
 
 export function HistoriquePageClient() {
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isSlideshowOpen, setIsSlideshowOpen] = useState(false);
   const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('week');
   const [activeTab, setActiveTab] = useState<ActiveTab>('progres');
   const router = useRouter();
@@ -188,6 +194,14 @@ export function HistoriquePageClient() {
     // ⚡ TANSTACK QUERY: Invalider les queries concernées
     // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
     queryClient.invalidateQueries({ 
+      queryKey: queryKeys.progress.all,
+      refetchType: 'active',
+    });
+  }, [queryClient]);
+
+  // Handler pour le pin (invalider le cache TanStack Query)
+  const handlePin = useCallback(() => {
+    queryClient.invalidateQueries({
       queryKey: queryKeys.progress.all,
       refetchType: 'active',
     });
@@ -421,28 +435,18 @@ export function HistoriquePageClient() {
                       <span>{STAR_BRIGHT_EMOJI}</span>
                       <span>Mes progrès</span>
                     </h2>
-                    {/* Bouton + doré pour ajouter un progrès */}
-                    {effectiveUser && (
-                      <button
-                        onClick={() => progressModal.openForCreate()}
-                        className={clsx(
-                          'flex items-center justify-center',
-                          'w-10 h-10 rounded-full',
-                          'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500',
-                          'text-amber-900 font-bold text-xl',
-                          'shadow-md hover:shadow-lg',
-                          'transition-all duration-200',
-                          'hover:scale-105 active:scale-95',
-                          'border-2 border-amber-600',
-                          'focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2'
-                        )}
-                        aria-label="Ajouter un progrès"
-                      >
-                        +
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                 
+                      {effectiveUser && (
+                        <ProgressButton
+                          onClick={() => progressModal.openForCreate()}
+                          variant="inline"
+                          label="Noter un progrès"
+                          ariaLabel="Ajouter un progrès"
+                        />
+                      )}
+                    </div>
                   </div>
-
               {/* Graphique encourageant */}
               {!loadingProgress && deferredProgressList.length >= 2 && (
                 <div>
@@ -450,6 +454,19 @@ export function HistoriquePageClient() {
                 </div>
               )}
 
+
+              {/* Bouton diaporama */}
+              {filteredProgress.length > 0 && (
+                <ProgressButton
+                  onClick={() => setIsSlideshowOpen(true)}
+                  variant="inline"
+                  label="Mode diaporama"
+                  ariaLabel="Voir en diaporama"
+                  emoji="📽️"
+                  iconPosition="right"
+                  className="w-full"
+                />
+              )}
 
               {/* Timeline des progrès */}
               <AnimatePresence mode="wait">
@@ -474,11 +491,12 @@ export function HistoriquePageClient() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                   >
-                    <ProgressTimeline 
+                    <ProgressTimeline
                       progressList={filteredProgress}
                       history={filteredHistory}
                       onEdit={progressModal.openForEdit}
                       onShare={handleShare}
+                      onPin={handlePin}
                     />
                   </MotionDiv>
                 )}
@@ -520,6 +538,12 @@ export function HistoriquePageClient() {
           progressToEdit={progressModal.progressToEdit}
         />
       )}
+
+      <ProgressSlideshow
+        isOpen={isSlideshowOpen}
+        onClose={() => setIsSlideshowOpen(false)}
+        progressList={filteredProgress}
+      />
     </div>
   );
 }

@@ -11,13 +11,14 @@ type Props = {
   history?: HistoryEntry[];
   onEdit?: (progress: Progress) => void;
   onShare?: (progress: Progress) => void;
+  onPin?: (updatedProgress: Progress) => void;
 };
 
 /**
  * Liste chronologique des progrès
  * Utilise ProgressCard pour afficher chaque progrès
  */
-export function ProgressTimeline({ progressList, onEdit, onShare }: Props) {
+export function ProgressTimeline({ progressList, onEdit, onShare, onPin }: Props) {
 
   // Calculer tous les numéros de victoire une seule fois (avant le return conditionnel)
   const progressWithNumbers = useMemo(() => {
@@ -63,6 +64,7 @@ export function ProgressTimeline({ progressList, onEdit, onShare }: Props) {
                   progress={progress}
                   onEdit={onEdit}
                   onShare={onShare}
+                  onPin={onPin}
                 />
               </div>
             </div>

@@ -12,6 +12,7 @@ export { LazyDonutChart } from './components/LazyDonutChart';
 export { LazyProgressStatsChart } from './components/LazyProgressStatsChart';
 export { ProgressCard } from './components/ProgressCard';
 export { ProgressCardCompact } from './components/ProgressCardCompact';
+export { ProgressSlideshow } from './components/ProgressSlideshow';
 export { ProgressStatsChart } from './components/ProgressStatsChart';
 export { ProgressStatsByTags } from './components/ProgressStatsByTags';
 export { ProgressTimeline } from './components/ProgressTimeline';

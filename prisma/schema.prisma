@@ -125,6 +125,7 @@ model Progress {
   emoji     String?
   tags      String[] @default([])
   medias    String[] @default([])
+  pinned    Boolean  @default(false)
   userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,6 +133,7 @@ model Progress {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([pinned])
   @@map("Victory")
 }
 

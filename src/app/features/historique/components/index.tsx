@@ -10,6 +10,7 @@ export { WeekHeatmap } from './WeekHeatmap';
 export { WeekAccordionList } from './WeekAccordionNew';
 export { ProgressCard } from './ProgressCard';
 export { ProgressCardCompact } from './ProgressCardCompact';
+export { ProgressSlideshow } from './ProgressSlideshow';
 export { ProgressTimeline } from './ProgressTimeline';
 export { ProgressStatsByTags } from './ProgressStatsByTags';
 export { ActivityHeatmapSkeleton } from './ActivityHeatmapSkeleton';

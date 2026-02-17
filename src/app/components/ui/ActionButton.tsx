@@ -15,6 +15,8 @@ type ActionButtonProps = {
   label?: string;
   className?: string;
   children?: ReactNode;
+  icon?: ReactNode;
+  iconPosition?: 'left' | 'right';
   // Pour les liens (AddButton)
   href?: string;
   queryParams?: Record<string, string>;
@@ -40,6 +42,8 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   label,
   className = '',
   children,
+  icon,
+  iconPosition = 'left',
   href,
   queryParams,
   addFromParam = false,
@@ -105,8 +109,8 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
       style={{ touchAction: 'manipulation' }}
       aria-label={ariaLabel || (isProgress ? 'Noter un progrès' : label || 'Ajouter')}
     >
-      {variant === 'golden' && (
-        <span className={isFixed ? 'text-xl' : 'text-lg'}>{PROGRESS_EMOJIS.STAR_BRIGHT}</span>
+      {variant === 'golden' && iconPosition === 'left' && (
+        <span className={isFixed ? 'text-xl' : 'text-lg'}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
       {variant === 'simple' && (
         <PlusIcon className={isFixed ? "w-5 h-5" : "w-6 h-6 md:w-7 md:h-7"} strokeWidth={3} />
@@ -123,6 +127,9 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
             <span className="whitespace-nowrap">{label}</span>
           ) : null}
         </>
+      )}
+      {variant === 'golden' && iconPosition === 'right' && (
+        <span className={isFixed ? 'text-xl' : 'text-lg'}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
     </button>
   );

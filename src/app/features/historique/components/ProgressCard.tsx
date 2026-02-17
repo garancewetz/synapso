@@ -3,10 +3,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Progress } from '@/app/types';
-import { EditIcon, EyeIcon, ChevronIcon } from '@/app/components/ui/icons';
+import { EditIcon, EyeIcon, ChevronIcon, DotsIcon, BookmarkIcon } from '@/app/components/ui/icons';
 import { BaseCard, Button } from '@/app/components/ui';
 import { ShareIcon } from '@/app/components/ui/icons';
-import { useShareProgress } from '@/app/features/progress';
+import { useShareProgress, usePinProgress } from '@/app/features/progress';
 import { formatVictoryDate } from '@/app/utils/date.utils';
 import { getExerciceCategoryFromEmoji, isOrthophonieProgress, ProgressMedia } from '@/app/features/progress';
 import { CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
@@ -18,6 +18,7 @@ type Props = {
   progress: Progress;
   onEdit?: (progress: Progress) => void;
   onShare?: (progress: Progress) => void;
+  onPin?: (updatedProgress: Progress) => void;
   compact?: boolean;
 };
 
@@ -26,17 +27,23 @@ type Props = {
  * Style doré avec étoile, affichage minimaliste pour vue d'ensemble rapide
  * Principe : minimiser la charge cognitive, maximiser l'encouragement
  */
-export function ProgressCard({ progress, onEdit, onShare, compact = false }: Props) {
+export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false }: Props) {
   const { effectiveUser } = useUser();
   const { handleShare } = useShareProgress(progress);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  
+  const { handlePin, isPinning } = usePinProgress({
+    progress,
+    userId: effectiveUser?.id ?? 0,
+    onCompleted: onPin,
+  });
+
   const hasMedia = useMemo(
     () => progress.medias && progress.medias.length > 0,
     [progress.medias]
   );
-  
+
   // Déterminer la catégorie à partir de l'emoji
   const categoryLabel = useMemo(() => {
     if (isOrthophonieProgress(progress.emoji)) {
@@ -45,10 +52,11 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
     const category = getExerciceCategoryFromEmoji(progress.emoji);
     return category ? CATEGORY_LABELS_SHORT[category] : null;
   }, [progress.emoji]);
-  
+
   // Mémoriser le handler d'édition
   const handleEdit = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsActionsOpen(false);
     if (onEdit) {
       onEdit(progress);
     }
@@ -58,14 +66,28 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
   const handleShareClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     handleShare();
+    setIsActionsOpen(false);
     if (onShare) {
       onShare(progress);
     }
   }, [handleShare, onShare, progress]);
 
+  // Handler de pin
+  const handlePinClick = useCallback(async () => {
+    await handlePin();
+    setIsActionsOpen(false);
+  }, [handlePin]);
+
+  // Toggle actions menu
+  const toggleActions = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsActionsOpen(prev => !prev);
+  }, []);
+
   // Toggle expandable
   const toggleExpand = useCallback(() => {
     if (hasMedia) {
+      setIsActionsOpen(false);
       setIsExpanded(prev => !prev);
     }
   }, [hasMedia]);
@@ -85,12 +107,14 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
       toggleExpand();
     }
   }, [hasMedia, toggleExpand]);
-  
-  
+
+  const hasActions = onEdit || onShare || onPin;
+  const actionCount = [onEdit, onPin, onShare].filter(Boolean).length;
+
   return (
     <div className="relative">
-      <BaseCard 
-      isGolden 
+      <BaseCard
+      isGolden
       className={clsx(
         'relative',
         '!bg-gradient-to-br !from-amber-50/95 !via-yellow-50/90 !to-amber-100/85',
@@ -109,8 +133,8 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
     >
       {/* Accent doré sur le côté */}
       <BaseCard.Accent />
-  
-      
+
+
       <BaseCard.Content className="flex flex-col">
         <div className={clsx(
           compact ? 'p-3' : 'p-4 md:p-5'
@@ -148,6 +172,9 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
                 {progress.content}
               </h3>
             </div>
+            {progress.pinned && (
+              <BookmarkIcon className="w-4 h-4 text-amber-500 shrink-0" filled />
+            )}
           </div>
 
           {/* Expandable avec médias */}
@@ -173,7 +200,7 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
                     }}
                     className="overflow-hidden"
                   >
-                    <ProgressMedia 
+                    <ProgressMedia
                       medias={progress.medias}
                       maxPhotos={3}
                       onLightboxOpen={(index: number) => setLightboxIndex(index)}
@@ -182,7 +209,7 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
                   </motion.div>
                 )}
               </AnimatePresence>
-              
+
               {/* Chevron pour indiquer l'expandable */}
               <div className="flex justify-center mt-2">
                 <ChevronIcon
@@ -192,7 +219,7 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
               </div>
             </>
           )}
-          
+
           {/* Catégorie et Date */}
           <div className="text-left flex items-center gap-2">
             {categoryLabel && (
@@ -208,38 +235,54 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
             </p>
           </div>
         </div>
-        
-        {/* Footer avec boutons d'action en bas */}
-        {(onEdit || onShare) && (
-          <BaseCard.Footer>
-            <div className={clsx(
-              'flex gap-2',
-              effectiveUser?.dominantHand === 'LEFT' ? 'flex-row-reverse' : 'flex-row',
-              effectiveUser?.dominantHand === 'LEFT' ? 'justify-start' : 'justify-end'
-            )}>
-              {onShare && (
-                <Button
-                  variant="golden"
-                  size="sm"
-                  icon={<ShareIcon className="w-4 h-4" />}
-                  onClick={handleShareClick}
-                  aria-label={`Partager ce progrès : ${progress.content}`}
-                >
-                  Partager
-                </Button>
-              )}
-              {onEdit && (
-                <Button
-                  iconOnly
-                  onClick={handleEdit}
-                  title="Modifier"
-                  aria-label="Modifier ce progrès"
-                >
-                  <EditIcon className="w-4 h-4" />
-                </Button>
-              )}
+
+        {/* Footer avec dot menu + actions inline */}
+        {hasActions && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <BaseCard.Footer>
+              <Button
+                iconOnly
+                onClick={toggleActions}
+                aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
+                aria-expanded={isActionsOpen}
+              >
+                <DotsIcon className={`w-5 h-5 transition-transform duration-200 ${isActionsOpen ? 'rotate-90' : ''}`} />
+              </Button>
+            </BaseCard.Footer>
+
+            {/* Actions inline — s'ouvre en dessous du footer */}
+            <div
+              className="grid overflow-hidden transition-all duration-200 ease-out bg-amber-50/70"
+              style={{ gridTemplateRows: isActionsOpen ? '1fr' : '0fr' }}
+            >
+              <div className="min-h-0">
+                <div className={clsx('grid border-t border-amber-200', actionCount === 1 && 'grid-cols-1', actionCount === 2 && 'grid-cols-2', actionCount === 3 && 'grid-cols-3')}>
+                  {onEdit && (
+                    <button type="button" onClick={handleEdit} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px] not-last:border-r not-last:border-amber-200">
+                      <EditIcon className="w-5 h-5" />
+                      <span className="font-medium">Modifier</span>
+                    </button>
+                  )}
+                  {onPin && (
+                    <button type="button" onClick={handlePinClick} disabled={isPinning} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px] not-last:border-r not-last:border-amber-200 disabled:opacity-50 disabled:pointer-events-none">
+                      {isPinning ? (
+                        <span className="w-5 h-5 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                      ) : (
+                        <BookmarkIcon className="w-5 h-5" filled={progress.pinned === true} />
+                      )}
+                      <span className="font-medium">{progress.pinned ? 'Démarquer' : 'Pour le kiné'}</span>
+                    </button>
+                  )}
+                  {onShare && (
+                    <button type="button" onClick={handleShareClick} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px]">
+                      <ShareIcon className="w-5 h-5" />
+                      <span className="font-medium">Partager</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </BaseCard.Footer>
+          </div>
         )}
       </BaseCard.Content>
     </BaseCard>
@@ -259,4 +302,3 @@ export function ProgressCard({ progress, onEdit, onShare, compact = false }: Pro
     </div>
   );
 }
-

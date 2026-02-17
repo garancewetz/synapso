@@ -4,6 +4,7 @@ export interface Progress {
   emoji: string | null;
   tags: string[];
   medias: string[];
+  pinned: boolean;
   userId: number;
   createdAt: string;
 }

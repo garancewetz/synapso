@@ -8,7 +8,7 @@ import { UserIcon, RocketIcon } from '@/app/components/ui/icons';
 import { BookmarkIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices, useExerciceHandlers, useRelatedStretchingByCategory } from '@/app/features/exercices';
-import { useProgressModal } from '@/app/features/progress';
+import { useProgressModal, useProgress } from '@/app/features/progress';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
 import { usePrefetchPreviousDates } from '@/app/features/time-machine';
@@ -43,8 +43,10 @@ export default function Home() {
 
   const { exercices, updateExercice, error: exercicesError } = useExercices({ includeArchived: true });
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
+  const { progressList } = useProgress();
   const pinnedExercices = useMemo(() => exercices.filter(e => !e.archived && e.pinned), [exercices]);
-  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length);
+  const pinnedProgress = useMemo(() => progressList.filter(p => p.pinned), [progressList]);
+  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length + pinnedProgress.length);
 
   const { handleEditClick: handleKineEdit, handleCompleted: handleKineUpdate } = useExerciceHandlers({
     updateExercice,
@@ -156,6 +158,7 @@ export default function Home() {
                 {activeTab === 'kine' && (
                   <HomeKineTab
                     pinnedExercices={pinnedExercices}
+                    pinnedProgress={pinnedProgress}
                     onEdit={handleKineEdit}
                     onCompleted={handleKineUpdate}
                     onArchive={handleKineUpdate}

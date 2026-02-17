@@ -9,6 +9,10 @@ type Props = {
   variant?: 'fixed' | 'inline';
   position?: 'left' | 'right';
   label?: string;
+  ariaLabel?: string;
+  emoji?: string;
+  iconPosition?: 'left' | 'right';
+  className?: string;
 };
 
 /**
@@ -20,11 +24,15 @@ type Props = {
  * 
  * Utilise ActionButton avec le variant "golden" pour le style doré
  */
-export function ProgressButton({ 
-  onClick, 
+export function ProgressButton({
+  onClick,
   variant = 'inline',
   position = 'right',
-  label = 'Ajouter'
+  label = 'Ajouter',
+  ariaLabel,
+  emoji,
+  iconPosition = 'left',
+  className,
 }: Props) {
   return (
     <ActionButton
@@ -33,7 +41,10 @@ export function ProgressButton({
       position={position}
       label={label}
       onClick={onClick}
-      aria-label="Noter un progrès"
+      aria-label={ariaLabel ?? 'Noter un progrès'}
+      icon={emoji}
+      iconPosition={iconPosition}
+      className={className}
     />
   );
 }

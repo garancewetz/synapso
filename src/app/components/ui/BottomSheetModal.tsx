@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import type { ReactNode } from 'react';
+import { useRef } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
-import { KEYBOARD_KEYS } from '@/app/constants/accessibility.constants';
+import { useFocusTrap } from '@/app/hooks/useFocusTrap';
 import { Button } from './Button';
 
 type Props = {
@@ -17,6 +17,8 @@ type Props = {
   showFooterClose?: boolean;
   /** Label du bouton fermer */
   closeLabel?: string;
+  /** Référence vers l'élément déclencheur (pour restaurer le focus à la fermeture) */
+  triggerRef?: RefObject<HTMLElement | null>;
 };
 
 // Seuil de drag pour fermer (en pixels)
@@ -33,32 +35,19 @@ export function BottomSheetModal({
   className = '',
   showFooterClose = false,
   closeLabel = 'Fermer',
+  triggerRef,
 }: Props) {
-  // Ref pour suivre si on a déjà géré un événement tactile
-  // Cela évite le double déclenchement (touchstart + click)
+  const contentRef = useRef<HTMLDivElement>(null);
   const touchHandledRef = useRef(false);
 
-  // Bloquer le scroll du body quand la modale est ouverte
   useBodyScrollLock(isOpen);
 
-  // Gérer la touche Escape pour fermer la modale
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === KEYBOARD_KEYS.ESCAPE) {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape, true);
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape, true);
-    };
-  }, [isOpen, onClose]);
+  useFocusTrap(contentRef, isOpen, {
+    initialFocus: 'first',
+    restoreFocus: !!triggerRef,
+    restoreFocusRef: triggerRef,
+    onEscape: onClose,
+  });
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.y > DRAG_CLOSE_THRESHOLD || info.velocity.y > 500) {
@@ -104,7 +93,8 @@ export function BottomSheetModal({
 
           {/* Bottom Sheet (mobile) / Modal (desktop) */}
           <motion.div
-            className={`relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col ${className}`}
+            ref={contentRef}
+            className={`relative bg-white w-full max-w-lg md:max-w-xl lg:max-w-2xl rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col ${className}`}
             initial={{ y: '100%', scale: 0.95 }}
             animate={{ y: 0, scale: 1 }}
             exit={{ y: '100%', scale: 0.95 }}

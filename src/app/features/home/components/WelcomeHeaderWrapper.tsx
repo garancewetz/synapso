@@ -98,7 +98,7 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
 
   return (
     <div className={clsx(
-      'max-w-5xl mx-auto px-3 md:px-4',
+      'max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 md:px-6 lg:px-8',
       isBannerVisible ? 'pt-0' : 'pt-2 md:pt-4'
     )}>
       <WelcomeHeader

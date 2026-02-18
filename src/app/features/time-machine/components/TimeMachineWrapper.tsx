@@ -22,7 +22,7 @@ export function TimeMachineWrapper({ children }: Props) {
         // ⚡ MODE SABLIER: Fond indigo cosmique avec pattern d'étoiles subtil pour immersion
         isTimeMachineMode 
           ? 'bg-indigo-50' // Fond indigo très léger pour immersion sans perte de lisibilité
-          : 'bg-white',
+          : 'bg-white lg:bg-gray-50',
         // ⚡ MODE SABLIER: Cadre indigo épais et visible avec effet de lueur cosmique prononcé
         isTimeMachineMode && [
           'border-4 md:border-8 border-indigo-500/60',

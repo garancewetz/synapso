@@ -20,7 +20,7 @@ export function FormPageWrapper({ children, title, backHref, backLabel }: Props)
   });
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8 px-3 sm:px-4 md:px-6">
+    <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-0 md:pb-8 px-3 sm:px-4 md:px-6 lg:px-8">
       {/* Bouton retour */}
       <BackButton backHref={backHref} backLabel={backLabel} className="mb-4" />
 
@@ -28,7 +28,7 @@ export function FormPageWrapper({ children, title, backHref, backLabel }: Props)
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 sm:p-6 md:p-8">
             {title && (
-              <h1 className="text-2xl font-bold text-gray-800 mb-6">{title}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">{title}</h1>
             )}
             {children}
           </div>

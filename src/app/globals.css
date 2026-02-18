@@ -41,6 +41,8 @@
   --color-aphasie-light: var(--aphasie-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Cadre desktop : 1440px pour header + main alignés */
+  --container-9xl: 90rem;
 }
 
 html {

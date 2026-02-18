@@ -70,7 +70,7 @@ export const HomeKineTab = memo(function HomeKineTab({
           <h2 id="kine-exercices-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Exercices
           </h2>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pinnedExercices.map(ex => (
               <ExerciceCard
                 key={`ex-${ex.id}`}
@@ -88,7 +88,7 @@ export const HomeKineTab = memo(function HomeKineTab({
           <h2 id="kine-progress-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Progrès
           </h2>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pinnedProgress.map(progress => (
               <ProgressCard
                 key={`progress-${progress.id}`}
@@ -106,7 +106,7 @@ export const HomeKineTab = memo(function HomeKineTab({
           <h2 id="kine-notes-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Notes pour le kiné
           </h2>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pinnedNotes.map(note => (
               <JournalNoteCard
                 key={`note-${note.id}`}

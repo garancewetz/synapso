@@ -172,7 +172,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
 
             {/* Section Progrès */}
         {progress.length > 0 && (
-          <section className="space-y-2">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {progress.map((item) => (
               <ProgressCardCompact key={item.id} progress={item} />
             ))}
@@ -181,7 +181,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
 
         {/* Section Exercices */}
         {exercises.length > 0 && (
-          <section className="space-y-2">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {exercises.map((exercise, index) => {
               const styles = CATEGORY_COLORS[exercise.category];
               

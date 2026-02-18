@@ -288,11 +288,9 @@ export default function SettingsPage() {
 
   if (initialLoading) {
     return (
-      <div className="max-w-5xl mx-auto">
-        <div className="px-3 md:px-4">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader size="large" />
-          </div>
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 md:px-6 lg:px-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader size="large" />
         </div>
       </div>
     );
@@ -300,24 +298,22 @@ export default function SettingsPage() {
 
   if (!userToEdit) {
     return (
-      <div className="max-w-5xl mx-auto">
-        <div className="px-3 md:px-4">
-          <div className="text-center py-8">
-            <p className="text-gray-500">Utilisateur non trouvé</p>
-          </div>
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 md:px-6 lg:px-8">
+        <div className="text-center py-8">
+          <p className="text-gray-500">Utilisateur non trouvé</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-10 md:pb-8">
-      <div className="px-3 sm:px-6">
+    <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-10 md:pb-8 px-3 md:px-6 lg:px-8">
+      <div className="sm:px-6">
         {/* Bouton retour */}
         <BackButton className="mb-4" buttonClassName="py-3" />
 
         {/* Titre */}
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon profil</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Mon profil</h1>
         
         {/* Avertissement admin si impersonation */}
         {isImpersonating && (

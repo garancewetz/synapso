@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 type UseFormDataOptions<T> = {
   entityId?: number;
@@ -28,6 +28,11 @@ export function useFormData<T>({
   const [loading, setLoading] = useState(!!entityId);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref stable pour transform afin d'éviter les boucles infinies
+  // quand l'appelant passe une fonction inline
+  const transformRef = useRef(transform);
+  transformRef.current = transform;
+
   const fetchData = useCallback(async () => {
     if (!entityId || !enabled) {
       setLoading(false);
@@ -39,13 +44,13 @@ export function useFormData<T>({
 
     try {
       const response = await fetch(fetchUrl, { credentials: 'include' });
-      
+
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
 
       const data = await response.json();
-      const transformedData = transform ? transform(data) : (data as T);
+      const transformedData = transformRef.current ? transformRef.current(data) : (data as T);
       setFormData(transformedData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement';
@@ -54,7 +59,7 @@ export function useFormData<T>({
     } finally {
       setLoading(false);
     }
-  }, [entityId, fetchUrl, transform, enabled]);
+  }, [entityId, fetchUrl, enabled]);
 
   useEffect(() => {
     fetchData();

@@ -90,7 +90,7 @@ export default function CategoryPage() {
   if (!params.category) {
     return (
       <section className="pb-12 md:pb-8">
-        <div className="max-w-5xl mx-auto pt-2 md:pt-4 px-4">
+        <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-center py-12">
             <div className="text-gray-500">Chargement...</div>
           </div>
@@ -101,11 +101,11 @@ export default function CategoryPage() {
 
   return (
     <section className="pb-12 md:pb-8">
-      <div className="max-w-5xl mx-auto pt-2 md:pt-4">
-        <div className="px-4 mb-6">
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 px-4 md:px-6 lg:px-8">
+        <div className="mb-6 md:mb-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 {CATEGORY_LABELS[categoryParam]}
               </h1>
               {loadingExercices ? (
@@ -161,7 +161,7 @@ export default function CategoryPage() {
         {...activeFiltersBarHandlers}
       />
 
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         <div className="px-4">
           {loadingExercices ? (
             <div className="flex items-center justify-center min-h-screen py-12">

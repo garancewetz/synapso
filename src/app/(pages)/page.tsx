@@ -97,12 +97,12 @@ export default function Home() {
 
   return (
     <section>
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
         {/* Welcome Header - uniquement sur la page d'accueil */}
         <WelcomeHeaderWrapper />
 
         {/* Contenu principal */}
-        <div className="px-3 md:px-4 pb-12 md:pb-8">
+        <div className="px-3 md:px-6 lg:px-8 pb-12 md:pb-8">
           <AnimatePresence mode="wait">
             {userLoading ? (
               <MotionDiv
@@ -137,7 +137,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="space-y-6"
+                className="space-y-6 md:space-y-8"
               >
                 {tabOptions.length > 0 && (
                   <div>

@@ -25,14 +25,22 @@ export function LayoutComponents({ children }: LayoutComponentsProps) {
 
   return (
     <>
+      <a
+        href="#main-content"
+        className="fixed left-0 top-0 z-[200] -translate-y-full bg-gray-900 text-white px-4 py-3 rounded-br font-medium transition-transform focus-visible:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900"
+      >
+        Aller au contenu
+      </a>
       <TimeMachineTransition />
       <TimeMachineWrapper>
         <SelectedDateBanner />
         <NavBar />
-        <main className={clsx(
-          'flex-1 mx-auto w-full max-w-9xl pb-24 md:pb-8',
-        
-        )}>
+        <main
+          id="main-content"
+          className={clsx(
+            'flex-1 mx-auto w-full max-w-[90rem] pb-24 md:pb-8 lg:bg-white lg:shadow-sm',
+          )}
+        >
           {children}
         </main>
         <BottomNavBar />

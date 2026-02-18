@@ -268,15 +268,15 @@ export function HistoriquePageClient() {
   const STAR_BRIGHT_EMOJI = PROGRESS_EMOJIS?.STAR_BRIGHT || '🌟';
 
   return (
-    <div className="max-w-5xl mx-auto pt-2 md:pt-4 pb-8">
+    <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-8 px-3 md:px-6 lg:px-8">
       <BackButton 
         className="mb-4" 
         buttonClassName="py-3"
       />
 
-      <div className="px-3 sm:p-6">
+      <div className="sm:p-6">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 md:mb-8">
           <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
@@ -289,9 +289,9 @@ export function HistoriquePageClient() {
           </div>
         </div>
 
-        {/* Navigation par onglets */}
+        {/* Navigation par onglets (masquée sur xl : les deux colonnes sont visibles) */}
         {!loading && (
-          <div className="mb-6">
+          <div className="mb-6 xl:hidden">
             <SegmentedControl
               options={[
                 { value: 'progres', label: `${STAR_BRIGHT_EMOJI} Progrès` },
@@ -323,18 +323,17 @@ export function HistoriquePageClient() {
             </p>
           </div>
         ) : (
-          <AnimatePresence mode="wait">
-            {activeTab === 'statistiques' ? (
+          <div className="xl:grid xl:grid-cols-2 xl:gap-8 xl:items-start">
+            <div className={clsx(activeTab !== 'statistiques' && 'hidden', 'xl:block')}>
               <MotionDiv
                 key="statistiques"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6"
+                className="space-y-6 md:space-y-8"
               >
                 {/* SECTION 1 : STATISTIQUES ET GRAPHIQUES */}
-                <section id="statistiques" className="space-y-6">
+                <section id="statistiques" className="space-y-6 md:space-y-8">
 
               {/* Heatmap d'activité du mois (28 jours) */}
               {!loadingHistory && (
@@ -419,17 +418,17 @@ export function HistoriquePageClient() {
               />
                 </section>
               </MotionDiv>
-            ) : (
+            </div>
+            <div className={clsx(activeTab !== 'progres' && 'hidden', 'xl:block')}>
               <MotionDiv
                 key="progres"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6 pb-24"
+                className="space-y-6 md:space-y-8 pb-24 xl:pb-8"
               >
                 {/* SECTION 2 : MES PROGRÈS */}
-                <section id="progres" className="space-y-6">
+                <section id="progres" className="space-y-6 md:space-y-8">
                   <div className="flex items-center justify-between gap-4">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                       <span>{STAR_BRIGHT_EMOJI}</span>
@@ -514,8 +513,8 @@ export function HistoriquePageClient() {
                 )}
                 </section>
               </MotionDiv>
-            )}
-          </AnimatePresence>
+            </div>
+          </div>
         )}
       </div>
 

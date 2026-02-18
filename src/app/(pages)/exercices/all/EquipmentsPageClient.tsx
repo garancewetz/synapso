@@ -123,11 +123,11 @@ export function EquipmentsPageClient() {
 
   return (
     <section className="pb-12 md:pb-8 min-h-screen">
-      <div className="max-w-5xl mx-auto pt-2 md:pt-4">
+      <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 px-4 md:px-6 lg:px-8">
         {/* Header */}
-        <div className="px-4 mb-6">
+        <div className="mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
               Vue par équipement
             </h1>
             {loadingExercices ? (

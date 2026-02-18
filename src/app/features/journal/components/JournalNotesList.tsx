@@ -21,13 +21,14 @@ export function JournalNotesList({ limit }: Props) {
   return (
     <div>
       {displayedNotes.length > 0 ? (
-        <ul className="space-y-4">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0 m-0">
           {displayedNotes.map(note => (
-            <JournalNoteCard
-              key={note.id}
-              note={note}
-              onUpdated={handleNoteUpdated}
-            />
+            <li key={note.id}>
+              <JournalNoteCard
+                note={note}
+                onUpdated={handleNoteUpdated}
+              />
+            </li>
           ))}
         </ul>
       ) : (

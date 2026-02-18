@@ -49,12 +49,16 @@ export function NavBar() {
 
   const categories = CATEGORY_ORDER;
   const isHomeActive = pathname === '/';
+  const isHistoriqueActive = pathname === '/historique';
+  const isJournalActive = pathname === '/journal' || pathname.startsWith('/journal/');
+  const hasJournal = effectiveUser?.hasJournal ?? false;
 
   return (
     <>
       {/* Header minimaliste */}
       <header className={clsx(
-        'bg-white max-w-9xl w-full mx-auto rounded-md mb-4 md:mb-6 px-4 md:px-6',
+        'bg-white/95 backdrop-blur-sm max-w-[90rem] w-full mx-auto rounded-md mb-4 md:mb-4 px-4 md:px-6',
+        'md:sticky md:top-0 md:z-50 md:border-b md:border-gray-100',
         'transition-all duration-300',
         // ⚡ MODE SABLIER: Ajouter un padding-top pour laisser de la place à la bannière fixe
         // La bannière fait environ 70-80px de hauteur (py-2.5 + 2 lignes de texte + border)
@@ -63,7 +67,7 @@ export function NavBar() {
       )}>
         <div
           className={clsx(
-            'flex items-center py-3 md:py-4 justify-between',
+            'flex items-center py-3 md:py-2.5 justify-between',
             isLeftHanded && 'flex-row-reverse'
           )}
         >
@@ -80,23 +84,23 @@ export function NavBar() {
               )}
               aria-label="Retour à l'accueil Synapso"
             >
-              <Logo size={36} className="md:scale-110" />
-              <span className="text-lg text-gray-800 max-lg:hidden">Synapso</span>
+              <Logo size={36} />
+              <span className="hidden md:inline text-base text-gray-800 font-medium">Synapso</span>
               <span className="text-xl" aria-hidden="true">🏠</span>
             </TouchLink>
           </div>
 
           {/* Navigation desktop - Masquée sur mobile */}
           <nav 
-            className="hidden md:flex items-center gap-1 flex-1 justify-center px-4"
+            className="hidden md:flex items-center gap-0.5 flex-1 justify-center px-2"
             aria-label="Navigation principale"
           >
             {/* Lien Accueil */}
             <TouchLink
               href={preserveDate('/')}
               className={clsx(
-                'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
-                'hover:text-gray-900',
+                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                'hover:text-gray-900 hover:bg-gray-50',
                 isHomeActive
                   ? 'text-gray-900'
                   : 'text-gray-600'
@@ -106,7 +110,7 @@ export function NavBar() {
             >
               Accueil
               {isHomeActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
+                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
               )}
             </TouchLink>
 
@@ -122,7 +126,8 @@ export function NavBar() {
                   key={category}
                   href={preserveDate(href)}
                   className={clsx(
-                    'relative px-4 py-2.5 text-sm font-medium transition-colors duration-200',
+                    'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                    'hover:bg-gray-50',
                     isActive ? colors.text : 'text-gray-600 hover:text-gray-900'
                   )}
                   aria-label={label}
@@ -132,7 +137,7 @@ export function NavBar() {
                   {isActive && (
                     <span 
                       className={clsx(
-                        'absolute bottom-0 left-0 right-0 h-0.5 rounded-full',
+                        'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
                         colors.accent
                       )} 
                     />
@@ -140,6 +145,42 @@ export function NavBar() {
                 </TouchLink>
               );
             })}
+
+            {/* Ma progression */}
+            <TouchLink
+              href={preserveDate('/historique')}
+              className={clsx(
+                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                'hover:bg-gray-50',
+                isHistoriqueActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+              )}
+              aria-label="Ma progression"
+              aria-current={isHistoriqueActive ? 'page' : undefined}
+            >
+              Ma progression
+              {isHistoriqueActive && (
+                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+              )}
+            </TouchLink>
+
+            {/* Journal (si activé pour l'utilisateur) */}
+            {hasJournal && (
+              <TouchLink
+                href={preserveDate('/journal')}
+                className={clsx(
+                  'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                  'hover:bg-gray-50',
+                  isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                )}
+                aria-label="Journal"
+                aria-current={isJournalActive ? 'page' : undefined}
+              >
+                Journal
+                {isJournalActive && (
+                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+                )}
+              </TouchLink>
+            )}
           </nav>
 
           {/* Badge utilisateur et bouton menu */}

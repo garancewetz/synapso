@@ -1,9 +1,8 @@
 import { prisma } from '@/app/lib/prisma';
 
 type UpdateJournalNoteData = {
-  content?: string;
-  title?: string | null;
-  date?: Date | null;
+  title?: string;
+  description?: string;
 };
 
 type UpdateJournalNoteParams = {
@@ -29,9 +28,8 @@ export async function updateJournalNote(params: UpdateJournalNoteParams) {
   const note = await prisma.journalNote.update({
     where: { id: noteId },
     data: {
-      content: data.content !== undefined ? data.content.trim() : undefined,
-      title: data.title !== undefined ? (data.title ? data.title.trim() : null) : undefined,
-      date: data.date !== undefined ? data.date : undefined,
+      title: data.title !== undefined ? data.title.trim() : undefined,
+      description: data.description !== undefined ? data.description.trim() : undefined,
     },
   });
 

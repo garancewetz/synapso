@@ -2,10 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import type { JournalNote } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 
-/**
- * Hook pour récupérer et gérer les notes du journal
- * L'userId est automatiquement récupéré depuis le cookie côté serveur
- */
 export function useJournalNotes() {
   const { effectiveUser, loading: userLoading } = useUser();
   const [notes, setNotes] = useState<JournalNote[]>([]);
@@ -13,7 +9,6 @@ export function useJournalNotes() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchNotes = useCallback(() => {
-    // Attendre que l'utilisateur soit chargé
     if (userLoading) {
       return;
     }
@@ -26,7 +21,7 @@ export function useJournalNotes() {
 
     setLoading(true);
     setError(null);
-    
+
     fetch('/api/journal/notes', { credentials: 'include' })
       .then(res => {
         if (!res.ok) {
@@ -36,21 +31,16 @@ export function useJournalNotes() {
       })
       .then(data => {
         if (Array.isArray(data)) {
-          // Trier par date (plus récente d'abord), utiliser createdAt si date n'est pas renseignée
-          const sortedNotes = data.sort((a, b) => {
-            const dateA = a.date || a.createdAt;
-            const dateB = b.date || b.createdAt;
-            return new Date(dateB).getTime() - new Date(dateA).getTime();
+          const sortedNotes = data.sort((a: JournalNote, b: JournalNote) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           setNotes(sortedNotes);
         } else {
-          console.error('API error:', data);
           setError('Erreur lors du chargement des notes');
           setNotes([]);
         }
       })
-      .catch(error => {
-        console.error('Fetch error:', error);
+      .catch(() => {
         setError('Erreur lors du chargement des notes');
         setNotes([]);
       })
@@ -65,4 +55,3 @@ export function useJournalNotes() {
 
   return { notes, loading: loading || userLoading, error, refetch: fetchNotes };
 }
-

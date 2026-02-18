@@ -21,10 +21,14 @@ if (!databaseUrl) {
   );
 }
 
+const urlWithNoPlanCache = databaseUrl.includes('?')
+  ? `${databaseUrl}&prepareThreshold=0`
+  : `${databaseUrl}?prepareThreshold=0`;
+
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   datasources: {
     db: {
-      url: databaseUrl,
+      url: urlWithNoPlanCache,
     },
   },
 });

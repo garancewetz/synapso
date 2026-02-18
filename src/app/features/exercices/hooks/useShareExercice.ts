@@ -1,17 +1,11 @@
-import { useCallback, type RefObject } from 'react';
+import { useCallback } from 'react';
 import type { Exercice } from '@/app/types';
-import { shareExerciceImage } from '@/app/utils/share';
+import { shareExerciceAsText } from '@/app/utils/share';
 
-export function useShareExercice(
-  exercice: Exercice,
-  cardRef: RefObject<HTMLDivElement | null>
-) {
+export function useShareExercice(exercice: Exercice) {
   const handleShare = useCallback(async () => {
-    if (!cardRef.current) {
-      return;
-    }
-    await shareExerciceImage(cardRef.current, exercice);
-  }, [cardRef, exercice]);
+    await shareExerciceAsText(exercice);
+  }, [exercice]);
 
   return { handleShare };
 }

@@ -13,28 +13,24 @@ export async function GET(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid ID' },
+        { error: 'ID invalide' },
         { status: 400 }
       );
     }
 
-    // Récupérer l'userId effectif depuis le cookie
     const userId = await getEffectiveUserId(request);
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
         { status: 401 }
       );
     }
-    
-    const note = await getJournalNoteById({
-      noteId: id,
-      userId,
-    });
+
+    const note = await getJournalNoteById({ noteId: id, userId });
 
     return NextResponse.json(note);
   } catch (error) {
@@ -62,17 +58,16 @@ export async function PUT(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid ID' },
+        { error: 'ID invalide' },
         { status: 400 }
       );
     }
 
-    // Récupérer l'userId effectif depuis le cookie
     const userId = await getEffectiveUserId(request);
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
@@ -82,28 +77,19 @@ export async function PUT(
 
     const updatedData = await request.json();
 
-    if (!updatedData.content || !updatedData.content.trim()) {
+    if (!updatedData.title || !updatedData.title.trim()) {
       return NextResponse.json(
-        { error: 'content is required' },
+        { error: 'Le titre est obligatoire' },
         { status: 400 }
       );
-    }
-
-    let dateValue: Date | null = null;
-    if (updatedData.date) {
-      const parsedDate = new Date(updatedData.date);
-      if (!isNaN(parsedDate.getTime())) {
-        dateValue = parsedDate;
-      }
     }
 
     const note = await updateJournalNote({
       noteId: id,
       userId,
       data: {
-        content: updatedData.content.trim(),
-        title: updatedData.title !== undefined ? (updatedData.title ? updatedData.title.trim() : null) : undefined,
-        date: dateValue !== undefined ? dateValue : undefined,
+        title: updatedData.title.trim(),
+        description: updatedData.description !== undefined ? updatedData.description.trim() : undefined,
       },
     });
 
@@ -133,17 +119,16 @@ export async function DELETE(
   try {
     const { id: idParam } = await params;
     const id = parseInt(idParam);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid ID' },
+        { error: 'ID invalide' },
         { status: 400 }
       );
     }
 
-    // Récupérer l'userId effectif depuis le cookie
     const userId = await getEffectiveUserId(request);
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
@@ -151,10 +136,7 @@ export async function DELETE(
       );
     }
 
-    await deleteJournalNote({
-      noteId: id,
-      userId,
-    });
+    await deleteJournalNote({ noteId: id, userId });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -171,4 +153,3 @@ export async function DELETE(
     );
   }
 }
-

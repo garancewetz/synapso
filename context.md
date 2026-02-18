@@ -120,8 +120,8 @@ synapso/
 │       │   │   ├── components/ # Composants (WelcomeHeader, HomeTabs, etc.)
 │       │   │   └── hooks/      # Hooks (useHomeTabs)
 │       │   ├── journal/        # Module journal
-│       │   │   ├── components/ # Composants (JournalTaskCard, etc.)
-│       │   │   └── hooks/      # Hooks (useJournalTasks, etc.)
+│       │   │   ├── components/ # Composants (JournalNoteCard, JournalNotesList, etc.)
+│       │   │   └── hooks/      # Hooks (useJournalNotes, useJournalCheck, etc.)
 │       │   ├── time-machine/   # Mode sablier (remonter le temps)
 │       │   │   ├── components/ # Composants (SelectedDateBanner, etc.)
 │       │   │   └── hooks/      # Hooks (usePrefetchPreviousDates, etc.)
@@ -183,7 +183,7 @@ features/[feature-name]/
 - `historique/` : Visualisations et historique (heatmap, graphiques, statistiques)
 - `progress/` : Progrès et victoires (ProgressFAB, ProgressCard, célébrations)
 - `home/` : Page d'accueil (WelcomeHeader, onglets, dashboard)
-- `journal/` : Module journal (tâches, notes)
+- `journal/` : Module journal (notes)
 - `time-machine/` : Mode sablier (remonter le temps, SelectedDateBanner)
 - `auth/` : Authentification (AuthScreen, UserSetup)
 
@@ -213,7 +213,6 @@ model User {
   // Relations
   exercices      Exercice[]
   progress       Progress[]
-  journalTasks   JournalTask[]
   journalNotes   JournalNote[]
 }
 ```
@@ -285,53 +284,35 @@ model History {
 
 **Usage** : Permet de générer des statistiques, heatmaps, et de tracker la fréquence réelle des exercices (même si `completed` se réinitialise).
 
-#### JournalTask
-Tâches du journal.
+#### JournalNote
+Notes du journal (infos à partager avec le kiné, suivi personnel).
 
 ```prisma
-model JournalTask {
+model JournalNote {
   id          Int       @id @default(autoincrement())
-  title       String    // Titre de la tâche
-  completed   Boolean   @default(false)  // Tâche complétée ou non
-  completedAt DateTime? // Date de complétion
+  title       String    // Titre de la note
+  description String    @default("")  // Contenu / description
+  date        DateTime? // Date optionnelle (événement lié)
+  pinned      Boolean   @default(false)  // Marqué "pour le kiné"
+  validated   Boolean   @default(false)  // Validé (par le kiné ou le patient)
+  validatedAt DateTime?
   userId      Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([completed])
+
   @@index([userId])
-}
-```
-
-**Particularités** :
-- Permet de gérer des tâches variées
-- Bouton "Fait" pour marquer comme complété (pas de création automatique de progrès)
-- Badge "Fait" affiché quand complétée
-
-#### JournalNote
-Notes libres du journal.
-
-```prisma
-model JournalNote {
-  id        Int       @id @default(autoincrement())
-  content   String    // Contenu principal de la note
-  title     String?   // Titre optionnel pour organiser les notes
-  date      DateTime? // Date de l'événement/note
-  userId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
+  @@index([pinned])
+  @@index([validated])
   @@index([date])
 }
 ```
 
 **Particularités** :
-- Permet de prendre des notes libres
-- Titre optionnel pour organiser les notes
+- Notes libres avec titre et description
 - Date optionnelle pour associer une note à un événement
+- `pinned` : affichées dans l’onglet Kiné de la page d’accueil
+- `validated` : badge "Validé" et action de validation
 
 #### Progress
 Progrès et réussites à célébrer.
@@ -365,12 +346,13 @@ model Progress {
 **Route** : `/` (`src/app/(pages)/page.tsx`)
 
 Interface unifiée avec système d'onglets :
-- **Corps** : Vue des catégories d'exercices avec progression
-- **Journal** : Tâches et notes (si `hasJournal = true`)
-- **Parcours** : Accès à l'historique, roadmap (40 derniers jours), et victoires
-- **Paramètres** : Configuration utilisateur
+- **Exercices** : Vue des catégories d'exercices avec progression
+- **Kiné** : Éléments épinglés pour le kiné (exercices, progrès, notes) avec sections titrées : "Exercices", "Progrès", "Notes pour le kiné"
+- **Suivi** : Accès à l'historique, roadmap (40 derniers jours), et victoires
+- Lien vers **Journal** (`/journal`) et **Paramètres** depuis le contenu
 
 **Composants clés** :
+- `HomeExercicesTab`, `HomeKineTab`, `HomePlusTab` : Contenu des onglets
 - `CategoryCardWithProgress` : Cartes de catégories avec barre de progression
 - `ProgressFAB` : Bouton flottant "Noter un progrès"
 - `ProgressBottomSheet` : Modal pour créer/éditer un progrès
@@ -653,94 +635,47 @@ Cette simplification garantit que :
 
 ### 3. Module Journal
 
-Accessible uniquement si `currentUser.hasJournal === true`.
+Accessible uniquement si `currentUser.hasJournal === true`. Le journal contient uniquement des **notes** (plus de tâches).
 
 #### Page principale Journal
 
 **Route** : `/journal` (`src/app/(pages)/journal/page.tsx`)
 
-2 sections principales :
-1. **Tâches** (`JournalTasksList`) : Liste des tâches avec possibilité de marquer comme "Fait"
-2. **Notes** (`JournalNotesList`) : Notes libres avec titre optionnel et date
-
-**Ordre conditionnel** : Pour l'utilisateur "Calypso", l'ordre est inversé (Notes avant Tâches) pour une meilleure ergonomie.
+- **Notes** (`JournalNotesList`) : Liste des notes avec titre, description, date optionnelle
+- Bouton "Ajouter une note" centré → `/journal/add`
 
 **Composants clés** :
-- `JournalSectionHeader` : En-tête de section avec titre et bouton d'ajout
-- `JournalTaskCard` : Carte de tâche avec bouton "Fait" et badge de complétion
-- `JournalNoteCard` : Carte de note avec titre optionnel et date
-- `AddButton` : Bouton centré pour ajouter une tâche ou une note
+- `JournalNoteCard` : Carte blanche (sans bande colorée), titre, description, date, badge "Validé", actions (Modifier, Pour le kiné, Partager)
+- `JournalNoteForm` : Formulaire d'ajout/édition (titre, description, date)
+- `JournalNotesList` : Liste des notes
+- `AddButton` : Bouton centré pour ajouter une note
 
-#### Tâches (JournalTask)
+#### Routes notes
 
-**Routes** : `/journal/tasks`, `/journal/tasks/add`, `/journal/tasks/edit/[id]`
-
-**Fonctionnalités** :
-- Ajout de tâches avec titre
-- Marquage comme "Fait" (bouton `CompleteButton` avec variant `task`)
-- Badge "Fait" affiché quand complétée
-- Pas de création automatique de progrès
-- Édition et suppression des tâches
-
-**Composants** :
-- `JournalTaskCard` : Carte avec bande violette (`JOURNAL_ACCENT_COLOR`), badge "Fait" en vert émeraude
-- `JournalTaskForm` : Formulaire d'ajout/édition avec champ `title`
-- `JournalTasksList` : Liste avec limite optionnelle (3 par défaut sur la page principale)
-
-**Hooks** :
-- `useJournalTasks` : Récupération et gestion des tâches
-- `useJournalCheck` : Vérification de l'accès au module journal
-
-#### Notes (JournalNote)
-
-**Routes** : `/journal/notes`, `/journal/notes/add`, `/journal/notes/edit/[id]`
+**Routes** : `/journal`, `/journal/add`, `/journal/edit/[id]`
 
 **Fonctionnalités** :
-- Ajout de notes avec contenu obligatoire
-- Titre optionnel pour organiser les notes
-- Date optionnelle pour associer une note à un événement
+- Ajout de notes (titre, description, date optionnelle)
 - Édition et suppression des notes
-- Affichage de la date formatée (ex: "5 janv. 2026")
-
-**Composants** :
-- `JournalNoteCard` : Carte avec titre (si présent), contenu, et badge de date
-- `JournalNoteForm` : Formulaire d'ajout/édition avec champs dans l'ordre : `title` (optionnel), `content` (obligatoire), `date` (optionnel)
-- `JournalNotesList` : Liste avec limite optionnelle (3 par défaut sur la page principale)
+- **Pour le kiné** (pin) : affiche la note dans l’onglet Kiné de la page d’accueil
+- **Valider** : marque la note comme validée (badge "Validé")
+- **Partager** : partage de la note
 
 **Hooks** :
 - `useJournalNotes` : Récupération et gestion des notes
-
-#### Pages dédiées
-
-**Page toutes les tâches** : `/journal/tasks`
-- Liste complète des tâches
-- Bouton "Ajouter une tâche" centré
-- Bouton retour vers `/journal` avec emoji 📔
-
-**Page toutes les notes** : `/journal/notes`
-- Liste complète des notes
-- Bouton "Ajouter une note" centré
-- Bouton retour vers `/journal` avec emoji 📔
+- `useJournalCheck` : Vérification de l'accès au module journal
+- `usePinJournalNote`, `useValidateJournalNote`, `useShareJournalNote` : Actions sur une note
 
 #### Constantes
 
 **Fichier** : `src/app/constants/journal.constants.ts`
 
-- `JOURNAL_ACCENT_COLOR` : `'bg-purple-500'` (bande violette sur les cartes de tâches)
-- `JOURNAL_COLORS` : Palette complète de couleurs pour le module journal
+- `JOURNAL_COLORS` : Palette complète de couleurs pour le module journal (formulaires, etc.)
+- Les cartes de notes n’utilisent pas de bande colorée (carte blanche, contenu en avant)
 
 **Emoji** : `JOURNAL_EMOJI = '📔'` (défini dans `emoji.constants.ts`)
 
 #### Routes API
-
-**`/api/journal/tasks`** :
-- `GET` : Liste des tâches de l'utilisateur
-- `POST` : Créer une tâche
-
-**`/api/journal/tasks/[id]`** :
-- `GET` : Détail d'une tâche
-- `PATCH` : Mettre à jour une tâche (notamment toggle `completed`)
-- `DELETE` : Supprimer une tâche
 
 **`/api/journal/notes`** :
 - `GET` : Liste des notes de l'utilisateur
@@ -750,6 +685,10 @@ Accessible uniquement si `currentUser.hasJournal === true`.
 - `GET` : Détail d'une note
 - `PUT` : Mettre à jour une note
 - `DELETE` : Supprimer une note
+
+**`/api/journal/notes/[id]/pin`** : `PATCH` — Épingler / désépingler (pour l’onglet Kiné)
+
+**`/api/journal/notes/[id]/validate`** : `PATCH` — Marquer comme validé / non validé
 
 ### 4. Historique et progression
 
@@ -1132,7 +1071,6 @@ export function useExercices() {
 - `useHistory` : Historique de complétion (utilise `useQuery`, avec options personnalisées)
 - `useHistory` : Historique avec TanStack Query (utilisé partout maintenant)
 - `useProgress` : Progrès de l'utilisateur (utilise `useQuery`)
-- `useJournalTasks` : Tâches du journal
 - `useJournalNotes` : Notes du journal
 - `useJournalCheck` : Vérification de l'accès au module journal
 - `useCategoryStats` : Stats de progression par catégorie (utilise `useQuery` avec `select` pour transformation)
@@ -2274,21 +2212,11 @@ npm run dev
 
 ### Gérer son journal (si hasJournal = true)
 
-1. **Dashboard** → Onglet "Journal"
-2. Page `/journal` avec 2 sections :
-   - **Tâches** : Liste des tâches avec possibilité de marquer comme "Fait"
-   - **Notes** : Notes libres avec titre optionnel et date
-3. Ajout d'une tâche :
-   - Clic "Ajouter une tâche"
-   - Formulaire : Titre de la tâche
-   - Enregistrer → Visible dans la liste
-4. Ajout d'une note :
-   - Clic "Ajouter une note"
-   - Formulaire : Contenu (obligatoire) + Titre (optionnel) + Date (optionnel)
-   - Enregistrer → Visible dans la liste
-5. Pages dédiées :
-   - `/journal/tasks` : Toutes les tâches
-   - `/journal/notes` : Toutes les notes
+1. Lien vers **Journal** depuis la page d’accueil (ou navigation) → Page `/journal`
+2. Page `/journal` : liste des notes + bouton "Ajouter une note"
+3. Ajout d’une note : Clic "Ajouter une note" → `/journal/add` → Formulaire (titre, description, date optionnelle) → Enregistrer
+4. Édition : depuis une note → "Modifier" → `/journal/edit/[id]`
+5. Depuis une note : "Pour le kiné" (épingle) pour l’afficher dans l’onglet Kiné, "Valider", "Partager"
 
 ---
 
@@ -2495,7 +2423,6 @@ const contextValue = useMemo<UserContextType>(() => ({
 
 Les composants de carte utilisent `React.memo` pour éviter les re-renders quand un seul item change :
 - `ExerciceCard`
-- `JournalTaskCard`
 - `JournalNoteCard`
 
 ### Optimisation des animations (Confettis)
@@ -3068,9 +2995,7 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 - `src/app/features/progress/components/ProgressBottomSheet.tsx` : Modal de création de progrès
 - `src/app/features/exercices/components/ConfettiRain.tsx` : Animation de confettis
 - `src/app/components/AuthWrapper.tsx` : Protection par mot de passe
-- `src/app/features/journal/components/JournalTaskCard.tsx` : Carte de tâche du journal
-- `src/app/features/journal/components/JournalNoteCard.tsx` : Carte de note du journal
-- `src/app/features/journal/components/JournalTasksList.tsx` : Liste des tâches
+- `src/app/features/journal/components/JournalNoteCard.tsx` : Carte de note du journal (carte blanche, sans bande colorée)
 - `src/app/features/journal/components/JournalNotesList.tsx` : Liste des notes
 
 #### Hooks importants
@@ -3079,7 +3004,6 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 - `src/app/features/exercices/hooks/useCategoryFilters.ts` : Filtres page catégorie (bodyparts, équipements, listes dérivées)
 - `src/app/features/exercices/api/completeExercice.ts` : Retourne `weeklyCompletions` (semaine de `completedAt`) pour le front
 - `src/app/features/progress/hooks/useProgress.ts` : Récupération des progrès
-- `src/app/features/journal/hooks/useJournalTasks.ts` : Récupération des tâches du journal
 - `src/app/features/journal/hooks/useJournalNotes.ts` : Récupération des notes du journal
 - `src/app/features/journal/hooks/useJournalCheck.ts` : Vérification de l'accès au module journal
 - `src/app/hooks/usePageFocus.ts` : Gestion du focus (accessibilité)
@@ -3101,7 +3025,7 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 #### Logique métier API (par feature)
 - `src/app/features/exercices/api/` : Fonctions de gestion des exercices (getExercices, createExercice, updateExercice, deleteExercice, completeExercice, archiveExercice, pinExercice, uploadMedia, getMetadata, getBodyparts, getBodypart, createBodypart, updateBodypart, deleteBodypart, getEquipments)
 - `src/app/features/progress/api/` : Fonctions de gestion des progrès (getProgress, createProgress, updateProgress, deleteProgress)
-- `src/app/features/journal/api/` : Fonctions de gestion du journal (getJournalTasks, createJournalTask, updateJournalTask, deleteJournalTask, getJournalNotes, createJournalNote, updateJournalNote, deleteJournalNote)
+- `src/app/features/journal/api/` : Fonctions de gestion du journal (getJournalNotes, createJournalNote, updateJournalNote, deleteJournalNote, pinJournalNote, validateJournalNote)
 - `src/app/features/historique/api/` : Fonctions de gestion de l'historique (getHistory, getCategoryStats)
 - `src/app/features/auth/api/` : Fonctions d'authentification et gestion utilisateurs (login, register, checkAuth, getUsers, getUser, updateUser, deleteUser, updateUserPassword)
 
@@ -3494,15 +3418,13 @@ Le système de design est excellent avec quelques améliorations mineures recomm
 
 ### Modifications récentes (v0.1.4)
 
-- **Module Journal** : Module de gestion de tâches et notes
-  - **Tâches** : Gestion de tâches variées avec marquage "Fait"
-  - **Notes** : Notes libres avec titre optionnel et date
-  - Routes : `/journal`, `/journal/tasks`, `/journal/notes` avec pages d'ajout/édition
-  - Composants : `JournalTaskCard`, `JournalNoteCard`, `JournalTasksList`, `JournalNotesList`
-  - Hooks : `useJournalTasks`, `useJournalNotes`, `useJournalCheck`
-  - API : Routes `/api/journal/tasks` et `/api/journal/notes`
-  - Boutons centrés : Boutons "Ajouter une tâche" et "Ajouter une note" centrés sur toutes les pages
-  - Navigation retour : Boutons retour avec emoji 📔 pour les pages du journal
+- **Module Journal** : Module de notes uniquement (tâches supprimées)
+  - **Notes** : Titre, description, date optionnelle ; épingle "Pour le kiné", validation, partage
+  - Routes : `/journal`, `/journal/add`, `/journal/edit/[id]`
+  - Composants : `JournalNoteCard` (carte blanche), `JournalNotesList`
+  - Hooks : `useJournalNotes`, `useJournalCheck`, `usePinJournalNote`, `useValidateJournalNote`, `useShareJournalNote`
+  - API : `/api/journal/notes`, `/api/journal/notes/[id]`, `/api/journal/notes/[id]/pin`, `/api/journal/notes/[id]/validate`
+  - **Onglet Kiné (page d'accueil)** : Sections titrées "Exercices", "Progrès", "Notes pour le kiné" pour les éléments épinglés
 
 ### Modifications récentes (v0.1.3)
 

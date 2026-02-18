@@ -58,9 +58,6 @@ export const queryKeys = {
     list: (params: { resources: string[]; filters?: Record<string, unknown> }) =>
       [...queryKeys.batch.all, 'list', params] as const,
   },
-  journalTasks: {
-    all: ['journalTasks'] as const,
-  },
   journalProgress: {
     all: ['journalProgress'] as const,
     lists: () => [...queryKeys.journalProgress.all, 'list'] as const,

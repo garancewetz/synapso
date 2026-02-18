@@ -39,7 +39,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     const completeButtonRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
     const { archiveExercice, isArchiving } = useArchiveExercice();
-    const { handleShare } = useShareExercice(exercice, cardRef);
+    const { handleShare } = useShareExercice(exercice);
     const { handlePin, isPinning } = usePinExercice({
         exercice,
         userId: effectiveUser?.id ?? 0,

@@ -7,9 +7,8 @@ import { useJournalForm } from '../hooks/useJournalForm';
 import { useFormData } from '@/app/hooks/forms/useFormData';
 
 type NoteFormData = {
-  content: string;
   title: string;
-  date: string;
+  description: string;
 };
 
 type Props = {
@@ -20,34 +19,22 @@ type Props = {
 
 export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
   const [formData, setFormData] = useState<NoteFormData>({
-    content: '',
     title: '',
-    date: '',
+    description: '',
   });
 
-  // Charger les données initiales
   const { formData: initialData, loading: loadingInitial } = useFormData<NoteFormData>({
     entityId: noteId,
     fetchUrl: `/api/journal/notes/${noteId}`,
     transform: (data) => {
-      const noteData = data as { content?: string; title?: string; date?: string };
-      // Convertir la date ISO en format YYYY-MM-DD pour l'input date
-      let dateValue = '';
-      if (noteData.date) {
-        const date = new Date(noteData.date);
-        if (!isNaN(date.getTime())) {
-          dateValue = date.toISOString().split('T')[0];
-        }
-      }
+      const noteData = data as { title?: string; description?: string };
       return {
-        content: noteData.content || '',
         title: noteData.title || '',
-        date: dateValue,
+        description: noteData.description || '',
       };
     },
   });
 
-  // Utiliser le hook générique pour la gestion du formulaire
   const {
     loading,
     error,
@@ -61,13 +48,11 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
     deleteUrl: `/api/journal/notes/${noteId}`,
     onSuccess,
     transformToApi: (data) => ({
-      content: data.content,
-      title: data.title || null,
-      date: data.date || null,
+      title: data.title,
+      description: data.description,
     }),
   });
 
-  // Initialiser le formulaire avec les données chargées
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
@@ -86,37 +71,21 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
       <InputWithSpeech
         label="Titre"
         type="text"
+        required
         value={formData.title}
         onValueChange={(value) => setFormData({ ...formData, title: value })}
-        placeholder="Optionnel - pour organiser vos notes"
+        placeholder="Titre de la note"
         disabled={loadingInitial}
       />
 
       <TextareaWithSpeech
-        label="Note"
+        label="Description"
         rows={4}
-        required
-        value={formData.content}
-        onValueChange={(value) => setFormData({ ...formData, content: value })}
+        value={formData.description}
+        onValueChange={(value) => setFormData({ ...formData, description: value })}
+        placeholder="Description (optionnel)"
         disabled={loadingInitial}
       />
-
-      <div>
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-          Date <span className="text-gray-400 font-normal">(optionnel)</span>
-        </label>
-        <input
-          type="date"
-          id="date"
-          name="date"
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          aria-label="Date (optionnel)"
-          disabled={loadingInitial}
-        />
-        <p className="mt-1 text-xs text-gray-500">Par défaut : date d&apos;ajout</p>
-      </div>
 
       <FormActions
         loading={loading || loadingInitial}
@@ -126,9 +95,8 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
         onDelete={handleDelete}
         deleteConfirm={showDeleteConfirm}
         deleteLabel="Supprimer la note"
-        deleteConfirmLabel="⚠️ Confirmer la suppression"
+        deleteConfirmLabel="Confirmer la suppression"
       />
     </form>
   );
 }
-

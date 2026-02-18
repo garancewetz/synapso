@@ -1,10 +1,7 @@
-export { getJournalTasks } from './getJournalTasks';
-export { createJournalTask } from './createJournalTask';
-export { getJournalTaskById } from './getJournalTaskById';
-export { updateJournalTask } from './updateJournalTask';
-export { deleteJournalTask } from './deleteJournalTask';
 export { getJournalNotes } from './getJournalNotes';
 export { createJournalNote } from './createJournalNote';
 export { getJournalNoteById } from './getJournalNoteById';
 export { updateJournalNote } from './updateJournalNote';
 export { deleteJournalNote } from './deleteJournalNote';
+export { pinJournalNote } from './pinJournalNote';
+export { validateJournalNote } from './validateJournalNote';

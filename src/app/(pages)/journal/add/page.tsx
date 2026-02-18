@@ -1,10 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { JournalTaskForm, useJournalCheck } from '@/app/features/journal';
+import { JournalNoteForm, useJournalCheck } from '@/app/features/journal';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 
-export default function JournalTaskAddPage() {
+export default function JournalNoteAddPage() {
   const router = useRouter();
   const { hasAccess } = useJournalCheck();
 
@@ -16,15 +16,13 @@ export default function JournalTaskAddPage() {
     router.push('/journal');
   };
 
-  // Ne rien afficher si l'utilisateur n'a pas accès au journal
   if (!hasAccess) {
     return null;
   }
 
   return (
-    <FormPageWrapper title="Ajouter une tâche" backHref="/journal">
-      <JournalTaskForm onSuccess={handleSuccess} onCancel={handleCancel} />
+    <FormPageWrapper title="Ajouter une note" backHref="/journal">
+      <JournalNoteForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );
 }
-

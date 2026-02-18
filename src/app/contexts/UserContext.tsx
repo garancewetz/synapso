@@ -21,7 +21,6 @@ type UserWithStats = User & {
     exercices: number;
     progress: number;
     journalNotes: number;
-    journalTasks: number;
   };
 };
 

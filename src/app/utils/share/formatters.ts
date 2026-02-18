@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { Progress } from '@/app/types';
 import type { Exercice } from '@/app/types/exercice';
+import type { JournalNote } from '@/app/types/journal';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
 
 /**
@@ -58,5 +59,25 @@ export function formatExerciceForShare(exercice: Exercice): string {
     message += `\n\n${exercice.description.comment}`;
   }
   
+  return message;
+}
+
+/**
+ * Formate une note de journal pour le partage (Mail, Messages, WhatsApp, etc.)
+ * Format clair avec titre, description et date optionnelle
+ */
+export function formatJournalNoteForShare(note: JournalNote): string {
+  let message = `Note Synapso 📝\n\n`;
+  message += note.title;
+
+  if (note.description) {
+    message += `\n\n${note.description}`;
+  }
+
+  if (note.date) {
+    const date = format(new Date(note.date), 'd MMMM yyyy', { locale: fr });
+    message += `\n\n${date}`;
+  }
+
   return message;
 }

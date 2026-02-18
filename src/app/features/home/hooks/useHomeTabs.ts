@@ -20,13 +20,11 @@ export function useHomeTabs(pinnedCount: number) {
       iconName: 'UserIcon',
     });
 
-    if (pinnedCount > 0) {
-      options.push({
-        value: 'kine',
-        label: `Kiné (${pinnedCount})`,
-        iconName: 'BookmarkIcon',
-      });
-    }
+    options.push({
+      value: 'kine',
+      label: pinnedCount > 0 ? `Kiné (${pinnedCount})` : 'Kiné',
+      iconName: 'BookmarkIcon',
+    });
 
     options.push({
       value: 'suivi',

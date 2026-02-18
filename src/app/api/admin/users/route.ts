@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
             exercices: true,
             progress: true,
             journalNotes: true,
-            journalTasks: true,
           },
         },
       },

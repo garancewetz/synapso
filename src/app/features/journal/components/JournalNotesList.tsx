@@ -1,41 +1,35 @@
 'use client';
 
+import { useCallback } from 'react';
+import type { JournalNote } from '@/app/types';
 import { JournalNoteCard } from './JournalNoteCard';
 import { useJournalNotes } from '../hooks/useJournalNotes';
-import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 
 type Props = {
   limit?: number;
 };
 
 export function JournalNotesList({ limit }: Props) {
-  const { notes } = useJournalNotes();
+  const { notes, refetch } = useJournalNotes();
+
+  const handleNoteUpdated = useCallback((_updatedNote: JournalNote) => {
+    refetch();
+  }, [refetch]);
 
   const displayedNotes = limit ? notes.slice(0, limit) : notes;
-  const hasMoreTotal = limit && notes.length > limit;
 
   return (
     <div>
       {displayedNotes.length > 0 ? (
-        <>
-          <ul className="space-y-4">
-            {displayedNotes.map(note => (
-              <JournalNoteCard
-                key={note.id}
-                note={note}
-              />
-            ))}
-          </ul>
-          {limit && hasMoreTotal && (
-            <div className="mt-4">
-              <ViewAllLink 
-                href="/journal/notes"
-                label="Voir toutes les notes"
-                emoji="📔"
-              />
-            </div>
-          )}
-        </>
+        <ul className="space-y-4">
+          {displayedNotes.map(note => (
+            <JournalNoteCard
+              key={note.id}
+              note={note}
+              onUpdated={handleNoteUpdated}
+            />
+          ))}
+        </ul>
       ) : (
         <div className="text-center text-gray-500 py-8">
           Aucune note pour le moment
@@ -44,4 +38,3 @@ export function JournalNotesList({ limit }: Props) {
     </div>
   );
 }
-

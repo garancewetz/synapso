@@ -29,28 +29,12 @@ export function getCurrentPageName(pathname: string): string | null {
     return 'Journal';
   }
 
-  if (pathname === '/journal/notes') {
-    return 'Mes notes';
-  }
-
-  if (pathname === '/journal/tasks') {
-    return 'Mes tâches';
-  }
-
-  if (pathname === '/journal/notes/add') {
+  if (pathname === '/journal/add') {
     return 'Ajouter une note';
   }
 
-  if (pathname.startsWith('/journal/notes/edit/')) {
+  if (pathname.startsWith('/journal/edit/')) {
     return 'Modifier une note';
-  }
-
-  if (pathname === '/journal/tasks/add') {
-    return 'Ajouter une tâche';
-  }
-
-  if (pathname.startsWith('/journal/tasks/edit/')) {
-    return 'Modifier une tâche';
   }
 
   // Exercices
@@ -114,27 +98,11 @@ export function getPageEmoji(pathname: string): string | null {
     return JOURNAL_EMOJI;
   }
 
-  if (pathname === '/journal/notes') {
+  if (pathname === '/journal/add') {
     return JOURNAL_EMOJI;
   }
 
-  if (pathname === '/journal/tasks') {
-    return JOURNAL_EMOJI;
-  }
-
-  if (pathname === '/journal/notes/add') {
-    return JOURNAL_EMOJI;
-  }
-
-  if (pathname.startsWith('/journal/notes/edit/')) {
-    return JOURNAL_EMOJI;
-  }
-
-  if (pathname === '/journal/tasks/add') {
-    return JOURNAL_EMOJI;
-  }
-
-  if (pathname.startsWith('/journal/tasks/edit/')) {
+  if (pathname.startsWith('/journal/edit/')) {
     return JOURNAL_EMOJI;
   }
 
@@ -152,4 +120,3 @@ export function getPageEmoji(pathname: string): string | null {
   // Page non reconnue
   return null;
 }
-

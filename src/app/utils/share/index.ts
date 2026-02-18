@@ -10,9 +10,10 @@ export {
   formatProgressForWhatsApp,
   formatProgressCleanForWhatsApp,
   formatExerciceForShare,
+  formatJournalNoteForShare,
 } from './formatters';
 
-// Images
+// Images (conservées pour compatibilité)
 export {
   createProgressShareImage,
 } from './progress-image';
@@ -31,6 +32,10 @@ export {
 
 // Fonctions de partage de haut niveau
 export {
+  shareProgressAsText,
+  shareExerciceAsText,
+  shareJournalNoteAsText,
+  // Dépréciées (compatibilité)
   shareProgressWithImage,
   shareProgressImage,
   shareExerciceWithImage,

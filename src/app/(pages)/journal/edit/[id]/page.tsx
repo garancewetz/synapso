@@ -1,12 +1,18 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { JournalNoteForm, useJournalCheck } from '@/app/features/journal';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 
-export default function JournalNoteAddPage() {
+export default function JournalNoteEditPage() {
   const router = useRouter();
+  const params = useParams();
   const { hasAccess } = useJournalCheck();
+  const noteId = parseInt(params.id as string);
+
+  if (!hasAccess) {
+    return null;
+  }
 
   const handleSuccess = () => {
     router.push('/journal');
@@ -16,15 +22,9 @@ export default function JournalNoteAddPage() {
     router.push('/journal');
   };
 
-  // Ne rien afficher si l'utilisateur n'a pas accès au journal
-  if (!hasAccess) {
-    return null;
-  }
-
   return (
-    <FormPageWrapper title="Ajouter une note" backHref="/journal">
-      <JournalNoteForm onSuccess={handleSuccess} onCancel={handleCancel} />
+    <FormPageWrapper title="Modifier une note" backHref="/journal">
+      <JournalNoteForm noteId={noteId} onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );
 }
-

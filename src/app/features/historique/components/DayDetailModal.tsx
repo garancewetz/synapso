@@ -200,9 +200,6 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
                     <span className="text-base font-medium text-gray-800 flex-1 truncate">
                       {exercise.name}
                     </span>
-                    <span className="text-xs text-gray-400 shrink-0 bg-gray-100 px-2 py-1 rounded-lg">
-                      {formatTime(exercise.completedAt)}
-                    </span>
                   </div>
                 </div>
               );

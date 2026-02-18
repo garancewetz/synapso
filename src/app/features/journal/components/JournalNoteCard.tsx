@@ -50,7 +50,6 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
   }, []);
 
   return (
-    <li>
       <BaseCard role="article" aria-label={`Note: ${note.title}`}>
         <BaseCard.Content>
           <div className="p-4 md:p-5">
@@ -145,6 +144,5 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
           </div>
         </BaseCard.Content>
       </BaseCard>
-    </li>
   );
 });

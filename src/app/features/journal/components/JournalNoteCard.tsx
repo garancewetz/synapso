@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, memo, useCallback } from 'react';
+import { useState, useRef, useLayoutEffect, memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { JournalNote } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
@@ -8,7 +8,7 @@ import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
 import { BaseCard, Badge, Button } from '@/app/components/ui';
-import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon } from '@/app/components/ui/icons';
+import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon, ChevronIcon } from '@/app/components/ui/icons';
 
 type Props = {
   note: JournalNote;
@@ -18,7 +18,22 @@ type Props = {
 export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }: Props) {
   const router = useRouter();
   const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const fullHeightRef = useRef(0);
   const { effectiveUser } = useUser();
+
+  // Mesurer la hauteur complète et détecter la troncature
+  // Seulement au montage et quand la description change (pas quand isExpanded change,
+  // sinon la transition CSS fausse la mesure de clientHeight)
+  useLayoutEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      fullHeightRef.current = el.scrollHeight;
+      setIsTruncated(el.scrollHeight > el.clientHeight + 1);
+    }
+  }, [note.description]);
 
   const { handlePin, isPinning } = usePinJournalNote({
     note,
@@ -49,8 +64,27 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
     setIsActionsOpen(prev => !prev);
   }, []);
 
+  const toggleExpand = useCallback(() => {
+    setIsActionsOpen(false);
+    setIsExpanded(prev => !prev);
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleExpand();
+    }
+  }, [toggleExpand]);
+
   return (
-      <BaseCard role="article" aria-label={`Note: ${note.title}`}>
+      <BaseCard
+        role={isTruncated ? 'button' : 'article'}
+        tabIndex={isTruncated ? 0 : undefined}
+        aria-label={`Note: ${note.title}`}
+        ariaExpanded={isTruncated ? isExpanded : undefined}
+        onClick={isTruncated ? toggleExpand : undefined}
+        onKeyDown={isTruncated ? handleKeyDown : undefined}
+      >
         <BaseCard.Content>
           <div className="p-4 md:p-5">
             <div className="flex items-start justify-between gap-2">
@@ -70,9 +104,25 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
             </div>
 
             {note.description && (
-              <p className="mt-2 text-sm md:text-base text-gray-600 line-clamp-3">
-                {note.description}
-              </p>
+              <>
+                <div
+                  ref={descriptionRef}
+                  className="mt-2 overflow-hidden transition-[max-height] duration-200 ease-out"
+                  style={{ maxHeight: isExpanded ? `${fullHeightRef.current}px` : '4.5em' }}
+                >
+                  <p className="text-sm md:text-base text-gray-600 whitespace-pre-wrap">
+                    {note.description}
+                  </p>
+                </div>
+                {isTruncated && (
+                  <div className="flex justify-center mt-2">
+                    <ChevronIcon
+                      className="w-4 h-4 text-gray-400 transition-transform duration-200"
+                      direction={isExpanded ? 'up' : 'down'}
+                    />
+                  </div>
+                )}
+              </>
             )}
             {note.date && (
               <p className="mt-1.5 text-xs text-gray-500">

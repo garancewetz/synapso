@@ -1,10 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
-import { useFocusTrap } from '@/app/hooks/useFocusTrap';
 import { Button } from './Button';
 
 type Props = {
@@ -42,12 +41,18 @@ export function BottomSheetModal({
 
   useBodyScrollLock(isOpen);
 
-  useFocusTrap(contentRef, isOpen, {
-    initialFocus: 'first',
-    restoreFocus: !!triggerRef,
-    restoreFocusRef: triggerRef,
-    onEscape: onClose,
-  });
+  // Fermeture avec Escape (remplace le focus trap qui interférait avec les inputs)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.y > DRAG_CLOSE_THRESHOLD || info.velocity.y > 500) {

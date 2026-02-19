@@ -70,7 +70,7 @@ export function ExerciceCardExpandable({
                 transition={{
                   duration: 0.1
                 }}
-                className="text-gray-600 leading-relaxed text-sm"
+                className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap"
               >
                 {exercice.description.text}
               </motion.p>

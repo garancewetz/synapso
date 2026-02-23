@@ -162,7 +162,6 @@ export default function CategoryPage() {
       />
 
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        <div className="px-4">
           {loadingExercices ? (
             <div className="flex items-center justify-center min-h-screen py-12">
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
@@ -242,7 +241,6 @@ export default function CategoryPage() {
               </div>
             </motion.div>
           )}
-        </div>
       </div>
 
       <div className="flex justify-center mt-8 mb-6">

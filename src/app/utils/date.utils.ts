@@ -118,14 +118,3 @@ export function getDateFromKey(dateKey: string | null): Date | null {
   });
   return normalized;
 }
-
-/**
- * Convertit un dateKey (yyyy-MM-dd) en ISO string normalisé pour les API
- * Garantit un format cohérent pour tous les appels API qui acceptent une date
- */
-export function dateKeyToISO(dateKey: string): string | undefined {
-  const date = getDateFromKey(dateKey);
-  const iso = date?.toISOString();
-  console.log('[DEBUG-PROD] dateKeyToISO:', { dateKey, iso, timezoneOffset: new Date().getTimezoneOffset() });
-  return iso;
-}

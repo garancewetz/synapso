@@ -34,13 +34,3 @@ export const SITEMAP_ICON_STYLES = {
   },
 } as const;
 
-/**
- * Couleurs de ring pour les onglets actifs du SegmentedControl
- * Correspond aux couleurs des catégories pour créer un lien visuel
- */
-export const TAB_RING_COLORS = {
-  corps: 'ring-blue-500',
-  journal: 'ring-yellow-400',
-  parcours: 'ring-amber-500',
-} as const;
-

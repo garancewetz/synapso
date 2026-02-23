@@ -3,7 +3,6 @@ export { LazyDonutChart as DonutChart } from './LazyDonutChart';
 export { LazyProgressStatsChart as ProgressStatsChart } from './LazyProgressStatsChart';
 
 // Regular exports
-export { BarChart } from './BarChart';
 export { ActivityHeatmap } from './ActivityHeatmap';
 export { ActivityLineChart } from './ActivityLineChart';
 export { WeekHeatmap } from './WeekHeatmap';

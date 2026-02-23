@@ -89,12 +89,6 @@ export const PROGRESS_DISPLAY_COLORS: Record<ExerciceCategory, {
 // Couleur par défaut pour les progrès sans catégorie
 export const PROGRESS_DEFAULT_GRADIENT = 'from-amber-400 to-yellow-500';
 
-// Couleurs pour la catégorie Orthophonie (jaune)
-export const ORTHOPHONIE_COLORS = {
-  active: 'bg-yellow-200 ring-2 ring-yellow-500',
-  inactive: 'bg-yellow-50',
-} as const;
-
 // Couleurs pour la catégorie Autre (amber/gold)
 export const AUTRE_COLORS = {
   active: 'bg-amber-200 ring-2 ring-amber-500',

@@ -19,31 +19,6 @@ export const RESET_FREQUENCY_COLORS = {
   },
 } as const;
 
-/**
- * Couleurs pour les éléments de navigation génériques
- * Utilise une couleur neutre pour éviter la confusion avec les catégories
- */
-export const NAVIGATION_COLORS = {
-  indicator: {
-    bg: 'bg-gray-50',
-    border: 'border-gray-200',
-    text: 'text-gray-600',
-    textStrong: 'text-gray-800',
-  },
-} as const;
-
-/**
- * Couleurs pour les éléments de formulaire génériques (équipements, etc.)
- * Utilise une couleur neutre pour éviter la confusion avec les catégories
- */
-export const FORM_COLORS = {
-  equipment: {
-    selected: 'bg-gray-500 text-white',
-    unselected: 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300',
-    addButton: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-  },
-} as const;
-
 
 
 

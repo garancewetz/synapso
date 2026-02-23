@@ -10,8 +10,6 @@ import { NavigationLoader } from './NavigationLoader';
 import { MenuLink } from './MenuLink';
 import { NavBar } from './NavBar';
 import { PWARegister } from './PWARegister';
-import { SiteMapGroup } from './SiteMapGroup';
-import { StatBadge } from './StatBadge';
 import { ProgressButton } from './ui/ProgressButton';
 import { TouchLink } from './TouchLink';
 import { UserBadge } from './UserBadge';
@@ -41,8 +39,6 @@ export {
   PinIcon,
   SparklesIcon,
   PWARegister,
-  SiteMapGroup,
-  StatBadge,
   Textarea,
   TouchLink,
   UserBadge,

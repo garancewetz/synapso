@@ -1,5 +1,5 @@
 // Icons
-export { CalendarIcon, HeartIcon, PinIcon, SparklesIcon } from './icons';
+export { CalendarIcon, PinIcon, SparklesIcon } from './icons';
 
 // UI Components
 export { Accordion } from './Accordion';

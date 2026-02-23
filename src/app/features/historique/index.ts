@@ -4,7 +4,6 @@ export { ActivityHeatmapCell } from './components/ActivityHeatmapCell';
 export { ActivityHeatmapSkeleton } from './components/ActivityHeatmapSkeleton';
 export { ActivityLineChart } from './components/ActivityLineChart';
 export { ActivityLineChartSkeleton } from './components/ActivityLineChartSkeleton';
-export { BarChart } from './components/BarChart';
 export { DayDetailModal } from './components/DayDetailModal';
 export { DayDetailModalWrapper } from './components/DayDetailModalWrapper';
 export { DonutChart } from './components/DonutChart';

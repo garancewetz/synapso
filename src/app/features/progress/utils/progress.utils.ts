@@ -1,6 +1,5 @@
 import { PROGRESS_TAGS, PROGRESS_TAGS_WITH_EMOJI } from '@/app/constants/progress.constants';
-import { CATEGORY_ICONS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT, CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
-import { CATEGORY_EMOJIS } from '@/app/constants/emoji.constants';
+import { CATEGORY_ICONS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { ORTHOPHONIE_PROGRESS_EMOJI } from '@/app/constants/emoji.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
@@ -58,34 +57,5 @@ export function getExerciceCategoryFromEmoji(emoji: string | null | undefined): 
  */
 export function isOrthophonieProgress(emoji: string | null | undefined): boolean {
   return emoji === ORTHOPHONIE_PROGRESS_EMOJI;
-}
-
-/**
- * Calcule les badges pour un progrès (type Ortho/Physique et catégorie d'exercice)
- * 
- * @param emoji - L'emoji du progrès
- * @returns Un objet contenant les informations des badges
- */
-export function getProgressBadges(emoji: string | null | undefined) {
-  const isOrthophonie = isOrthophonieProgress(emoji);
-  const exerciceCategory = getExerciceCategoryFromEmoji(emoji);
-
-  const typeBadge = {
-    emoji: isOrthophonie ? CATEGORY_EMOJIS.ORTHOPHONIE : CATEGORY_EMOJIS.PHYSIQUE,
-    label: isOrthophonie ? 'Ortho' : 'Physique',
-    color: '#f97316', // Couleur orange pour la bande latérale
-  };
-
-  const categoryBadge = exerciceCategory ? {
-    emoji: CATEGORY_ICONS[exerciceCategory],
-    label: CATEGORY_LABELS_SHORT[exerciceCategory],
-    color: CATEGORY_CHART_COLORS[exerciceCategory],
-  } : null;
-
-  return {
-    typeBadge,
-    categoryBadge,
-    exerciceCategory,
-  };
 }
 

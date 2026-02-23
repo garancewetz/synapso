@@ -17,6 +17,9 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
 
   return (
     <>
+       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1 mt-2">
+        Sections principales
+      </h3>
       {/* Section Progression */}
       <MenuLink
         title="Ma progression"
@@ -31,6 +34,7 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
       />
 
       {/* Section Journal */}
+
       {hasJournal && (
         <MenuLink
           title="Journal"

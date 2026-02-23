@@ -74,14 +74,6 @@ export function logError(message: string, error?: unknown): void {
 }
 
 /**
- * Log une information de manière sécurisée
- */
-export function logInfo(message: string, data?: unknown): void {
-  const sanitizedData = data ? sanitizeData(data) : undefined;
-  console.log(`[INFO] ${message}`, sanitizedData || '');
-}
-
-/**
  * Log un avertissement de manière sécurisée
  */
 export function logWarn(message: string, data?: unknown): void {

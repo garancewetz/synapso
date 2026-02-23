@@ -19,26 +19,10 @@ ${date}`;
 }
 
 /**
- * Formate un progrès pour le partage (version simple, sans date)
- * Format : [Contenu]
- * Exemple : J'ai réussi à marcher 10 minutes sans aide
- */
-export function formatProgressCleanForShare(progress: Progress): string {
-  return `${progress.content}`;
-}
-
-/**
  * @deprecated Utiliser formatProgressForShare à la place
  */
 export function formatProgressForWhatsApp(progress: Progress): string {
   return formatProgressForShare(progress);
-}
-
-/**
- * @deprecated Utiliser formatProgressCleanForShare à la place
- */
-export function formatProgressCleanForWhatsApp(progress: Progress): string {
-  return formatProgressCleanForShare(progress);
 }
 
 /**

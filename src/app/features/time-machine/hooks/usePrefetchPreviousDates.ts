@@ -47,39 +47,3 @@ export function usePrefetchPreviousDates() {
     });
   }, [effectiveUser, queryClient]);
 }
-
-export function usePrefetchDate(date: Date | null) {
-  const { effectiveUser } = useUser();
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!effectiveUser || !date) return;
-
-    const resetFrequency = effectiveUser.resetFrequency || 'DAILY';
-    const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.exercices.list({
-        targetDate: dateKey,
-      }),
-      queryFn: () => fetchExercices({
-        targetDate: dateKey,
-      }),
-      staleTime: 5 * 60 * 1000,
-    });
-
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.categoryStats.list({
-        userId: effectiveUser.id,
-        resetFrequency: resetFrequency as 'DAILY' | 'WEEKLY',
-        referenceDateKey: dateKey,
-      }),
-      queryFn: () => fetchCategoryStats({
-        userId: effectiveUser.id,
-        resetFrequency: resetFrequency as 'DAILY' | 'WEEKLY',
-        referenceDateKey: dateKey,
-      }),
-      staleTime: 5 * 60 * 1000,
-    });
-  }, [effectiveUser, date, queryClient]);
-}

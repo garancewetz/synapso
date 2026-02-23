@@ -29,11 +29,6 @@ export const GOLDEN_FOOTER_STYLES = {
   classes: 'border-t border-amber-200 bg-amber-100/50 px-4 py-2 flex items-center gap-2',
 } as const;
 
-export const GOLDEN_BADGE_STYLES = {
-  // Classes du badge doré plus chaud
-  classes: 'bg-gradient-to-r from-amber-300 to-yellow-300 text-amber-900 border border-amber-400 shadow-sm',
-} as const;
-
 export const GOLDEN_TEXT_STYLES = {
   // Texte principal plus foncé pour meilleur contraste
   primary: 'text-amber-950',

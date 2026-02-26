@@ -7,7 +7,8 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useCompleteExercice } from '../hooks/useCompleteExercice';
 import { useArchiveExercice } from '../hooks/useArchiveExercice';
 import { usePinExercice } from '../hooks/usePinExercice';
-import { useShareExercice, ConfettiValidate } from '@/app/features/exercices';
+import { ConfettiValidate } from '@/app/features/exercices';
+import { ShareToUserModal } from '@/app/features/sharing';
 import { CompleteButton, BaseCard, Button } from '@/app/components/ui';
 import { DotsIcon, EditIcon, ShareIcon, BookmarkIcon } from '@/app/components/ui/icons';
 import { ExerciceCardHeader } from './ExerciceCardHeader';
@@ -39,7 +40,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     const completeButtonRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
     const { archiveExercice, isArchiving } = useArchiveExercice();
-    const { handleShare } = useShareExercice(exercice);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const { handlePin, isPinning } = usePinExercice({
         exercice,
         userId: effectiveUser?.id ?? 0,
@@ -80,9 +81,9 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     }, [handlePin]);
 
     const handleShareClick = useCallback(() => {
-        handleShare();
+        setIsShareModalOpen(true);
         setIsActionsOpen(false);
-    }, [handleShare]);
+    }, []);
 
     const toggleActions = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -243,6 +244,13 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                     title={exercice.name}
                 />
             )}
+
+            {/* Modale de partage à un utilisateur */}
+            <ShareToUserModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                exerciceId={exercice.id}
+            />
         </div>
     );
 });

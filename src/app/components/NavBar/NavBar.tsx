@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
 import { UserBadge } from '@/app/components/UserBadge';
-import { MenuIcon } from '@/app/components/ui/icons';
+import { BellIcon, MenuIcon } from '@/app/components/ui/icons';
 import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
@@ -16,6 +16,7 @@ import { isToday } from 'date-fns';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
+import { usePendingShareCount } from '@/app/features/sharing';
 import { 
   CATEGORY_ORDER, 
   CATEGORY_HREFS,
@@ -40,6 +41,7 @@ export function NavBar() {
   const { isLeftHanded } = useHandPreference();
   const preserveDate = usePreserveDateParam();
   const { selectedDate, isDateSelected } = useSelectedDate();
+  const { count: pendingShareCount } = usePendingShareCount();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
@@ -51,6 +53,7 @@ export function NavBar() {
   const isHomeActive = pathname === '/';
   const isHistoriqueActive = pathname === '/historique';
   const isJournalActive = pathname === '/journal' || pathname.startsWith('/journal/');
+  const isNotificationsActive = pathname === '/notifications';
   const hasJournal = effectiveUser?.hasJournal ?? false;
 
   return (
@@ -181,6 +184,34 @@ export function NavBar() {
                 )}
               </TouchLink>
             )}
+
+            {/* Notifications */}
+            <TouchLink
+              href={preserveDate('/notifications')}
+              className={clsx(
+                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                'hover:bg-gray-50',
+                isNotificationsActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+              )}
+              aria-label={pendingShareCount > 0 ? `${pendingShareCount} notification${pendingShareCount > 1 ? 's' : ''} en attente` : 'Notifications'}
+              aria-current={isNotificationsActive ? 'page' : undefined}
+            >
+              <span className="flex items-center gap-1.5">
+                <span className="relative inline-flex">
+                  <BellIcon className="w-5 h-5" />
+                  {pendingShareCount > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"
+                      aria-hidden
+                    />
+                  )}
+                </span>
+                Notifications
+              </span>
+              {isNotificationsActive && (
+                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+              )}
+            </TouchLink>
           </nav>
 
           {/* Badge utilisateur et bouton menu */}
@@ -191,6 +222,22 @@ export function NavBar() {
             {effectiveUser && (
               <UserBadge size="sm" />
             )}
+
+            {/* Cloche notifications — visible sur mobile uniquement quand il y a des notifications */}
+            {pendingShareCount > 0 && (
+              <TouchLink
+                href="/notifications"
+                className="relative md:hidden p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label={`${pendingShareCount} notification${pendingShareCount > 1 ? 's' : ''} en attente`}
+              >
+                <BellIcon className="w-6 h-6" />
+                <span
+                  className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"
+                  aria-hidden="true"
+                />
+              </TouchLink>
+            )}
+
             <Button
               iconOnly
               ref={menuButtonRef}

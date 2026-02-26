@@ -13,13 +13,11 @@
 # testing
 /coverage
 
-# E2E tests
-/tests/e2e/
-/tests/e2e/**/*
-/test-results/
-/playwright-report/
-/playwright/.cache/
-playwright.config.ts
+# Playwright (artefacts uniquement, pas les specs)
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
 
 # next.js
 /.next/

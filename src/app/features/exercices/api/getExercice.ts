@@ -48,6 +48,15 @@ export async function getExercice(params: GetExerciceParams) {
     throw new Error('Exercice not found');
   }
 
+  const acceptedShare = await prisma.sharedExercice.findFirst({
+    where: {
+      exerciceId: exercice.id,
+      receiverId: userId,
+      status: 'ACCEPTED',
+    },
+    select: { sender: { select: { id: true, name: true } } },
+  });
+
   let equipmentsParsed: string[] = [];
   try {
     equipmentsParsed = JSON.parse(exercice.equipments || '[]');
@@ -93,5 +102,8 @@ export async function getExercice(params: GetExerciceParams) {
     media: mediaParsed,
     archived: exercice.archived ?? false,
     archivedAt: exercice.archivedAt,
+    sharedBy: acceptedShare
+    ? { id: acceptedShare.sender.id, name: acceptedShare.sender.name }
+    : undefined,
   };
 }

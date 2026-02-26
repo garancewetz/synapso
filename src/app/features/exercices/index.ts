@@ -29,7 +29,6 @@ export { useCategoryFilters } from './hooks/useCategoryFilters';
 export { useCategoryActiveFiltersBarHandlers } from './hooks/useCategoryActiveFiltersBarHandlers';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
-export { useShareExercice } from './hooks/useShareExercice';
 export { useRelatedStretchingByCategory } from './hooks/useRelatedStretchingByCategory';
 
 // Utils

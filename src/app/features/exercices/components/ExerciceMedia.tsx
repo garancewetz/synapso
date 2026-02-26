@@ -91,13 +91,19 @@ export function ExerciceMedia({ media, className = '', maxPhotos = 3, initialLig
     <>
       {showThumbnails && (
         <div className={clsx('w-full', className)}>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className={clsx(
+            'grid gap-2',
+            photosToShow.length === 1 ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'
+          )}>
             {photosToShow.map((photo, index) => (
               <button
                 key={photo.publicId}
                 type="button"
                 onClick={(e) => openLightbox(index, e)}
-                className="relative w-full h-24 md:h-32 rounded-lg border border-gray-200 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:scale-[0.98] transition-transform"
+                className={clsx(
+                  'relative w-full rounded-lg border border-gray-200 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:scale-[0.98] transition-transform',
+                  photosToShow.length === 1 ? 'h-48 md:h-56' : 'h-24 md:h-32'
+                )}
                 aria-label={`Voir la photo ${index + 1} en grand`}
               >
                 <Image

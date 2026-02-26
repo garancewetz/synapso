@@ -1,5 +1,6 @@
 export { ArrowLeftIcon } from './ArrowLeftIcon';
 export { ArrowRightIcon } from './ArrowRightIcon';
+export { BellIcon } from './BellIcon';
 export { BookIcon } from './BookIcon';
 export { BookmarkIcon } from './BookmarkIcon';
 export { CalendarIcon } from './CalendarIcon';

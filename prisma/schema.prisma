@@ -20,6 +20,8 @@ model User {
   exercices      Exercice[]
   progress       Progress[]
   journalNotes   JournalNote[]
+  sentShares     SharedExercice[] @relation("sentShares")
+  receivedShares SharedExercice[] @relation("receivedShares")
 
   @@index([role])
 }
@@ -48,6 +50,7 @@ model Exercice {
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bodyparts          ExerciceBodypart[]
   history            History[]
+  sharedExercices    SharedExercice[]
 
   @@index([userId])
   @@index([category])
@@ -175,4 +178,28 @@ enum DominantHand {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum ShareStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model SharedExercice {
+  id         Int         @id @default(autoincrement())
+  exerciceId Int?
+  senderId   Int
+  receiverId Int
+  status     ShareStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  exercice Exercice? @relation(fields: [exerciceId], references: [id], onDelete: SetNull)
+  sender   User      @relation("sentShares", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User      @relation("receivedShares", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([receiverId, status])
+  @@index([senderId])
+  @@index([exerciceId])
 }

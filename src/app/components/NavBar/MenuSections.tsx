@@ -1,9 +1,10 @@
 'use client';
 
 import { MenuLink } from '@/app/components';
-import { BookIcon, RocketIcon } from '@/app/components/ui/icons';
+import { BellIcon, BookIcon, RocketIcon } from '@/app/components/ui/icons';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { useUser } from '@/app/contexts/UserContext';
+import { NotificationBadge } from '@/app/features/sharing';
 
 type Props = {
   onMenuClose: () => void;
@@ -48,6 +49,22 @@ export function MenuSections({ onMenuClose, isMenuOpen }: Props) {
           noCardStyle
         />
       )}
+
+      {/* Section Notifications */}
+      <div className="relative">
+        <MenuLink
+          title="Notifications"
+          icon={<BellIcon className="w-4 h-4" />}
+          href="/notifications"
+          iconBgColor="bg-red-500"
+          iconTextColor="text-white"
+          onClick={onMenuClose}
+          tabIndex={tabIndex}
+          iconSize="sm"
+          noCardStyle
+        />
+        <NotificationBadge className="absolute top-1/2 -translate-y-1/2 right-2" />
+      </div>
     </>
   );
 }

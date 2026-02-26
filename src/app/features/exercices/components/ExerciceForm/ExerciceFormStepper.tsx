@@ -10,15 +10,16 @@ type Props = {
   currentStep: number;
   maxVisitedStep: number;
   onStepClick: (step: number) => void;
+  isEditMode?: boolean;
 };
 
-export function ExerciceFormStepper({ currentStep, maxVisitedStep, onStepClick }: Props) {
+export function ExerciceFormStepper({ currentStep, maxVisitedStep, onStepClick, isEditMode }: Props) {
   return (
     <div className="flex items-center justify-between mb-8">
       {STEPS.map((step, index) => {
         const isCompleted = index < currentStep;
         const isCurrent = index === currentStep;
-        const isClickable = index <= maxVisitedStep;
+        const isClickable = isEditMode || index <= maxVisitedStep;
 
         return (
           <div key={step.label} className="flex items-center flex-1 last:flex-none">

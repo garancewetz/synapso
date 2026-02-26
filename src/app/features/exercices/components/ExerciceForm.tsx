@@ -35,7 +35,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const queryClient = useQueryClient();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [maxVisitedStep, setMaxVisitedStep] = useState(0);
+  const [maxVisitedStep, setMaxVisitedStep] = useState(exerciceId ? TOTAL_STEPS - 1 : 0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
 
   const [formData, setFormData] = useState({
@@ -301,6 +301,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         currentStep={currentStep}
         maxVisitedStep={maxVisitedStep}
         onStepClick={goToStep}
+        isEditMode={!!exerciceId}
       />
 
       <ErrorMessage message={error} />
@@ -375,37 +376,32 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       </div>
 
       {/* Navigation entre étapes */}
-      {currentStep < TOTAL_STEPS - 1 ? (
-        <div className="flex justify-between pt-4">
+      <div className="space-y-3 pt-4">
+        <div className="flex justify-between">
           <Button
             variant="secondary"
             onClick={currentStep === 0 ? onCancel : () => goToStep(currentStep - 1)}
           >
             {currentStep === 0 ? 'Annuler' : '← Précédent'}
           </Button>
-          <Button
-            variant="action"
-            onClick={() => goToStep(currentStep + 1)}
-          >
-            Suivant →
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex justify-start">
+          {currentStep < TOTAL_STEPS - 1 && (
             <Button
-              variant="secondary"
-              onClick={() => goToStep(currentStep - 1)}
+              variant="action"
+              onClick={() => goToStep(currentStep + 1)}
             >
-              ← Précédent
+              Suivant →
             </Button>
-          </div>
+          )}
+        </div>
+
+        {/* Bouton Enregistrer : toujours visible en édition, seulement à la dernière étape en création */}
+        {(exerciceId || currentStep === TOTAL_STEPS - 1) && (
           <FormActions
             loading={createOrUpdateMutation.isPending || deleteMutation.isPending}
             onSubmitLabel={exerciceId ? 'Enregistrer les modifications' : 'Créer l\'exercice'}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Bouton supprimer accessible depuis toutes les étapes en mode édition */}
       {exerciceId && (

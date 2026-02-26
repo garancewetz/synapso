@@ -15,8 +15,10 @@ test.describe('Partage', () => {
     const firstCard = page.locator('.exercise-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 15000 });
     await firstCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
-    await page.waitForTimeout(500);
-    await firstCard.getByRole('button', { name: 'Partager' }).click({ force: true });
+    const partagerButton = firstCard.getByRole('button', { name: 'Partager' });
+    await partagerButton.waitFor({ state: 'visible', timeout: 5000 });
+    // dispatchEvent car le bouton est couvert par d'autres éléments de la page
+    await partagerButton.dispatchEvent('click');
 
     const modalHeading = page.getByRole('heading', { name: 'Partager avec' });
     const modalEmpty = page.getByText('Aucun utilisateur disponible');

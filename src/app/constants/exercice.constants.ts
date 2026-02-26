@@ -280,9 +280,9 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
 // Liste des bodyparts disponibles (actifs uniquement)
 export const AVAILABLE_BODYPARTS = [
   'Bras', 'Mains', 'Épaules', 'Cou & Nuque',  // Haut
-  'Dos', 'Corps', 'Bassin',                    // Milieu
+  'Dos', 'Corps', 'Bassin',  'Ventre',                  // Milieu
   'Jambes', 'Fessier', 'Pied',
-  'Ventre', // Bas
+  // Bas
 ] as const;
 
 // Icônes pour les bodyparts
@@ -294,10 +294,11 @@ export const BODYPART_ICONS: Record<string, string> = {
   'Dos': '🔙',
   'Corps': '🧍',
   'Bassin': '🦴',
+  'Ventre': '🎯',
+
   'Jambes': '🦵',
   'Fessier': '🍑',
   'Pied': '🦶',
-  'Ventre': '🍔',
   // Rétrocompatibilité
   'Epaules': '🏋️',
   'Nuque / Cervicales': '🦒',

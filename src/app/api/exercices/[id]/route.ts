@@ -134,10 +134,23 @@ export async function PUT(
       );
     }
 
+    const data = {
+      ...updatedData,
+      ...(updatedData.description && {
+        descriptionText: updatedData.description.text,
+        descriptionComment: updatedData.description.comment ?? null,
+      }),
+      ...(updatedData.workout && {
+        workoutRepeat: updatedData.workout.repeat ?? null,
+        workoutSeries: updatedData.workout.series ?? null,
+        workoutDuration: updatedData.workout.duration ?? null,
+      }),
+    };
+
     const exercice = await updateExercice({
       exerciceId: id,
       userId,
-      data: updatedData,
+      data,
       resetFrequency: user.resetFrequency || 'DAILY',
     });
 

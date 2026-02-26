@@ -3,7 +3,7 @@ import { AuthHelper } from './helpers/auth';
 import { TEST_USER } from './helpers/test-constants';
 
 test.describe('Connexion', () => {
-  test('se connecte avec le compte Garou et accède au tableau de bord', async ({ page }) => {
+  test('se connecte et accède au tableau de bord', async ({ page }) => {
     const authHelper = new AuthHelper(page);
 
     await authHelper.login(TEST_USER.username, TEST_USER.password);

@@ -3,7 +3,6 @@ import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
-import { ExerciceCategory } from '@/app/types/exercice';
 import { CACHE_TAGS } from '@/app/lib/cache';
 import { getExercice, updateExercice, deleteExercice } from '@/app/features/exercices/api';
 

@@ -147,7 +147,12 @@ synapso/
 │       ├── constants/          # Constantes (couleurs, icônes, etc.)
 │       └── utils/              # Fonctions utilitaires
 ├── public/                     # Fichiers statiques (PWA assets)
-└── scripts/                    # Scripts utilitaires
+├── scripts/                    # Scripts utilitaires
+└── tests/
+    └── e2e/                    # Tests E2E Playwright
+        ├── helpers/            # AuthHelper, TimeMachineHelper, test-constants (compte Testeuse)
+        ├── *.spec.ts           # login, navigation, exercices, progress, time-machine, settings, journal, sharing, archivage
+        └── playwright.config.ts
 ```
 
 ---
@@ -2948,7 +2953,7 @@ import { format, startOfDay } from 'date-fns'; // Au lieu de import * from 'date
 1. **Tests automatisés**
    - Tests unitaires (Jest)
    - Tests d'intégration (React Testing Library)
-   - Tests E2E (Playwright)
+   - **Tests E2E (Playwright)** : dans `tests/e2e/`. Compte de test : Testeuse / 1234 (à créer en base ou via seed). Specs : connexion et déconnexion, navigation (accueil, historique, catégories, équipements, archivés, paramètres, notifications), exercices (CRUD, archivage), progrès (CRUD), mode sablier (time-machine), paramètres (enregistrement profil), journal (affichage, création de note), partage (ouverture modale), archivage (archiver/désarchiver). Lancer avec `npx playwright test` (serveur sur port 3003).
 
 2. **Monitoring et analytics**
    - Suivi des erreurs (Sentry)

@@ -67,6 +67,12 @@ export const queryKeys = {
     all: ['user'] as const,
     current: () => [...queryKeys.user.all, 'current'] as const,
   },
+  shares: {
+    all: ['shares'] as const,
+    received: () => [...queryKeys.shares.all, 'received'] as const,
+    count: () => [...queryKeys.shares.all, 'count'] as const,
+    users: () => [...queryKeys.shares.all, 'users'] as const,
+  },
 } as const;
 
 // ⚡ FETCH FUNCTIONS: Fonctions pures pour les appels API
@@ -102,12 +108,6 @@ export async function fetchExercices(filters: {
   }
   
   const exercices = await res.json();
-  console.log('[FETCH-EXERCICES] 📥 Récupération:', {
-    url,
-    targetDate: filters.targetDate,
-    count: exercices.length,
-  });
-  
   return exercices;
 }
 
@@ -272,4 +272,42 @@ export async function fetchBatch(params: {
   }
 
   return res.json();
+}
+
+// ⚡ SHARES: Fetch functions pour le partage d'exercices
+
+export type ShareableUser = { id: number; name: string };
+
+export async function fetchShareableUsers(): Promise<ShareableUser[]> {
+  const res = await fetch('/api/shares/users', { credentials: 'include' });
+  if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+  return res.json();
+}
+
+export type ReceivedShare = {
+  id: number;
+  createdAt: string;
+  sender: { id: number; name: string };
+  exercice: {
+    id: number;
+    name: string;
+    description: string;
+    category: string;
+    workout: { repeat: string | null; series: string | null; duration: string | null };
+    equipments: string[];
+    media?: { photos?: { url: string; publicId: string }[]; video?: { url: string; publicId: string } | null } | null;
+  } | null;
+};
+
+export async function fetchReceivedShares(): Promise<ReceivedShare[]> {
+  const res = await fetch('/api/shares', { credentials: 'include' });
+  if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchPendingShareCount(): Promise<number> {
+  const res = await fetch('/api/shares/count', { credentials: 'include' });
+  if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+  const data = await res.json();
+  return data.count;
 }

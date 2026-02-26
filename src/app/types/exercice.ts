@@ -37,6 +37,7 @@ export interface Exercice {
   media?: MediaData | null;
   archived?: boolean;
   archivedAt?: Date | string | null;
+  sharedBy?: { id: number; name: string };
 }
 
 export interface Bodypart {

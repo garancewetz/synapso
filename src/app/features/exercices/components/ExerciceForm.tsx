@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
+import { Button } from '@/app/components/ui';
 import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
 import { MediaUploader } from '@/app/components/ui';
@@ -15,6 +17,9 @@ import { ExerciceFormBodyparts } from './ExerciceForm/ExerciceFormBodyparts';
 import { ExerciceFormFields } from './ExerciceForm/ExerciceFormFields';
 import { ExerciceFormWorkout } from './ExerciceForm/ExerciceFormWorkout';
 import { ExerciceFormEquipments } from './ExerciceForm/ExerciceFormEquipments';
+import { ExerciceFormStepper } from './ExerciceForm/ExerciceFormStepper';
+
+const TOTAL_STEPS = 3;
 
 type Props = {
   exerciceId?: number;
@@ -28,6 +33,11 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const { selectedDate, isDateSelected } = useSelectedDate();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const queryClient = useQueryClient();
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [maxVisitedStep, setMaxVisitedStep] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+
   const [formData, setFormData] = useState({
     name: '',
     descriptionText: '',
@@ -80,8 +90,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice');
     },
     onSuccess: async () => {
-      // ⚡ CACHE INVALIDATION: TanStack Query gère automatiquement la réactivité
-      // Invalider les queries concernées - TanStack Query refetch automatiquement les queries actives
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
@@ -121,8 +129,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError(err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice');
     },
     onSuccess: async () => {
-      // ⚡ CACHE INVALIDATION: TanStack Query gère automatiquement la réactivité
-      // Les invalidations avec refetchType: 'active' forcent le refetch immédiat des queries actives
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: queryKeys.exercices.all,
@@ -146,7 +152,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
 
   useEffect(() => {
     if (exerciceId && effectiveUser) {
-      // Charger l'exercice existant
       fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser.id}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data) => {
@@ -199,6 +204,21 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     }
   };
 
+  const goToStep = (step: number) => {
+    if (step === currentStep) return;
+
+    // Validation avant d'avancer depuis l'étape 1
+    if (step > currentStep && currentStep === 0 && !formData.name.trim()) {
+      setError('Le nom de l\'exercice est obligatoire');
+      return;
+    }
+
+    setError('');
+    setDirection(step > currentStep ? 1 : -1);
+    setCurrentStep(step);
+    setMaxVisitedStep((prev) => Math.max(prev, step));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!effectiveUser) {
@@ -210,13 +230,12 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       setError('Le nom de l\'exercice est obligatoire');
       return;
     }
-    
+
     setError('');
 
     // Si on est en mode sablier, utiliser la date sélectionnée à midi
     let createdAtDate: string | undefined;
     if (isDateSelected && selectedDate && !exerciceId) {
-      // Créer une date à midi pour le jour sélectionné
       const dateAtNoon = setSeconds(setMinutes(setHours(new Date(selectedDate), 12), 0), 0);
       createdAtDate = dateAtNoon.toISOString();
     }
@@ -270,62 +289,137 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     );
   }
 
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <ExerciceFormStepper
+        currentStep={currentStep}
+        maxVisitedStep={maxVisitedStep}
+        onStepClick={goToStep}
+      />
+
       <ErrorMessage message={error} />
 
-      <ExerciceFormCategory
-        category={formData.category}
-        onCategoryChange={(category) => setFormData({ ...formData, category })}
-      />
+      <div className="overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={currentStep}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            {/* Étape 1 : L'exercice */}
+            {currentStep === 0 && (
+              <ExerciceFormFields
+                name={formData.name}
+                descriptionText={formData.descriptionText}
+                descriptionComment={formData.descriptionComment}
+                onNameChange={(value) => setFormData({ ...formData, name: value })}
+                onDescriptionTextChange={(value) => setFormData({ ...formData, descriptionText: value })}
+                onDescriptionCommentChange={(value) => setFormData({ ...formData, descriptionComment: value })}
+              />
+            )}
 
-      <ExerciceFormBodyparts
-        selectedBodyparts={formData.bodyparts}
-        onToggleBodypart={toggleBodypart}
-      />
+            {/* Étape 2 : Classification */}
+            {currentStep === 1 && (
+              <>
+                <ExerciceFormCategory
+                  category={formData.category}
+                  onCategoryChange={(category) => setFormData({ ...formData, category })}
+                />
+                <ExerciceFormBodyparts
+                  selectedBodyparts={formData.bodyparts}
+                  onToggleBodypart={toggleBodypart}
+                />
+              </>
+            )}
 
-      <ExerciceFormFields
-        name={formData.name}
-        descriptionText={formData.descriptionText}
-        descriptionComment={formData.descriptionComment}
-        onNameChange={(value) => setFormData({ ...formData, name: value })}
-        onDescriptionTextChange={(value) => setFormData({ ...formData, descriptionText: value })}
-        onDescriptionCommentChange={(value) => setFormData({ ...formData, descriptionComment: value })}
-      />
+            {/* Étape 3 : Détails */}
+            {currentStep === 2 && (
+              <>
+                <ExerciceFormWorkout
+                  workoutRepeat={formData.workoutRepeat}
+                  workoutSeries={formData.workoutSeries}
+                  workoutDuration={formData.workoutDuration}
+                  onWorkoutRepeatChange={(value) => setFormData({ ...formData, workoutRepeat: value })}
+                  onWorkoutSeriesChange={(value) => setFormData({ ...formData, workoutSeries: value })}
+                  onWorkoutDurationChange={(value) => setFormData({ ...formData, workoutDuration: value })}
+                />
 
-      <ExerciceFormWorkout
-        workoutRepeat={formData.workoutRepeat}
-        workoutSeries={formData.workoutSeries}
-        workoutDuration={formData.workoutDuration}
-        onWorkoutRepeatChange={(value) => setFormData({ ...formData, workoutRepeat: value })}
-        onWorkoutSeriesChange={(value) => setFormData({ ...formData, workoutSeries: value })}
-        onWorkoutDurationChange={(value) => setFormData({ ...formData, workoutDuration: value })}
-      />
+                <ExerciceFormEquipments
+                  selectedEquipments={formData.equipments}
+                  allEquipments={allEquipments}
+                  equipmentIconsMap={equipmentIconsMap}
+                  loadingEquipments={loadingEquipments}
+                  onToggleEquipment={toggleEquipment}
+                  onAddEquipment={addNewEquipment}
+                />
 
-      <ExerciceFormEquipments
-        selectedEquipments={formData.equipments}
-        allEquipments={allEquipments}
-        equipmentIconsMap={equipmentIconsMap}
-        loadingEquipments={loadingEquipments}
-        onToggleEquipment={toggleEquipment}
-        onAddEquipment={addNewEquipment}
-      />
+                <MediaUploader
+                  value={formData.media?.photos || []}
+                  onChange={(photos) => setFormData({ ...formData, media: photos.length > 0 ? { ...formData.media, photos } : null })}
+                />
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      <MediaUploader
-        value={formData.media?.photos || []}
-        onChange={(photos) => setFormData({ ...formData, media: photos.length > 0 ? { ...formData.media, photos } : null })}
-      />
+      {/* Navigation entre étapes */}
+      {currentStep < TOTAL_STEPS - 1 ? (
+        <div className="flex justify-between pt-4">
+          <Button
+            variant="secondary"
+            onClick={currentStep === 0 ? onCancel : () => goToStep(currentStep - 1)}
+          >
+            {currentStep === 0 ? 'Annuler' : '← Précédent'}
+          </Button>
+          <Button
+            variant="action"
+            onClick={() => goToStep(currentStep + 1)}
+          >
+            Suivant →
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex justify-start">
+            <Button
+              variant="secondary"
+              onClick={() => goToStep(currentStep - 1)}
+            >
+              ← Précédent
+            </Button>
+          </div>
+          <FormActions
+            loading={createOrUpdateMutation.isPending || deleteMutation.isPending}
+            onSubmitLabel={exerciceId ? 'Enregistrer les modifications' : 'Créer l\'exercice'}
+          />
+        </div>
+      )}
 
-      <FormActions
-        loading={createOrUpdateMutation.isPending || deleteMutation.isPending}
-        onSubmitLabel={exerciceId ? 'Enregistrer les modifications' : 'Créer l\'exercice'}
-        onCancel={onCancel}
-        showDelete={!!exerciceId}
-        onDelete={handleDelete}
-        deleteConfirm={showDeleteConfirm}
-        deleteLabel="Supprimer l'exercice"
-        deleteConfirmLabel="⚠️ Confirmer la suppression"
-      />
+      {/* Bouton supprimer accessible depuis toutes les étapes en mode édition */}
+      {exerciceId && (
+        <div className="pt-2 border-t border-gray-200">
+          <Button
+            variant={showDeleteConfirm ? 'danger' : 'danger-outline'}
+            onClick={handleDelete}
+            disabled={createOrUpdateMutation.isPending || deleteMutation.isPending}
+            className="w-full"
+          >
+            {showDeleteConfirm ? '⚠️ Confirmer la suppression' : "Supprimer l'exercice"}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

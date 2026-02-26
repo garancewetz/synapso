@@ -267,6 +267,7 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
   'Dos': 'CORE',
   'Corps': 'CORE',
   'Bassin': 'CORE',
+  'Ventre': 'CORE',      // Pour matcher l'input utilisateur simple
   // 🦵 BAS DU CORPS
   'Jambes': 'LOWER_BODY',
   'Fessier': 'LOWER_BODY',
@@ -279,8 +280,9 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
 // Liste des bodyparts disponibles (actifs uniquement)
 export const AVAILABLE_BODYPARTS = [
   'Bras', 'Mains', 'Épaules', 'Cou & Nuque',  // Haut
-  'Dos', 'Corps', 'Bassin',                    // Milieu
-  'Jambes', 'Fessier', 'Pied',                 // Bas
+  'Dos', 'Corps', 'Bassin',  'Ventre',                  // Milieu
+  'Jambes', 'Fessier', 'Pied',
+  // Bas
 ] as const;
 
 // Icônes pour les bodyparts
@@ -292,6 +294,8 @@ export const BODYPART_ICONS: Record<string, string> = {
   'Dos': '🔙',
   'Corps': '🧍',
   'Bassin': '🦴',
+  'Ventre': '🎯',
+
   'Jambes': '🦵',
   'Fessier': '🍑',
   'Pied': '🦶',

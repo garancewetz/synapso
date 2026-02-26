@@ -97,6 +97,28 @@ export async function getExercices(params: GetExercicesParams) {
 
   const targetDateKeyForComparison = format(targetDateObj, 'yyyy-MM-dd');
 
+  const exerciceIds = exercices.map((e) => e.id);
+  const acceptedShares =
+    exerciceIds.length > 0
+      ? await prisma.sharedExercice.findMany({
+          where: {
+            exerciceId: { in: exerciceIds },
+            receiverId: userId,
+            status: 'ACCEPTED',
+          },
+          select: {
+            exerciceId: true,
+            sender: { select: { id: true, name: true } },
+          },
+        })
+      : [];
+  const sharedByMap: Record<number, { id: number; name: string }> = {};
+  for (const s of acceptedShares) {
+    if (s.exerciceId !== null) {
+      sharedByMap[s.exerciceId] = { id: s.sender.id, name: s.sender.name };
+    }
+  }
+
   const formattedExercices = exercices
     .map((exercice) => {
       const weeklyCompletions = exercice.history.map((h) => h.completedAt);
@@ -139,6 +161,7 @@ export async function getExercices(params: GetExercicesParams) {
         media: exercice.media ?? null,
         archived: exercice.archived ?? false,
         archivedAt: exercice.archivedAt,
+        sharedBy: sharedByMap[exercice.id],
       };
     })
     .filter((exercice) => {

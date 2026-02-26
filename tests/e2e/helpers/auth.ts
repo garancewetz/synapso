@@ -12,6 +12,11 @@ export class AuthHelper {
    * @param password - Mot de passe
    */
   async login(username: string, password: string): Promise<void> {
+    if (!username || !password) {
+      throw new Error(
+        'E2E_USERNAME et E2E_PASSWORD doivent être définis dans .env pour lancer les tests E2E.'
+      );
+    }
     // Aller à la page d'accueil
     await this.page.goto('/');
     await this.page.waitForLoadState('networkidle');
@@ -58,14 +63,6 @@ export class AuthHelper {
       await sitePasswordSubmit.click();
       await this.page.waitForLoadState('networkidle');
       await this.page.waitForTimeout(1000);
-    }
-    
-    // ⚡ FIX: Le formulaire devrait déjà être visible après l'attente du loader
-    // Vérifier qu'il n'y a plus de loader
-    const loaderVisible = await this.page.locator('[data-testid="loader"], .spinner, text=Chargement').first().isVisible({ timeout: 1000 }).catch(() => false);
-    if (loaderVisible) {
-      // Attendre que le loader disparaisse
-      await this.page.waitForSelector('[data-testid="loader"], .spinner, text=Chargement', { state: 'hidden', timeout: 5000 }).catch(() => {});
     }
     
     // S'assurer qu'on est en mode "login" (pas "register")
@@ -198,15 +195,17 @@ export class AuthHelper {
         console.error(`❌ Request Failed: ${request.url()} - ${error}`);
       }
     });
-    
-    // Attendre que le formulaire soit soumis (peut y avoir un loader)
-    await submitButton.click();
-    
-    // ⚡ FIX: Attendre que la requête API de login soit terminée et réussie
+
     const loginResponsePromise = this.page.waitForResponse(
       (response) => response.url().includes('/api/auth/login') && response.status() !== 0,
       { timeout: 15000 }
     );
+    const checkResponsePromise = this.page.waitForResponse(
+      (response) => response.url().includes('/api/auth/check') && response.status() !== 0,
+      { timeout: 20000 }
+    );
+
+    await submitButton.click();
     
     try {
       const loginResponseObj = await loginResponsePromise;
@@ -236,16 +235,8 @@ export class AuthHelper {
       throw error;
     }
     
-    // Attendre un peu pour que le cookie soit défini
-    await this.page.waitForTimeout(1000);
-    
-    // ⚡ FIX: Attendre que refreshUser() soit terminé (appel à /api/auth/check)
-    // C'est crucial car si cette vérification échoue, on revient à la page de connexion
-    const checkResponsePromise = this.page.waitForResponse(
-      (response) => response.url().includes('/api/auth/check') && response.status() !== 0,
-      { timeout: 20000 }
-    );
-    
+    await this.page.waitForTimeout(500);
+
     try {
       const checkResponseObj = await checkResponsePromise;
       const checkStatus = checkResponseObj.status();

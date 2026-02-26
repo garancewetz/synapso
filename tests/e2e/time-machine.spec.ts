@@ -3,6 +3,7 @@ import { AuthHelper } from './helpers/auth';
 import { TimeMachineHelper } from './helpers/time-machine';
 import { TEST_USER } from './helpers/test-constants';
 import { format, subDays, startOfDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 /**
  * Tests E2E pour le mode sablier (time machine)
@@ -71,7 +72,7 @@ test.describe('Mode Sablier (Time Machine)', () => {
     await timeMachineHelper.activateTimeMachineMode(1);
     
     // Vérifier que la bannière est visible
-    const banner = page.locator('[data-testid="time-machine-banner"], text=Tu es sur le').first();
+    const banner = page.getByTestId('time-machine-banner').first();
     await expect(banner).toBeVisible({ timeout: 5000 });
     
     // Vérifier que la bannière contient la date
@@ -124,35 +125,23 @@ test.describe('Mode Sablier (Time Machine)', () => {
   });
 
   test('devrait mettre à jour la gauge de la welcome card selon la date sélectionnée', async ({ page }) => {
-    // Aller à la page d'accueil
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Trouver la gauge de la welcome card (objectif du jour)
-    const welcomeGauge = page.locator('[data-testid="daily-goal-progress"], text=Objectif').first();
-    const initialText = await welcomeGauge.textContent().catch(() => '');
-    
     // Aller à la page historique et activer le mode sablier pour hier
     await timeMachineHelper.goToHistory();
     await page.waitForSelector('[role="grid"], .grid', { timeout: 10000 });
     await timeMachineHelper.activateTimeMachineMode(1);
     
-    // Attendre que le mode sablier soit actif
     await page.waitForSelector('[data-testid="time-machine-banner"]', { timeout: 5000 });
     
-    // Retourner à la page d'accueil avec la date dans l'URL
     const yesterdayDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
     await page.goto(`/?date=${yesterdayDate}`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     
-    // Vérifier que la gauge affiche "Objectif du [date]" en mode sablier
-    const updatedGauge = page.locator('[data-testid="daily-goal-progress"], text=Objectif').first();
-    const updatedText = await updatedGauge.textContent().catch(() => '');
-    
-    // En mode sablier, le texte devrait contenir la date
     if (await timeMachineHelper.isTimeMachineModeActive()) {
-      expect(updatedText).toContain('Objectif');
+      const goalLabel = page.getByText(/Objectif du/).first();
+      await expect(goalLabel).toBeVisible({ timeout: 5000 });
+      const updatedText = await goalLabel.textContent();
+      expect(updatedText ?? '').toContain('Objectif');
     }
   });
 
@@ -179,15 +168,10 @@ test.describe('Mode Sablier (Time Machine)', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     
-    // Vérifier que les exercices affichent leur état pour hier
-    const updatedExercices = await page.locator('[data-testid="exercice-card"], .exercice-card').all();
-    
-    // Les exercices devraient afficher "Fait le [date]" au lieu de "Fait aujourd'hui" en mode sablier
     if (await timeMachineHelper.isTimeMachineModeActive()) {
-      const dateText = format(subDays(new Date(), 1), 'd MMMM yyyy', { locale: { formatLong: { date: 'd MMMM yyyy' } } });
-      const hasDateInButton = await page.locator(`button:has-text("Fait le"), button:has-text("${dateText}")`).count();
-      // Au moins un bouton devrait contenir la date si des exercices sont complétés
-      expect(updatedExercices.length).toBeGreaterThan(0);
+      const cards = page.locator('.exercise-card');
+      await expect(cards.first()).toBeVisible({ timeout: 10000 });
+      expect(await cards.count()).toBeGreaterThan(0);
     }
   });
 
@@ -249,10 +233,10 @@ test.describe('Mode Sablier (Time Machine)', () => {
     await expect(page.locator('[data-testid="time-machine-banner"]').first()).toBeVisible({ timeout: 5000 });
     
     // Naviguer vers une page de catégorie
-    await page.click('text=Haut du corps, a[href*="upper_body"]').first().catch(() => {
-      // Si le lien n'est pas trouvé, essayer de naviguer directement
-      return page.goto(`/exercices/upper_body?date=${yesterdayDate}`);
-    });
+    const categoryLink = page.locator('a[href*="upper_body"]').first();
+    await categoryLink.click({ timeout: 5000 }).catch(() =>
+      page.goto(`/exercices/upper_body?date=${yesterdayDate}`)
+    );
     
     await page.waitForLoadState('networkidle');
     

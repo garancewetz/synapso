@@ -48,9 +48,11 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
             <EyeIcon className="w-4 h-4" strokeWidth={2} />
           </button>
         )}
-        <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight min-w-0">
-          {exercice.name}
-        </h3>
+        <div className="min-w-0">
+          <h3 className="text-base md:text-lg font-semibold text-gray-800 leading-tight min-w-0">
+            {exercice.name}
+          </h3>
+        </div>
       </div>
 
       <div className="absolute top-0 right-0 flex items-center justify-end gap-1.5 min-w-20">

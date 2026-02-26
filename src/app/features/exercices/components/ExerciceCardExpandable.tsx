@@ -18,7 +18,7 @@ export function ExerciceCardExpandable({
   onLightboxOpen,
 }: Props) {
   const hasWorkoutInfo = exercice.workout.series || exercice.workout.repeat || exercice.workout.duration;
-  const hasExpandableContent = exercice.description.text || exercice.media || hasWorkoutInfo;
+  const hasExpandableContent = exercice.description.text || exercice.media || hasWorkoutInfo || exercice.sharedBy;
 
   if (!hasExpandableContent) {
     return null;
@@ -117,6 +117,18 @@ export function ExerciceCardExpandable({
                 <span className="font-semibold">Conseil : </span>
                 {exercice.description.comment}
               </motion.div>
+            )}
+
+            {/* 5. Partagé par */}
+            {exercice.sharedBy && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.1 }}
+                className="text-xs text-gray-400"
+              >
+                Partagé par <span className="font-medium text-gray-500">{exercice.sharedBy.name}</span>
+              </motion.p>
             )}
           </motion.div>
         )}

@@ -46,8 +46,11 @@ test.describe('Exercices', () => {
     const firstCard = page.locator('.exercise-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 15000 });
     await firstCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
-    await page.waitForTimeout(500);
-    await firstCard.getByRole('button', { name: 'Modifier' }).click({ force: true });
+    const modifierButton = firstCard.getByRole('button', { name: 'Modifier' });
+    await modifierButton.waitFor({ state: 'visible', timeout: 5000 });
+    await firstCard.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await modifierButton.click({ force: true });
 
     await expect(page).toHaveURL(/\/exercice\/edit\/\d+/, { timeout: 10000 });
     await expect(page.getByRole('heading', { name: "Modifier l'exercice" })).toBeVisible({
@@ -96,8 +99,11 @@ test.describe('Exercices', () => {
     // Vérification : rouvrir l'exercice et parcourir les étapes
     const cardWithNewName = page.locator('.exercise-card').filter({ hasText: newName }).first();
     await cardWithNewName.getByRole('button', { name: 'Ouvrir les actions' }).click();
-    await page.waitForTimeout(500);
-    await cardWithNewName.getByRole('button', { name: 'Modifier' }).click({ force: true });
+    const modifierBtn2 = cardWithNewName.getByRole('button', { name: 'Modifier' });
+    await modifierBtn2.waitFor({ state: 'visible', timeout: 5000 });
+    await cardWithNewName.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await modifierBtn2.click({ force: true });
 
     // Vérifier étape 1 : textes
     await expect(page.getByPlaceholder('Ex: Montée de genoux')).toHaveValue(newName);
@@ -144,8 +150,11 @@ test.describe('Exercices', () => {
     // Ouvrir la page d'édition
     const cardToDelete = page.locator('.exercise-card').filter({ hasText: nameToDelete }).first();
     await cardToDelete.getByRole('button', { name: 'Ouvrir les actions' }).click();
-    await page.waitForTimeout(500);
-    await cardToDelete.getByRole('button', { name: 'Modifier' }).click({ force: true });
+    const modifierBtn = cardToDelete.getByRole('button', { name: 'Modifier' });
+    await modifierBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await cardToDelete.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await modifierBtn.click({ force: true });
 
     await expect(page).toHaveURL(/\/exercice\/edit\/\d+/);
 

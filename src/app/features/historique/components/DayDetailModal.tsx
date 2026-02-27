@@ -201,6 +201,7 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
                       label: exercise.name,
                       icon: CATEGORY_ICONS[exercise.category],
                       borderClass: colors?.border || 'border-gray-200',
+                      completed: true,
                     };
                   })}
                 />

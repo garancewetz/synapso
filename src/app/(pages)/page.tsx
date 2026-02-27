@@ -41,6 +41,13 @@ export default function Home() {
   const pinnedExercices = useMemo(() => exercices.filter(e => !e.archived && e.pinned), [exercices]);
   const pinnedProgress = useMemo(() => progressList.filter(p => p.pinned), [progressList]);
   const pinnedNotes = useMemo(() => journalNotes.filter(n => n.pinned), [journalNotes]);
+  const completedExerciceIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const ex of exercices) {
+      if (ex.completed) ids.add(ex.id);
+    }
+    return ids;
+  }, [exercices]);
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length + pinnedProgress.length + pinnedNotes.length);
 
   const { handleEditClick: handlePinnedEdit, handleCompleted: handlePinnedUpdate } = useExerciceHandlers({
@@ -158,6 +165,7 @@ export default function Home() {
                     pinnedExercices={pinnedExercices}
                     pinnedProgress={pinnedProgress}
                     pinnedNotes={pinnedNotes}
+                    completedExerciceIds={completedExerciceIds}
                     onEdit={handlePinnedEdit}
                     onEditProgress={progressModal.openForEdit}
                     onShareProgress={handleShareProgress}

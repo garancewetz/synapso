@@ -15,10 +15,11 @@ import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_HREFS } from '@/app/constants
 
 type Props = {
   note: JournalNote;
+  completedExerciceIds?: Set<number>;
   onUpdated?: (updatedNote: JournalNote) => void;
 };
 
-export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }: Props) {
+export const JournalNoteCard = memo(function JournalNoteCard({ note, completedExerciceIds, onUpdated }: Props) {
   const router = useRouter();
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -134,6 +135,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
                       icon: CATEGORY_ICONS[cat],
                       borderClass: colors?.border || 'border-gray-200',
                       href: CATEGORY_HREFS[cat],
+                      completed: completedExerciceIds?.has(ex.id),
                     };
                   })}
                   onItemClick={(e) => e.stopPropagation()}

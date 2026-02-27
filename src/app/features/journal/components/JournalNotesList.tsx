@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { JournalNote } from '@/app/types';
 import { JournalNoteCard } from './JournalNoteCard';
 import { useJournalNotes } from '../hooks/useJournalNotes';
+import { useExercices } from '@/app/features/exercices';
 
 type Props = {
   limit?: number;
@@ -11,6 +12,16 @@ type Props = {
 
 export function JournalNotesList({ limit }: Props) {
   const { notes, refetch } = useJournalNotes();
+  const { exercices } = useExercices();
+
+  // Set des IDs d'exercices complétés dans la période (jour ou semaine selon resetFrequency)
+  const completedExerciceIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const ex of exercices) {
+      if (ex.completed) ids.add(ex.id);
+    }
+    return ids;
+  }, [exercices]);
 
   const handleNoteUpdated = useCallback((_updatedNote: JournalNote) => {
     refetch();
@@ -26,6 +37,7 @@ export function JournalNotesList({ limit }: Props) {
             <li key={note.id}>
               <JournalNoteCard
                 note={note}
+                completedExerciceIds={completedExerciceIds}
                 onUpdated={handleNoteUpdated}
               />
             </li>

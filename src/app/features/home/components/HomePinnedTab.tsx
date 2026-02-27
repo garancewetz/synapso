@@ -13,6 +13,7 @@ type Props = {
   pinnedExercices: Exercice[];
   pinnedProgress: Progress[];
   pinnedNotes?: JournalNote[];
+  completedExerciceIds?: Set<number>;
   onEdit?: (id: number) => void;
   onEditProgress?: (progress: Progress) => void;
   onShareProgress?: (progress: Progress) => void;
@@ -25,6 +26,7 @@ export const HomePinnedTab = memo(function HomePinnedTab({
   pinnedExercices,
   pinnedProgress,
   pinnedNotes = [],
+  completedExerciceIds,
   onEdit,
   onEditProgress,
   onShareProgress,
@@ -111,6 +113,7 @@ export const HomePinnedTab = memo(function HomePinnedTab({
               <JournalNoteCard
                 key={`note-${note.id}`}
                 note={note}
+                completedExerciceIds={completedExerciceIds}
                 onUpdated={handleNoteUpdated}
               />
             ))}

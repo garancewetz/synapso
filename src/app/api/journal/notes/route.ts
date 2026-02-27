@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { title, description } = data;
+    const { title, description, media, exerciceIds } = data;
 
     const MAX_TITLE_LENGTH = 200;
     const MAX_DESCRIPTION_LENGTH = 5000;
@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
     const note = await createJournalNote({
       title: title.trim(),
       description: description ? description.trim() : '',
+      media: Array.isArray(media) ? media : undefined,
+      exerciceIds: Array.isArray(exerciceIds) ? exerciceIds : undefined,
       userId,
     });
 

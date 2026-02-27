@@ -2,13 +2,16 @@
 
 import { useState, useRef, useLayoutEffect, memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import type { JournalNote } from '@/app/types';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
-import { BaseCard, Badge, Button } from '@/app/components/ui';
+import { BaseCard, Badge, Button, BorderedIconList } from '@/app/components/ui';
 import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon, ChevronIcon } from '@/app/components/ui/icons';
+import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 
 type Props = {
   note: JournalNote;
@@ -103,6 +106,41 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
               </div>
             </div>
 
+            {note.media && note.media.length > 0 && (
+              <div className="mt-3">
+                <Image
+                  src={note.media[0].url}
+                  alt={`Image de la note "${note.title}"`}
+                  width={400}
+                  height={300}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
+            )}
+
+            {note.exercices && note.exercices.length > 0 && (
+              <div className="mt-3">
+                <BorderedIconList
+                  title="Exercices liés"
+                  titleId="journal-note-exercices-label"
+                  titleClassName="text-xs text-gray-500 font-medium mb-1.5"
+                  ariaLabel="Liste des exercices liés à cette note"
+                  items={note.exercices.map((ex) => {
+                    const cat = ex.category as ExerciceCategory;
+                    const colors = CATEGORY_COLORS[cat];
+                    return {
+                      key: ex.id,
+                      label: ex.name,
+                      icon: CATEGORY_ICONS[cat],
+                      borderClass: colors?.border || 'border-gray-200',
+                      href: CATEGORY_HREFS[cat],
+                    };
+                  })}
+                  onItemClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            )}
+
             {note.description && (
               <>
                 <div
@@ -182,7 +220,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
                     ) : (
                       <BookmarkIcon className="w-5 h-5" filled={note.pinned} />
                     )}
-                    <span className="font-medium">{note.pinned ? 'Démarquer' : 'Pour le kiné'}</span>
+                    <span className="font-medium">{note.pinned ? 'Désépingler' : 'Épingler'}</span>
                   </button>
                   <button type="button" onClick={handleShare} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px]">
                     <ShareIcon className="w-5 h-5" />

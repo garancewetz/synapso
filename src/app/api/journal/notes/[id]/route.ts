@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { getJournalNoteById, updateJournalNote, deleteJournalNote } from '@/app/features/journal/api';
+import { deleteCloudinaryMedia } from '@/app/utils/cloudinary.utils';
+import type { MediaItem } from '@/app/types/exercice';
 
 export async function GET(
   request: NextRequest,
@@ -90,6 +92,8 @@ export async function PUT(
       data: {
         title: updatedData.title.trim(),
         description: updatedData.description !== undefined ? updatedData.description.trim() : undefined,
+        media: updatedData.media !== undefined ? (Array.isArray(updatedData.media) ? updatedData.media : []) : undefined,
+        exerciceIds: updatedData.exerciceIds !== undefined ? (Array.isArray(updatedData.exerciceIds) ? updatedData.exerciceIds : []) : undefined,
       },
     });
 
@@ -136,7 +140,16 @@ export async function DELETE(
       );
     }
 
+    // Récupérer la note pour nettoyer les médias Cloudinary
+    const note = await getJournalNoteById({ noteId: id, userId });
+    const media = (note.media as MediaItem[] | null) || [];
+
     await deleteJournalNote({ noteId: id, userId });
+
+    // Supprimer les images de Cloudinary après la suppression en BDD
+    await Promise.all(
+      media.map((m) => deleteCloudinaryMedia(m.publicId, 'image'))
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

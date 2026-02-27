@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 
-type TabValue = 'exercices' | 'kine' | 'suivi';
+type TabValue = 'exercices' | 'pinned' | 'suivi';
 
 type TabOptionData = {
   value: TabValue;
@@ -21,8 +21,8 @@ export function useHomeTabs(pinnedCount: number) {
     });
 
     options.push({
-      value: 'kine',
-      label: pinnedCount > 0 ? `Kiné (${pinnedCount})` : 'Kiné',
+      value: 'pinned',
+      label: pinnedCount > 0 ? `Épinglé (${pinnedCount})` : 'Épinglé',
       iconName: 'BookmarkIcon',
     });
 

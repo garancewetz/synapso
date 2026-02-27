@@ -7,8 +7,7 @@ import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT 
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate, formatTime } from '@/app/utils/date.utils';
 import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
-import { BottomSheetModal, Button } from '@/app/components/ui';
-import { ProgressCardCompact } from './ProgressCardCompact';
+import { BottomSheetModal, Button, BorderedIconList } from '@/app/components/ui';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useToast } from '@/app/contexts/ToastContext';
 import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
@@ -170,42 +169,43 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
               </section>
             )}
 
-            {/* Section Progrès */}
-        {progress.length > 0 && (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {progress.map((item) => (
-              <ProgressCardCompact key={item.id} progress={item} />
-            ))}
-          </section>
-        )}
+            {/* Section Progrès (même style que les exercices) */}
+            {progress.length > 0 && (
+              <section>
+                <BorderedIconList
+                  title="Progrès"
+                  titleId="day-detail-progress-label"
+                  ariaLabel="Liste des progrès enregistrés ce jour"
+                  items={progress.map((item) => ({
+                    key: item.id,
+                    label: item.content,
+                    icon: PROGRESS_EMOJIS.STAR_BRIGHT,
+                    borderClass: 'border-amber-200',
+                    secondaryLabel: formatTime(item.createdAt),
+                  }))}
+                />
+              </section>
+            )}
 
-        {/* Section Exercices */}
-        {exercises.length > 0 && (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {exercises.map((exercise, index) => {
-              const styles = CATEGORY_COLORS[exercise.category];
-              
-              return (
-                <div
-                  key={`${exercise.name}-${index}`}
-                  className="bg-white rounded-xl border border-gray-200"
-                >
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    {/* Badge icône avec fond coloré */}
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${styles.iconBg}`}>
-                      <span className="text-lg">
-                        {CATEGORY_ICONS[exercise.category]}
-                      </span>
-                    </div>
-                    <span className="text-base font-medium text-gray-800 flex-1 truncate">
-                      {exercise.name}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </section>
-        )}
+            {/* Section Exercices */}
+            {exercises.length > 0 && (
+              <section>
+                <BorderedIconList
+                  title="Exercices faits"
+                  titleId="day-detail-exercices-label"
+                  ariaLabel="Liste des exercices faits ce jour"
+                  items={exercises.map((exercise, index) => {
+                    const colors = CATEGORY_COLORS[exercise.category];
+                    return {
+                      key: `${exercise.name}-${exercise.completedAt}-${index}`,
+                      label: exercise.name,
+                      icon: CATEGORY_ICONS[exercise.category],
+                      borderClass: colors?.border || 'border-gray-200',
+                    };
+                  })}
+                />
+              </section>
+            )}
 
         {/* État vide ou pas d'exercices */}
         {!hasContent && (

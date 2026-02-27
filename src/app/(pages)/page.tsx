@@ -12,9 +12,7 @@ import { useProgressModal, useProgress } from '@/app/features/progress';
 import { useJournalNotes } from '@/app/features/journal';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { usePrefetchPreviousDates } from '@/app/features/time-machine';
-import { useHomeTabs, HomeExercicesTab, HomeKineTab, HomePlusTab } from '@/app/features/home';
-import { usePrefetchCommonPages } from '@/app/hooks/usePrefetchCommonPages';
+import { useHomeTabs, HomeExercicesTab, HomePinnedTab, HomePlusTab } from '@/app/features/home';
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
@@ -36,12 +34,6 @@ export default function Home() {
   const progressModal = useProgressModal();
   const queryClient = useQueryClient();
 
-  // ⚡ QUERY PREFETCHING: Précharger les données des dates précédentes en arrière-plan
-  usePrefetchPreviousDates();
-
-  // ⚡ PERFORMANCE MOBILE: Précharger les pages fréquemment visitées
-  usePrefetchCommonPages();
-
   const { exercices, updateExercice, error: exercicesError } = useExercices({ includeArchived: true });
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
   const { progressList } = useProgress();
@@ -51,7 +43,7 @@ export default function Home() {
   const pinnedNotes = useMemo(() => journalNotes.filter(n => n.pinned), [journalNotes]);
   const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length + pinnedProgress.length + pinnedNotes.length);
 
-  const { handleEditClick: handleKineEdit, handleCompleted: handleKineUpdate } = useExerciceHandlers({
+  const { handleEditClick: handlePinnedEdit, handleCompleted: handlePinnedUpdate } = useExerciceHandlers({
     updateExercice,
     fromPath: '/',
   });
@@ -161,16 +153,16 @@ export default function Home() {
                   />
                 )}
 
-                {activeTab === 'kine' && (
-                  <HomeKineTab
+                {activeTab === 'pinned' && (
+                  <HomePinnedTab
                     pinnedExercices={pinnedExercices}
                     pinnedProgress={pinnedProgress}
                     pinnedNotes={pinnedNotes}
-                    onEdit={handleKineEdit}
+                    onEdit={handlePinnedEdit}
                     onEditProgress={progressModal.openForEdit}
                     onShareProgress={handleShareProgress}
-                    onCompleted={handleKineUpdate}
-                    onArchive={handleKineUpdate}
+                    onCompleted={handlePinnedUpdate}
+                    onArchive={handlePinnedUpdate}
                     onNoteUpdated={refetchNotes}
                   />
                 )}

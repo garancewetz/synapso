@@ -11,8 +11,25 @@ export async function getJournalNotes(params: GetJournalNotesParams) {
     where: {
       userId: userId,
     },
+    include: {
+      exercices: {
+        include: {
+          exercice: {
+            select: { id: true, name: true, category: true, descriptionText: true },
+          },
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' },
   });
 
-  return notes;
+  return notes.map((note) => ({
+    ...note,
+    exercices: note.exercices.map((je) => ({
+      id: je.exercice.id,
+      name: je.exercice.name,
+      category: je.exercice.category,
+      description: je.exercice.descriptionText,
+    })),
+  }));
 }

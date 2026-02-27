@@ -21,7 +21,7 @@ type Props = {
   onNoteUpdated?: () => void;
 };
 
-export const HomeKineTab = memo(function HomeKineTab({
+export const HomePinnedTab = memo(function HomePinnedTab({
   pinnedExercices,
   pinnedProgress,
   pinnedNotes = [],
@@ -54,10 +54,10 @@ export const HomeKineTab = memo(function HomeKineTab({
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <BookmarkIcon className="w-8 h-8 text-gray-300 mb-3" filled={false} />
         <p className="text-sm text-gray-500">
-          Aucun élément marqué pour le kiné.
+          Aucun élément épinglé.
         </p>
         <p className="text-xs text-gray-400 mt-1">
-          Utilise le menu d&apos;un exercice, progrès ou note pour le marquer.
+          Utilise le menu d&apos;un exercice, progrès ou note pour l&apos;épingler.
         </p>
       </div>
     );
@@ -66,8 +66,8 @@ export const HomeKineTab = memo(function HomeKineTab({
   return (
     <div className="space-y-6">
       {pinnedExercices.length > 0 && (
-        <section aria-labelledby="kine-exercices-heading">
-          <h2 id="kine-exercices-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <section aria-labelledby="pinned-exercices-heading">
+          <h2 id="pinned-exercices-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Exercices
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -84,8 +84,8 @@ export const HomeKineTab = memo(function HomeKineTab({
         </section>
       )}
       {pinnedProgress.length > 0 && (
-        <section aria-labelledby="kine-progress-heading">
-          <h2 id="kine-progress-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <section aria-labelledby="pinned-progress-heading">
+          <h2 id="pinned-progress-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Progrès
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -102,9 +102,9 @@ export const HomeKineTab = memo(function HomeKineTab({
         </section>
       )}
       {pinnedNotes.length > 0 && (
-        <section aria-labelledby="kine-notes-heading">
-          <h2 id="kine-notes-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            Notes pour le kiné
+        <section aria-labelledby="pinned-notes-heading">
+          <h2 id="pinned-notes-heading" className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            Notes épinglées
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pinnedNotes.map(note => (

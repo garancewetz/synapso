@@ -6,5 +6,4 @@ export { TimeMachineEnterTransition } from './components/TimeMachineEnterTransit
 export { TimeMachineExitTransition } from './components/TimeMachineExitTransition';
 
 // Hooks
-export { usePrefetchPreviousDates } from './hooks/usePrefetchPreviousDates';
 export { usePreserveDateParam } from './hooks/usePreserveDateParam';

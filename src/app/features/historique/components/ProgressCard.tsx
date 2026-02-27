@@ -270,7 +270,7 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
                       ) : (
                         <BookmarkIcon className="w-5 h-5" filled={progress.pinned === true} />
                       )}
-                      <span className="font-medium">{progress.pinned ? 'Démarquer' : 'Pour le kiné'}</span>
+                      <span className="font-medium">{progress.pinned ? 'Désépingler' : 'Épingler'}</span>
                     </button>
                   )}
                   {onShare && (

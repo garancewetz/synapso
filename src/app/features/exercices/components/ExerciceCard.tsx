@@ -203,7 +203,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                                     ) : (
                                         <BookmarkIcon className="w-5 h-5" filled={exercice.pinned} />
                                     )}
-                                    <span className="font-medium">{exercice.pinned ? 'Démarquer' : 'Pour le kiné'}</span>
+                                    <span className="font-medium">{exercice.pinned ? 'Désépingler' : 'Épingler'}</span>
                                 </button>
                                 <button type="button" onClick={handleShareClick} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-r border-gray-200">
                                     <ShareIcon className="w-5 h-5" />

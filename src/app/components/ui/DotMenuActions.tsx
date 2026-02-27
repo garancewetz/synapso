@@ -62,7 +62,7 @@ export function DotMenuActions({
     </button>
   );
 
-  const pinLabel = isPinned ? 'Démarquer' : (isGrid ? 'Pour le kiné' : 'Marquer pour le kiné');
+  const pinLabel = isPinned ? 'Désépingler' : 'Épingler';
 
   const pinButton = onPin && (
     <button

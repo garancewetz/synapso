@@ -33,3 +33,5 @@ export { StatusFilterBadge } from './StatusFilterBadge';
 export { StatusFilterSection } from './StatusFilterSection';
 export { EquipmentFilterBadge } from './EquipmentFilterBadge';
 export { MediaUploader } from './MediaUploader';
+export { BorderedIconList } from './BorderedIconList';
+export type { BorderedIconListItem } from './BorderedIconList';

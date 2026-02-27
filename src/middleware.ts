@@ -43,11 +43,11 @@ function cleanupExpiredEntries(): void {
  * Vérifie et met à jour le rate limit pour une IP
  */
 function checkRateLimit(
-  ip: string,
+  key: string,
   config: { maxAttempts: number; windowMs: number }
 ): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
-  const record = rateLimitMap.get(ip);
+  const record = rateLimitMap.get(key);
 
   // Nettoyer les entrées expirées périodiquement (10% de chance)
   if (Math.random() < 0.1) {
@@ -57,7 +57,7 @@ function checkRateLimit(
   if (!record || record.resetTime < now) {
     // Nouvelle fenêtre ou fenêtre expirée
     const resetTime = now + config.windowMs;
-    rateLimitMap.set(ip, { count: 1, resetTime });
+    rateLimitMap.set(key, { count: 1, resetTime });
     return {
       allowed: true,
       remaining: config.maxAttempts - 1,
@@ -116,7 +116,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const result = checkRateLimit(ip, RATE_LIMIT_CONFIG.auth);
+    const result = checkRateLimit(`auth:${ip}`, RATE_LIMIT_CONFIG.auth);
 
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);
@@ -153,7 +153,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const result = checkRateLimit(ip, RATE_LIMIT_CONFIG.api);
+    const result = checkRateLimit(`api:${ip}`, RATE_LIMIT_CONFIG.api);
 
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);

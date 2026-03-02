@@ -2,7 +2,7 @@ import { prisma } from '@/app/lib/prisma';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
-import { getDateKey } from '@/app/utils/date.utils';
+import { getDateKey, getDateKeyUTC } from '@/app/utils/date.utils';
 
 type GetExerciceParams = {
   exerciceId: number;
@@ -68,12 +68,11 @@ export async function getExercice(params: GetExerciceParams) {
   const weeklyCompletions = exercice.history.map(h => h.completedAt);
   const completedInPeriod = weeklyCompletions.length > 0;
 
-  const targetDateKey = getDateKey(now);
-  const hasTargetDayHistory = targetDateKey && exercice.history.some(
+  const targetDateKeyUTC = getDateKeyUTC(now) ?? getDateKey(now);
+  const hasTargetDayHistory = targetDateKeyUTC && exercice.history.some(
     (h) => {
-      const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
-      const completedDateKey = getDateKey(completedDate);
-      return completedDateKey === targetDateKey;
+      const completedDateKeyUTC = getDateKeyUTC(h.completedAt);
+      return completedDateKeyUTC === targetDateKeyUTC;
     }
   );
   const completedToday = hasTargetDayHistory;

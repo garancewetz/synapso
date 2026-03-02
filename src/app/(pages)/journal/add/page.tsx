@@ -16,7 +16,7 @@ export default function JournalNoteAddPage() {
   };
 
   return (
-    <FormPageWrapper title="Ajouter une note" backHref="/journal">
+    <FormPageWrapper title="Ajouter une entrée" backHref="/journal">
       <JournalNoteForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );

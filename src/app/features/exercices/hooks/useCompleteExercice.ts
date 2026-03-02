@@ -78,19 +78,12 @@ export function useCompleteExercice({
 
       onCompleted?.(updatedExercice);
 
-      // ⚡ CACHE INVALIDATION CIBLÉE: Invalider uniquement les queries de la date concernée
-      // Cela évite de refetch toutes les dates et améliore les performances
-      
-      // Invalider toutes les queries exercices pour cette date (toutes les variantes de filtres)
-      // ⚡ FIX: En mode normal, targetDate est undefined dans le cache (pas de time machine)
-      // Il faut aussi matcher ces queries, sinon le refetch ne se déclenche pas
-      // et l'UI reste bloquée sur les données WEEKLY retournées par le toggle
+      // ⚡ CACHE INVALIDATION CIBLÉE: Invalider les queries exercices pour la date concernée
+      // targetDate est maintenant toujours envoyé (referenceDateKey) ; on invalide la query correspondante
       queryClient.invalidateQueries({
         queryKey: ['exercices', 'list'],
         predicate: (query) => {
           const filters = query.queryKey[2] as { targetDate?: string } | undefined;
-          // Mode normal: targetDate est undefined → toujours invalider
-          // Mode sablier: invalider uniquement la date concernée
           if (!filters?.targetDate) return true;
           return filters.targetDate === targetDate;
         },

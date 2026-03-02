@@ -6,7 +6,7 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useUser } from '@/app/contexts/UserContext';
 import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
-import { isDateInPeriodRange } from '@/app/utils/resetFrequency.utils';
+import { getDateKeyUTC, getUTCWeekBoundsForDateKey } from '@/app/utils/date.utils';
 
 type UseCategoryStatsReturn = {
   stats: Record<ExerciceCategory, number>;
@@ -25,7 +25,7 @@ const initialStats: Record<ExerciceCategory, number> = {
 export function useCategoryStats(): UseCategoryStatsReturn {
   const queryClient = useQueryClient();
   const { effectiveUser } = useUser();
-  const { referenceDate, referenceDateKey, isTimeMachineMode } = useTimeContext();
+  const { referenceDateKey, isTimeMachineMode } = useTimeContext();
 
   const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
   const resetFrequency = effectiveUser?.resetFrequency || 'DAILY';
@@ -44,18 +44,37 @@ export function useCategoryStats(): UseCategoryStatsReturn {
       }
 
       const stats: Record<ExerciceCategory, number> = { ...initialStats };
-      
+      const seenByCategory: Record<ExerciceCategory, Set<number>> = {
+        UPPER_BODY: new Set(),
+        LOWER_BODY: new Set(),
+        STRETCHING: new Set(),
+        CORE: new Set(),
+      };
+
+      const weekBounds =
+        resetFrequency === 'WEEKLY' ? getUTCWeekBoundsForDateKey(referenceDateKey) : null;
+
       for (const entry of history) {
-        const entryDate = new Date(entry.completedAt);
-        
-        // Vérifier si l'entrée est dans la période selon resetFrequency
-        if (
-          isDateInPeriodRange(entryDate, resetFrequency, referenceDate) &&
-          entry.exercice.category &&
-          entry.exercice.category in stats
-        ) {
-          stats[entry.exercice.category as ExerciceCategory]++;
+        const category = entry.exercice.category as ExerciceCategory | undefined;
+        if (!category || !(category in stats)) continue;
+
+        let inPeriod: boolean;
+        if (resetFrequency === 'DAILY') {
+          inPeriod = getDateKeyUTC(entry.completedAt) === referenceDateKey;
+        } else {
+          if (!weekBounds) continue;
+          const completedAt = new Date(entry.completedAt).getTime();
+          inPeriod =
+            completedAt >= weekBounds.start.getTime() && completedAt < weekBounds.end.getTime();
         }
+
+        if (inPeriod) {
+          seenByCategory[category].add(entry.exercice.id);
+        }
+      }
+
+      for (const cat of Object.keys(seenByCategory) as ExerciceCategory[]) {
+        stats[cat] = seenByCategory[cat].size;
       }
 
       return stats;

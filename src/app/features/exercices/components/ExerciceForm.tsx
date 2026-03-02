@@ -1,24 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
-import { useToast } from '@/app/contexts/ToastContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
-import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
 import { Button } from '@/app/components/ui';
 import { ExerciceCategory, type MediaData } from '@/app/types/exercice';
 import { useAllEquipments } from '@/app/hooks/useAllEquipments';
-import { MediaUploader } from '@/app/components/ui';
-import { queryKeys } from '@/app/lib/api-queries';
-import { ExerciceFormCategory } from './ExerciceForm/ExerciceFormCategory';
-import { ExerciceFormBodyparts } from './ExerciceForm/ExerciceFormBodyparts';
-import { ExerciceFormFields } from './ExerciceForm/ExerciceFormFields';
-import { ExerciceFormWorkout } from './ExerciceForm/ExerciceFormWorkout';
-import { ExerciceFormEquipments } from './ExerciceForm/ExerciceFormEquipments';
+import { useExerciceFormMutations } from '@/app/features/exercices/hooks/useExerciceFormMutations';
 import { ExerciceFormStepper } from './ExerciceForm/ExerciceFormStepper';
+import { ExerciceFormStepContent } from './ExerciceForm/ExerciceFormStepContent';
 
 const TOTAL_STEPS = 3;
 
@@ -31,14 +22,11 @@ type Props = {
 
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
-  const { showToast } = useToast();
-  const { selectedDate, isDateSelected } = useSelectedDate();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
-  const queryClient = useQueryClient();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [maxVisitedStep, setMaxVisitedStep] = useState(exerciceId ? TOTAL_STEPS - 1 : 0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [direction, setDirection] = useState(1);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -56,102 +44,11 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // ⚡ MUTATION: Créer ou éditer un exercice
-  const createOrUpdateMutation = useMutation({
-    mutationFn: async (exerciceData: {
-      name: string;
-      description: { text: string; comment: string | null };
-      workout: { repeat: string | null; series: string | null; duration: string | null };
-      category: ExerciceCategory;
-      bodyparts: string[];
-      equipments: string[];
-      media: MediaData | null;
-      userId: number;
-      createdAt?: string;
-    }) => {
-      const url = exerciceId ? `/api/exercices/${exerciceId}` : '/api/exercices';
-      const method = exerciceId ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(exerciceData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'enregistrement');
-      }
-
-      return response.json();
-    },
-    onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice';
-      setError(message);
-      showToast(message);
-    },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.exercices.all,
-          refetchType: 'active',
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.history.all,
-          refetchType: 'active',
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.categoryStats.all,
-          refetchType: 'active',
-        }),
-      ]);
-
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-
-  // ⚡ MUTATION: Supprimer un exercice
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(`/api/exercices/${exerciceId}?userId=${effectiveUser?.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Erreur lors de la suppression');
-      }
-    },
-    onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice';
-      setError(message);
-      showToast(message);
-    },
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.exercices.all,
-          refetchType: 'active',
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.history.all,
-          refetchType: 'active',
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.categoryStats.all,
-          refetchType: 'active',
-        }),
-      ]);
-
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
+  const { createOrUpdateMutation, deleteMutation, handleSubmit, handleDelete } = useExerciceFormMutations({
+    exerciceId,
+    formData,
+    setError,
+    onSuccess,
   });
 
   useEffect(() => {
@@ -223,66 +120,12 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
     setMaxVisitedStep((prev) => Math.max(prev, step));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!effectiveUser) {
-      setError('Utilisateur non défini');
-      return;
-    }
-
-    if (!formData.name.trim()) {
-      setError('Le nom de l\'exercice est obligatoire');
-      return;
-    }
-
-    setError('');
-
-    // Si on est en mode sablier, utiliser la date sélectionnée à midi
-    let createdAtDate: string | undefined;
-    if (isDateSelected && selectedDate && !exerciceId) {
-      const dateAtNoon = setSeconds(setMinutes(setHours(new Date(selectedDate), 12), 0), 0);
-      createdAtDate = dateAtNoon.toISOString();
-    }
-
-    const exerciceData = {
-      name: formData.name,
-      description: {
-        text: formData.descriptionText,
-        comment: formData.descriptionComment || null,
-      },
-      workout: {
-        repeat: formData.workoutRepeat || null,
-        series: formData.workoutSeries || null,
-        duration: formData.workoutDuration || null,
-      },
-      category: formData.category,
-      bodyparts: formData.bodyparts,
-      equipments: formData.equipments,
-      media: formData.media,
-      userId: effectiveUser.id,
-      ...(createdAtDate && { createdAt: createdAtDate }),
-    };
-
-    createOrUpdateMutation.mutate(exerciceData);
-  };
-
-  const handleDelete = async () => {
+  const onDeleteClick = () => {
     if (!showDeleteConfirm) {
       setShowDeleteConfirm(true);
       return;
     }
-
-    if (!effectiveUser) {
-      setError('Utilisateur non défini');
-      return;
-    }
-
-    setError('');
-    deleteMutation.mutate(undefined, {
-      onSettled: () => {
-        setShowDeleteConfirm(false);
-      },
-    });
+    handleDelete(() => setShowDeleteConfirm(false));
   };
 
   if (initialLoading) {
@@ -292,12 +135,6 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       </div>
     );
   }
-
-  const slideVariants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
-  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -312,70 +149,18 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
 
       <div className="overflow-hidden">
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={currentStep}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
-            className="space-y-6"
-          >
-            {/* Étape 1 : L'exercice */}
-            {currentStep === 0 && (
-              <ExerciceFormFields
-                name={formData.name}
-                descriptionText={formData.descriptionText}
-                descriptionComment={formData.descriptionComment}
-                onNameChange={(value) => setFormData({ ...formData, name: value })}
-                onDescriptionTextChange={(value) => setFormData({ ...formData, descriptionText: value })}
-                onDescriptionCommentChange={(value) => setFormData({ ...formData, descriptionComment: value })}
-              />
-            )}
-
-            {/* Étape 2 : Classification */}
-            {currentStep === 1 && (
-              <>
-                <ExerciceFormCategory
-                  category={formData.category}
-                  onCategoryChange={(category) => setFormData({ ...formData, category })}
-                />
-                <ExerciceFormBodyparts
-                  selectedBodyparts={formData.bodyparts}
-                  onToggleBodypart={toggleBodypart}
-                />
-              </>
-            )}
-
-            {/* Étape 3 : Détails */}
-            {currentStep === 2 && (
-              <>
-                <ExerciceFormWorkout
-                  workoutRepeat={formData.workoutRepeat}
-                  workoutSeries={formData.workoutSeries}
-                  workoutDuration={formData.workoutDuration}
-                  onWorkoutRepeatChange={(value) => setFormData({ ...formData, workoutRepeat: value })}
-                  onWorkoutSeriesChange={(value) => setFormData({ ...formData, workoutSeries: value })}
-                  onWorkoutDurationChange={(value) => setFormData({ ...formData, workoutDuration: value })}
-                />
-
-                <ExerciceFormEquipments
-                  selectedEquipments={formData.equipments}
-                  allEquipments={allEquipments}
-                  equipmentIconsMap={equipmentIconsMap}
-                  loadingEquipments={loadingEquipments}
-                  onToggleEquipment={toggleEquipment}
-                  onAddEquipment={addNewEquipment}
-                />
-
-                <MediaUploader
-                  value={formData.media?.photos || []}
-                  onChange={(photos) => setFormData({ ...formData, media: photos.length > 0 ? { ...formData.media, photos } : null })}
-                />
-              </>
-            )}
-          </motion.div>
+          <ExerciceFormStepContent
+            currentStep={currentStep}
+            direction={direction}
+            formData={formData}
+            setFormData={setFormData}
+            toggleBodypart={toggleBodypart}
+            toggleEquipment={toggleEquipment}
+            addNewEquipment={addNewEquipment}
+            allEquipments={allEquipments}
+            equipmentIconsMap={equipmentIconsMap}
+            loadingEquipments={loadingEquipments}
+          />
         </AnimatePresence>
       </div>
 
@@ -412,7 +197,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <div className="pt-2 border-t border-gray-200">
           <Button
             variant={showDeleteConfirm ? 'danger' : 'danger-outline'}
-            onClick={handleDelete}
+            onClick={onDeleteClick}
             disabled={createOrUpdateMutation.isPending || deleteMutation.isPending}
             className="w-full"
           >

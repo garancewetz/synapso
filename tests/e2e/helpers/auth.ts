@@ -1,5 +1,8 @@
 import { Page } from '@playwright/test';
 
+/** Mot de passe temporaire du test "change le mot de passe". Si ce test a échoué avant la restauration, la base peut être restée avec ce mot de passe. */
+const FALLBACK_PASSWORD_AFTER_FAILED_CHANGE = 'NouveauMotDePasseE2E123';
+
 /**
  * Helper pour l'authentification dans les tests
  */
@@ -206,74 +209,114 @@ export class AuthHelper {
     );
 
     await submitButton.click();
-    
+
+    let usedFallbackPassword = false;
+
     try {
       const loginResponseObj = await loginResponsePromise;
       const loginStatus = loginResponseObj.status();
       const loginBody = await loginResponseObj.text().catch(() => '');
-      
       console.log(`Login response: ${loginStatus} - ${loginBody.substring(0, 200)}`);
-      
+
       if (loginStatus >= 400) {
-        const hint =
-          loginStatus === 401
-            ? ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".'
-            : '';
-        throw new Error(`Login API returned ${loginStatus}: ${loginBody}.${hint}`);
-      }
-      
-      // Vérifier que la réponse contient success: true
-      try {
-        const loginData = JSON.parse(loginBody);
-        if (!loginData.success && !loginData.user) {
-          throw new Error(`Login API returned error: ${loginBody}`);
+        if (loginStatus === 401 && password !== FALLBACK_PASSWORD_AFTER_FAILED_CHANGE) {
+          await passwordInput.clear();
+          await passwordInput.fill(FALLBACK_PASSWORD_AFTER_FAILED_CHANGE);
+          await this.page.waitForTimeout(300);
+          const loginPromise2 = this.page.waitForResponse(
+            (r) => r.url().includes('/api/auth/login') && r.status() !== 0,
+            { timeout: 15000 }
+          );
+          await submitButton.click();
+          const loginResponseObj2 = await loginPromise2;
+          const loginStatus2 = loginResponseObj2.status();
+          const loginBody2 = await loginResponseObj2.text().catch(() => '');
+          if (loginStatus2 === 200) {
+            console.warn(
+              '[E2E] Connexion avec le mot de passe de secours (NouveauMotDePasseE2E123). ' +
+                'La base a probablement été laissée dans cet état par un test "change le mot de passe" non restauré. ' +
+                'Pour remettre E2E_PASSWORD en cohérence, exécutez le test Paramètres une fois ou réinitialisez le mot de passe en base.'
+            );
+            usedFallbackPassword = true;
+            const checkPromise2 = this.page.waitForResponse(
+              (r) => r.url().includes('/api/auth/check') && r.status() !== 0,
+              { timeout: 20000 }
+            );
+            await this.page.waitForTimeout(500);
+            const checkResponseObj2 = await checkPromise2;
+            const checkStatus2 = checkResponseObj2.status();
+            const checkBody2 = await checkResponseObj2.text().catch(() => '');
+            if (checkStatus2 >= 400) {
+              throw new Error(`Auth check API (after fallback login) returned ${checkStatus2}: ${checkBody2}`);
+            }
+            const checkData2 = JSON.parse(checkBody2);
+            if (!checkData2.authenticated || !checkData2.user) {
+              throw new Error(`Auth check after fallback login returned authenticated: false - ${checkBody2}`);
+            }
+          } else {
+            const hint =
+              ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".';
+            throw new Error(`Login API returned ${loginStatus2}: ${loginBody2}.${hint}`);
+          }
+        } else {
+          const hint =
+            loginStatus === 401
+              ? ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".'
+              : '';
+          throw new Error(`Login API returned ${loginStatus}: ${loginBody}.${hint}`);
         }
-      } catch {
-        // Si le parsing échoue, vérifier quand même le status
-        if (loginStatus >= 400) {
-          throw new Error(`Login failed with status ${loginStatus}`);
+      }
+
+      if (!usedFallbackPassword) {
+        try {
+          const loginData = JSON.parse(loginBody);
+          if (!loginData.success && !loginData.user) {
+            throw new Error(`Login API returned error: ${loginBody}`);
+          }
+        } catch {
+          if (loginStatus >= 400) {
+            throw new Error(`Login failed with status ${loginStatus}`);
+          }
         }
       }
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
       throw error;
     }
-    
-    await this.page.waitForTimeout(500);
 
-    try {
-      const checkResponseObj = await checkResponsePromise;
-      const checkStatus = checkResponseObj.status();
-      const checkBody = await checkResponseObj.text().catch(() => '');
-      
-      console.log(`Check response: ${checkStatus} - ${checkBody.substring(0, 200)}`);
-      
-      if (checkStatus >= 400) {
-        throw new Error(`Auth check API returned ${checkStatus}: ${checkBody}`);
-      }
-      
-      // Vérifier que la réponse indique authenticated: true
+    if (!usedFallbackPassword) {
+      await this.page.waitForTimeout(500);
+    }
+
+    if (!usedFallbackPassword) {
       try {
-        const checkData = JSON.parse(checkBody);
-        if (!checkData.authenticated || !checkData.user) {
-          throw new Error(
-            `Auth check returned authenticated: false\n` +
-            `Response: ${checkBody}\n` +
-            `Vérifiez que le cookie d'authentification est bien défini.`
-          );
-        }
-        console.log(`✅ User authenticated: ${checkData.user.name}`);
-      } catch (parseError) {
-        // Si le parsing échoue, vérifier quand même le status
+        const checkResponseObj = await checkResponsePromise;
+        const checkStatus = checkResponseObj.status();
+        const checkBody = await checkResponseObj.text().catch(() => '');
+        console.log(`Check response: ${checkStatus} - ${checkBody.substring(0, 200)}`);
         if (checkStatus >= 400) {
-          throw new Error(`Auth check failed with status ${checkStatus}: ${checkBody}`);
+          throw new Error(`Auth check API returned ${checkStatus}: ${checkBody}`);
         }
+        try {
+          const checkData = JSON.parse(checkBody);
+          if (!checkData.authenticated || !checkData.user) {
+            throw new Error(
+              `Auth check returned authenticated: false\n` +
+                `Response: ${checkBody}\n` +
+                `Vérifiez que le cookie d'authentification est bien défini.`
+            );
+          }
+          console.log(`✅ User authenticated: ${checkData.user.name}`);
+        } catch (parseError) {
+          if (checkStatus >= 400) {
+            throw new Error(`Auth check failed with status ${checkStatus}: ${checkBody}`);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification de l\'authentification:', error);
+        await this.page.screenshot({ path: 'test-results/auth-check-failed.png', fullPage: true });
+        throw error;
       }
-    } catch (error) {
-      console.error('Erreur lors de la vérification de l\'authentification:', error);
-      // Prendre une capture d'écran avant de lancer l'erreur
-      await this.page.screenshot({ path: 'test-results/auth-check-failed.png', fullPage: true });
-      throw error;
     }
     
     // Attendre que la connexion soit effectuée

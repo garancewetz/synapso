@@ -1,7 +1,7 @@
 import { prisma } from '@/app/lib/prisma';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
-import { getDateKey } from '@/app/utils/date.utils';
+import { getDateKey, getDateKeyUTC } from '@/app/utils/date.utils';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
@@ -27,18 +27,22 @@ export async function getCategoryStats(params: GetCategoryStatsParams) {
       }
     }
   } else {
-    const todayKey = getDateKey(new Date());
-    if (todayKey) targetDateObj = new Date(todayKey + 'T12:00:00.000Z');
+    const todayKeyUTC = getDateKeyUTC(new Date()) ?? getDateKey(new Date());
+    if (todayKeyUTC) targetDateObj = new Date(todayKeyUTC + 'T12:00:00.000Z');
   }
 
   const now = targetDateObj;
   const startOfTargetDay = startOfDay(now);
   const endOfTargetDay = startOfDay(addDays(now, 1));
 
+  const dateKey = (targetDate && /^\d{4}-\d{2}-\d{2}$/.test(targetDate))
+    ? targetDate
+    : (getDateKeyUTC(targetDateObj) ?? '');
+
   const cacheKey = generateCacheKey([
     'stats-category',
     userId,
-    targetDateObj.toISOString().split('T')[0],
+    dateKey,
     resetFrequency,
   ]);
 
@@ -81,7 +85,7 @@ export async function getCategoryStats(params: GetCategoryStatsParams) {
       revalidate: 30,
       tags: [
         CACHE_TAGS.STATS,
-        CACHE_TAGS.USER_STATS(userId, targetDateObj.toISOString().split('T')[0]),
+        CACHE_TAGS.USER_STATS(userId, dateKey),
         CACHE_TAGS.EXERCICES,
         CACHE_TAGS.HISTORY,
       ],

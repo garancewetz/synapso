@@ -54,10 +54,16 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Mot de passe actuel').fill(TEST_USER.password);
       await page.getByLabel(/^Nouveau mot de passe/).fill(newPassword);
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(newPassword);
-      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
 
-      await expect(page.getByText('Mot de passe modifié avec succès')).toBeVisible({
-        timeout: 10000,
+      const patchPromise = page.waitForResponse(
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        { timeout: 15000 }
+      );
+      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
+      await patchPromise;
+
+      await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
+        timeout: 5000,
       });
       needRevert = true;
 
@@ -65,10 +71,16 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Mot de passe actuel').fill(newPassword);
       await page.getByLabel(/^Nouveau mot de passe/).fill(TEST_USER.password);
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(TEST_USER.password);
-      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
 
-      await expect(page.getByText('Mot de passe modifié avec succès')).toBeVisible({
-        timeout: 10000,
+      const patchPromise2 = page.waitForResponse(
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        { timeout: 15000 }
+      );
+      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
+      await patchPromise2;
+
+      await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
+        timeout: 5000,
       });
       needRevert = false;
     } finally {

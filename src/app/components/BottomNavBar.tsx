@@ -43,7 +43,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
           <TouchLink
             href={preserveDate('/')}
             aria-label="Accueil"
-            className="flex flex-col items-center justify-center gap-1.5 py-2 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"
+            className="flex flex-col items-center justify-center min-h-[48px] gap-1.5 py-3 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"
           >
             <div className={clsx(
               'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
@@ -89,7 +89,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
                 href={preserveDate(href)}
                 aria-label={label}
                 aria-current={isActive ? 'page' : undefined}
-                className="flex flex-col items-center justify-center gap-1.5 py-2 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"
+                className="flex flex-col items-center justify-center min-h-[48px] gap-1.5 py-3 cursor-pointer rounded-lg transition-colors hover:bg-gray-50 active:bg-gray-100"
               >
                 <div className={clsx(
                   'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',

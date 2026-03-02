@@ -13,13 +13,6 @@ import { useProgress, useProgressStats, useProgressModal } from '@/app/features/
 import { usePeriodNavigation, useHeatmapNavigation, getRequiredDaysForOffset, getRequiredDaysForMonthOffset } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { 
-  DonutChart, 
-  ActivityHeatmap,
-  ActivityLineChart,
-  ProgressTimeline,
-  ProgressStatsChart,
-} from '@/app/features/historique';
 
 // ⚡ PERFORMANCE: Charger dynamiquement les composants lourds avec loading
 const ProgressSlideshow = dynamic(
@@ -37,27 +30,19 @@ const ConfettiRain = dynamic(
   { ssr: false, loading: () => null }
 );
 
-const AnimatePresence = dynamic(
-  () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
-  { ssr: false, loading: () => null }
-);
-
-const MotionDiv = dynamic(
-  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
-  { ssr: false, loading: () => null }
-);
 import { BackButton } from '@/app/components/ui/BackButton';
-import { SegmentedControl, Loader, Card } from '@/app/components/ui';
-import { ProgressButton } from '@/app/components/ui/ProgressButton';
-import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
+import { SegmentedControl, Loader } from '@/app/components/ui';
 import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatProgressForWhatsApp } from '@/app/utils/share';
+import { getDateKeyUTC } from '@/app/utils/date.utils';
 import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
   calculateCurrentStreak,
 } from '@/app/features/historique';
+import { HistoriqueStatistiquesSection } from '@/app/features/historique/components/HistoriqueStatistiquesSection';
+import { HistoriqueProgresSection } from '@/app/features/historique/components/HistoriqueProgresSection';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
 type ActiveTab = 'statistiques' | 'progres';
@@ -108,12 +93,11 @@ export function HistoriquePageClient() {
   // ⚡ PERFORMANCE: Pré-calculer les dateKeys UNE SEULE FOIS (indexation)
   // Utiliser deferredHistory pour différer les calculs lourds
   const historyDateKeys = useMemo(() => {
-    const map = new Map<number, string>(); // Cache des dateKeys par ID
+    const map = new Map<number, string>(); // Cache des dateKeys par ID (UTC, aligné serveur)
     deferredHistory.forEach(entry => {
       if (!map.has(entry.id)) {
-        const date = new Date(entry.completedAt);
-        date.setHours(0, 0, 0, 0);
-        map.set(entry.id, date.toISOString().split('T')[0]);
+        const key = getDateKeyUTC(entry.completedAt);
+        if (key) map.set(entry.id, key);
       }
     });
     return map;
@@ -135,9 +119,8 @@ export function HistoriquePageClient() {
     const map = new Map<number, string>();
     deferredProgressList.forEach(progress => {
       if (!map.has(progress.id)) {
-        const date = new Date(progress.createdAt);
-        date.setHours(0, 0, 0, 0);
-        map.set(progress.id, date.toISOString().split('T')[0]);
+        const key = getDateKeyUTC(progress.createdAt);
+        if (key) map.set(progress.id, key);
       }
     });
     return map;
@@ -325,194 +308,44 @@ export function HistoriquePageClient() {
         ) : (
           <div className="xl:grid xl:grid-cols-2 xl:gap-8 xl:items-start">
             <div className={clsx(activeTab !== 'statistiques' && 'hidden', 'xl:block')}>
-              <MotionDiv
-                key="statistiques"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6 md:space-y-8"
-              >
-                {/* SECTION 1 : STATISTIQUES ET GRAPHIQUES */}
-                <section id="statistiques" className="space-y-6 md:space-y-8">
-
-              {/* Heatmap d'activité du mois (28 jours) */}
-              {!loadingHistory && (
-                <Card variant="default" padding="md">
-                  <PeriodNavigation
-                    label={heatmapPeriodLabel}
-                    onPrevious={goToPreviousHeatmapPeriod}
-                    onNext={goToNextHeatmapPeriod}
-                    canGoBack={canGoBackHeatmap}
-                    canGoForward={canGoForwardHeatmap}
-                  />
-                  <MotionDiv
-                    key="heatmap"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
-                  >
-                    <ActivityHeatmap 
-                      data={heatmapData} 
-                      currentStreak={currentStreak} 
-                      userName={displayName} 
-                      progressDates={progressDates}
-                      onDayClick={handleDayClick}
-                      showFullLink={false}
-                    />
-                  </MotionDiv>
-                </Card>
-              )}
-
-              {/* Graphique montagne (ActivityLineChart) */}
-              <Card variant="default" padding="md">
-                <PeriodNavigation
-                  label={selectedMonthLabel}
-                  onPrevious={goToPreviousPeriod}
-                  onNext={goToNextPeriod}
-                  canGoBack={canGoBack}
-                  canGoForward={canGoForward}
-                />
-
-                {!loadingHistory && (
-                  <MotionDiv
-                    key="chart"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
-                  >
-                    <ActivityLineChart 
-                      data={barChartData} 
-                      currentStreak={currentStreak} 
-                      onDayClick={handleDayClick}
-                      showFullLink={false}
-                      progressCountByDate={progressCountByDate}
-                    />
-                  </MotionDiv>
-                )}
-              </Card>
-
-              {/* Graphique des zones travaillées */}
-              <DonutChart
-                title="🦴 Zones travaillées"
-                data={donutDataBodyparts}
-                emptyIcon="💪"
-                emptyMessage="Tes zones travaillées apparaîtront ici !"
-                fullWidth={true}
-                legendPosition="right"
-                filterSlot={
-                  <SegmentedControl
-                    options={[
-                      { value: 'week', label: 'Cette semaine' },
-                      { value: 'month', label: 'Ce mois-ci' },
-                      { value: 'all', label: 'Tout' },
-                    ]}
-                    value={bodypartPeriod}
-                    onChange={(value) => setBodypartPeriod(value as BodypartPeriodFilter)}
-                    fullWidth
-                    size="sm"
-                    variant="filter"
-                  />
-                }
+              <HistoriqueStatistiquesSection
+                heatmapData={heatmapData}
+                heatmapPeriodLabel={heatmapPeriodLabel}
+                goToPreviousHeatmapPeriod={goToPreviousHeatmapPeriod}
+                goToNextHeatmapPeriod={goToNextHeatmapPeriod}
+                canGoBackHeatmap={canGoBackHeatmap}
+                canGoForwardHeatmap={canGoForwardHeatmap}
+                barChartData={barChartData}
+                selectedMonthLabel={selectedMonthLabel}
+                goToPreviousPeriod={goToPreviousPeriod}
+                goToNextPeriod={goToNextPeriod}
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                donutDataBodyparts={donutDataBodyparts}
+                bodypartPeriod={bodypartPeriod}
+                onBodypartPeriodChange={setBodypartPeriod}
+                onDayClick={handleDayClick}
+                currentStreak={currentStreak}
+                progressCountByDate={progressCountByDate}
+                progressDates={progressDates}
+                loadingHistory={loadingHistory}
+                displayName={displayName}
               />
-                </section>
-              </MotionDiv>
             </div>
             <div className={clsx(activeTab !== 'progres' && 'hidden', 'xl:block')}>
-              <MotionDiv
-                key="progres"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6 md:space-y-8 pb-24 xl:pb-8"
-              >
-                {/* SECTION 2 : MES PROGRÈS */}
-                <section id="progres" className="space-y-6 md:space-y-8">
-                  <div className="flex items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                      <span>{STAR_BRIGHT_EMOJI}</span>
-                      <span>Mes progrès</span>
-                    </h2>
-                    <div className="flex items-center gap-2">
-                 
-                      {effectiveUser && (
-                        <ProgressButton
-                          onClick={() => progressModal.openForCreate()}
-                          variant="inline"
-                          label="Noter un progrès"
-                          ariaLabel="Ajouter un progrès"
-                        />
-                      )}
-                    </div>
-                  </div>
-              {/* Graphique encourageant */}
-              {!loadingProgress && deferredProgressList.length >= 2 && (
-                <div>
-                  <ProgressStatsChart progressList={deferredProgressList} />
-                </div>
-              )}
-
-
-              {/* Bouton diaporama */}
-              {filteredProgress.length > 0 && (
-                <ProgressButton
-                  onClick={() => setIsSlideshowOpen(true)}
-                  variant="inline"
-                  label="Mode diaporama"
-                  ariaLabel="Voir en diaporama"
-                  emoji="📽️"
-                  iconPosition="right"
-                  className="w-full"
-                />
-              )}
-
-              {/* Timeline des progrès */}
-              <AnimatePresence mode="wait">
-                {loadingProgress ? (
-                  <MotionDiv
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center justify-center min-h-[400px] gap-4"
-                  >
-                    <Loader size="large" />
-                    <p className="text-gray-600 font-medium">
-                      Chargement de tes progrès... 🌟
-                    </p>
-                  </MotionDiv>
-                ) : (
-                  <MotionDiv
-                    key="content"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
-                  >
-                    <ProgressTimeline
-                      progressList={filteredProgress}
-                      history={filteredHistory}
-                      onEdit={progressModal.openForEdit}
-                      onShare={handleShare}
-                      onPin={handlePin}
-                    />
-                  </MotionDiv>
-                )}
-                </AnimatePresence>
-
-                {/* Bouton "Noter un progrès" centré sous les cartes */}
-                {effectiveUser && (
-                  <div className="flex justify-center pt-4">
-                    <ProgressButton 
-                      onClick={() => progressModal.openForCreate()}
-                      variant="inline"
-                      label="Noter un progrès"
-                    />
-                  </div>
-                )}
-                </section>
-              </MotionDiv>
+              <HistoriqueProgresSection
+                filteredProgress={filteredProgress}
+                filteredHistory={filteredHistory}
+                deferredProgressList={deferredProgressList}
+                loadingProgress={loadingProgress}
+                onEdit={progressModal.openForEdit}
+                onShare={handleShare}
+                onPin={handlePin}
+                onOpenCreate={progressModal.openForCreate}
+                onOpenSlideshow={() => setIsSlideshowOpen(true)}
+                hasUser={!!effectiveUser}
+                starEmoji={STAR_BRIGHT_EMOJI}
+              />
             </div>
           </div>
         )}

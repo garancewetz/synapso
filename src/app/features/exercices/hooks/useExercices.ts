@@ -31,24 +31,20 @@ type UseExercicesReturn = {
  */
 export function useExercices({ category, equipments, includeArchived }: UseExercicesOptions = {}): UseExercicesReturn {
   const { effectiveUser, loading: userLoading } = useUser();
-  const { isTimeMachineMode, referenceDate, referenceDateKey } = useTimeContext();
+  const { referenceDateKey } = useTimeContext();
   const queryClient = useQueryClient();
   
-  // ⚡ SIMPLICITÉ: Utiliser referenceDateKey directement pour construire targetDate
-  // ⚡ MODES: Inclure resetFrequency dans la clé pour que le cache soit distinct par mode (DAILY/WEEKLY)
+  // ⚡ Toujours envoyer targetDate (referenceDateKey) pour que l'API utilise le même "jour" que le client.
+  // Sinon en "aujourd'hui" le serveur (UTC) peut être encore à la veille → completedToday incohérent avec la modal / objectif.
   const filters = useMemo(() => {
-    let targetDate: string | undefined;
-    if (isTimeMachineMode && referenceDateKey) {
-      targetDate = referenceDateKey;
-    }
     return {
       category,
       equipments,
       includeArchived,
-      targetDate,
+      targetDate: referenceDateKey ?? undefined,
       resetFrequency: effectiveUser?.resetFrequency || 'DAILY',
     };
-  }, [category, equipments, includeArchived, isTimeMachineMode, referenceDateKey, effectiveUser?.resetFrequency]);
+  }, [category, equipments, includeArchived, referenceDateKey, effectiveUser?.resetFrequency]);
   
   // ⚡ TANSTACK QUERY: Utiliser useQuery pour gérer le fetch et le cache
   // ⚡ PARALLEL QUERIES: Retirer !userLoading pour permettre le chargement en parallèle
@@ -57,11 +53,7 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     queryKey: queryKeys.exercices.list(filters),
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
-    // ⚡ FIX: Ne pas utiliser placeholderData en mode sablier pour éviter d'afficher les anciennes données
-    // placeholderData garde les données même si la query key change (targetDate différent),
-    // ce qui cause des bugs en prod où les gauges affichent les mauvaises données
-    // En mode sablier, on préfère un bref chargement plutôt que des données incorrectes
-    placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
+    placeholderData: undefined,
     // ⚡ FIX BUG HARD REFRESH: Réduire drastiquement staleTime pour forcer un refetch plus fréquent
     // Cela garantit que les données sont toujours à jour, même après navigation
     staleTime: 0, // Toujours considérer comme stale pour forcer le refetch

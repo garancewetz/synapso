@@ -12,6 +12,7 @@ import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
 import { DayDetailModalBody } from './DayDetailModalBody';
 
 type DayExercise = {
+  id: number;
   name: string;
   category: ExerciceCategory;
   completedAt: string;

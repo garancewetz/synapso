@@ -22,14 +22,14 @@ test.describe('Navigation', () => {
 
     await page.getByRole('button', { name: 'Suivi' }).click();
     await page.waitForLoadState('networkidle');
-    await expect(page.getByText(/Objectif|Progrès|Suivi/).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/Mes progrès|Mes statistiques|Journal/).first()).toBeVisible({ timeout: 5000 });
 
     await page.getByRole('button', { name: /Épinglé/ }).click();
     await page.waitForLoadState('networkidle');
     const pinnedContent = await page.getByText(/Épinglé|Aucun élément épinglé|Rien d'épinglé/).first().isVisible({ timeout: 5000 }).catch(() => false);
     expect(pinnedContent).toBeTruthy();
 
-    await page.getByRole('button', { name: 'Exercices' }).click();
+    await page.getByRole('button', { name: 'Exercices', exact: true }).click();
     await page.waitForLoadState('networkidle');
     await expect(page.getByText(/Corps|Haut du corps|Objectif/).first()).toBeVisible({ timeout: 5000 });
   });

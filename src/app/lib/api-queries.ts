@@ -43,6 +43,9 @@ export async function fetchExercices(filters: {
   return exercices;
 }
 
+/**
+ * @param since - Borne temporelle "après ce moment" (ISO), pas une journée ; utilisé pour limiter la plage d'historique.
+ */
 export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: string }): Promise<HistoryEntry[]> {
   const isDateKey = params.referenceDate && /^\d{4}-\d{2}-\d{2}$/.test(params.referenceDate);
   const baseDate = params.referenceDate

@@ -4,6 +4,7 @@ import { memo, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getDateKey } from '@/app/utils/date.utils';
 import { CATEGORY_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
 import { useTimeContext } from '@/app/contexts/TimeContext';
@@ -79,7 +80,7 @@ export const ProgressStatsChart = memo(function ProgressStatsChart({ progressLis
 
       return {
         week: format(weekStart, 'd MMM', { locale: fr }),
-        weekKey: format(weekStart, 'yyyy-MM-dd'),
+        weekKey: getDateKey(weekStart) ?? '',
         physique,
         total: physique,
       };

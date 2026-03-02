@@ -66,8 +66,9 @@ export function SegmentedControl<T extends string>({
 }: Props<T>) {
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-3 py-2.5 text-sm',
+    md: 'px-3 py-2.5 min-h-[44px] text-sm',
   };
+  const useMdSize = variant === 'navigation';
 
   // Styles selon la variante
   const containerClasses = clsx(
@@ -124,7 +125,8 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(option.value)}
             className={clsx(
               fullWidth && 'flex-1',
-              sizeClasses[size],
+              useMdSize ? sizeClasses.md : sizeClasses[size],
+              variant === 'navigation' && 'min-h-[44px]',
               'rounded-md transition-colors duration-200 relative z-10 cursor-pointer',
               isActive
                 ? 'text-gray-800 font-bold'

@@ -43,7 +43,7 @@ export function LayoutComposer({ children }: PropsWithChildren) {
       <main
         id="main-content"
         className={clsx(
-          'flex-1 mx-auto w-full max-w-[90rem] pb-24 md:pb-8 lg:bg-white lg:shadow-sm',
+          'flex-1 mx-auto w-full max-w-10xl pb-24 md:pb-8 lg:bg-white',
         )}
       >
         {children}

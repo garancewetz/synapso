@@ -18,7 +18,7 @@ export default function JournalNoteEditPage() {
   };
 
   return (
-    <FormPageWrapper title="Modifier une note" backHref="/journal">
+    <FormPageWrapper title="Modifier l'entrée" backHref="/journal">
       <JournalNoteForm noteId={noteId} onSuccess={handleSuccess} onCancel={handleCancel} />
     </FormPageWrapper>
   );

@@ -1,16 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { getDateKey } from '@/app/utils/date.utils';
+import { getDateKey, getDateKeyUTC } from '@/app/utils/date.utils';
 import { useHistory } from './useHistory';
 import { useProgress } from '@/app/features/progress';
-import type { ExerciceCategory } from '@/app/types/exercice';
-
-type DayExercise = {
-  name: string;
-  category: ExerciceCategory;
-  completedAt: string;
-};
+import {
+  getExercisesForDay,
+  type DayExercise,
+} from '@/app/features/historique/utils/historique.utils';
 
 type UseDayDataReturn = {
   exercises: DayExercise[];
@@ -61,36 +58,16 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
   const { history, loading: historyLoading, error: historyError } = useHistory();
   const { progressList: allProgress, loading: progressLoading } = useProgress();
   
-  // Filtrer les exercices pour cette date
-  const exercises = useMemo(() => {
-    if (!dateKey || !history.length) return [];
-
-    const filtered = history
-      .filter(entry => {
-        // Utiliser la même logique de normalisation que getHeatmapData
-        // pour éviter les problèmes de fuseau horaire
-        const entryDate = new Date(entry.completedAt);
-        const entryDateKey = getDateKey(entryDate);
-        return entryDateKey === dateKey;
-      })
-      .map(entry => ({
-        name: entry.exercice.name,
-        category: entry.exercice.category!,
-        completedAt: entry.completedAt,
-      }));
-
-    return filtered;
-  }, [history, dateKey]);
+  const exercises = useMemo(
+    () => getExercisesForDay(history, dateKey),
+    [history, dateKey]
+  );
   
-  // Filtrer les progrès pour cette date
   const progress = useMemo(() => {
     if (!dateKey || !allProgress.length) return [];
-    
     return allProgress.filter(p => {
-      // Utiliser la même logique de normalisation pour les progrès
-      const progressDate = new Date(p.createdAt);
-      const progressDateKey = getDateKey(progressDate);
-      return progressDateKey === dateKey;
+      const progressDateKeyUTC = getDateKeyUTC(p.createdAt);
+      return progressDateKeyUTC === dateKey;
     });
   }, [allProgress, dateKey]);
   

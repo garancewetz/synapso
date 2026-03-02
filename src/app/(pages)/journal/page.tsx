@@ -18,7 +18,7 @@ export default function JournalPage() {
           <div className="mb-4 flex justify-center">
             <AddButton
               href="/journal/add"
-              label="Ajouter une note"
+              label="Ajouter une entrée"
             />
           </div>
           <JournalNotesList />

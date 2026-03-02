@@ -1,11 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Logo, Loader } from '@/app/components';
 import { UserBadge } from '@/app/components/UserBadge';
-import { BellIcon, MenuIcon } from '@/app/components/ui/icons';
+import { BellIcon, ChevronIcon, MenuIcon } from '@/app/components/ui/icons';
 import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
@@ -52,12 +52,38 @@ export function NavBar() {
   const isHistoriqueActive = pathname === '/historique';
   const isJournalActive = pathname === '/journal' || pathname.startsWith('/journal/');
   const isNotificationsActive = pathname === '/notifications';
+  const isAnyCategoryActive = categories.some((cat) => pathname === CATEGORY_HREFS[cat]);
+  const activeCategory = categories.find((cat) => pathname === CATEGORY_HREFS[cat]);
+  const activeCategoryColors = activeCategory ? CATEGORY_COLORS[activeCategory] : null;
+
+  const [isExercicesDropdownOpen, setIsExercicesDropdownOpen] = useState(false);
+  const exercicesDropdownRef = useRef<HTMLDivElement>(null);
+
+  const closeExercicesDropdown = useCallback(() => setIsExercicesDropdownOpen(false), []);
+
+  useEffect(() => {
+    if (!isExercicesDropdownOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exercicesDropdownRef.current && !exercicesDropdownRef.current.contains(event.target as Node)) {
+        closeExercicesDropdown();
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeExercicesDropdown();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isExercicesDropdownOpen, closeExercicesDropdown]);
 
   return (
     <>
       {/* Header minimaliste */}
       <header className={clsx(
-        'bg-white/95 backdrop-blur-sm max-w-[90rem] w-full mx-auto rounded-md mb-4 md:mb-4 px-4 md:px-6',
+        'bg-white/95 backdrop-blur-sm max-w-8xl w-full mx-auto rounded-md mb-4 md:mb-4 px-4 md:px-6',
         'md:sticky md:top-0 md:z-50 md:border-b md:border-gray-100',
         'transition-all duration-300',
         // ⚡ MODE SABLIER: Ajouter un padding-top pour laisser de la place à la bannière fixe
@@ -91,125 +117,131 @@ export function NavBar() {
           </div>
 
           {/* Navigation desktop - Masquée sur mobile */}
-          <nav 
-            className="hidden md:flex items-center gap-0.5 flex-1 justify-center px-2"
+          <nav
+            className="hidden md:flex items-center flex-1 justify-center px-2 gap-1"
             aria-label="Navigation principale"
           >
-            {/* Lien Accueil */}
-            <TouchLink
-              href={preserveDate('/')}
-              className={clsx(
-                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                'hover:text-gray-900 hover:bg-gray-50',
-                isHomeActive
-                  ? 'text-gray-900'
-                  : 'text-gray-600'
-              )}
-              aria-label="Accueil"
-              aria-current={isHomeActive ? 'page' : undefined}
-            >
-              Accueil
-              {isHomeActive && (
-                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
-              )}
-            </TouchLink>
+            {/* Groupe 1 : Accueil + Exercices (dropdown) */}
+            <div className="flex items-center gap-0.5">
+              <TouchLink
+                href={preserveDate('/')}
+                className={clsx(
+                  'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                  'hover:text-gray-900 hover:bg-gray-50',
+                  isHomeActive ? 'text-gray-900' : 'text-gray-600'
+                )}
+                aria-label="Accueil"
+                aria-current={isHomeActive ? 'page' : undefined}
+              >
+                Accueil
+                {isHomeActive && (
+                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+                )}
+              </TouchLink>
 
-            {/* Catégories */}
-            {categories.map((category) => {
-              const colors = CATEGORY_COLORS[category];
-              const label = CATEGORY_LABELS[category];
-              const href = CATEGORY_HREFS[category];
-              const isActive = pathname === href;
-
-              return (
-                <TouchLink
-                  key={category}
-                  href={preserveDate(href)}
+              <div ref={exercicesDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsExercicesDropdownOpen((open) => !open)}
                   className={clsx(
-                    'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                    'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
                     'hover:bg-gray-50',
-                    isActive ? colors.text : 'text-gray-600 hover:text-gray-900'
+                    isAnyCategoryActive && activeCategoryColors
+                      ? activeCategoryColors.text
+                      : 'text-gray-600 hover:text-gray-900'
                   )}
-                  aria-label={label}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-expanded={isExercicesDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label={isExercicesDropdownOpen ? 'Fermer le menu Exercices' : 'Ouvrir le menu Exercices'}
                 >
-                  {label}
-                  {isActive && (
-                    <span 
+                  Exercices
+                  <ChevronIcon
+                  direction="down"
+                  className={clsx('w-4 h-4 transition-transform', isExercicesDropdownOpen && 'rotate-180')}
+                  aria-hidden
+                />
+                  {isAnyCategoryActive && activeCategoryColors && (
+                    <span
                       className={clsx(
                         'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
-                        colors.accent
-                      )} 
+                        activeCategoryColors.accent
+                      )}
                     />
                   )}
-                </TouchLink>
-              );
-            })}
+                </button>
+                {isExercicesDropdownOpen && (
+                  <ul
+                    role="menu"
+                    className="absolute top-full left-0 mt-0.5 min-w-[180px] py-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50"
+                  >
+                    {categories.map((category) => {
+                      const colors = CATEGORY_COLORS[category];
+                      const label = CATEGORY_LABELS[category];
+                      const href = CATEGORY_HREFS[category];
+                      const isActive = pathname === href;
+                      return (
+                        <li key={category} role="none">
+                          <TouchLink
+                            href={preserveDate(href)}
+                            role="menuitem"
+                            className={clsx(
+                              'block px-3 py-2 text-sm font-medium rounded-md mx-1',
+                              'hover:bg-gray-50',
+                              isActive ? colors.text : 'text-gray-700'
+                            )}
+                            aria-label={label}
+                            aria-current={isActive ? 'page' : undefined}
+                            onClick={closeExercicesDropdown}
+                          >
+                            {label}
+                          </TouchLink>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
 
-            {/* Ma progression */}
-            <TouchLink
-              href={preserveDate('/historique')}
-              className={clsx(
-                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                'hover:bg-gray-50',
-                isHistoriqueActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              )}
-              aria-label="Ma progression"
-              aria-current={isHistoriqueActive ? 'page' : undefined}
-            >
-              Ma progression
-              {isHistoriqueActive && (
-                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
-              )}
-            </TouchLink>
+            {/* Séparateur visuel entre navigation principale et secondaire */}
+            <span className="w-px h-5 bg-gray-200 mx-1" aria-hidden />
 
-            {/* Journal */}
-            <TouchLink
-              href={preserveDate('/journal')}
-              className={clsx(
-                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                'hover:bg-gray-50',
-                isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              )}
-              aria-label="Journal"
-              aria-current={isJournalActive ? 'page' : undefined}
-            >
-              Journal
-              {isJournalActive && (
-                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
-              )}
-            </TouchLink>
-
-            {/* Notifications */}
-            <TouchLink
-              href={preserveDate('/notifications')}
-              className={clsx(
-                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                'hover:bg-gray-50',
-                isNotificationsActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
-              )}
-              aria-label={pendingShareCount > 0 ? `${pendingShareCount} notification${pendingShareCount > 1 ? 's' : ''} en attente` : 'Notifications'}
-              aria-current={isNotificationsActive ? 'page' : undefined}
-            >
-              <span className="flex items-center gap-1.5">
-                <span className="relative inline-flex">
-                  <BellIcon className="w-5 h-5" />
-                  {pendingShareCount > 0 && (
-                    <span
-                      className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"
-                      aria-hidden
-                    />
-                  )}
-                </span>
-                Notifications
-              </span>
-              {isNotificationsActive && (
-                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
-              )}
-            </TouchLink>
+            {/* Groupe 2 : Ma progression + Journal */}
+            <div className="flex items-center gap-0.5">
+              <TouchLink
+                href={preserveDate('/historique')}
+                className={clsx(
+                  'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                  'hover:bg-gray-50',
+                  isHistoriqueActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                )}
+                aria-label="Ma progression"
+                aria-current={isHistoriqueActive ? 'page' : undefined}
+              >
+                Ma progression
+                {isHistoriqueActive && (
+                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+                )}
+              </TouchLink>
+              <TouchLink
+                href={preserveDate('/journal')}
+                className={clsx(
+                  'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                  'hover:bg-gray-50',
+                  isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                )}
+                aria-label="Journal"
+                aria-current={isJournalActive ? 'page' : undefined}
+              >
+                Journal
+                {isJournalActive && (
+                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+                )}
+              </TouchLink>
+            </div>
           </nav>
 
-          {/* Badge utilisateur et bouton menu */}
+          {/* Badge utilisateur, notifications (desktop = icône seule), bouton menu */}
           <div className={clsx(
             'flex items-center gap-2 shrink-0',
             isLeftHanded && 'flex-row-reverse'
@@ -217,6 +249,26 @@ export function NavBar() {
             {effectiveUser && (
               <UserBadge size="sm" />
             )}
+
+            {/* Notifications desktop : icône seule à droite */}
+            <TouchLink
+              href={preserveDate('/notifications')}
+              className={clsx(
+                'relative p-2.5 rounded-md transition-colors hidden md:flex',
+                'hover:bg-gray-50',
+                isNotificationsActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              )}
+              aria-label={pendingShareCount > 0 ? `${pendingShareCount} notification${pendingShareCount > 1 ? 's' : ''} en attente` : 'Notifications'}
+              aria-current={isNotificationsActive ? 'page' : undefined}
+            >
+              <BellIcon className="w-5 h-5" />
+              {pendingShareCount > 0 && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"
+                  aria-hidden
+                />
+              )}
+            </TouchLink>
 
             {/* Cloche notifications — visible sur mobile uniquement quand il y a des notifications */}
             {pendingShareCount > 0 && (
@@ -238,7 +290,7 @@ export function NavBar() {
               ref={menuButtonRef}
               onClick={openMenu}
               disabled={loading}
-              className="!p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              className="p-2.5! text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               aria-label="Ouvrir le menu"
               aria-expanded={isOpen}
               aria-controls="main-menu"

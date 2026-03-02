@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { format } from 'date-fns';
 import { getAuthContext } from '@/app/lib/auth';
 import { parseNumericId } from '@/app/lib/api-route-utils';
 import { logError } from '@/app/lib/logger';
@@ -18,7 +19,31 @@ export async function PATCH(
     if (parsed instanceof NextResponse) return parsed;
     const { id } = parsed;
 
-    const result = await validateJournalNote({ noteId: id, userId });
+    let targetDateKey = format(new Date(), 'yyyy-MM-dd');
+    let resetFrequency: 'DAILY' | 'WEEKLY' = 'DAILY';
+    let unvalidate = false;
+    try {
+      const body = await request.json();
+      if (body?.targetDate && /^\d{4}-\d{2}-\d{2}$/.test(body.targetDate)) {
+        targetDateKey = body.targetDate;
+      }
+      if (body?.resetFrequency === 'WEEKLY') {
+        resetFrequency = 'WEEKLY';
+      }
+      if (body?.validated === false) {
+        unvalidate = true;
+      }
+    } catch {
+      // Body vide, utiliser les valeurs par défaut
+    }
+
+    const result = await validateJournalNote({
+      noteId: id,
+      userId,
+      targetDateKey,
+      resetFrequency,
+      unvalidate,
+    });
 
     return NextResponse.json(result);
   } catch (error) {
@@ -27,6 +52,9 @@ export async function PATCH(
         { error: 'Note de journal non trouvée' },
         { status: 404 }
       );
+    }
+    if (error instanceof Error && error.message === 'Date invalide') {
+      return NextResponse.json({ error: 'Date invalide' }, { status: 400 });
     }
     logError('Erreur lors de la validation journal note', error);
     return NextResponse.json(

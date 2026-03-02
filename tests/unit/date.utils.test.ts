@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDateKey, getDateFromKey } from '@/app/utils/date.utils';
+import { getDateKey, getDateKeyUTC, getDateFromKey } from '@/app/utils/date.utils';
 
 describe('getDateKey', () => {
   it('returns null for null input', () => {
@@ -54,5 +54,34 @@ describe('getDateFromKey', () => {
   it('accepts only yyyy-MM-dd format', () => {
     expect(getDateFromKey('2026-2-6')).toBeNull();
     expect(getDateFromKey('2026-02-06')).not.toBeNull();
+  });
+});
+
+describe('getDateKeyUTC', () => {
+  it('returns null for null input', () => {
+    expect(getDateKeyUTC(null)).toBeNull();
+  });
+
+  it('returns null for invalid date string', () => {
+    expect(getDateKeyUTC('not-a-date')).toBeNull();
+  });
+
+  it('returns yyyy-MM-dd in UTC for an ISO string', () => {
+    expect(getDateKeyUTC('2026-02-06T09:00:00.000Z')).toBe('2026-02-06');
+    expect(getDateKeyUTC('2026-02-05T23:30:00.000Z')).toBe('2026-02-05');
+  });
+
+  it('returns same dateKey for same UTC day regardless of hour', () => {
+    const midnight = new Date('2026-02-06T00:00:00.000Z');
+    const noon = new Date('2026-02-06T12:00:00.000Z');
+    const endOfDay = new Date('2026-02-06T23:59:59.999Z');
+    expect(getDateKeyUTC(midnight)).toBe('2026-02-06');
+    expect(getDateKeyUTC(noon)).toBe('2026-02-06');
+    expect(getDateKeyUTC(endOfDay)).toBe('2026-02-06');
+  });
+
+  it('returns previous UTC day for late evening in positive timezone', () => {
+    const cetEvening = new Date('2026-02-06T22:00:00.000Z');
+    expect(getDateKeyUTC(cetEvening)).toBe('2026-02-06');
   });
 });

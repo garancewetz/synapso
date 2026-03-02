@@ -11,6 +11,7 @@ import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
 import clsx from 'clsx';
 
 type DayExercise = {
+  id: number;
   name: string;
   category: ExerciceCategory;
   completedAt: string;
@@ -118,10 +119,10 @@ export function DayDetailModalBody({
                 title="Exercices faits"
                 titleId="day-detail-exercices-label"
                 ariaLabel="Liste des exercices faits ce jour"
-                items={exercises.map((exercise, index) => {
+                items={exercises.map((exercise) => {
                   const colors = CATEGORY_COLORS[exercise.category];
                   return {
-                    key: `${exercise.name}-${exercise.completedAt}-${index}`,
+                    key: String(exercise.id),
                     label: exercise.name,
                     icon: CATEGORY_ICONS[exercise.category],
                     borderClass: colors?.border || 'border-gray-200',

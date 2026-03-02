@@ -45,7 +45,7 @@ export function JournalNotesList({ limit }: Props) {
         </ul>
       ) : (
         <div className="text-center text-gray-500 py-8">
-          Aucune note pour le moment
+          Aucune entrée pour le moment
         </div>
       )}
     </div>

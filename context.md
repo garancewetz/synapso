@@ -127,10 +127,13 @@ targetDate = startOfDay(new Date(isoString)); // dépend du timezone serveur
 
 | Fonction | Usage | Attention |
 |---|---|---|
-| `getDateKey(date)` | Date → `'yyyy-MM-dd'` | ✅ Sûr |
+| `getDateKey(date)` | Date → `'yyyy-MM-dd'` (timezone locale) | Affichage, référence client |
+| `getDateKeyUTC(date)` | Date → `'yyyy-MM-dd'` en **UTC** | Comparaisons avec le serveur (completedToday, stats, modal détail) ; côté serveur pour tout calcul de "jour" |
 | `getDateFromKey(dateKey)` | dateKey → Date | ✅ Sûr |
 | `dateKeyToISO(dateKey)` | dateKey → ISO | ⚠️ **Ne pas utiliser pour les appels API** |
 | `format(date, 'yyyy-MM-dd')` | Extraction jour | ✅ Sûr si date à midi UTC côté serveur |
+
+**Règle** : Côté serveur et pour tout calcul "ce jour" aligné avec l’API (cartes, objectif, stats), utiliser **getDateKeyUTC**. Côté client pour l’affichage ou la date de référence utilisateur, utiliser getDateKey (locale).
 
 ### Composants React
 

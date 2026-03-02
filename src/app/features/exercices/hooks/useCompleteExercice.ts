@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import type { Exercice } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useUser } from '@/app/contexts/UserContext';
+import { useToast } from '@/app/contexts/ToastContext';
 import { queryKeys } from '@/app/lib/api-queries';
 
 type UseCompleteExerciceOptions = {
@@ -29,6 +30,7 @@ export function useCompleteExercice({
   const { referenceDateKey } = useTimeContext();
   const { effectiveUser } = useUser();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const targetDate = referenceDateKey || format(new Date(), 'yyyy-MM-dd');
   const willComplete = !exercice.completedToday;
@@ -56,14 +58,6 @@ export function useCompleteExercice({
       return response.json();
     },
     onSuccess: (data) => {
-      console.log('[COMPLETE] ✅ Serveur a retourné:', {
-        exerciceId: exercice.id,
-        exerciceName: exercice.name,
-        completed: data.completed,
-        completedToday: data.completedToday,
-        targetDate,
-      });
-
       const weeklyCompletionsRaw = data.weeklyCompletions || [];
       const weeklyCompletions = weeklyCompletionsRaw.map((d: Date | string) =>
         typeof d === 'string' ? new Date(d) : d
@@ -142,18 +136,15 @@ export function useCompleteExercice({
         });
       }
     },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : 'Erreur lors de la mise à jour');
+    },
   });
 
   const handleComplete = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       if (userId) {
-        console.log('[COMPLETE] 🖱️ Click:', {
-          exerciceId: exercice.id,
-          exerciceName: exercice.name,
-          action: willComplete ? 'COMPLÉTER' : 'DÉCOMPLÉTER',
-          targetDate,
-        });
         mutate();
       }
     },

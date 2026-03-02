@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
+import { useToast } from '@/app/contexts/ToastContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { setHours, setMinutes, setSeconds } from 'date-fns';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
@@ -30,6 +31,7 @@ type Props = {
 
 export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory }: Props) {
   const { effectiveUser } = useUser();
+  const { showToast } = useToast();
   const { selectedDate, isDateSelected } = useSelectedDate();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
   const queryClient = useQueryClient();
@@ -86,8 +88,9 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       return response.json();
     },
     onError: (err) => {
-      console.error('Erreur lors de l\'enregistrement:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice');
+      const message = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement de l\'exercice';
+      setError(message);
+      showToast(message);
     },
     onSuccess: async () => {
       await Promise.all([
@@ -125,8 +128,9 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
       }
     },
     onError: (err) => {
-      console.error('Erreur lors de la suppression:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice');
+      const message = err instanceof Error ? err.message : 'Erreur lors de la suppression de l\'exercice';
+      setError(message);
+      showToast(message);
     },
     onSuccess: async () => {
       await Promise.all([

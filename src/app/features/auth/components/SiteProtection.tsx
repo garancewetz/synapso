@@ -3,6 +3,7 @@
 import { memo, useCallback, useState, useEffect, useRef } from 'react';
 import { AuthScreen } from './AuthScreen';
 import { InitialLoader } from '@/app/components/InitialLoader';
+import { ConfettiExplosion } from '@/app/features/exercices';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
 
@@ -48,7 +49,7 @@ export const SiteProtection = memo(function SiteProtection({ children, onAuthSuc
 
   // Afficher le loader pendant le chargement initial (minimum 3 secondes)
   if (showLoader || userLoading) {
-    return <InitialLoader />;
+    return <InitialLoader confettiComponent={ConfettiExplosion} />;
   }
 
   // Si pas d'utilisateur, afficher l'écran d'authentification

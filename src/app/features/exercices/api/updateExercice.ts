@@ -37,7 +37,7 @@ export async function updateExercice(params: UpdateExerciceParams) {
   });
 
   if (!existingExercice) {
-    throw new Error('Exercice not found');
+    throw new Error('Exercice non trouvé');
   }
 
   const oldMedia = existingExercice.media as { photos?: Array<{ url: string; publicId: string }>; video?: { url: string; publicId: string } | null } | null;

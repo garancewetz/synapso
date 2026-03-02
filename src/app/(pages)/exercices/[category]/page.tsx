@@ -9,7 +9,6 @@ import {
   useExerciceStatusFilter,
   useExerciceHandlers,
   useCategoryFilters,
-  useCategoryActiveFiltersBarHandlers,
   CategoryAffinerSection,
   CategoryActiveFiltersBar,
 } from '@/app/features/exercices';
@@ -31,7 +30,7 @@ export default function CategoryPage() {
 
   const isValidCategory = useMemo(() => CATEGORY_ORDER.includes(categoryParam), [categoryParam]);
 
-  const { exercices, loading: loadingExercices, updateExercice } = useExercices({
+  const { exercices, loading: loadingExercices, error: exercicesError, refetch: refetchExercices, updateExercice } = useExercices({
     category: params.category && isValidCategory ? categoryParam : undefined,
   });
 
@@ -71,10 +70,21 @@ export default function CategoryPage() {
 
   const { handleEditClick } = useExerciceHandlers({ updateExercice });
 
-  const activeFiltersBarHandlers = useCategoryActiveFiltersBarHandlers({
-    setFilter,
-    filters,
-  });
+  const onRemoveStatusFilter = useCallback(() => setFilter('all'), []);
+  const onRemoveBodypart = useCallback(
+    (value: string) =>
+      filters.setSelectedBodyparts((prev) => prev.filter((bp) => bp !== value)),
+    [filters.setSelectedBodyparts]
+  );
+  const onRemoveEquipment = useCallback(
+    (value: string) =>
+      filters.setSelectedEquipments((prev) => prev.filter((eq) => eq !== value)),
+    [filters.setSelectedEquipments]
+  );
+  const onResetAll = useCallback(() => {
+    setFilter('all');
+    filters.handleResetAllFilters();
+  }, [filters.handleResetAllFilters]);
 
   const handleArchive = useCallback(
     (updatedExercice: Exercice) => {
@@ -100,8 +110,20 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="pb-12 md:pb-8">
+    <section className="pb-12 md:pb-8" aria-live="polite" aria-busy={loadingExercices}>
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 px-4 md:px-6 lg:px-8">
+        {exercicesError && (
+          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span>Impossible de charger les exercices.</span>
+            <button
+              type="button"
+              onClick={() => refetchExercices()}
+              className="font-medium text-red-800 underline hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
         <div className="mb-6 md:mb-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -158,7 +180,10 @@ export default function CategoryPage() {
         filter={filter}
         selectedBodyparts={filters.selectedBodyparts}
         selectedEquipments={filters.selectedEquipments}
-        {...activeFiltersBarHandlers}
+        onRemoveStatusFilter={onRemoveStatusFilter}
+        onRemoveBodypart={onRemoveBodypart}
+        onRemoveEquipment={onRemoveEquipment}
+        onResetAll={onResetAll}
       />
 
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8">

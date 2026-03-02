@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { format, startOfDay } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 import { isOrthophonieProgress } from '../utils/progress.utils';
 import type { Progress } from '@/app/types';
 
@@ -26,10 +26,9 @@ export function useProgressStats(progressList: Progress[]): ProgressStats {
   // IMPORTANT : Utiliser startOfDay pour normaliser comme dans HeatmapDay.dateKey
   const progressDates = useMemo(() => {
     return new Set(
-      physicalProgress.map(p => {
-        const date = new Date(p.createdAt);
-        return format(startOfDay(date), 'yyyy-MM-dd');
-      })
+      physicalProgress
+        .map(p => getDateKey(new Date(p.createdAt)))
+        .filter((k): k is string => k != null)
     );
   }, [physicalProgress]);
 
@@ -38,9 +37,8 @@ export function useProgressStats(progressList: Progress[]): ProgressStats {
   const progressCountByDate = useMemo(() => {
     const counts = new Map<string, number>();
     physicalProgress.forEach(p => {
-      const date = new Date(p.createdAt);
-      const dateKey = format(startOfDay(date), 'yyyy-MM-dd');
-      counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
+      const dateKey = getDateKey(new Date(p.createdAt));
+      if (dateKey) counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
     });
     return counts;
   }, [physicalProgress]);

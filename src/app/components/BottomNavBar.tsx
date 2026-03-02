@@ -13,7 +13,7 @@ import {
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useUser } from '@/app/contexts/UserContext';
-import { usePreserveDateParam } from '@/app/features/time-machine';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 
 /**
  * ⚡ PERFORMANCE: Mémorisé avec React.memo pour éviter les re-renders inutiles
@@ -22,7 +22,7 @@ import { usePreserveDateParam } from '@/app/features/time-machine';
 export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
-  const preserveDate = usePreserveDateParam();
+  const { preserveDate } = useLayoutContext();
   
   // Ne pas afficher si pas d'utilisateur (page 404, erreurs, etc.)
   if (!effectiveUser || loading) {

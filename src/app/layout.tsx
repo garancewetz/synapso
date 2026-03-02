@@ -5,8 +5,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
-import { LayoutComponents } from "@/app/components/LayoutComponents";
-import { LayoutUtils } from "@/app/components/LayoutUtils";
+import { LayoutComposer } from "@/app/LayoutComposer";
+import { SiteProtection } from "@/app/features/auth";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
@@ -67,7 +67,6 @@ export default function RootLayout({
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
-        <LayoutUtils />
         <QueryProvider>
           <UserProvider>
             <ToastProvider>
@@ -78,10 +77,10 @@ export default function RootLayout({
                   <SelectedDateProvider>
                     <TimeProvider>
                       <DevBanner />
-                      <AuthWrapper>
-                        <LayoutComponents>
+                      <AuthWrapper protectionComponent={SiteProtection}>
+                        <LayoutComposer>
                           {children}
-                        </LayoutComponents>
+                        </LayoutComposer>
                       </AuthWrapper>
                     </TimeProvider>
                   </SelectedDateProvider>

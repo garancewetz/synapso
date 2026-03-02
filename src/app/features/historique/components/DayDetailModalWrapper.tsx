@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
-import { useDayDetailData, DayDetailModal } from '@/app/features/historique';
+import { useDayData, DayDetailModal } from '@/app/features/historique';
 
 const initialStats: Record<ExerciceCategory, number> = {
   UPPER_BODY: 0,
@@ -14,7 +14,7 @@ const initialStats: Record<ExerciceCategory, number> = {
 
 export function DayDetailModalWrapper() {
   const { selectedDay, closeDayDetail } = useDayDetailModal();
-  const { exercises, progressList } = useDayDetailData(selectedDay);
+  const { exercises, progress } = useDayData(selectedDay?.dateKey ?? null);
   
   const categoryStats = useMemo(() => {
     if (!exercises.length) {
@@ -37,7 +37,7 @@ export function DayDetailModalWrapper() {
       onClose={closeDayDetail}
       date={selectedDay?.date || null}
       exercises={exercises}
-      progress={progressList}
+      progress={progress}
       categoryStats={categoryStats}
     />
   );

@@ -128,6 +128,27 @@ test.describe('Exercices', () => {
     await expect(page.getByPlaceholder('Ex: 30 secondes')).toHaveValue(newDuration);
   });
 
+  test('marque un exercice comme fait aujourd\'hui et met à jour l\'affichage', async ({ page }) => {
+    await page.goto('/exercices/upper_body');
+    await page.waitForLoadState('networkidle');
+
+    const firstCard = page.locator('.exercise-card').first();
+    await firstCard.waitFor({ state: 'visible', timeout: 15000 });
+
+    const completeButton = firstCard.getByRole('button', {
+      name: /Marquer comme fait aujourd'hui|Fait aujourd'hui/,
+    }).first();
+    await completeButton.waitFor({ state: 'visible', timeout: 5000 });
+
+    await completeButton.click();
+    await page.waitForLoadState('networkidle');
+
+    const sameButtonAfter = firstCard.getByRole('button', {
+      name: /Démarquer|Fait aujourd'hui/,
+    }).first();
+    await expect(sameButtonAfter).toHaveAttribute('aria-label', /Démarquer/, { timeout: 10000 });
+  });
+
   test('supprime un exercice', async ({ page }) => {
     // Créer d'abord un exercice à supprimer
     await page.goto('/exercice/add');

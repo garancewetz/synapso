@@ -3,7 +3,8 @@
 import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
-import { format, startOfDay, differenceInDays, subDays, isBefore } from 'date-fns';
+import { format, differenceInDays, subDays, isBefore } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 import { useQuery } from '@tanstack/react-query';
 import { WelcomeHeader } from './WelcomeHeader';
 import { useUser } from '@/app/contexts/UserContext';
@@ -76,10 +77,9 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
 
   const progressDates = useMemo(() => {
     return new Set(
-      progressList.map(p => {
-        const date = new Date(p.createdAt);
-        return format(startOfDay(date), 'yyyy-MM-dd');
-      })
+      progressList
+        .map(p => getDateKey(new Date(p.createdAt)))
+        .filter((k): k is string => k != null)
     );
   }, [progressList]);
 

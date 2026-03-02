@@ -80,12 +80,6 @@ export function getDateKey(date: Date | string | null): string | null {
 
   const normalized = startOfDay(dateObj);
   const key = format(normalized, 'yyyy-MM-dd');
-  console.log('[DEBUG-PROD] getDateKey:', {
-    input: date instanceof Date ? date.toISOString() : date,
-    startOfDay: normalized.toISOString(),
-    key,
-    timezoneOffset: new Date().getTimezoneOffset(),
-  });
   return key;
 }
 
@@ -110,11 +104,5 @@ export function getDateFromKey(dateKey: string | null): Date | null {
   // Créer la date depuis la clé et normaliser avec startOfDay pour éviter les problèmes de timezone
   const date = new Date(dateKey + 'T00:00:00');
   const normalized = startOfDay(date);
-  console.log('[DEBUG-PROD] getDateFromKey:', {
-    dateKey,
-    rawDate: date.toISOString(),
-    normalized: normalized.toISOString(),
-    timezoneOffset: new Date().getTimezoneOffset(),
-  });
   return normalized;
 }

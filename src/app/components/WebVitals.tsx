@@ -35,9 +35,10 @@ export function WebVitals() {
           id: metric.id,
         };
         
-        // Afficher avec un emoji selon la performance
-        const emoji = report.rating === 'good' ? '✅' : report.rating === 'needs-improvement' ? '⚠️' : '❌';
-        console.log(`${emoji} [Web Vitals] ${report.name}: ${Math.round(report.value)}ms (${report.rating})`);
+        if (process.env.NODE_ENV === 'development') {
+          const emoji = report.rating === 'good' ? '✅' : report.rating === 'needs-improvement' ? '⚠️' : '❌';
+          console.log(`${emoji} [Web Vitals] ${report.name}: ${Math.round(report.value)}ms (${report.rating})`);
+        }
       }
 
       // ⚡ PRODUCTION: Envoyer les métriques à un service d'analytics si configuré

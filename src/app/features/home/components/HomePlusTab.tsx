@@ -6,12 +6,9 @@ import { BookIcon, MapIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import { usePreserveDateParam } from '@/app/features/time-machine/hooks/usePreserveDateParam';
-import { useUser } from '@/app/contexts/UserContext';
 
 export const HomePlusTab = memo(function HomePlusTab() {
   const preserveDate = usePreserveDateParam();
-  const { effectiveUser } = useUser();
-  const hasJournal = effectiveUser?.hasJournal ?? false;
 
   return (
     <div className="space-y-3">
@@ -31,16 +28,14 @@ export const HomePlusTab = memo(function HomePlusTab() {
         iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
         iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
       />
-      {hasJournal && (
-        <MenuLink
-          title="Journal"
-          icon={<BookIcon className="w-5 h-5" />}
-          description="Mes notes et réflexions"
-          href="/journal"
-          iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
-          iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}
-        />
-      )}
+      <MenuLink
+        title="Journal"
+        icon={<BookIcon className="w-5 h-5" />}
+        description="Mes notes et réflexions"
+        href="/journal"
+        iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
+        iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}
+      />
     </div>
   );
 });

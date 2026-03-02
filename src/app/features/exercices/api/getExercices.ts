@@ -2,7 +2,8 @@ import { prisma } from '@/app/lib/prisma';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, format } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 
 type GetExercicesParams = {
   userId: number;
@@ -23,9 +24,10 @@ export async function getExercices(params: GetExercicesParams) {
     resetFrequency,
   } = params;
 
+  const todayKey = getDateKey(new Date());
   const targetDateObj = targetDate
     ? new Date(targetDate + 'T12:00:00.000Z')
-    : new Date(format(new Date(), 'yyyy-MM-dd') + 'T12:00:00.000Z');
+    : (todayKey ? new Date(todayKey + 'T12:00:00.000Z') : new Date());
 
   const startOfPeriod = getStartOfPeriod(resetFrequency, targetDateObj);
   const endOfPeriod = resetFrequency === 'DAILY'
@@ -95,7 +97,7 @@ export async function getExercices(params: GetExercicesParams) {
     ],
   });
 
-  const targetDateKeyForComparison = format(targetDateObj, 'yyyy-MM-dd');
+  const targetDateKeyForComparison = getDateKey(targetDateObj);
 
   const exerciceIds = exercices.map((e) => e.id);
   const acceptedShares =
@@ -125,7 +127,7 @@ export async function getExercices(params: GetExercicesParams) {
       const completedInPeriod = weeklyCompletions.length > 0;
       
       const hasTargetDayHistory = exercice.history.some((h) => {
-        const completedDateKey = format(startOfDay(h.completedAt), 'yyyy-MM-dd');
+        const completedDateKey = getDateKey(h.completedAt);
         return completedDateKey === targetDateKeyForComparison;
       });
 

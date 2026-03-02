@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/app/contexts/UserContext';
-import { useErrorHandler } from '@/app/hooks/forms/useErrorHandler';
+import { queryKeys } from '@/app/lib/api-queries';
 
 type UseJournalFormOptions<T> = {
   entityId?: number;
@@ -20,10 +21,6 @@ type UseJournalFormReturn<T> = {
   handleDelete: () => Promise<void>;
 };
 
-/**
- * Hook générique pour gérer les formulaires journal (tasks et notes)
- * Centralise la logique de création, mise à jour et suppression
- */
 export function useJournalForm<T>({
   entityId,
   createUrl,
@@ -33,9 +30,15 @@ export function useJournalForm<T>({
   transformToApi,
 }: UseJournalFormOptions<T>): UseJournalFormReturn<T> {
   const { effectiveUser } = useUser();
-  const { error, setError, handleError, clearError } = useErrorHandler();
+  const queryClient = useQueryClient();
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const clearError = useCallback(() => setError(''), []);
+  const handleError = useCallback((err: unknown, defaultMessage: string) => {
+    setError(err instanceof Error ? err.message : defaultMessage);
+  }, []);
 
   const handleSubmit = useCallback(async (formData: T) => {
     if (!effectiveUser) {
@@ -67,6 +70,8 @@ export function useJournalForm<T>({
         throw new Error('Erreur lors de l\'enregistrement');
       }
 
+      await queryClient.invalidateQueries({ queryKey: queryKeys.journalNotes.all });
+
       if (onSuccess) {
         onSuccess();
       }
@@ -75,7 +80,7 @@ export function useJournalForm<T>({
     } finally {
       setLoading(false);
     }
-  }, [entityId, createUrl, updateUrl, effectiveUser, onSuccess, transformToApi, clearError, handleError]);
+  }, [entityId, createUrl, updateUrl, effectiveUser, onSuccess, transformToApi, handleError]);
 
   const handleDelete = useCallback(async () => {
     if (!showDeleteConfirm) {
@@ -102,6 +107,8 @@ export function useJournalForm<T>({
         throw new Error('Erreur lors de la suppression');
       }
 
+      await queryClient.invalidateQueries({ queryKey: queryKeys.journalNotes.all });
+
       if (onSuccess) {
         onSuccess();
       }
@@ -111,7 +118,7 @@ export function useJournalForm<T>({
       setLoading(false);
       setShowDeleteConfirm(false);
     }
-  }, [showDeleteConfirm, deleteUrl, effectiveUser, onSuccess, clearError, handleError]);
+  }, [showDeleteConfirm, deleteUrl, effectiveUser, onSuccess, handleError]);
 
   return {
     loading,

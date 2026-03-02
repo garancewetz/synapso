@@ -1,18 +1,13 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
-import { JournalNoteForm, useJournalCheck } from '@/app/features/journal';
+import { JournalNoteForm } from '@/app/features/journal';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 
 export default function JournalNoteEditPage() {
   const router = useRouter();
   const params = useParams();
-  const { hasAccess } = useJournalCheck();
   const noteId = parseInt(params.id as string);
-
-  if (!hasAccess) {
-    return null;
-  }
 
   const handleSuccess = () => {
     router.push('/journal');

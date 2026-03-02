@@ -12,6 +12,7 @@ import {
   getDay,
   endOfWeek,
 } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 import { fr } from 'date-fns/locale';
 import {
   BODYPART_TO_CATEGORY,
@@ -321,9 +322,9 @@ export function getLast7DaysData(history: HistoryEntry[], referenceDate?: Date):
   }> = {};
   
   history.forEach(entry => {
-    const dateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
+    const dateKey = getDateKey(entry.completedAt);
     
-    if (dateKeys.has(dateKey)) {
+    if (dateKey && dateKeys.has(dateKey)) {
       if (!exercisesByDay[dateKey]) {
         exercisesByDay[dateKey] = {
           count: 0,
@@ -394,10 +395,10 @@ export function getCurrentWeekData(history: HistoryEntry[], referenceDate?: Date
   }> = {};
   
   history.forEach(entry => {
-    const dateKey = format(startOfDay(new Date(entry.completedAt)), 'yyyy-MM-dd');
+    const dateKey = getDateKey(entry.completedAt);
     
     // Vérifier si l'entrée est dans la semaine en cours
-    if (weekDateKeys.has(dateKey)) {
+    if (dateKey && weekDateKeys.has(dateKey)) {
       if (!exercisesByDay[dateKey]) {
         exercisesByDay[dateKey] = {
           count: 0,

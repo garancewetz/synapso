@@ -10,13 +10,12 @@ import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { usePreserveDateParam } from '@/app/features/time-machine';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
-import { usePendingShareCount } from '@/app/features/sharing';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { 
   CATEGORY_ORDER, 
   CATEGORY_HREFS,
@@ -39,9 +38,8 @@ export function NavBar() {
   const { effectiveUser, loading } = useUser();
   const { isOpen, openMenu, closeMenu } = useMenuState();
   const { isLeftHanded } = useHandPreference();
-  const preserveDate = usePreserveDateParam();
+  const { preserveDate, pendingShareCount } = useLayoutContext();
   const { selectedDate, isDateSelected } = useSelectedDate();
-  const { count: pendingShareCount } = usePendingShareCount();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
@@ -54,7 +52,6 @@ export function NavBar() {
   const isHistoriqueActive = pathname === '/historique';
   const isJournalActive = pathname === '/journal' || pathname.startsWith('/journal/');
   const isNotificationsActive = pathname === '/notifications';
-  const hasJournal = effectiveUser?.hasJournal ?? false;
 
   return (
     <>
@@ -166,24 +163,22 @@ export function NavBar() {
               )}
             </TouchLink>
 
-            {/* Journal (si activé pour l'utilisateur) */}
-            {hasJournal && (
-              <TouchLink
-                href={preserveDate('/journal')}
-                className={clsx(
-                  'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                  'hover:bg-gray-50',
-                  isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                )}
-                aria-label="Journal"
-                aria-current={isJournalActive ? 'page' : undefined}
-              >
-                Journal
-                {isJournalActive && (
-                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
-                )}
-              </TouchLink>
-            )}
+            {/* Journal */}
+            <TouchLink
+              href={preserveDate('/journal')}
+              className={clsx(
+                'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                'hover:bg-gray-50',
+                isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+              )}
+              aria-label="Journal"
+              aria-current={isJournalActive ? 'page' : undefined}
+            >
+              Journal
+              {isJournalActive && (
+                <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
+              )}
+            </TouchLink>
 
             {/* Notifications */}
             <TouchLink

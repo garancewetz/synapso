@@ -1,37 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { prisma } from '@/app/lib/prisma';
-import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { getAuthContext } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { CACHE_TAGS } from '@/app/lib/cache';
+import { parseNumericId } from '@/app/lib/api-route-utils';
 import { getExercice, updateExercice, deleteExercice } from '@/app/features/exercices/api';
+
+const DATE_KEY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseTargetDate(dateKeyParam: string | null): Date {
+  if (!dateKeyParam || !DATE_KEY_REGEX.test(dateKeyParam)) {
+    return new Date();
+  }
+  return new Date(dateKeyParam + 'T12:00:00.000Z');
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  const auth = await getAuthContext(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid exercice id' },
-        { status: 400 }
-      );
-    }
-
-    const userId = await getEffectiveUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -40,20 +37,13 @@ export async function GET(
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'Utilisateur non trouvé' },
         { status: 404 }
       );
     }
 
     const { searchParams } = new URL(request.url);
-    const targetDateParam = searchParams.get('targetDate');
-    let targetDate = new Date();
-    if (targetDateParam) {
-      const parsedDate = new Date(targetDateParam);
-      if (!isNaN(parsedDate.getTime())) {
-        targetDate = parsedDate;
-      }
-    }
+    const targetDate = parseTargetDate(searchParams.get('targetDate'));
 
     const exercice = await getExercice({
       exerciceId: id,
@@ -64,15 +54,15 @@ export async function GET(
 
     return NextResponse.json(exercice);
   } catch (error) {
-    if (error instanceof Error && error.message === 'Exercice not found') {
+    if (error instanceof Error && error.message === 'Exercice non trouvé') {
       return NextResponse.json(
-        { error: 'Exercice not found' },
+        { error: 'Exercice non trouvé' },
         { status: 404 }
       );
     }
-    logError('Error fetching exercice', error);
+    logError('Erreur lors de la récupération de l\'exercice', error);
     return NextResponse.json(
-      { error: 'Failed to fetch exercice' },
+      { error: 'Erreur lors de la récupération de l\'exercice' },
       { status: 500 }
     );
   }
@@ -82,28 +72,15 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  const auth = await getAuthContext(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid exercice id' },
-        { status: 400 }
-      );
-    }
-
-    const userId = await getEffectiveUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     const updatedData = await request.json();
 
@@ -116,7 +93,7 @@ export async function PUT(
 
     if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(updatedData.category)) {
       return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
+        { error: 'Catégorie invalide. Valeurs attendues : UPPER_BODY, LOWER_BODY, STRETCHING, CORE' },
         { status: 400 }
       );
     }
@@ -128,7 +105,7 @@ export async function PUT(
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'Utilisateur non trouvé' },
         { status: 404 }
       );
     }
@@ -155,15 +132,15 @@ export async function PUT(
 
     return NextResponse.json(exercice);
   } catch (error) {
-    if (error instanceof Error && error.message === 'Exercice not found') {
+    if (error instanceof Error && error.message === 'Exercice non trouvé') {
       return NextResponse.json(
-        { error: 'Exercice not found' },
+        { error: 'Exercice non trouvé' },
         { status: 404 }
       );
     }
-    logError('Error updating exercice', error);
+    logError('Erreur lors de la mise à jour de l\'exercice', error);
     return NextResponse.json(
-      { error: 'Failed to update exercice' },
+      { error: 'Erreur lors de la mise à jour de l\'exercice' },
       { status: 500 }
     );
   }
@@ -173,28 +150,15 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  const auth = await getAuthContext(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid exercice id' },
-        { status: 400 }
-      );
-    }
-
-    const userId = await getEffectiveUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     await deleteExercice({
       exerciceId: id,
@@ -209,15 +173,15 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof Error && error.message === 'Exercice not found') {
+    if (error instanceof Error && error.message === 'Exercice non trouvé') {
       return NextResponse.json(
-        { error: 'Exercice not found' },
+        { error: 'Exercice non trouvé' },
         { status: 404 }
       );
     }
-    logError('Error deleting exercice', error);
+    logError('Erreur lors de la suppression de l\'exercice', error);
     return NextResponse.json(
-      { error: 'Failed to delete exercice' },
+      { error: 'Erreur lors de la suppression de l\'exercice' },
       { status: 500 }
     );
   }

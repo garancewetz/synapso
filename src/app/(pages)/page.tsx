@@ -101,7 +101,18 @@ export default function Home() {
         <WelcomeHeaderWrapper />
 
         {/* Contenu principal */}
-        <div className="px-3 md:px-6 lg:px-8 pb-12 md:pb-8">
+        <div
+          className="px-3 md:px-6 lg:px-8 pb-12 md:pb-8"
+          aria-live="polite"
+          aria-busy={userLoading}
+          aria-atomic="true"
+        >
+          {userLoading && (
+            <p className="sr-only" role="status">Chargement du tableau de bord en cours.</p>
+          )}
+          {!userLoading && !effectiveUser && (
+            <p className="sr-only" role="status">Impossible de charger votre profil. Utilisez le bouton Réessayer.</p>
+          )}
           <AnimatePresence mode="wait">
             {userLoading ? (
               <MotionDiv

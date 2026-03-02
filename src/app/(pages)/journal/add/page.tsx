@@ -1,12 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { JournalNoteForm, useJournalCheck } from '@/app/features/journal';
+import { JournalNoteForm } from '@/app/features/journal';
 import { FormPageWrapper } from '@/app/components/FormPageWrapper';
 
 export default function JournalNoteAddPage() {
   const router = useRouter();
-  const { hasAccess } = useJournalCheck();
 
   const handleSuccess = () => {
     router.push('/journal');
@@ -15,10 +14,6 @@ export default function JournalNoteAddPage() {
   const handleCancel = () => {
     router.push('/journal');
   };
-
-  if (!hasAccess) {
-    return null;
-  }
 
   return (
     <FormPageWrapper title="Ajouter une note" backHref="/journal">

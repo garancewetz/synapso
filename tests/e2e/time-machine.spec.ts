@@ -49,18 +49,40 @@ test.describe('Mode Sablier (Time Machine)', () => {
   test('devrait activer le mode sablier en cliquant sur un jour passé dans la heatmap', async ({ page }) => {
     // Aller à la page historique
     await timeMachineHelper.goToHistory();
-    
+
     // Attendre que la heatmap soit chargée
     await page.waitForSelector('[role="grid"], .grid', { timeout: 10000 });
-    
+
     // Cliquer sur un jour passé (hier)
     await timeMachineHelper.clickDayInHeatmap(1);
-    
+
     // Vérifier que la modal s'ouvre ou que le mode sablier s'active
-    const modalVisible = await page.locator('[role="dialog"]').isVisible({ timeout: 2000 }).catch(() => false);
+    const modalVisible = await page.locator('[role="dialog"]:not(#main-menu)').isVisible({ timeout: 2000 }).catch(() => false);
     const timeMachineActive = await timeMachineHelper.isTimeMachineModeActive();
-    
+
     expect(modalVisible || timeMachineActive).toBeTruthy();
+  });
+
+  test('ouvre la modal détail du jour au clic sur la heatmap avec date en titre et contenu', async ({ page }) => {
+    await timeMachineHelper.goToHistory();
+    await page.waitForSelector('[role="grid"], .grid', { timeout: 10000 });
+
+    await timeMachineHelper.clickDayInHeatmap(1);
+
+    const modal = page.locator('[role="dialog"]:not(#main-menu)');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    const heading = modal.getByRole('heading', { level: 2 });
+    await expect(heading).toBeVisible();
+    const headingText = await heading.textContent();
+    expect(headingText?.trim().length).toBeGreaterThan(0);
+
+    const hasExercicesSection = await modal.getByText('Exercices faits').isVisible({ timeout: 2000 }).catch(() => false);
+    const hasProgressSection = await modal.getByText('Progrès').isVisible({ timeout: 2000 }).catch(() => false);
+    const hasEmptyMessage = await modal.getByText(/Aucun exercice fait le|Jour de repos/).isVisible({ timeout: 2000 }).catch(() => false);
+    const hasAddButton = await modal.getByRole('button', { name: /Ajouter des exercices pour ce jour|Modifier les exercices pour ce jour/ }).isVisible({ timeout: 2000 }).catch(() => false);
+
+    expect(hasExercicesSection || hasProgressSection || hasEmptyMessage || hasAddButton).toBeTruthy();
   });
 
   test('devrait afficher la bannière du mode sablier après activation', async ({ page }) => {

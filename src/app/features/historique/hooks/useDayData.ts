@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { format, startOfDay } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 import { useHistory } from './useHistory';
 import { useProgress } from '@/app/features/progress';
 import type { ExerciceCategory } from '@/app/types/exercice';
@@ -48,13 +48,13 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
       // Sinon, essayer de parser
       const parsed = new Date(date);
       if (!isNaN(parsed.getTime())) {
-        return format(startOfDay(parsed), 'yyyy-MM-dd');
+        return getDateKey(parsed);
       }
       return null;
     }
     
     // Date object
-    return format(startOfDay(date), 'yyyy-MM-dd');
+    return getDateKey(date);
   }, [date]);
   
   // ⚡ SIMPLICITÉ: Utiliser les hooks existants qui gèrent déjà le cache et la synchronisation
@@ -70,7 +70,7 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
         // Utiliser la même logique de normalisation que getHeatmapData
         // pour éviter les problèmes de fuseau horaire
         const entryDate = new Date(entry.completedAt);
-        const entryDateKey = format(startOfDay(entryDate), 'yyyy-MM-dd');
+        const entryDateKey = getDateKey(entryDate);
         return entryDateKey === dateKey;
       })
       .map(entry => ({
@@ -78,16 +78,6 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
         category: entry.exercice.category!,
         completedAt: entry.completedAt,
       }));
-
-    console.log('[DEBUG-PROD] useDayData → filtrage:', {
-      dateKey,
-      totalHistory: history.length,
-      matchingExercises: filtered.length,
-      sampleEntries: history.slice(0, 3).map(e => ({
-        completedAt: e.completedAt,
-        dateKey: format(startOfDay(new Date(e.completedAt)), 'yyyy-MM-dd'),
-      })),
-    });
 
     return filtered;
   }, [history, dateKey]);
@@ -99,7 +89,7 @@ export function useDayData(date: Date | string | null): UseDayDataReturn {
     return allProgress.filter(p => {
       // Utiliser la même logique de normalisation pour les progrès
       const progressDate = new Date(p.createdAt);
-      const progressDateKey = format(startOfDay(progressDate), 'yyyy-MM-dd');
+      const progressDateKey = getDateKey(progressDate);
       return progressDateKey === dateKey;
     });
   }, [allProgress, dateKey]);

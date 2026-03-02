@@ -1,14 +1,25 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { ConfettiExplosion } from '@/app/features/exercices';
+import type { ComponentType } from 'react';
 
 type Explosion = {
   id: number;
   timestamp: number;
 };
 
-export function InitialLoader() {
+type ConfettiProps = {
+  show?: boolean;
+  centerX?: number;
+  centerY?: number;
+  confettiCount?: number;
+};
+
+type Props = {
+  confettiComponent?: ComponentType<ConfettiProps>;
+};
+
+export function InitialLoader({ confettiComponent: ConfettiComponent }: Props = {}) {
   const [activeExplosions, setActiveExplosions] = useState<Explosion[]>([]);
   const lastClickTime = useRef(0);
   const explosionIdRef = useRef(0);
@@ -40,11 +51,11 @@ export function InitialLoader() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[#F8FAFB] z-[9999]">
       {/* Explosions de confettis - toutes s'accumulent */}
-      {activeExplosions.map((explosion) => (
-        <ConfettiExplosion 
+      {ConfettiComponent && activeExplosions.map((explosion) => (
+        <ConfettiComponent
           key={explosion.id}
-          show={true} 
-          centerX={50} 
+          show
+          centerX={50}
           centerY={50}
           confettiCount={50}
         />

@@ -1,17 +1,11 @@
 'use client';
 
-import { JournalNotesList, useJournalCheck } from '@/app/features/journal';
+import { JournalNotesList } from '@/app/features/journal';
 import { BackButton } from '@/app/components/ui/BackButton';
 import { AddButton } from '@/app/components/ui/AddButton';
 import { JOURNAL_EMOJI } from '@/app/constants/emoji.constants';
 
 export default function JournalPage() {
-  const { hasAccess } = useJournalCheck();
-
-  if (!hasAccess) {
-    return null;
-  }
-
   return (
     <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-4 md:pb-8 px-3 md:px-6 lg:px-8">
       <BackButton className="mb-4" buttonClassName="py-3" />

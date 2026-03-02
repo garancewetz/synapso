@@ -99,6 +99,8 @@ export function BottomSheetModal({
           {/* Bottom Sheet (mobile) / Modal (desktop) */}
           <motion.div
             ref={contentRef}
+            role="dialog"
+            aria-modal="true"
             className={`relative bg-white w-full max-w-lg md:max-w-xl lg:max-w-2xl rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden h-[90vh] md:max-h-[90vh] md:h-auto flex flex-col pb-24 md:pb-0 ${className}`}
             initial={{ y: '100%', scale: 0.95 }}
             animate={{ y: 0, scale: 1 }}

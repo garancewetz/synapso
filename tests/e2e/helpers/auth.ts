@@ -215,7 +215,11 @@ export class AuthHelper {
       console.log(`Login response: ${loginStatus} - ${loginBody.substring(0, 200)}`);
       
       if (loginStatus >= 400) {
-        throw new Error(`Login API returned ${loginStatus}: ${loginBody}`);
+        const hint =
+          loginStatus === 401
+            ? ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".'
+            : '';
+        throw new Error(`Login API returned ${loginStatus}: ${loginBody}.${hint}`);
       }
       
       // Vérifier que la réponse contient success: true

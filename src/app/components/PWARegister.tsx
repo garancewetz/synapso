@@ -11,7 +11,9 @@ export function PWARegister() {
             updateViaCache: 'none' // Toujours vérifier les mises à jour depuis le serveur
           })
           .then((registration) => {
-            console.log('Service Worker enregistré avec succès:', registration.scope);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Service Worker enregistré avec succès:', registration.scope);
+            }
 
             // Vérifier les mises à jour toutes les heures
             setInterval(() => {
@@ -25,8 +27,9 @@ export function PWARegister() {
               if (newWorker) {
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Nouveau service worker installé, recharger la page
-                    console.log('Nouvelle version disponible, rechargement...');
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('Nouvelle version disponible, rechargement...');
+                    }
                     window.location.reload();
                   }
                 });
@@ -34,7 +37,9 @@ export function PWARegister() {
             });
           })
           .catch((error) => {
-            console.log('Erreur lors de l\'enregistrement du Service Worker:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Erreur lors de l\'enregistrement du Service Worker:', error);
+            }
           });
       };
 
@@ -48,8 +53,9 @@ export function PWARegister() {
       // Écouter les messages du service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'SW_UPDATED') {
-          console.log('Service Worker mis à jour, rechargement...');
-          // Recharger automatiquement la page
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Service Worker mis à jour, rechargement...');
+          }
           window.location.reload();
         }
       });

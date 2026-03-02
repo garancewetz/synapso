@@ -75,3 +75,56 @@ export async function getHistory(params: GetHistoryParams): Promise<HistoryEntry
 
   return history as HistoryEntry[];
 }
+
+export type FormattedHistoryEntry = {
+  id: number;
+  completedAt: Date;
+  exercice: {
+    id: number;
+    name: string;
+    category: ExerciceCategory;
+    description: { text: string; comment: string | null };
+    workout: {
+      repeat: string | null;
+      series: string | null;
+      duration: string | null;
+    };
+    equipments: string[];
+    bodyparts: Array<{ id: number; name: string }>;
+  };
+};
+
+function parseEquipments(equipments: string): string[] {
+  try {
+    const parsed = JSON.parse(equipments || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function formatHistoryForApi(history: HistoryEntry[]): FormattedHistoryEntry[] {
+  return history.map((entry) => ({
+    id: entry.id,
+    completedAt: entry.completedAt,
+    exercice: {
+      id: entry.exercice.id,
+      name: entry.exercice.name,
+      category: entry.exercice.category,
+      description: {
+        text: entry.exercice.descriptionText,
+        comment: entry.exercice.descriptionComment,
+      },
+      workout: {
+        repeat: entry.exercice.workoutRepeat,
+        series: entry.exercice.workoutSeries,
+        duration: entry.exercice.workoutDuration,
+      },
+      equipments: parseEquipments(entry.exercice.equipments),
+      bodyparts: entry.exercice.bodyparts.map((eb) => ({
+        id: eb.bodypart.id,
+        name: eb.bodypart.name,
+      })),
+    },
+  }));
+}

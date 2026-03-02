@@ -1,290 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/app/contexts/UserContext';
-import { useUserNameValidation } from '@/app/hooks/useUserNameValidation';
-
-import { Button } from '@/app/components/ui/Button';
-import { Input } from '@/app/components/ui/Input';
-import { ErrorMessage } from '@/app/components/ErrorMessage';
-import { Loader } from '@/app/components/ui/Loader';
-import { ToggleButtonGroup } from '@/app/components/ui/ToggleButtonGroup';
 import { BackButton } from '@/app/components/ui/BackButton';
-import { Card } from '@/app/components/ui/Card';
-
-type ResetFrequency = 'DAILY' | 'WEEKLY';
-type DominantHand = 'LEFT' | 'RIGHT';
+import { Loader } from '@/app/components/ui/Loader';
+import { SettingsProfilSection } from './SettingsProfilSection';
+import { SettingsPasswordSection } from './SettingsPasswordSection';
+import { SettingsSessionSection } from './SettingsSessionSection';
+import { useSettingsPage } from './useSettingsPage';
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const { effectiveUser, currentUser, isAdmin, updateEffectiveUser, logout, deleteAccount } = useUser();
-  
-  // Déterminer quel utilisateur on modifie (effectiveUser pour admin en mode impersonation)
-  const userToEdit = effectiveUser;
-  const isImpersonating = isAdmin && effectiveUser && currentUser && effectiveUser.id !== currentUser.id;
-  
-  const { validateName } = useUserNameValidation({ currentUserId: userToEdit?.id });
-  
-  // Pré-remplir avec le nom de l'utilisateur effectif immédiatement
-  const [name, setName] = useState(userToEdit?.name || '');
-  const [resetFrequency, setResetFrequency] = useState<ResetFrequency>(
-    (userToEdit?.resetFrequency as ResetFrequency) || 'DAILY'
-  );
-  const [dominantHand, setDominantHand] = useState<DominantHand>(
-    (userToEdit?.dominantHand as DominantHand) || 'RIGHT'
-  );
-  const [hasJournal, setHasJournal] = useState<boolean>(
-    userToEdit?.hasJournal ?? false
-  );
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  // État pour le changement de mot de passe
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  
-  // Valeurs initiales pour détecter les changements
-  const [initialValues, setInitialValues] = useState<{
-    name: string;
-    resetFrequency: ResetFrequency;
-    dominantHand: DominantHand;
-    hasJournal: boolean;
-  } | null>(null);
-
-  useEffect(() => {
-    if (userToEdit) {
-      // Utiliser directement les données du contexte (déjà chargées depuis l'API)
-      const loadedName = userToEdit.name || '';
-      const loadedResetFrequency = (userToEdit.resetFrequency as ResetFrequency) || 'DAILY';
-      const loadedDominantHand = (userToEdit.dominantHand as DominantHand) || 'RIGHT';
-      const loadedHasJournal = userToEdit.hasJournal ?? false;
-      
-      setName(loadedName);
-      setResetFrequency(loadedResetFrequency);
-      setDominantHand(loadedDominantHand);
-      setHasJournal(loadedHasJournal);
-      
-      // Sauvegarder les valeurs initiales
-      setInitialValues({
-        name: loadedName,
-        resetFrequency: loadedResetFrequency,
-        dominantHand: loadedDominantHand,
-        hasJournal: loadedHasJournal,
-      });
-      
-      setInitialLoading(false);
-    }
-  }, [userToEdit]);
-  
-  // Détecter si des changements ont été faits
-  const hasUnsavedChanges = initialValues && (
-    name !== initialValues.name ||
-    resetFrequency !== initialValues.resetFrequency ||
-    dominantHand !== initialValues.dominantHand ||
-    hasJournal !== initialValues.hasJournal
-  );
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userToEdit) {
-      setError('Utilisateur non défini');
-      return;
-    }
-
-    // Validation du nom (sans espaces, longueur, etc.)
-    const nameError = validateName(name);
-    if (nameError) {
-      setError(nameError);
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setSuccess(false);
-
-    try {
-      const response = await fetch(`/api/users/${userToEdit.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ name, resetFrequency, dominantHand, hasJournal }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la mise à jour');
-      }
-
-      const updatedUser = await response.json();
-      
-      // Met à jour l'utilisateur effectif dans le contexte
-      updateEffectiveUser(updatedUser);
-      
-      // Mettre à jour les valeurs initiales après sauvegarde
-      setInitialValues({
-        name: updatedUser.name || '',
-        resetFrequency: (updatedUser.resetFrequency as ResetFrequency) || 'DAILY',
-        dominantHand: (updatedUser.dominantHand as DominantHand) || 'RIGHT',
-        hasJournal: updatedUser.hasJournal ?? false,
-      });
-      
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
-    } catch (err) {
-      console.error('Erreur:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour du profil');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (loggingOut) return;
-    
-    const shouldLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
-    if (!shouldLogout) return;
-    
-    setLoggingOut(true);
-    try {
-      await logout();
-      router.push('/');
-    } catch (err) {
-      console.error('Erreur lors de la déconnexion:', err);
-      setError('Erreur lors de la déconnexion');
-      setLoggingOut(false);
-    }
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userToEdit) return;
-
-    setChangingPassword(true);
-    setPasswordError('');
-    setPasswordSuccess(false);
-
-    // Validation côté client
-    if (!currentPassword) {
-      setPasswordError('Le mot de passe actuel est obligatoire');
-      setChangingPassword(false);
-      return;
-    }
-
-    if (!newPassword) {
-      setPasswordError('Le nouveau mot de passe est obligatoire');
-      setChangingPassword(false);
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setPasswordError('Le nouveau mot de passe doit contenir au moins 8 caractères');
-      setChangingPassword(false);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Les nouveaux mots de passe ne correspondent pas');
-      setChangingPassword(false);
-      return;
-    }
-
-    if (currentPassword === newPassword) {
-      setPasswordError('Le nouveau mot de passe doit être différent de l\'ancien');
-      setChangingPassword(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/users/${userToEdit.id}/password`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la modification du mot de passe');
-      }
-
-      // Réinitialiser les champs
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowChangePassword(false);
-      setPasswordSuccess(true);
-      
-      setTimeout(() => {
-        setPasswordSuccess(false);
-      }, 3000);
-    } catch (err) {
-      console.error('Erreur:', err);
-      setPasswordError(err instanceof Error ? err.message : 'Erreur lors de la modification du mot de passe');
-    } finally {
-      setChangingPassword(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!userToEdit || isDeleting) return;
-
-    // Première confirmation
-    const firstConfirm = window.confirm(
-      `⚠️ Attention : Cette action est irréversible !\n\n` +
-      `Toutes vos données seront définitivement supprimées :\n` +
-      `- Vos exercices\n` +
-      `- Votre historique de progression\n` +
-      `- Vos progrès et victoires\n` +
-      `- Vos notes du journal\n` +
-      `- Vos exercices d'orthophonie\n\n` +
-      `Êtes-vous absolument sûr de vouloir supprimer votre compte ?`
-    );
-
-    if (!firstConfirm) return;
-
-    // Double confirmation : demander le nom
-    const confirmName = window.prompt(
-      `Pour confirmer, veuillez taper votre nom exactement comme il apparaît : "${userToEdit.name}"`
-    );
-
-    if (confirmName !== userToEdit.name) {
-      setError('Le nom ne correspond pas. Suppression annulée.');
-      return;
-    }
-
-    setIsDeleting(true);
-    setError('');
-
-    try {
-      await deleteAccount(userToEdit.id);
-      // La redirection sera gérée par le contexte après déconnexion
-      router.push('/');
-    } catch (err) {
-      console.error('Erreur lors de la suppression:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression du compte');
-      setIsDeleting(false);
-    }
-  };
+  const {
+    userToEdit,
+    isImpersonating,
+    initialLoading,
+    name,
+    setName,
+    resetFrequency,
+    setResetFrequency,
+    dominantHand,
+    setDominantHand,
+    hasUnsavedChanges,
+    loading,
+    error,
+    success,
+    handleSubmit,
+    handleCancel,
+    showChangePassword,
+    setShowChangePassword,
+    currentPassword,
+    setCurrentPassword,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    showPasswords,
+    setShowPasswords,
+    changingPassword,
+    passwordError,
+    setPasswordError,
+    passwordSuccess,
+    handleChangePassword,
+    handleLogout,
+    handleDeleteAccount,
+    loggingOut,
+    isDeleting,
+  } = useSettingsPage();
 
   if (initialLoading) {
     return (
@@ -309,13 +68,9 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-10 md:pb-8 px-3 md:px-6 lg:px-8">
       <div className="sm:px-6">
-        {/* Bouton retour */}
         <BackButton className="mb-4" buttonClassName="py-3" />
-
-        {/* Titre */}
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Mon profil</h1>
-        
-        {/* Avertissement admin si impersonation */}
+
         {isImpersonating && (
           <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="text-purple-700 text-sm font-medium flex items-center gap-2">
@@ -324,341 +79,51 @@ export default function SettingsPage() {
             </p>
           </div>
         )}
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <ErrorMessage message={error} />
-          
-          {hasUnsavedChanges && !success && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
-                <span>⚠️</span>
-                <span>N&apos;oubliez pas d&apos;enregistrer vos changements</span>
-              </p>
-            </div>
-          )}
 
-          {/* Section Nom */}
-          <Card variant="default" padding="md">
-            <Input
-              label="Nom de l'utilisateur"
-              type="text"
-              required
-              placeholder="Ex: Calypso"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-            />
-          </Card>
+        <SettingsProfilSection
+          name={name}
+          setName={setName}
+          resetFrequency={resetFrequency}
+          setResetFrequency={setResetFrequency}
+          dominantHand={dominantHand}
+          setDominantHand={setDominantHand}
+          hasUnsavedChanges={hasUnsavedChanges}
+          loading={loading}
+          error={error}
+          success={success}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
 
-          {/* Section Préférence de main */}
-          <Card variant="default" padding="md">
-            <label className="block text-base font-semibold text-gray-800 mb-2">
-              Préférence de main
-            </label>
-            <p className="text-sm text-gray-500 mb-4">
-              Choisissez votre préférence de main pour positionner les boutons principaux (menu, victoire, etc.) du bon côté
-            </p>
-            
-            <ToggleButtonGroup
-              options={[
-                { value: 'LEFT', label: 'Gauche', icon: '🤚' },
-                { value: 'RIGHT', label: 'Droite', icon: '✋' },
-              ]}
-              value={dominantHand}
-              onChange={(value) => setDominantHand(value as DominantHand)}
-              activeColor="amber"
-            />
-          </Card>
-
-          {/* Section Journal */}
-          <Card variant="default" padding="md">
-            <label className="block text-base font-semibold text-gray-800 mb-2">
-              Journal
-            </label>
-            <p className="text-sm text-gray-500 mb-4">
-              Activez cette option si vous souhaitez accéder au journal pour suivre vos tâches et notes
-            </p>
-            
-            <ToggleButtonGroup
-              options={[
-                { value: true, label: 'Oui', icon: '✓' },
-                { value: false, label: 'Non', icon: '✗' },
-              ]}
-              value={hasJournal}
-              onChange={(value) => setHasJournal(value as boolean)}
-              activeColor="purple"
-            />
-          </Card>
-
-          {/* Section Réinitialisation */}
-          <Card variant="default" padding="md">
-            <label className="block text-base font-semibold text-gray-800 mb-2">
-              Réinitialisation des exercices
-            </label>
-            <p className="text-sm text-gray-500 mb-4">
-              Choisissez la fréquence de réinitialisation des exercices complétés
-            </p>
-            
-            <ToggleButtonGroup
-              options={[
-                { value: 'DAILY', label: 'Tous les jours' },
-                { value: 'WEEKLY', label: 'Une fois par semaine' },
-              ]}
-              value={resetFrequency}
-              onChange={(value) => setResetFrequency(value as ResetFrequency)}
-              activeColor="amber"
-            />
-            <div className="mt-3 text-sm text-gray-500 space-y-1">
-              {resetFrequency === 'DAILY' && (
-                <p>Les exercices complétés sont réinitialisés chaque jour à minuit</p>
-              )}
-              {resetFrequency === 'WEEKLY' && (
-                <p>Les exercices complétés sont réinitialisés chaque lundi à minuit</p>
-              )}
-            </div>
-          </Card>
-
-          {success && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <p className="text-emerald-700 text-sm font-medium">
-                ✓ Profil enregistré avec succès
-              </p>
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              disabled={loading}
-              className={`flex-1 ${hasUnsavedChanges ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
-            >
-              {loading ? (
-                <>
-                  <Loader size="small" />
-                  <span>Enregistrement...</span>
-                </>
-              ) : (
-                'Enregistrer mon profil'
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                if (hasUnsavedChanges) {
-                  const shouldLeave = window.confirm('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?');
-                  if (shouldLeave) {
-                    router.push('/');
-                  }
-                } else {
-                  router.push('/');
-                }
-              }}
-              disabled={loading}
-            >
-              {hasUnsavedChanges ? 'Quitter' : 'Annuler'}
-            </Button>
-          </div>
-        </form>
-
-
-        {/* Section Changement de mot de passe (uniquement si pas en mode impersonation) */}
         {!isImpersonating && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Sécurité</h2>
-            
-            {passwordSuccess && (
-              <div className="p-4 mb-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <p className="text-emerald-700 text-sm font-medium">
-                  ✓ Mot de passe modifié avec succès
-                </p>
-              </div>
-            )}
-
-            {!showChangePassword ? (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setShowChangePassword(true)}
-                disabled={changingPassword}
-                className="w-full sm:w-auto"
-              >
-                <span>🔒</span>
-                <span>Changer mon mot de passe</span>
-              </Button>
-            ) : (
-              <Card variant="default" padding="md">
-                <form onSubmit={handleChangePassword} className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-semibold text-gray-800">Changer mon mot de passe</h3>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowChangePassword(false);
-                      setCurrentPassword('');
-                      setNewPassword('');
-                      setConfirmPassword('');
-                      setPasswordError('');
-                    }}
-                    className="text-gray-400 hover:text-gray-600 text-xl cursor-pointer"
-                    aria-label="Fermer"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {passwordError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-700 text-sm">{passwordError}</p>
-                  </div>
-                )}
-
-                <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Mot de passe actuel
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="currentPassword"
-                      type={showPasswords ? 'text' : 'password'}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Entrez votre mot de passe actuel"
-                      disabled={changingPassword}
-                      required
-                      autoComplete="current-password"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswords(!showPasswords)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
-                      aria-label={showPasswords ? 'Masquer les mots de passe' : 'Afficher les mots de passe'}
-                    >
-                      {showPasswords ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nouveau mot de passe
-                  </label>
-                  <input
-                    id="newPassword"
-                    type={showPasswords ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 8 caractères"
-                    disabled={changingPassword}
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Le mot de passe doit contenir au moins 8 caractères</p>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmer le nouveau mot de passe
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type={showPasswords ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirmez votre nouveau mot de passe"
-                    disabled={changingPassword}
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all disabled:bg-gray-50 disabled:text-gray-400"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="submit"
-                    disabled={changingPassword}
-                    className="flex-1"
-                  >
-                    {changingPassword ? (
-                      <>
-                        <Loader size="small" />
-                        <span>Modification...</span>
-                      </>
-                    ) : (
-                      'Modifier le mot de passe'
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      setShowChangePassword(false);
-                      setCurrentPassword('');
-                      setNewPassword('');
-                      setConfirmPassword('');
-                      setPasswordError('');
-                    }}
-                    disabled={changingPassword}
-                  >
-                    Annuler
-                  </Button>
-                </div>
-              </form>
-              </Card>
-            )}
-          </div>
+          <SettingsPasswordSection
+            showChangePassword={showChangePassword}
+            setShowChangePassword={setShowChangePassword}
+            currentPassword={currentPassword}
+            setCurrentPassword={setCurrentPassword}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            showPasswords={showPasswords}
+            setShowPasswords={setShowPasswords}
+            changingPassword={changingPassword}
+            passwordError={passwordError}
+            setPasswordError={setPasswordError}
+            passwordSuccess={passwordSuccess}
+            onChangePassword={handleChangePassword}
+          />
         )}
 
-        {/* Section Déconnexion (uniquement si pas en mode impersonation) */}
         {!isImpersonating && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Session</h2>
-            <div className="flex flex-col gap-3">
-              <Button
-                type="button"
-                variant="danger-outline"
-                onClick={handleLogout}
-                disabled={loggingOut || isDeleting}
-                className="w-full sm:w-auto"
-              >
-                {loggingOut ? (
-                  <>
-                    <Loader size="small" />
-                    <span>Déconnexion...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>👋</span>
-                    <span>Se déconnecter</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={handleDeleteAccount}
-                disabled={isDeleting || loggingOut}
-                className="w-full sm:w-auto"
-                aria-label="Supprimer mon compte"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader size="small" />
-                    <span>Suppression...</span>
-                  </>
-                ) : (
-                  <span>Supprimer mon compte</span>
-                )}
-              </Button>
-            </div>
-          </div>
+          <SettingsSessionSection
+            onLogout={handleLogout}
+            onDeleteAccount={handleDeleteAccount}
+            loggingOut={loggingOut}
+            isDeleting={isDeleting}
+          />
         )}
       </div>
-
     </div>
   );
 }

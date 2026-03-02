@@ -26,7 +26,6 @@ export { useArchiveExercice } from './hooks/useArchiveExercice';
 export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 export { useExerciceStatusFilter } from './hooks/useExerciceStatusFilter';
 export { useCategoryFilters } from './hooks/useCategoryFilters';
-export { useCategoryActiveFiltersBarHandlers } from './hooks/useCategoryActiveFiltersBarHandlers';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
 export { useRelatedStretchingByCategory } from './hooks/useRelatedStretchingByCategory';

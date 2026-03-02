@@ -86,21 +86,6 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     return () => clearTimeout(timeoutId);
   }, [referenceDateKey, effectiveUser, refetch]);
 
-  useEffect(() => {
-    if (exercices.length > 0 || !isLoading) {
-      console.log('[EXERCICES] 📋 Exercices récupérés:', {
-        count: exercices.length,
-        targetDate: filters.targetDate,
-        exercices: exercices.map(ex => ({
-          id: ex.id,
-          name: ex.name,
-          completed: ex.completed,
-          completedToday: ex.completedToday,
-        })),
-      });
-    }
-  }, [exercices, filters.targetDate, isLoading]);
-
   // ⚡ OPTIMISTIC UPDATE: Mettre à jour le cache localement pour une UI réactive
   const updateExercice = useCallback((updatedExercice: Exercice) => {
     queryClient.setQueryData<Exercice[]>(

@@ -22,8 +22,6 @@ export { ViewAllLink } from './ViewAllLink';
 export { AddButton } from './AddButton';
 export { Card } from './Card';
 export { BaseCard } from './BaseCard';
-export { DotMenu } from './DotMenu';
-export { DotMenuBottomSheet } from './DotMenuBottomSheet';
 export { WeeklyCompletionIndicator } from './WeeklyCompletionIndicator';
 export { ProgressButton } from './ProgressButton';
 export { BackButton } from './BackButton';

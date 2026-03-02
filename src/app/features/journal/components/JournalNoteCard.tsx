@@ -84,7 +84,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
       <BaseCard
         role={isTruncated ? 'button' : 'article'}
         tabIndex={isTruncated ? 0 : undefined}
-        aria-label={`Note: ${note.title}`}
+        ariaLabel={`Note: ${note.title}`}
         ariaExpanded={isTruncated ? isExpanded : undefined}
         onClick={isTruncated ? toggleExpand : undefined}
         onKeyDown={isTruncated ? handleKeyDown : undefined}

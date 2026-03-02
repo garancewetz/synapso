@@ -1,6 +1,7 @@
 import { prisma } from '@/app/lib/prisma';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, format } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
+import { getDateKey } from '@/app/utils/date.utils';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
@@ -21,12 +22,13 @@ export async function getCategoryStats(params: GetCategoryStatsParams) {
     } else {
       const parsedDate = new Date(targetDate);
       if (!isNaN(parsedDate.getTime())) {
-        targetDateObj = new Date(format(startOfDay(parsedDate), 'yyyy-MM-dd') + 'T12:00:00.000Z');
+        const key = getDateKey(parsedDate);
+        if (key) targetDateObj = new Date(key + 'T12:00:00.000Z');
       }
     }
   } else {
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
-    targetDateObj = new Date(todayKey + 'T12:00:00.000Z');
+    const todayKey = getDateKey(new Date());
+    if (todayKey) targetDateObj = new Date(todayKey + 'T12:00:00.000Z');
   }
 
   const now = targetDateObj;

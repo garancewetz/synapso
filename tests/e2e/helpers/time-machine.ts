@@ -42,9 +42,9 @@ export class TimeMachineHelper {
     await this.goToHistory();
     await this.page.waitForSelector('[role="grid"], .grid', { timeout: 10000 });
     await this.clickDayInHeatmap(daysAgo);
-    const modal = this.page.locator('[role="dialog"]');
+    const modal = this.page.locator('[role="dialog"]:not(#main-menu)');
     await modal.waitFor({ state: 'visible', timeout: 5000 });
-    const activateButton = this.page.getByRole('button', {
+    const activateButton = modal.getByRole('button', {
       name: /Ajouter des exercices pour ce jour|Modifier les exercices pour ce jour/,
     }).first();
     await activateButton.click({ timeout: 5000 });

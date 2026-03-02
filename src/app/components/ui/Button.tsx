@@ -36,9 +36,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   activeClassName = 'bg-red-50 text-red-600 border-red-200',
   ...props
 }, ref) {
-  // Styles pour iconOnly (ancien IconButton)
+  // Styles pour iconOnly (ancien IconButton) — zone tactile ≥ 44px (WCAG / Apple HIG)
   if (iconOnly) {
-    const baseStyles = 'flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 ease-out border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 active:scale-[0.97]';
+    const baseStyles = 'flex items-center justify-center min-h-[44px] min-w-[44px] h-11 w-11 rounded-lg transition-all duration-200 ease-out border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 active:scale-[0.97]';
     const inactiveStyles = 'bg-white text-gray-500 border-gray-200 md:hover:border-gray-300 md:hover:text-gray-700 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
     
     return (

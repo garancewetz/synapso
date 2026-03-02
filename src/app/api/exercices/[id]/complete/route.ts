@@ -47,7 +47,6 @@ export async function PATCH(
       resetFrequency,
     });
 
-    console.log('[API-COMPLETE] ✅', result.completed ? 'COMPLÉTÉ' : 'DÉCOMPLÉTÉ', { exerciceId: id, result });
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Error && error.message === 'Exercice non trouvé') {

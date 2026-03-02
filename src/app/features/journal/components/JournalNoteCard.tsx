@@ -3,9 +3,11 @@
 import { useState, useRef, useLayoutEffect, memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { format } from 'date-fns';
 import type { JournalNote } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
@@ -27,6 +29,8 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
   const descriptionRef = useRef<HTMLDivElement>(null);
   const fullHeightRef = useRef(0);
   const { effectiveUser } = useUser();
+  const { referenceDateKey } = useTimeContext();
+  const targetDateKey = referenceDateKey ?? format(new Date(), 'yyyy-MM-dd');
 
   // Mesurer la hauteur complète et détecter la troncature
   // Seulement au montage et quand la description change (pas quand isExpanded change,
@@ -47,11 +51,21 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
 
   const { handleShare } = useShareJournalNote(note);
 
-  const { handleValidate, isValidating } = useValidateJournalNote({
+  const { handleValidateOrUnvalidate, isValidating, isValidatedForReferenceDay } = useValidateJournalNote({
     note,
     userId: effectiveUser?.id ?? 0,
+    targetDateKey,
+    resetFrequency: effectiveUser?.resetFrequency ?? 'DAILY',
     onCompleted: onUpdated,
   });
+
+  const hasExercices = note.exercices && note.exercices.length > 0;
+  const exerciceCount = note.exercices?.length ?? 0;
+  const validateAriaLabel = hasExercices
+    ? `Valider l'entrée et marquer les ${exerciceCount} exercice${exerciceCount > 1 ? 's' : ''} comme faits`
+    : "Valider l'entrée";
+  const buttonLabel = isValidatedForReferenceDay ? 'Dévalider' : 'Valider';
+  const buttonAriaLabel = isValidatedForReferenceDay ? "Dévalider l'entrée" : validateAriaLabel;
 
   const handleEdit = useCallback(() => {
     setIsActionsOpen(false);
@@ -84,7 +98,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
       <BaseCard
         role={isTruncated ? 'button' : 'article'}
         tabIndex={isTruncated ? 0 : undefined}
-        aria-label={`Note: ${note.title}`}
+        ariaLabel={`Entrée : ${note.title}`}
         ariaExpanded={isTruncated ? isExpanded : undefined}
         onClick={isTruncated ? toggleExpand : undefined}
         onKeyDown={isTruncated ? handleKeyDown : undefined}
@@ -99,7 +113,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
                 {note.pinned && (
                   <BookmarkIcon className="w-4 h-4 text-amber-500" filled />
                 )}
-                {note.validated && (
+                {isValidatedForReferenceDay && (
                   <Badge className="bg-emerald-100 text-emerald-700 text-xs">
                     Validé
                   </Badge>
@@ -111,7 +125,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
               <div className="mt-3">
                 <Image
                   src={note.media[0].url}
-                  alt={`Image de la note "${note.title}"`}
+                  alt={`Image de l'entrée "${note.title}"`}
                   width={400}
                   height={300}
                   className="w-full h-48 object-cover rounded-lg"
@@ -125,7 +139,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
                   title="Exercices liés"
                   titleId="journal-note-exercices-label"
                   titleClassName="text-xs text-gray-500 font-medium mb-1.5"
-                  ariaLabel="Liste des exercices liés à cette note"
+                  ariaLabel="Liste des exercices liés à cette entrée"
                   items={note.exercices.map((ex) => {
                     const cat = ex.category as ExerciceCategory;
                     const colors = CATEGORY_COLORS[cat];
@@ -188,10 +202,11 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
 
               <button
                 type="button"
-                onClick={handleValidate}
+                onClick={handleValidateOrUnvalidate}
                 disabled={isValidating}
+                aria-label={buttonAriaLabel}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all min-h-[44px] ${
-                  note.validated
+                  isValidatedForReferenceDay
                     ? 'bg-emerald-500 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 } disabled:opacity-50 disabled:pointer-events-none`}
@@ -201,7 +216,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
                 ) : (
                   <CheckIcon className="w-4 h-4" />
                 )}
-                <span>{note.validated ? 'Validé' : 'Valider'}</span>
+                <span>{isValidatedForReferenceDay ? 'Dévalider' : 'Valider'}</span>
               </button>
             </BaseCard.Footer>
 

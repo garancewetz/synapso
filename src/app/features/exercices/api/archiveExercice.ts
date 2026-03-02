@@ -22,7 +22,7 @@ export async function archiveExercice(params: ArchiveExerciceParams) {
   });
 
   if (!existingExercice) {
-    throw new Error('Exercice not found');
+    throw new Error('Exercice non trouvé');
   }
 
   const now = new Date();

@@ -17,7 +17,7 @@ export async function deleteExercice(params: DeleteExerciceParams) {
   });
 
   if (!existingExercice) {
-    throw new Error('Exercice not found');
+    throw new Error('Exercice non trouvé');
   }
 
   if (existingExercice.media) {

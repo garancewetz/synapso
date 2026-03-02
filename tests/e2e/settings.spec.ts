@@ -31,4 +31,72 @@ test.describe('Paramètres', () => {
       timeout: 5000,
     });
   });
+
+  test('change le mot de passe et affiche le message de succès', async ({ page }) => {
+    const newPassword = 'NouveauMotDePasseE2E123';
+    let needRevert = false;
+    let userId: number | null = null;
+
+    // Récupérer l'ID utilisateur pour le revert API
+    const checkRes = await page.request.get('/api/auth/check');
+    const checkData = await checkRes.json();
+    userId = checkData.user?.id ?? null;
+
+    try {
+      await page.goto('/settings');
+      await page.waitForLoadState('networkidle');
+
+      await page.getByRole('button', { name: 'Changer mon mot de passe' }).click();
+      await expect(page.getByRole('heading', { name: 'Changer mon mot de passe' })).toBeVisible({
+        timeout: 5000,
+      });
+
+      await page.getByLabel('Mot de passe actuel').fill(TEST_USER.password);
+      await page.getByLabel(/^Nouveau mot de passe/).fill(newPassword);
+      await page.getByLabel('Confirmer le nouveau mot de passe').fill(newPassword);
+
+      const patchPromise = page.waitForResponse(
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        { timeout: 15000 }
+      );
+      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
+      await patchPromise;
+
+      await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
+        timeout: 5000,
+      });
+      needRevert = true;
+
+      await page.getByRole('button', { name: 'Changer mon mot de passe' }).click();
+      await page.getByLabel('Mot de passe actuel').fill(newPassword);
+      await page.getByLabel(/^Nouveau mot de passe/).fill(TEST_USER.password);
+      await page.getByLabel('Confirmer le nouveau mot de passe').fill(TEST_USER.password);
+
+      const patchPromise2 = page.waitForResponse(
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        { timeout: 15000 }
+      );
+      await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
+      await patchPromise2;
+
+      await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
+        timeout: 5000,
+      });
+      needRevert = false;
+    } finally {
+      // Revert via appel API direct (beaucoup plus fiable que via l'UI)
+      if (needRevert && userId) {
+        try {
+          const res = await page.request.patch(`/api/users/${userId}/password`, {
+            data: { currentPassword: newPassword, newPassword: TEST_USER.password },
+          });
+          if (!res.ok()) {
+            console.error(`Revert password API failed: ${res.status()} ${await res.text()}`);
+          }
+        } catch (e) {
+          console.error('Revert password failed:', e);
+        }
+      }
+    }
+  });
 });

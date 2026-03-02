@@ -228,15 +228,35 @@ export async function requireAuth(request: NextRequest): Promise<NextResponse | 
 export async function requireAdmin(request: NextRequest): Promise<NextResponse | null> {
   const authError = await requireAuth(request);
   if (authError) return authError;
-  
+
   const adminStatus = await isAdmin(request);
-  
+
   if (!adminStatus) {
     return NextResponse.json(
       { error: 'Accès refusé. Droits administrateur requis.' },
       { status: 403 }
     );
   }
-  
+
   return null;
+}
+
+/**
+ * Contexte d'authentification pour les routes API.
+ * Retourne { userId } si authentifié, sinon une NextResponse 401.
+ */
+export async function getAuthContext(
+  request: NextRequest
+): Promise<{ userId: number } | NextResponse> {
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
+  const userId = await getEffectiveUserId(request);
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'Utilisateur non authentifié' },
+      { status: 401 }
+    );
+  }
+  return { userId };
 }

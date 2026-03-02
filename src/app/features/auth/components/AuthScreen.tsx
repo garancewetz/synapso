@@ -8,6 +8,7 @@ import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
 import { UserSetup } from './UserSetup';
 import { InitialLoader } from '@/app/components/InitialLoader';
+import { ConfettiExplosion } from '@/app/features/exercices';
 import { useUserNameValidation } from '@/app/hooks/useUserNameValidation';
 
 type Props = {
@@ -140,7 +141,7 @@ export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
 
   // Si on est en train d'authentifier (login), afficher le loader
   if (isAuthenticating) {
-    return <InitialLoader />;
+    return <InitialLoader confettiComponent={ConfettiExplosion} />;
   }
 
   // Si UserSetup est affiché, rendre UserSetup directement

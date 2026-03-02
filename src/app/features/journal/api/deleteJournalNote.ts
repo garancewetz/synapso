@@ -16,7 +16,7 @@ export async function deleteJournalNote(params: DeleteJournalNoteParams) {
   });
 
   if (!existingNote) {
-    throw new Error('Journal note not found');
+    throw new Error('Note de journal non trouvée');
   }
 
   await prisma.journalNote.delete({

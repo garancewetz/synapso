@@ -12,6 +12,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:time-machine": "playwright test tests/e2e/time-machine.spec.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -47,19 +49,20 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.1.0",
-    "dotenv": "16.4.5",
     "@playwright/test": "^1.51.1",
     "@tailwindcss/postcss": "4.1.18",
     "@types/bcryptjs": "2.4.6",
     "@types/node": "20.17.10",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
+    "dotenv": "16.4.5",
     "eslint": "9.39.2",
     "eslint-config-next": "15.5.9",
     "postcss": "8.4.47",
     "sharp": "0.33.5",
     "tailwindcss": "4.1.18",
     "tsx": "4.20.6",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
   }
 }

@@ -2,6 +2,7 @@ import { useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { addMonths, format, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useTimeContext } from '@/app/contexts/TimeContext';
+import { getDateKey } from '@/app/utils/date.utils';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import type { HeatmapDay } from '@/app/features/historique';
 import type { HistoryEntry } from '@/app/types/history';
@@ -63,7 +64,7 @@ export function usePeriodNavigation(
         return entryDate >= dayStart && entryDate <= dayEnd;
       });
       
-      const isToday = format(day, 'yyyy-MM-dd') === format(referenceDate, 'yyyy-MM-dd');
+      const isToday = getDateKey(day) === getDateKey(referenceDate);
       const count = dayHistory.length;
       
       const categoryCounts: Partial<Record<ExerciceCategory, number>> = {};
@@ -79,7 +80,7 @@ export function usePeriodNavigation(
       
       return {
         date: day,
-        dateKey: format(day, 'yyyy-MM-dd'),
+        dateKey: getDateKey(day) ?? '',
         count,
         dominantCategory: (sortedCategories[0] as ExerciceCategory) || null,
         secondaryCategory: (sortedCategories[1] as ExerciceCategory) || null,

@@ -1,31 +1,34 @@
 'use client';
 
 import { useCallback } from 'react';
-import { SiteProtection } from '@/app/features/auth';
 import { AdminUserSwitcher } from '@/app/components/AdminUserSwitcher';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
 
-type Props = {
+type ProtectionComponentProps = {
+  onAuthSuccess: () => void;
   children: ReactNode;
 };
 
+type Props = {
+  children: ReactNode;
+  protectionComponent: React.ComponentType<ProtectionComponentProps>;
+};
+
 /**
- * Wrapper qui connecte SiteProtection et UserContext
- * Permet une communication sécurisée sans événements window
+ * Wrapper qui connecte la protection (fournie par le layout) et UserContext
  */
-export function AuthWrapper({ children }: Props) {
+export function AuthWrapper({ children, protectionComponent: Protection }: Props) {
   const { refreshUser } = useUser();
 
   const handleAuthSuccess = useCallback(() => {
-    // Recharger l'utilisateur après authentification réussie
     refreshUser();
   }, [refreshUser]);
 
   return (
-    <SiteProtection onAuthSuccess={handleAuthSuccess}>
+    <Protection onAuthSuccess={handleAuthSuccess}>
       <AdminUserSwitcher />
       {children}
-    </SiteProtection>
+    </Protection>
   );
 }

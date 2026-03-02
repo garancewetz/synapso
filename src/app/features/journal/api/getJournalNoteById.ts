@@ -25,7 +25,7 @@ export async function getJournalNoteById(params: GetJournalNoteByIdParams) {
   });
 
   if (!note) {
-    throw new Error('Journal note not found');
+    throw new Error('Note de journal non trouvée');
   }
 
   return {

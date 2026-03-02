@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getDateKey } from '@/app/utils/date.utils';
 import type { HeatmapDay } from '../utils/historique.utils';
 
 type Props = {
@@ -30,7 +31,7 @@ export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Pro
     const today = new Date();
     const dummyDay: HeatmapDay = {
       date: today,
-      dateKey: format(today, 'yyyy-MM-dd'),
+      dateKey: getDateKey(today) ?? '',
       count: 0,
       dominantCategory: null,
       secondaryCategory: null,

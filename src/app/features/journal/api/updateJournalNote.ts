@@ -27,7 +27,7 @@ export async function updateJournalNote(params: UpdateJournalNoteParams) {
   });
 
   if (!existingNote) {
-    throw new Error('Journal note not found');
+    throw new Error('Note de journal non trouvée');
   }
 
   // Supprimer de Cloudinary les images retirées

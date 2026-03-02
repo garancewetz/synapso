@@ -60,12 +60,15 @@ export function getDayName(date: Date | string | null): string {
 }
 
 /**
- * Convertit une Date en clé de date (yyyy-MM-dd)
- * Utilisé pour les comparaisons et les clés de cache
- * 
- * ⚡ PERFORMANCE: Utilise startOfDay pour normaliser la date avant formatage
- * pour éviter les problèmes de fuseau horaire
- * 
+ * Règle timezone (voir context.md) :
+ * - getDateKey(date) : jour en timezone LOCALE (navigateur ou process). À utiliser pour affichage, référence utilisateur (ex. "aujourd'hui" côté client).
+ * - getDateKeyUTC(date) : jour en UTC. À utiliser pour comparer avec le serveur (completedToday, stats, historique) et côté serveur pour tout calcul de "jour".
+ */
+
+/**
+ * Convertit une Date en clé de date (yyyy-MM-dd) en timezone locale.
+ * Utilisé pour les comparaisons côté client (affichage) et les clés de cache.
+ *
  * @param date Date à convertir
  * @returns Clé de date au format yyyy-MM-dd
  */
@@ -80,13 +83,46 @@ export function getDateKey(date: Date | string | null): string | null {
 
   const normalized = startOfDay(dateObj);
   const key = format(normalized, 'yyyy-MM-dd');
-  console.log('[DEBUG-PROD] getDateKey:', {
-    input: date instanceof Date ? date.toISOString() : date,
-    startOfDay: normalized.toISOString(),
-    key,
-    timezoneOffset: new Date().getTimezoneOffset(),
-  });
   return key;
+}
+
+/**
+ * Convertit une Date en clé de date (yyyy-MM-dd) en UTC.
+ * À utiliser pour toute comparaison "ce jour" avec le serveur (completedToday, stats, modal détail)
+ * et côté serveur pour hasTargetDayHistory / filtres par jour (Netlify = UTC).
+ *
+ * @param date Date à convertir
+ * @returns Clé de date au format yyyy-MM-dd en UTC
+ */
+export function getDateKeyUTC(date: Date | string | null): string | null {
+  if (!date) return null;
+
+  const dateObj = date instanceof Date ? date : new Date(date);
+
+  if (isNaN(dateObj.getTime())) {
+    return null;
+  }
+
+  return dateObj.toISOString().slice(0, 10);
+}
+
+/**
+ * Bornes de la semaine (lundi 00:00 UTC → lundi suivant 00:00 UTC) pour une dateKey.
+ * Aligné avec getStartOfPeriod('WEEKLY', ...) côté serveur (UTC).
+ */
+export function getUTCWeekBoundsForDateKey(
+  dateKey: string | null
+): { start: Date; end: Date } | null {
+  if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return null;
+  const ref = new Date(dateKey + 'T12:00:00.000Z');
+  const day = ref.getUTCDay();
+  const daysToMonday = (day + 6) % 7;
+  const start = new Date(ref);
+  start.setUTCDate(ref.getUTCDate() - daysToMonday);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 7);
+  return { start, end };
 }
 
 /**
@@ -110,11 +146,5 @@ export function getDateFromKey(dateKey: string | null): Date | null {
   // Créer la date depuis la clé et normaliser avec startOfDay pour éviter les problèmes de timezone
   const date = new Date(dateKey + 'T00:00:00');
   const normalized = startOfDay(date);
-  console.log('[DEBUG-PROD] getDateFromKey:', {
-    dateKey,
-    rawDate: date.toISOString(),
-    normalized: normalized.toISOString(),
-    timezoneOffset: new Date().getTimezoneOffset(),
-  });
   return normalized;
 }

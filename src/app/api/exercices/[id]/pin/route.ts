@@ -1,33 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { getAuthContext } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { parseNumericId } from '@/app/lib/api-route-utils';
 import { pinExercice } from '@/app/features/exercices/api';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  const auth = await getAuthContext(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'ID invalide' },
-        { status: 400 }
-      );
-    }
-
-    const userId = await getEffectiveUserId(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     const result = await pinExercice({
       exerciceId: id,
@@ -49,4 +38,3 @@ export async function PATCH(
     );
   }
 }
-

@@ -1,41 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
+import { getAuthContext } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
+import { parseNumericId } from '@/app/lib/api-route-utils';
 import { pinJournalNote } from '@/app/features/journal/api';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  const auth = await getAuthContext(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'ID invalide' },
-        { status: 400 }
-      );
-    }
-
-    const userId = await getEffectiveUserId(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Utilisateur non authentifié' },
-        { status: 401 }
-      );
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     const result = await pinJournalNote({ noteId: id, userId });
 
     return NextResponse.json(result);
   } catch (error) {
-    if (error instanceof Error && error.message === 'Journal note not found') {
+    if (error instanceof Error && error.message === 'Note de journal non trouvée') {
       return NextResponse.json(
-        { error: 'Journal note not found' },
+        { error: 'Note de journal non trouvée' },
         { status: 404 }
       );
     }

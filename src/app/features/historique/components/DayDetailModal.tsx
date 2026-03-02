@@ -1,19 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER, CATEGORY_LABELS_SHORT } from '@/app/constants/exercice.constants';
-import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { formatShortDate, formatTime } from '@/app/utils/date.utils';
-import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
-import { BottomSheetModal, Button, BorderedIconList } from '@/app/components/ui';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { formatShortDate } from '@/app/utils/date.utils';
+import { BottomSheetModal } from '@/app/components/ui';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useToast } from '@/app/contexts/ToastContext';
+import { isBefore, isAfter, startOfDay, subDays } from 'date-fns';
 import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
-import clsx from 'clsx';
+import { DayDetailModalBody } from './DayDetailModalBody';
 
 type DayExercise = {
+  id: number;
   name: string;
   category: ExerciceCategory;
   completedAt: string;
@@ -28,54 +27,23 @@ type Props = {
   categoryStats?: Record<ExerciceCategory, number>;
 };
 
-/**
- * Modale affichant le détail d'une journée du parcours
- * Design adapté aux personnes AVC : gros textes, couleurs contrastées, structure claire
- */
 export function DayDetailModal({ isOpen, onClose, date, exercises, progress, categoryStats }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
-  const hasContent = exercises.length > 0 || progress.length > 0;
-  const { setSelectedDate, clearSelectedDate, isTimeMachineMode } = useSelectedDate();
+  const { setSelectedDate, clearSelectedDate } = useSelectedDate();
   const { showToast } = useToast();
-  const isPastDay = date && !isToday(date);
-  const isCurrentDay = date && isToday(date);
-  const hasNoExercises = exercises.length === 0;
-  
-  // ⚡ FIX: Vérifier si la date est dans le futur
-  const isFutureDay = date && isAfter(startOfDay(date), startOfDay(new Date()));
-
-  // Vérifier si on peut ajouter des exercices pour ce jour (limite de 28 jours, pas de futur)
-  const canAddExercises = useMemo(() => {
-    if (!date || !isPastDay) return false;
-    
-    // ⚡ VALIDATION: Ne pas permettre les dates futures
-    const today = startOfDay(new Date());
-    if (isAfter(startOfDay(date), today)) {
-      return false;
-    }
-    
-    // ⚡ VALIDATION: Vérifier la limite de 28 jours
-    const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
-    return !isBefore(date, minAllowedDate);
-  }, [date, isPastDay]);
 
   const handleAddExercisesForDay = () => {
     if (!date) return;
-    
-    // ⚡ VALIDATION: Vérifier que la date n'est pas dans le futur
     const today = startOfDay(new Date());
     if (isAfter(startOfDay(date), today)) {
       showToast('Tu ne peux pas voyager vers le futur');
       return;
     }
-    
-    // ⚡ VALIDATION: Vérifier si la date est trop ancienne (plus de 28 jours)
     const minAllowedDate = subDays(new Date(), MAX_TIME_MACHINE_DAYS);
     if (isBefore(date, minAllowedDate)) {
       showToast(`Tu ne peux remonter que jusqu'à ${MAX_TIME_MACHINE_DAYS} jours en arrière`);
       return;
     }
-    
     setSelectedDate(date);
     onClose();
   };
@@ -86,17 +54,14 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
   };
 
   return (
-    <BottomSheetModal 
-      isOpen={isOpen && !!date} 
+    <BottomSheetModal
+      isOpen={isOpen && !!date}
       onClose={onClose}
       showFooterClose
       closeLabel="Fermer"
     >
-      {/* Header compact */}
       <div className="px-5 py-4 flex items-center justify-between md:pr-14">
         <h2 className="text-lg font-bold text-gray-900">{formattedDate}</h2>
-        
-        {/* Badges résumé */}
         <div className="flex items-center gap-2">
           {exercises.length > 0 && (
             <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
@@ -111,197 +76,14 @@ export function DayDetailModal({ isOpen, onClose, date, exercises, progress, cat
         </div>
       </div>
 
-      {/* Contenu scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
-        
-        {/* Message d'erreur pour les jours futurs */}
-        {isFutureDay && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">⏰</span>
-            </div>
-            <p className="text-gray-700 text-lg font-semibold">
-              Tu ne peux pas aller dans le futur
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
-              Le mode sablier permet uniquement de remonter dans le passé
-            </p>
-          </div>
-        )}
-        
-        {/* Contenu normal (seulement si pas un jour futur) */}
-        {!isFutureDay && (
-          <>
-            {/* Résumé des stats par catégorie (cohérent avec les gauges) */}
-            {/* ⚡ COHÉRENCE: Ces stats utilisent la même logique que les gauges (completedToday basé sur resetFrequency) */}
-            {/* En mode WEEKLY, cela peut inclure des exercices faits d'autres jours de la semaine */}
-            {categoryStats && Object.values(categoryStats).some(count => count > 0) && (
-              <section className="bg-white rounded-xl border border-gray-200 p-4">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Exercices faits par catégorie</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {CATEGORY_ORDER.map((category) => {
-                    const count = categoryStats[category] || 0;
-                    if (count === 0) return null;
-                    const styles = CATEGORY_COLORS[category];
-                    const icon = CATEGORY_ICONS[category];
-                    const label = CATEGORY_LABELS_SHORT[category];
-                    
-                    return (
-                      <div
-                        key={category}
-                        className={clsx(
-                          'flex items-center gap-2 px-3 py-2 rounded-lg',
-                          styles.bg,
-                          styles.border
-                        )}
-                      >
-                        <span className="text-lg">{icon}</span>
-                        <span className={clsx('text-sm font-medium flex-1', styles.text)}>
-                          {label}
-                        </span>
-                        <span className={clsx('text-sm font-bold', styles.text)}>
-                          {count}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* Section Progrès (même style que les exercices) */}
-            {progress.length > 0 && (
-              <section>
-                <BorderedIconList
-                  title="Progrès"
-                  titleId="day-detail-progress-label"
-                  ariaLabel="Liste des progrès enregistrés ce jour"
-                  items={progress.map((item) => ({
-                    key: item.id,
-                    label: item.content,
-                    icon: PROGRESS_EMOJIS.STAR_BRIGHT,
-                    borderClass: 'border-amber-200',
-                    secondaryLabel: formatTime(item.createdAt),
-                  }))}
-                />
-              </section>
-            )}
-
-            {/* Section Exercices */}
-            {exercises.length > 0 && (
-              <section>
-                <BorderedIconList
-                  title="Exercices faits"
-                  titleId="day-detail-exercices-label"
-                  ariaLabel="Liste des exercices faits ce jour"
-                  items={exercises.map((exercise, index) => {
-                    const colors = CATEGORY_COLORS[exercise.category];
-                    return {
-                      key: `${exercise.name}-${exercise.completedAt}-${index}`,
-                      label: exercise.name,
-                      icon: CATEGORY_ICONS[exercise.category],
-                      borderClass: colors?.border || 'border-gray-200',
-                      completed: true,
-                    };
-                  })}
-                />
-              </section>
-            )}
-
-        {/* État vide ou pas d'exercices */}
-        {!hasContent && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">{NAVIGATION_EMOJIS.CLIPBOARD}</span>
-            </div>
-            <p className="text-gray-700 text-lg font-semibold">
-              {hasNoExercises && isPastDay
-                ? `Aucun exercice fait le ${formattedDate}`
-                : 'Jour de repos'}
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
-              {hasNoExercises && isPastDay
-                ? canAddExercises
-                  ? 'Tu as oublié de noter tes exercices ?'
-                  : `Tu ne peux remonter que jusqu'à ${MAX_TIME_MACHINE_DAYS} jours en arrière`
-                : "Chaque jour est différent, c'est ok !"}
-            </p>
-            {hasNoExercises && isPastDay && canAddExercises && (
-              <div className="mt-6 flex justify-center">
-                <Button
-                  variant="secondary"
-                  onClick={handleAddExercisesForDay}
-                  className={clsx(
-                    'px-6 py-3',
-                    '!bg-indigo-700 !hover:bg-indigo-600 !active:bg-indigo-900',
-                    '!text-white font-bold',
-                    '!border-2 !border-indigo-500',
-                    'shadow-lg shadow-indigo-500/30 transition-shadow'
-                  )}
-                >
-                  <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
-                  Ajouter des exercices pour ce jour
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Bouton pour modifier les exercices même s'il y en a déjà (jour passé) */}
-        {isPastDay && hasContent && canAddExercises && (
-          <div className="pt-4 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm mb-4">
-                Tu veux modifier les exercices pour ce jour ?
-              </p>
-              <div className="flex justify-center">
-                <Button
-                  variant="secondary"
-                  onClick={handleAddExercisesForDay}
-                  className={clsx(
-                    'px-6 py-3',
-                    '!bg-indigo-700 !hover:bg-indigo-600 !active:bg-indigo-900',
-                    '!text-white font-bold',
-                    '!border-2 !border-indigo-500',
-                    'shadow-lg shadow-indigo-500/30 transition-shadow'
-                  )}
-                >
-                  <span className="mr-2 text-lg">{NAVIGATION_EMOJIS.HOURGLASS}</span>
-                  Modifier les exercices pour ce jour
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bouton pour revenir à aujourd'hui si on est en mode sablier et qu'on clique sur aujourd'hui */}
-        {isTimeMachineMode && isCurrentDay && (
-          <div className="pt-4 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm mb-4">
-                Tu es en mode sablier. Revenir à aujourd&apos;hui ?
-              </p>
-              <div className="flex justify-center">
-                <Button
-                  variant="action"
-                  onClick={handleReturnToToday}
-                  className={clsx(
-                    'px-6 py-3',
-                    '!bg-emerald-500 !hover:bg-emerald-600 !active:bg-emerald-700',
-                    '!text-white font-bold',
-                    'shadow-md hover:shadow-lg transition-shadow'
-                  )}
-                >
-                  <span className="mr-2 text-lg">🏠</span>
-                  Revenir à aujourd&apos;hui
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-          </>
-        )}
-      </div>
+      <DayDetailModalBody
+        date={date}
+        exercises={exercises}
+        progress={progress}
+        categoryStats={categoryStats}
+        onAddExercisesForDay={handleAddExercisesForDay}
+        onReturnToToday={handleReturnToToday}
+      />
     </BottomSheetModal>
   );
 }

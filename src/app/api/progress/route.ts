@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     if (!content || !content.trim()) {
       return NextResponse.json(
-        { error: 'content is required' },
+        { error: 'Le contenu est obligatoire' },
         { status: 400 }
       );
     }

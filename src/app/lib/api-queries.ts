@@ -1,81 +1,13 @@
 import { subDays } from 'date-fns';
 import type { Exercice } from '@/app/types';
 import type { HistoryEntry } from '@/app/types';
+import type { JournalNote } from '@/app/types';
 import type { Progress } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
+import { queryKeys } from './query-keys';
 
-// ⚡ QUERY KEYS: Centraliser les clés de requête pour éviter les erreurs de typo
-export const queryKeys = {
-  exercices: {
-    all: ['exercices'] as const,
-    lists: () => [...queryKeys.exercices.all, 'list'] as const,
-    list: (filters: {
-      category?: ExerciceCategory;
-      equipments?: string[];
-      includeArchived?: boolean;
-      targetDate?: string;
-      resetFrequency?: 'DAILY' | 'WEEKLY';
-    }) => [...queryKeys.exercices.lists(), filters] as const,
-  },
-  history: {
-    all: ['history'] as const,
-    lists: () => [...queryKeys.history.all, 'list'] as const,
-    list: (params: { since?: string; days?: number; referenceDate?: string }) => 
-      [...queryKeys.history.lists(), params] as const,
-  },
-  progress: {
-    all: ['progress'] as const,
-    lists: () => [...queryKeys.progress.all, 'list'] as const,
-    list: (params: { limit?: number }) => 
-      [...queryKeys.progress.lists(), params] as const,
-  },
-  categoryStats: {
-    all: ['categoryStats'] as const,
-    lists: () => [...queryKeys.categoryStats.all, 'list'] as const,
-    list: (params: { userId: number; resetFrequency: 'DAILY' | 'WEEKLY'; referenceDateKey: string }) => 
-      [...queryKeys.categoryStats.lists(), params] as const,
-    aggregated: (params: { targetDate?: string }) =>
-      [...queryKeys.categoryStats.all, 'aggregated', params] as const,
-  },
-  todayCompletedCount: {
-    all: ['todayCompletedCount'] as const,
-    lists: () => [...queryKeys.todayCompletedCount.all, 'list'] as const,
-    list: (params: { userId: number; dateKey: string | null }) => 
-      [...queryKeys.todayCompletedCount.lists(), params] as const,
-  },
-  equipments: {
-    all: ['equipments'] as const,
-  },
-  equipmentMetadata: {
-    all: ['equipmentMetadata'] as const,
-  },
-  journalNotes: {
-    all: ['journalNotes'] as const,
-  },
-  batch: {
-    all: ['batch'] as const,
-    list: (params: { resources: string[]; filters?: Record<string, unknown> }) =>
-      [...queryKeys.batch.all, 'list', params] as const,
-  },
-  journalProgress: {
-    all: ['journalProgress'] as const,
-    lists: () => [...queryKeys.journalProgress.all, 'list'] as const,
-    list: (userId: number) => [...queryKeys.journalProgress.lists(), userId] as const,
-  },
-  user: {
-    all: ['user'] as const,
-    current: () => [...queryKeys.user.all, 'current'] as const,
-  },
-  shares: {
-    all: ['shares'] as const,
-    received: () => [...queryKeys.shares.all, 'received'] as const,
-    count: () => [...queryKeys.shares.all, 'count'] as const,
-    users: () => [...queryKeys.shares.all, 'users'] as const,
-  },
-} as const;
+export { queryKeys };
 
-// ⚡ FETCH FUNCTIONS: Fonctions pures pour les appels API
 export async function fetchExercices(filters: {
   category?: ExerciceCategory;
   equipments?: string[];
@@ -111,14 +43,18 @@ export async function fetchExercices(filters: {
   return exercices;
 }
 
+/**
+ * @param since - Borne temporelle "après ce moment" (ISO), pas une journée ; utilisé pour limiter la plage d'historique.
+ */
 export async function fetchHistory(params: { since?: string; days?: number; referenceDate?: string }): Promise<HistoryEntry[]> {
-  const baseDate = params.referenceDate ? new Date(params.referenceDate) : new Date();
+  const isDateKey = params.referenceDate && /^\d{4}-\d{2}-\d{2}$/.test(params.referenceDate);
+  const baseDate = params.referenceDate
+    ? (isDateKey ? new Date(params.referenceDate + 'T12:00:00.000Z') : new Date(params.referenceDate))
+    : new Date();
 
   const url = params.days !== null && params.days !== undefined
     ? `/api/history?since=${encodeURIComponent(subDays(baseDate, params.days).toISOString())}`
     : '/api/history';
-
-  console.log('[DEBUG-PROD] fetchHistory → URL:', url, '| params:', params, '| baseDate:', baseDate.toISOString());
 
   const res = await fetch(url, { credentials: 'include' });
   
@@ -146,22 +82,19 @@ export async function fetchProgress(params: { limit?: number }): Promise<Progres
   return res.json();
 }
 
-export async function fetchCategoryStats(params: {
-  userId: number;
-  resetFrequency: 'DAILY' | 'WEEKLY';
-  referenceDateKey: string;
-}): Promise<HistoryEntry[]> {
-  const periodDate = getStartOfPeriod(params.resetFrequency, new Date(params.referenceDateKey + 'T00:00:00'));
-  const sinceParam = periodDate.toISOString();
-  const url = `/api/history?since=${encodeURIComponent(sinceParam)}`;
-  
-  const res = await fetch(url, { credentials: 'include' });
-  
+export async function fetchJournalNotes(): Promise<JournalNote[]> {
+  const res = await fetch('/api/journal/notes', { credentials: 'include' });
   if (!res.ok) {
     throw new Error(`Erreur HTTP: ${res.status}`);
   }
-  
-  return res.json();
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error('Erreur lors du chargement des notes');
+  }
+  return data.sort(
+    (a: JournalNote, b: JournalNote) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
 /**
@@ -223,54 +156,6 @@ export async function fetchUser(): Promise<FetchUserResponse> {
     };
   }
   
-  return res.json();
-}
-
-/**
- * ⚡ PERFORMANCE: Route batch pour charger plusieurs ressources en une seule requête
- * Réduit le nombre de round-trips réseau de 40-60%
- * 
- * @param resources - Liste des ressources à charger: 'exercices', 'history', 'progress', 'metadata'
- * @param filters - Filtres optionnels pour chaque ressource
- */
-export async function fetchBatch(params: {
-  resources: Array<'exercices' | 'history' | 'progress' | 'metadata'>;
-  filters?: {
-    category?: ExerciceCategory;
-    equipments?: string;
-    includeArchived?: boolean;
-    targetDate?: string;
-    since?: string;
-    days?: number;
-    progressLimit?: number;
-  };
-}): Promise<{
-  exercices?: Exercice[];
-  history?: HistoryEntry[];
-  progress?: Progress[];
-  metadata?: {
-    bodyparts: string[];
-    equipments: string[];
-    equipmentsWithCounts: Array<{ name: string; count: number }>;
-  };
-}> {
-  const res = await fetch('/api/batch', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify({
-      resources: params.resources,
-      filters: params.filters || {},
-    }),
-  });
-
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || `Erreur HTTP: ${res.status}`);
-  }
-
   return res.json();
 }
 

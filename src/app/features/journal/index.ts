@@ -7,7 +7,6 @@ export { JournalSectionHeader } from './components/JournalSectionHeader';
 // Hooks
 export { useJournalForm } from './hooks/useJournalForm';
 export { useJournalNotes } from './hooks/useJournalNotes';
-export { useJournalCheck } from './hooks/useJournalCheck';
 export { usePinJournalNote } from './hooks/usePinJournalNote';
 export { useValidateJournalNote } from './hooks/useValidateJournalNote';
 export { useShareJournalNote } from './hooks/useShareJournalNote';

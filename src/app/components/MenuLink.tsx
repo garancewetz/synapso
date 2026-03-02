@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
 import { Card } from '@/app/components/ui/Card';
-import { usePreserveDateParam } from '@/app/features/time-machine';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 
 type Props = {
   href: string;
@@ -38,7 +38,7 @@ export function MenuLink({
   iconSize = 'md',
   variant = 'horizontal',
 }: Props) {
-  const preserveDate = usePreserveDateParam();
+  const { preserveDate } = useLayoutContext();
   const iconSizeClasses = {
     sm: 'text-xl',
     md: 'text-2xl',

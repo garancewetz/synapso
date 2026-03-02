@@ -1,7 +1,8 @@
 import { prisma } from '@/app/lib/prisma';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, format } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
+import { getDateKey, getDateKeyUTC } from '@/app/utils/date.utils';
 
 type GetExerciceParams = {
   exerciceId: number;
@@ -45,7 +46,7 @@ export async function getExercice(params: GetExerciceParams) {
   });
 
   if (!exercice) {
-    throw new Error('Exercice not found');
+    throw new Error('Exercice non trouvé');
   }
 
   const acceptedShare = await prisma.sharedExercice.findFirst({
@@ -67,12 +68,11 @@ export async function getExercice(params: GetExerciceParams) {
   const weeklyCompletions = exercice.history.map(h => h.completedAt);
   const completedInPeriod = weeklyCompletions.length > 0;
 
-  const targetDateKey = format(startOfDay(now), 'yyyy-MM-dd');
-  const hasTargetDayHistory = exercice.history.some(
+  const targetDateKeyUTC = getDateKeyUTC(now) ?? getDateKey(now);
+  const hasTargetDayHistory = targetDateKeyUTC && exercice.history.some(
     (h) => {
-      const completedDate = h.completedAt instanceof Date ? h.completedAt : new Date(h.completedAt);
-      const completedDateKey = format(startOfDay(completedDate), 'yyyy-MM-dd');
-      return completedDateKey === targetDateKey;
+      const completedDateKeyUTC = getDateKeyUTC(h.completedAt);
+      return completedDateKeyUTC === targetDateKeyUTC;
     }
   );
   const completedToday = hasTargetDayHistory;

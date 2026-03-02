@@ -16,7 +16,7 @@ export async function pinJournalNote(params: PinJournalNoteParams) {
   });
 
   if (!note) {
-    throw new Error('Journal note not found');
+    throw new Error('Note de journal non trouvée');
   }
 
   const updatedNote = await prisma.journalNote.update({

@@ -28,24 +28,3 @@ export async function shareJournalNoteAsText(note: JournalNote): Promise<void> {
   await shareText(message, 'Note Synapso');
 }
 
-// === Fonctions dépréciées (conservées pour compatibilité) ===
-
-/** @deprecated Utiliser shareProgressAsText */
-export async function shareProgressWithImage(progress: Progress): Promise<void> {
-  await shareProgressAsText(progress);
-}
-
-/** @deprecated Utiliser shareProgressAsText */
-export async function shareProgressImage(_element: HTMLElement, progress: Progress): Promise<void> {
-  await shareProgressAsText(progress);
-}
-
-/** @deprecated Utiliser shareExerciceAsText */
-export async function shareExerciceWithImage(exercice: Exercice): Promise<void> {
-  await shareExerciceAsText(exercice);
-}
-
-/** @deprecated Utiliser shareExerciceAsText */
-export async function shareExerciceImage(_element: HTMLElement, exercice: Exercice): Promise<void> {
-  await shareExerciceAsText(exercice);
-}

@@ -16,6 +16,24 @@ test.describe('Navigation', () => {
     });
   });
 
+  test('change d\'onglet sur la page d\'accueil et affiche le contenu spécifique', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByRole('button', { name: 'Suivi' }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(/Mes progrès|Mes statistiques|Journal/).first()).toBeVisible({ timeout: 5000 });
+
+    await page.getByRole('button', { name: /Épinglé/ }).click();
+    await page.waitForLoadState('networkidle');
+    const pinnedContent = await page.getByText(/Épinglé|Aucun élément épinglé|Rien d'épinglé/).first().isVisible({ timeout: 5000 }).catch(() => false);
+    expect(pinnedContent).toBeTruthy();
+
+    await page.getByRole('button', { name: 'Exercices', exact: true }).click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(/Corps|Haut du corps|Objectif/).first()).toBeVisible({ timeout: 5000 });
+  });
+
   test('affiche la page historique', async ({ page }) => {
     await page.goto('/historique');
     await page.waitForLoadState('networkidle');

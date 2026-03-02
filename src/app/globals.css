@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F8FAFB;
+  --background: #f8fafb;
   --foreground: #1F2937;
   --card-bg: #FFFFFF;
   --primary: #4F46E5;
@@ -41,8 +41,10 @@
   --color-aphasie-light: var(--aphasie-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Cadre desktop : 1440px pour header + main alignés */
+  /* Cadre desktop : header + main alignés */
+  --container-8xl: 88rem;
   --container-9xl: 90rem;
+  --container-10xl: 96rem;
 }
 
 html {

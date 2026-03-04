@@ -1,5 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { getDateKey, getDateKeyUTC, getDateFromKey } from '@/app/utils/date.utils';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  getDateKey,
+  getDateKeyUTC,
+  getDateFromKey,
+  getWeekKey,
+  formatWeekRange,
+  getFriendlyWeekLabel,
+} from '@/app/utils/date.utils';
 
 describe('getDateKey', () => {
   it('returns null for null input', () => {
@@ -83,5 +90,80 @@ describe('getDateKeyUTC', () => {
   it('returns previous UTC day for late evening in positive timezone', () => {
     const cetEvening = new Date('2026-02-06T22:00:00.000Z');
     expect(getDateKeyUTC(cetEvening)).toBe('2026-02-06');
+  });
+});
+
+describe('getWeekKey', () => {
+  it('returns null for null input', () => {
+    expect(getWeekKey(null)).toBeNull();
+  });
+
+  it('returns null for invalid date string', () => {
+    expect(getWeekKey('not-a-date')).toBeNull();
+  });
+
+  it('returns Monday yyyy-MM-dd for any day in the week (week starts Monday)', () => {
+    expect(getWeekKey('2026-03-02')).toBe('2026-03-02');
+    expect(getWeekKey('2026-03-04')).toBe('2026-03-02');
+    expect(getWeekKey('2026-03-08')).toBe('2026-03-02');
+  });
+
+  it('returns same week key for dates in the same week', () => {
+    const monday = new Date('2026-02-02T12:00:00.000Z');
+    const sunday = new Date('2026-02-08T12:00:00.000Z');
+    expect(getWeekKey(monday)).toBe(getWeekKey(sunday));
+    expect(getWeekKey(monday)).toBe('2026-02-02');
+  });
+});
+
+describe('formatWeekRange', () => {
+  it('returns empty string for null or invalid input', () => {
+    expect(formatWeekRange(null)).toBe('');
+    expect(formatWeekRange('')).toBe('');
+    expect(formatWeekRange('06-02-2026')).toBe('');
+  });
+
+  it('returns French date range for valid weekKey', () => {
+    const result = formatWeekRange('2026-02-02');
+    expect(result).toMatch(/^Du .+ au .+ \d{4}$/);
+    expect(result).toContain('au');
+  });
+});
+
+describe('getFriendlyWeekLabel', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-04T12:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns empty primary for null or invalid input', () => {
+    expect(getFriendlyWeekLabel(null).primary).toBe('');
+    expect(getFriendlyWeekLabel('').primary).toBe('');
+  });
+
+  it('returns "Cette semaine" and secondary date range for current week', () => {
+    const thisWeekMonday = '2026-03-02';
+    const result = getFriendlyWeekLabel(thisWeekMonday);
+    expect(result.primary).toBe('Cette semaine');
+    expect(result.secondary).toBeDefined();
+    expect(result.secondary).toMatch(/^Du .+ au .+$/);
+  });
+
+  it('returns "La semaine dernière" and secondary for previous week', () => {
+    const lastWeekMonday = '2026-02-23';
+    const result = getFriendlyWeekLabel(lastWeekMonday);
+    expect(result.primary).toBe('La semaine dernière');
+    expect(result.secondary).toBeDefined();
+  });
+
+  it('returns only primary date range for older weeks (no secondary)', () => {
+    const olderWeek = '2026-02-16';
+    const result = getFriendlyWeekLabel(olderWeek);
+    expect(result.primary).toMatch(/^Du .+ au .+$/);
+    expect(result.secondary).toBeUndefined();
   });
 });

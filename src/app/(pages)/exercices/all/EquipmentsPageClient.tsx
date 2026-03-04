@@ -151,14 +151,14 @@ export function EquipmentsPageClient() {
 
             {/* Filtre par équipement */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-800 mb-2">
                 Équipement
               </label>
               {loadingMetadata ? (
                 <div className="flex flex-wrap gap-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div
-                      key={i}
+                      key={`equipment-skeleton-${i}`}
                       className="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"
                     />
                   ))}

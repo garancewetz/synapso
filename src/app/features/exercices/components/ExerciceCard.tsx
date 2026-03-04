@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo, useRef, useLayoutEffect } from "react";
+import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
 import { useUser } from '@/app/contexts/UserContext';
@@ -172,7 +173,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                             aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
                             aria-expanded={isActionsOpen}
                         >
-                            <DotsIcon className={`w-5 h-5 transition-transform duration-200 ${isActionsOpen ? 'rotate-90' : ''}`} />
+                            <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
                         </Button>
 
                         <div ref={completeButtonRef} className="flex-1 flex min-w-0">

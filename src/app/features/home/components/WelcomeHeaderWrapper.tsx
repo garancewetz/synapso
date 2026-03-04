@@ -3,7 +3,6 @@
 import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
-import { format, differenceInDays, subDays, isBefore } from 'date-fns';
 import { getDateKey } from '@/app/utils/date.utils';
 import { useQuery } from '@tanstack/react-query';
 import { WelcomeHeader } from './WelcomeHeader';
@@ -12,7 +11,13 @@ import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTodayCompletedCount } from '@/app/features/exercices';
 import { useProgress } from '@/app/features/progress';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
-import { getCurrentWeekData, getLast7DaysData, type HeatmapDay } from '@/app/features/historique';
+import {
+  getCurrentWeekData,
+  getLast7DaysData,
+  getHeatmapData,
+  calculateCurrentStreak,
+  type HeatmapDay,
+} from '@/app/features/historique';
 import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
@@ -24,56 +29,40 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
   const { openDayDetail } = useDayDetailModal();
   const completedToday = useTodayCompletedCount();
   const { selectedDate, isTimeMachineMode } = useSelectedDate();
-  const { referenceDateKey } = useTimeContext();
+  const { referenceDateKey, referenceDate } = useTimeContext();
   const displayName = effectiveUser?.name || "";
   const resetFrequency = effectiveUser?.resetFrequency || null;
   const { progressList } = useProgress();
 
   const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
 
-  const { data: weekData = [] } = useQuery({
+  const { data: history = [] } = useQuery({
     queryKey: queryKeys.history.list({ days: 40, referenceDate: referenceDateForQuery }),
     queryFn: () => fetchHistory({ days: 40, referenceDate: referenceDateForQuery }),
     enabled: !!effectiveUser,
-    select: (history) => {
-      const frequency = resetFrequency || 'DAILY';
-      
-      let endDate: Date;
-      if (isTimeMachineMode && selectedDate) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const selectedDateNormalized = new Date(selectedDate);
-        selectedDateNormalized.setHours(0, 0, 0, 0);
-        
-        if (frequency === 'WEEKLY') {
-          endDate = selectedDateNormalized;
-        } else {
-          const daysDiff = differenceInDays(today, selectedDateNormalized);
-          
-          if (daysDiff <= 7) {
-            const minStartDate = subDays(today, 6);
-            if (isBefore(selectedDateNormalized, minStartDate)) {
-              endDate = selectedDateNormalized;
-            } else {
-              endDate = today;
-            }
-          } else {
-            endDate = selectedDateNormalized;
-          }
-        }
-      } else {
-        endDate = new Date();
-        endDate.setHours(0, 0, 0, 0);
-      }
-      
-      return frequency === 'WEEKLY' 
-        ? getCurrentWeekData(history, endDate)
-        : getLast7DaysData(history, endDate);
-    },
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
     staleTime: 1000,
     gcTime: 2 * 60 * 1000,
   });
+
+  const frequency = resetFrequency || 'DAILY';
+  const weekData = useMemo(
+    () =>
+      frequency === 'WEEKLY'
+        ? getCurrentWeekData(history, referenceDate)
+        : getLast7DaysData(history, referenceDate),
+    [history, frequency, referenceDate]
+  );
+
+  const heatmapData = useMemo(
+    () => getHeatmapData(history, 40, referenceDate),
+    [history, referenceDate]
+  );
+
+  const currentStreak = useMemo(
+    () => calculateCurrentStreak(heatmapData, referenceDate),
+    [heatmapData, referenceDate]
+  );
 
   const progressDates = useMemo(() => {
     return new Set(
@@ -108,6 +97,7 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
         weekData={weekData}
         progressDates={progressDates}
         onDayClick={handleDayClick}
+        currentStreak={currentStreak}
       />
     </div>
   );

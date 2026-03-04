@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -92,6 +92,22 @@ export default function CategoryPage() {
     },
     [updateExercice]
   );
+
+  const hasScrolledToHashRef = useRef(false);
+  useEffect(() => {
+    if (loadingExercices || hasScrolledToHashRef.current) return;
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (!hash.startsWith('#exercice-')) return;
+    const id = hash.slice('#exercice-'.length);
+    const el = document.getElementById(`exercice-${id}`);
+    if (el) {
+      hasScrolledToHashRef.current = true;
+      const t = setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+      return () => clearTimeout(t);
+    }
+  }, [loadingExercices]);
 
   if (params.category && !isValidCategory) {
     return null;
@@ -226,7 +242,7 @@ export default function CategoryPage() {
               className="grid gap-3 grid-cols-1 lg:grid-cols-2"
             >
               {filters.filteredExercices.map((exercice) => (
-                <div key={exercice.id} className="h-full">
+                <div key={exercice.id} id={`exercice-${exercice.id}`} className="h-full scroll-mt-24">
                   <ExerciceCard
                     exercice={exercice}
                     onEdit={handleEditClick}
@@ -255,7 +271,7 @@ export default function CategoryPage() {
               </div>
               <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                 {filters.relatedStretchingExercices.map((exercice) => (
-                  <div key={exercice.id} className="h-full">
+                  <div key={exercice.id} id={`exercice-${exercice.id}`} className="h-full scroll-mt-24">
                     <ExerciceCard
                       exercice={exercice}
                       onEdit={handleEditClick}

@@ -65,20 +65,22 @@ export async function fetchHistory(params: { since?: string; days?: number; refe
   return res.json();
 }
 
-export async function fetchProgress(params: { limit?: number }): Promise<Progress[]> {
-  const url = params.limit
-    ? `/api/progress?limit=${params.limit}`
-    : '/api/progress';
-  
+export async function fetchProgress(params: { limit?: number; offset?: number }): Promise<Progress[]> {
+  const searchParams = new URLSearchParams();
+  if (params.limit !== undefined) searchParams.set('limit', String(params.limit));
+  if (params.offset !== undefined && params.offset > 0) searchParams.set('offset', String(params.offset));
+  const query = searchParams.toString();
+  const url = query ? `/api/progress?${query}` : '/api/progress';
+
   const res = await fetch(url, { credentials: 'include' });
-  
+
   if (!res.ok) {
     if (res.status === 404) {
       return [];
     }
     throw new Error(`Erreur HTTP: ${res.status}`);
   }
-  
+
   return res.json();
 }
 

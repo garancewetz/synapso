@@ -29,6 +29,9 @@ type Props = {
   onOpenSlideshow: () => void;
   hasUser: boolean;
   starEmoji: string;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 };
 
 export function HistoriqueProgresSection({
@@ -43,6 +46,9 @@ export function HistoriqueProgresSection({
   onOpenSlideshow,
   hasUser,
   starEmoji,
+  onLoadMore,
+  hasMore,
+  loadingMore,
 }: Props) {
   return (
     <MotionDiv
@@ -117,6 +123,27 @@ export function HistoriqueProgresSection({
                 onShare={onShare}
                 onPin={onPin}
               />
+              {hasMore && onLoadMore && (
+                <div className="flex justify-center pt-6 pb-2">
+                  <button
+                    type="button"
+                    onClick={onLoadMore}
+                    disabled={loadingMore}
+                    className="min-h-[48px] px-6 py-3 rounded-xl text-base font-medium bg-amber-100 text-amber-900 border-2 border-amber-300 hover:bg-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    aria-busy={loadingMore}
+                    aria-label={loadingMore ? 'Chargement...' : 'Charger plus de progrès'}
+                  >
+                    {loadingMore ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader size="small" />
+                        Chargement...
+                      </span>
+                    ) : (
+                      'Charger plus de progrès'
+                    )}
+                  </button>
+                </div>
+              )}
             </MotionDiv>
           )}
         </AnimatePresence>

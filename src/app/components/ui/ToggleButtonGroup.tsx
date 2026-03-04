@@ -29,7 +29,7 @@ export function ToggleButtonGroup<T extends string | boolean>({
   };
 
   return (
-    <div className="flex bg-gray-50 rounded-xl p-1 border-2 border-gray-200">
+    <div className="toggle-button-group flex bg-gray-50 rounded-xl p-1 border-2 border-gray-200">
       {options.map((option) => (
         <button
           key={String(option.value)}

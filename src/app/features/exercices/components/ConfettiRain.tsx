@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, memo, useState, useEffect } from 'react';
+import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
 type ConfettiVariant = 'default' | 'golden';
@@ -83,7 +84,7 @@ const getFallValues = (fromWindow: boolean): (number | string)[] => {
 function PopEmoji({ delay, x, emoji, fromWindow = false, swayAmount, swayDirection }: PopEmojiProps) {
   return (
     <motion.div
-      className={fromWindow ? "fixed pointer-events-none text-3xl z-50" : "absolute pointer-events-none text-3xl"}
+      className={clsx(fromWindow ? 'fixed pointer-events-none text-3xl z-50' : 'absolute pointer-events-none text-3xl')}
       style={{ 
         left: fromWindow ? `${x}vw` : `${x}%`, 
         top: fromWindow ? '-5vh' : '-10%',
@@ -120,7 +121,7 @@ function PopEmoji({ delay, x, emoji, fromWindow = false, swayAmount, swayDirecti
 function Confetti({ delay, startX, color, size, fromWindow = false, randomRotation, swayAmount, swayDirection }: ConfettiProps) {
   return (
     <motion.div
-      className={fromWindow ? "fixed pointer-events-none z-50" : "absolute pointer-events-none"}
+      className={clsx(fromWindow ? 'fixed pointer-events-none z-50' : 'absolute pointer-events-none')}
       style={{ 
         left: fromWindow ? `${startX}vw` : `${startX}%`, 
         top: fromWindow ? '-2vh' : '-5%',

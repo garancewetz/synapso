@@ -1,4 +1,4 @@
-import { format, isToday, isYesterday, startOfDay } from 'date-fns';
+import { format, isToday, isYesterday, startOfDay, startOfWeek, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 /**
@@ -104,6 +104,46 @@ export function getDateKeyUTC(date: Date | string | null): string | null {
   }
 
   return dateObj.toISOString().slice(0, 10);
+}
+
+/**
+ * Clé de semaine (lundi en yyyy-MM-dd) pour un regroupement par semaine (timezone locale).
+ */
+export function getWeekKey(date: Date | string | null): string | null {
+  if (!date) return null;
+  const dateObj = date instanceof Date ? date : new Date(date);
+  if (isNaN(dateObj.getTime())) return null;
+  const monday = startOfWeek(dateObj, { weekStartsOn: 1 });
+  return format(monday, 'yyyy-MM-dd');
+}
+
+/**
+ * Libellé d’une semaine pour l’affichage (ex. "Du 24 février au 2 mars 2025").
+ */
+export function formatWeekRange(weekKey: string | null): string {
+  if (!weekKey || !/^\d{4}-\d{2}-\d{2}$/.test(weekKey)) return '';
+  const start = getDateFromKey(weekKey);
+  if (!start) return '';
+  const end = addDays(start, 6);
+  const startLabel = format(start, 'd MMMM', { locale: fr });
+  const endLabel = format(end, 'd MMMM yyyy', { locale: fr });
+  return `Du ${startLabel} au ${endLabel}`;
+}
+
+/**
+ * Libellé ami pour les semaines récentes : "Cette semaine", "La semaine dernière",
+ * ou les dates pour les semaines plus anciennes. Retourne un label principal et
+ * optionnellement les dates en secondaire (pour cette / la semaine dernière).
+ */
+export function getFriendlyWeekLabel(weekKey: string | null): { primary: string; secondary?: string } {
+  if (!weekKey || !/^\d{4}-\d{2}-\d{2}$/.test(weekKey)) return { primary: '' };
+  const dateRange = formatWeekRange(weekKey);
+  const now = new Date();
+  const thisWeekKey = getWeekKey(now);
+  const lastWeekKey = getWeekKey(addDays(now, -7));
+  if (weekKey === thisWeekKey) return { primary: 'Cette semaine', secondary: dateRange };
+  if (weekKey === lastWeekKey) return { primary: 'La semaine dernière', secondary: dateRange };
+  return { primary: dateRange };
 }
 
 /**

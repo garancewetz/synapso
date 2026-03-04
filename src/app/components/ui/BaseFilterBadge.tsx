@@ -59,7 +59,7 @@ export function BaseFilterBadge({
       onKeyDown={handleKeyDown}
       style={{ willChange: 'auto' }}
       className={clsx(
-        'h-8 px-3 py-1 rounded-lg text-xs font-medium',
+        'min-h-[48px] px-4 py-2.5 rounded-lg text-sm font-medium',
         'transition-colors duration-200 ease-out',
         'focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-offset-2',
         colors.focusRing,

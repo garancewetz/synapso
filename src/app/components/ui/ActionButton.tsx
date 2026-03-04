@@ -98,11 +98,9 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         sizeStyles,
         variantStyles,
         'transition-all duration-200 ease-out active:scale-[0.97] select-none',
-        // Ne pas mettre fixed sur le bouton si c'est un lien (sera sur le TouchLink)
-        !isLink && isFixed && 'fixed bottom-22 md:bottom-8 z-60 font-semibold',
+        !isLink && isFixed && 'action-button-fab fixed bottom-22 md:bottom-8 z-60 font-semibold',
         isLink && 'w-auto px-4 md:px-5 shadow-md',
         isLink && 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
-        // Position seulement si pas de link (sinon sur le TouchLink)
         !isLink && positionClass,
         className
       )}
@@ -110,10 +108,10 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
       aria-label={ariaLabel || (isProgress ? 'Noter un progrès' : label || 'Ajouter')}
     >
       {variant === 'golden' && iconPosition === 'left' && (
-        <span className={isFixed ? 'text-xl' : 'text-lg'}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
+        <span className={clsx(isFixed ? 'text-xl' : 'text-lg')}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
       {variant === 'simple' && (
-        <PlusIcon className={isFixed ? "w-5 h-5" : "w-6 h-6 md:w-7 md:h-7"} strokeWidth={3} />
+        <PlusIcon className={clsx(isFixed ? 'w-5 h-5' : 'w-6 h-6 md:w-7 md:h-7')} strokeWidth={3} />
       )}
       {children || (
         <>
@@ -129,15 +127,14 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         </>
       )}
       {variant === 'golden' && iconPosition === 'right' && (
-        <span className={isFixed ? 'text-xl' : 'text-lg'}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
+        <span className={clsx(isFixed ? 'text-xl' : 'text-lg')}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
     </button>
   );
 
   if (isLink) {
-    // Pour les boutons flottants, les classes fixed doivent être sur le TouchLink
     const linkClassName = isFixed 
-      ? clsx('block', 'fixed bottom-20 md:bottom-8 z-60', positionClass)
+      ? clsx('block', 'action-button-fab fixed bottom-20 md:bottom-8 z-60', positionClass)
       : 'inline-block';
     
     return (

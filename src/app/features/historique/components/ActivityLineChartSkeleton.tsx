@@ -58,7 +58,7 @@ export function ActivityLineChartSkeleton() {
           const y = padding.top + innerHeight / 2 + (i % 2 === 0 ? -20 : 20);
           return (
             <circle
-              key={i}
+              key={`skeleton-circle-${ratio}`}
               cx={x}
               cy={y}
               r="6"
@@ -73,7 +73,7 @@ export function ActivityLineChartSkeleton() {
           const x = padding.left + innerWidth * ratio;
           return (
             <rect
-              key={i}
+              key={`skeleton-label-${ratio}`}
               x={x - 15}
               y={chartHeight - padding.bottom + 10}
               width="30"

@@ -7,6 +7,7 @@ import { queryKeys } from '@/app/lib/api-queries';
 
 type UseShareToUserReturn = {
   shareToUser: (exerciceId: number, receiverId: number) => Promise<boolean>;
+  shareToMultiple: (exerciceId: number, receiverIds: number[]) => Promise<number>;
   isSharing: boolean;
 };
 
@@ -43,5 +44,46 @@ export function useShareToUser(): UseShareToUserReturn {
     }
   }, [showToast, queryClient]);
 
-  return { shareToUser, isSharing };
+  const shareToMultiple = useCallback(
+    async (exerciceId: number, receiverIds: number[]): Promise<number> => {
+      if (receiverIds.length === 0) return 0;
+      setIsSharing(true);
+      let successCount = 0;
+      try {
+        for (const receiverId of receiverIds) {
+          const res = await fetch('/api/shares', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ exerciceId, receiverId }),
+          });
+          if (res.ok) successCount++;
+        }
+        queryClient.invalidateQueries({ queryKey: queryKeys.shares.count() });
+        const failed = receiverIds.length - successCount;
+        if (failed === 0) {
+          showToast(
+            successCount === 1
+              ? 'Exercice envoyé à 1 personne'
+              : `Exercice envoyé à ${successCount} personnes`
+          );
+        } else {
+          showToast(
+            successCount > 0
+              ? `Envoyé à ${successCount} personne(s), échec pour ${failed}`
+              : 'Erreur lors du partage'
+          );
+        }
+        return successCount;
+      } catch {
+        showToast('Erreur lors du partage');
+        return 0;
+      } finally {
+        setIsSharing(false);
+      }
+    },
+    [showToast, queryClient]
+  );
+
+  return { shareToUser, shareToMultiple, isSharing };
 }

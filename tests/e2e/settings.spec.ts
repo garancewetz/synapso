@@ -56,11 +56,19 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(newPassword);
 
       const patchPromise = page.waitForResponse(
-        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH',
         { timeout: 15000 }
       );
       await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
-      await patchPromise;
+      const patchRes = await patchPromise;
+      if (patchRes.status() !== 200) {
+        const body = await patchRes.json().catch(() => ({}));
+        throw new Error(
+          `Changement de mot de passe refusé (${patchRes.status()}). ` +
+            (body?.error ?? patchRes.statusText()) +
+            '. Vérifiez que E2E_PASSWORD dans .env correspond au mot de passe en base (ex. Calypso123 après seed).'
+        );
+      }
 
       await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
         timeout: 5000,
@@ -73,11 +81,17 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(TEST_USER.password);
 
       const patchPromise2 = page.waitForResponse(
-        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH',
         { timeout: 15000 }
       );
       await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
-      await patchPromise2;
+      const patchRes2 = await patchPromise2;
+      if (patchRes2.status() !== 200) {
+        const body2 = await patchRes2.json().catch(() => ({}));
+        throw new Error(
+          `Restauration du mot de passe refusée (${patchRes2.status()}). ` + (body2?.error ?? patchRes2.statusText())
+        );
+      }
 
       await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
         timeout: 5000,

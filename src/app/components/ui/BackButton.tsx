@@ -49,7 +49,7 @@ export function BackButton({
   const wrapperClasses = clsx('px-3 sm:px-6', className);
   
   const buttonStyles = clsx(
-    'gap-3',
+    'back-button gap-3',
     'bg-white border-2 border-gray-200',
     'text-base font-semibold text-gray-800',
     'hover:border-gray-300 hover:bg-gray-50',

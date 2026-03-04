@@ -15,7 +15,7 @@ type Props = {
 export function StatusFilterSection({ filter, onFilterChange }: Props) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-2">
+      <label className="block text-xs font-medium text-gray-800 mb-2">
         État
       </label>
       <div className="flex flex-wrap gap-2">

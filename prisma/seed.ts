@@ -6,6 +6,10 @@ const prisma = new PrismaClient();
 // Mot de passe par défaut pour le seed (à changer après le premier login)
 const DEFAULT_PASSWORD = 'Calypso123';
 
+// Utilisateur E2E : doit correspondre à E2E_USERNAME / E2E_PASSWORD dans .env
+const E2E_USER_NAME = 'Testeuse';
+const E2E_USER_PASSWORD = 'Test1234';
+
 // Données de démonstration avec les 3 catégories
 const mockExercices = [
   // ==================== HAUT DU CORPS ====================
@@ -207,6 +211,18 @@ async function main() {
     },
   });
   console.log(`👤 Utilisateur créé : ${calypso.name} (mot de passe par défaut : ${DEFAULT_PASSWORD})`);
+
+  const e2ePasswordHash = await bcrypt.hash(E2E_USER_PASSWORD, 12);
+  const e2eUser = await prisma.user.upsert({
+    where: { name: E2E_USER_NAME },
+    update: { passwordHash: e2ePasswordHash },
+    create: {
+      name: E2E_USER_NAME,
+      passwordHash: e2ePasswordHash,
+      role: 'USER',
+    },
+  });
+  console.log(`👤 Utilisateur E2E : ${e2eUser.name} (mot de passe : ${E2E_USER_PASSWORD})`);
 
   // Supprimer les exercices existants
   await prisma.exerciceBodypart.deleteMany();

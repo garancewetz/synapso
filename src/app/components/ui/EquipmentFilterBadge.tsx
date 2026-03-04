@@ -44,9 +44,9 @@ export function EquipmentFilterBadge({
     activeBg: 'bg-gray-800',
     activeRing: 'ring-gray-300',
     inactiveBg: 'bg-white',
-    inactiveText: 'text-gray-700',
+    inactiveText: 'text-gray-800',
     inactiveBorder: 'border-gray-200',
-    inactiveTag: 'bg-gray-100 text-gray-600',
+    inactiveTag: 'bg-gray-200 text-gray-800',
     focusRing: 'focus:ring-gray-400',
   };
 

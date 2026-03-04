@@ -78,13 +78,13 @@ export function ProgressMedia({ medias, className = '', maxPhotos = 3, initialLi
     <>
       {showThumbnails && (
         <div className={clsx('w-full', className)}>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="flex flex-col gap-2">
             {photosToShow.map((url, index) => (
               <button
                 key={url}
                 type="button"
                 onClick={(e) => openLightbox(index, e)}
-                className="relative w-full h-24 md:h-32 rounded-lg border border-amber-200/60 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 active:scale-[0.98] transition-transform"
+                className="relative w-full aspect-4/3 rounded-lg border border-amber-200/60 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 active:scale-[0.98] transition-transform"
                 aria-label={`Voir la photo ${index + 1} en grand`}
               >
                 <Image
@@ -92,7 +92,7 @@ export function ProgressMedia({ medias, className = '', maxPhotos = 3, initialLi
                   alt={`Photo du progrès ${index + 1}${medias.length > 1 ? ` sur ${medias.length}` : ''}`}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 33vw"
+                  sizes="100vw"
                   loading="lazy"
                   onError={() => {
                     console.error('Erreur de chargement de l\'image:', url);

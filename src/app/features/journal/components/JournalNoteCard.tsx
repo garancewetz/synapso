@@ -13,6 +13,7 @@ import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
 import { BaseCard, Badge, Button, BorderedIconList } from '@/app/components/ui';
 import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon, ChevronIcon } from '@/app/components/ui/icons';
+import clsx from 'clsx';
 import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 
 type Props = {
@@ -148,7 +149,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
                       label: ex.name,
                       icon: CATEGORY_ICONS[cat],
                       borderClass: colors?.border || 'border-gray-200',
-                      href: CATEGORY_HREFS[cat],
+                      href: `${CATEGORY_HREFS[cat]}#exercice-${ex.id}`,
                       completed: completedExerciceIds?.has(ex.id),
                     };
                   })}
@@ -197,7 +198,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
                 aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
                 aria-expanded={isActionsOpen}
               >
-                <DotsIcon className={`w-5 h-5 transition-transform duration-200 ${isActionsOpen ? 'rotate-90' : ''}`} />
+                <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
               </Button>
 
               <button

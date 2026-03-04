@@ -20,6 +20,8 @@ export { StatsCard } from './components/StatsCard';
 export { WeekAccordionList } from './components/WeekAccordionNew';
 export { WeekCalendar } from './components/WeekCalendar';
 export { WeekHeatmap } from './components/WeekHeatmap';
+export { HistoriqueStatistiquesSection } from './components/HistoriqueStatistiquesSection';
+export { HistoriqueProgresSection } from './components/HistoriqueProgresSection';
 
 // Hooks
 export { useHistory } from './hooks/useHistory';

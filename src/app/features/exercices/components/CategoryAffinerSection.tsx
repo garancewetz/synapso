@@ -67,7 +67,7 @@ export function CategoryAffinerSection({
           Affiner la liste
           {activeFiltersCount > 0 && (
             <span
-              className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-gray-300 text-gray-700 text-xs font-semibold"
+              className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-gray-400 text-gray-900 text-xs font-semibold"
               aria-hidden
             >
               {activeFiltersCount}
@@ -77,8 +77,8 @@ export function CategoryAffinerSection({
         <ChevronIcon
           direction={affinerOpen ? 'up' : 'down'}
           className={clsx(
-            'w-5 h-5 text-gray-500 shrink-0 transition-transform duration-300 ease-out',
-            affinerOpen && 'text-gray-700'
+            'w-5 h-5 text-gray-700 shrink-0 transition-transform duration-300 ease-out',
+            affinerOpen && 'text-gray-900'
           )}
           aria-hidden
         />
@@ -94,7 +94,7 @@ export function CategoryAffinerSection({
         <div className="pt-1 pb-4 px-4 space-y-4">
           {bodypartsWithCounts.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-800 mb-2">
                 Partie du corps
               </label>
               <div className="flex flex-wrap gap-2">
@@ -129,7 +129,7 @@ export function CategoryAffinerSection({
           )}
           {equipmentsWithCounts.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-800 mb-2">
                 Équipement
               </label>
               <div className="flex flex-wrap gap-2">

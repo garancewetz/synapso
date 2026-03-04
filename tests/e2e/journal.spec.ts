@@ -140,10 +140,17 @@ test.describe('Journal', () => {
 
     await expect(page).toHaveURL(/\/journal\/edit\/\d+/);
     await page.getByRole('button', { name: 'Lier des exercices' }).click();
-    await page.getByRole('tabpanel', { name: undefined }).waitFor({ state: 'visible', timeout: 5000 });
+    const pickerPanel = page.locator('[role="dialog"], [role="tabpanel"]').first();
+    await pickerPanel.waitFor({ state: 'visible', timeout: 5000 });
     await page.getByRole('button', { name: exerciceName }).click();
     await page.getByRole('button', { name: 'Valider' }).click();
+    // Attendre la réponse PUT pour s'assurer que les exercices sont sauvegardés
+    const editResponse = page.waitForResponse(
+      (res) => /\/api\/journal\/notes\/\d+$/.test(res.url()) && res.request().method() === 'PUT',
+      { timeout: 15000 }
+    );
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
+    await editResponse;
 
     await expect(page).toHaveURL(/\/journal\/?$/);
     // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
@@ -201,10 +208,16 @@ test.describe('Journal', () => {
     await noteCard.getByRole('button', { name: 'Modifier' }).click();
     await expect(page).toHaveURL(/\/journal\/edit\/\d+/);
     await page.getByRole('button', { name: 'Lier des exercices' }).click();
-    await page.getByRole('tabpanel', { name: undefined }).waitFor({ state: 'visible', timeout: 5000 });
+    const pickerPanel = page.locator('[role="dialog"], [role="tabpanel"]').first();
+    await pickerPanel.waitFor({ state: 'visible', timeout: 5000 });
     await page.getByRole('button', { name: exerciceName }).click();
     await page.getByRole('button', { name: 'Valider' }).click();
+    const editResponse = page.waitForResponse(
+      (res) => /\/api\/journal\/notes\/\d+$/.test(res.url()) && res.request().method() === 'PUT',
+      { timeout: 15000 }
+    );
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
+    await editResponse;
     await expect(page).toHaveURL(/\/journal\/?$/);
     // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
     await page.reload();

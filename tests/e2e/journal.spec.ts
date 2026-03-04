@@ -146,10 +146,14 @@ test.describe('Journal', () => {
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
 
     await expect(page).toHaveURL(/\/journal\/?$/);
+    // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 
     const cardAfterEdit = page.locator('li').filter({ hasText: title }).first();
     await cardAfterEdit.scrollIntoViewIfNeeded();
+    await expect(cardAfterEdit.getByText('Exercices liés')).toBeVisible({ timeout: 10000 });
     const validateButton = cardAfterEdit.getByRole('button', { name: 'Valider' });
     await validateButton.waitFor({ state: 'visible', timeout: 5000 });
     await validateButton.click();
@@ -161,5 +165,62 @@ test.describe('Journal', () => {
     await expect(cardAfterEdit.getByRole('button', { name: 'Valider' })).toBeVisible({ timeout: 5000 });
     await expect(cardAfterEdit.getByText('Validé')).toHaveCount(0);
     await expect(cardAfterEdit.getByLabel('Complété')).toHaveCount(0);
+  });
+
+  test('clic sur un exercice lié ouvre la page catégorie avec hash et scroll vers la carte', async ({ page }) => {
+    await page.goto('/exercice/add');
+    await page.waitForLoadState('networkidle');
+    if (!page.url().includes('/exercice/add')) return;
+
+    const exerciceName = 'Exercice E2E deep link ' + Date.now();
+    await page.getByPlaceholder('Ex: Montée de genoux').fill(exerciceName);
+    await page.getByPlaceholder('Décrivez comment réaliser l\'exercice...').fill('Pour test deep link');
+    await page.getByRole('button', { name: 'Suivant →' }).click();
+    await page.getByRole('button', { name: 'Haut' }).click();
+    await page.getByRole('button', { name: 'Suivant →' }).click();
+    await page.getByPlaceholder('Ex: 10').fill('8');
+    await page.getByPlaceholder('Ex: 3', { exact: true }).fill('2');
+    await page.getByRole('button', { name: "Créer l'exercice" }).click();
+    await expect(page).not.toHaveURL(/\/exercice\/add/);
+
+    await page.goto('/journal');
+    await page.waitForLoadState('networkidle');
+    if (!page.url().includes('/journal')) return;
+
+    const title = 'Entrée E2E deep link ' + Date.now();
+    await page.getByRole('link', { name: 'Ajouter une entrée' }).click();
+    await page.waitForLoadState('networkidle');
+    await page.getByPlaceholder('Titre de l\'entrée').fill(title);
+    await page.getByRole('button', { name: 'Créer' }).click();
+    await expect(page).toHaveURL(/\/journal\/?$/);
+    await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
+
+    const noteCard = page.locator('li').filter({ hasText: title }).first();
+    await noteCard.scrollIntoViewIfNeeded();
+    await noteCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
+    await noteCard.getByRole('button', { name: 'Modifier' }).click();
+    await expect(page).toHaveURL(/\/journal\/edit\/\d+/);
+    await page.getByRole('button', { name: 'Lier des exercices' }).click();
+    await page.getByRole('tabpanel', { name: undefined }).waitFor({ state: 'visible', timeout: 5000 });
+    await page.getByRole('button', { name: exerciceName }).click();
+    await page.getByRole('button', { name: 'Valider' }).click();
+    await page.getByRole('button', { name: 'Modifier', exact: true }).click();
+    await expect(page).toHaveURL(/\/journal\/?$/);
+    // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
+
+    const cardWithLink = page.locator('li').filter({ hasText: title }).first();
+    await cardWithLink.scrollIntoViewIfNeeded();
+    const exerciceLink = cardWithLink.getByRole('link', { name: exerciceName });
+    await exerciceLink.waitFor({ state: 'visible', timeout: 10000 });
+    await exerciceLink.click();
+
+    await expect(page).toHaveURL(/\/exercices\/upper_body#exercice-\d+/, { timeout: 10000 });
+    const hash = await page.evaluate(() => window.location.hash);
+    expect(hash).toMatch(/^#exercice-\d+$/);
+    const targetId = hash.slice(1);
+    await expect(page.locator(`#${targetId}`)).toBeVisible({ timeout: 5000 });
   });
 });

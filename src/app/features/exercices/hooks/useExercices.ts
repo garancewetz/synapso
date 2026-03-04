@@ -78,16 +78,32 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     return () => clearTimeout(timeoutId);
   }, [referenceDateKey, effectiveUser, refetch]);
 
-  // ⚡ OPTIMISTIC UPDATE: Mettre à jour le cache localement pour une UI réactive
+  // ⚡ OPTIMISTIC UPDATE: Mettre à jour toutes les listes d'exercices en cache (page courante + archivés)
+  // pour que la navigation vers "archivés" affiche tout de suite l'exercice sans refetch ni loader
+  // getQueriesData + setQueryData car en v5 l'updater de setQueriesData ne reçoit pas la query (donc pas les filters)
   const updateExercice = useCallback((updatedExercice: Exercice) => {
-    queryClient.setQueryData<Exercice[]>(
-      queryKeys.exercices.list(filters),
-      (old) => {
-        if (!old) return [updatedExercice];
-        return old.map(ex => ex.id === updatedExercice.id ? updatedExercice : ex);
+    type ListFilters = { includeArchived?: boolean };
+    const entries = queryClient.getQueriesData<Exercice[]>({
+      queryKey: queryKeys.exercices.lists(),
+      exact: false,
+    });
+    for (const [queryKey, old] of entries) {
+      if (!old) continue;
+      const listFilters = queryKey[2] as ListFilters | undefined;
+      const hasExercise = old.some((ex) => ex.id === updatedExercice.id);
+      // Ne mettre à jour que les listes qui contiennent déjà l'exercice
+      // pour éviter de l'ajouter dans des listes d'autres catégories
+      if (!hasExercise) continue;
+      let next = old.map((ex) => (ex.id === updatedExercice.id ? updatedExercice : ex));
+      const isArchivedList = listFilters?.includeArchived === true;
+      if (!isArchivedList && updatedExercice.archived) {
+        next = next.filter((ex) => ex.id !== updatedExercice.id);
+      } else if (isArchivedList && !updatedExercice.archived) {
+        next = next.filter((ex) => ex.id !== updatedExercice.id);
       }
-    );
-  }, [filters, queryClient]);
+      queryClient.setQueryData<Exercice[]>(queryKey, next);
+    }
+  }, [queryClient]);
 
   return {
     exercices,

@@ -20,10 +20,15 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
+
+    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const skip = offsetParam ? parseInt(offsetParam, 10) : undefined;
 
     const progressList = await getProgress({
       userId,
-      limit: limitParam ? parseInt(limitParam) : undefined,
+      limit,
+      skip: skip !== undefined && skip > 0 ? skip : undefined,
     });
 
     return NextResponse.json(progressList);

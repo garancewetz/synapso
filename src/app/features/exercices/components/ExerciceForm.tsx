@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUser } from '@/app/contexts/UserContext';
 import { ErrorMessage, FormActions, Loader } from '@/app/components';
@@ -13,6 +13,99 @@ import { ExerciceFormStepContent } from './ExerciceForm/ExerciceFormStepContent'
 
 const TOTAL_STEPS = 3;
 
+const EXERCICE_FORM_DRAFT_KEY = 'synapso_exercice_form_draft';
+const ABANDON_CONFIRM_MESSAGE = 'Vous abandonnez votre brouillon ?';
+
+type FormDataState = {
+  name: string;
+  descriptionText: string;
+  descriptionComment: string;
+  workoutRepeat: string;
+  workoutSeries: string;
+  workoutDuration: string;
+  category: ExerciceCategory;
+  bodyparts: string[];
+  equipments: string[];
+  media: MediaData | null;
+};
+
+type Draft = {
+  formData: FormDataState;
+  currentStep: number;
+  maxVisitedStep: number;
+};
+
+function getDefaultFormData(initialCategory?: ExerciceCategory): FormDataState {
+  return {
+    name: '',
+    descriptionText: '',
+    descriptionComment: '',
+    workoutRepeat: '',
+    workoutSeries: '',
+    workoutDuration: '',
+    category: (initialCategory || 'UPPER_BODY') as ExerciceCategory,
+    bodyparts: [],
+    equipments: [],
+    media: null,
+  };
+}
+
+function hasDraft(formData: FormDataState, currentStep: number): boolean {
+  if (currentStep > 0) return true;
+  if (formData.name.trim()) return true;
+  if (formData.descriptionText.trim() || formData.descriptionComment.trim()) return true;
+  if (formData.workoutRepeat || formData.workoutSeries || formData.workoutDuration) return true;
+  if (formData.bodyparts.length > 0 || formData.equipments.length > 0) return true;
+  if (formData.media?.photos?.length || formData.media?.video) return true;
+  return false;
+}
+
+function loadDraft(initialCategory?: ExerciceCategory): Draft | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(EXERCICE_FORM_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Draft;
+    if (
+      parsed &&
+      typeof parsed.formData === 'object' &&
+      typeof parsed.currentStep === 'number' &&
+      typeof parsed.maxVisitedStep === 'number' &&
+      Number.isInteger(parsed.currentStep) &&
+      Number.isInteger(parsed.maxVisitedStep)
+    ) {
+      return {
+        formData: { ...getDefaultFormData(initialCategory), ...parsed.formData, media: null },
+        currentStep: Math.min(Math.max(0, parsed.currentStep), TOTAL_STEPS - 1),
+        maxVisitedStep: Math.min(Math.max(0, parsed.maxVisitedStep), TOTAL_STEPS - 1),
+      };
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function saveDraft(draft: Draft): void {
+  try {
+    const toSave = {
+      ...draft,
+      formData: { ...draft.formData, media: null },
+    };
+    localStorage.setItem(EXERCICE_FORM_DRAFT_KEY, JSON.stringify(toSave));
+  } catch {
+    // ignore
+  }
+}
+
+function clearDraft(): void {
+  try {
+    localStorage.removeItem(EXERCICE_FORM_DRAFT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 type Props = {
   exerciceId?: number;
   onSuccess?: () => void;
@@ -24,32 +117,51 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   const { effectiveUser } = useUser();
   const { equipments: allEquipments, equipmentIconsMap, loading: loadingEquipments } = useAllEquipments();
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [maxVisitedStep, setMaxVisitedStep] = useState(exerciceId ? TOTAL_STEPS - 1 : 0);
+  const isCreateMode = !exerciceId;
+  const draft = isCreateMode ? loadDraft(initialCategory) : null;
+
+  const [currentStep, setCurrentStep] = useState(() =>
+    draft ? draft.currentStep : 0
+  );
+  const [maxVisitedStep, setMaxVisitedStep] = useState(() =>
+    draft ? draft.maxVisitedStep : exerciceId ? TOTAL_STEPS - 1 : 0
+  );
   const [direction, setDirection] = useState(1);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    descriptionText: '',
-    descriptionComment: '',
-    workoutRepeat: '',
-    workoutSeries: '',
-    workoutDuration: '',
-    category: (initialCategory || 'UPPER_BODY') as ExerciceCategory,
-    bodyparts: [] as string[],
-    equipments: [] as string[],
-    media: null as MediaData | null,
-  });
+  const [formData, setFormData] = useState<FormDataState>(() =>
+    draft ? draft.formData : getDefaultFormData(initialCategory)
+  );
   const [initialLoading, setInitialLoading] = useState(!!exerciceId);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleSuccess = useCallback(() => {
+    if (isCreateMode) clearDraft();
+    onSuccess?.();
+  }, [isCreateMode, onSuccess]);
 
   const { createOrUpdateMutation, deleteMutation, handleSubmit, handleDelete } = useExerciceFormMutations({
     exerciceId,
     formData,
     setError,
-    onSuccess,
+    onSuccess: handleSuccess,
   });
+
+  const hasUnsavedDraft = isCreateMode && hasDraft(formData, currentStep);
+
+  useEffect(() => {
+    if (!isCreateMode) return;
+    saveDraft({ formData, currentStep, maxVisitedStep });
+  }, [isCreateMode, formData, currentStep, maxVisitedStep]);
+
+  useEffect(() => {
+    if (!hasUnsavedDraft) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedDraft]);
 
   useEffect(() => {
     if (exerciceId && effectiveUser) {
@@ -169,7 +281,15 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
         <div className="flex justify-between">
           <Button
             variant="secondary"
-            onClick={currentStep === 0 ? onCancel : () => goToStep(currentStep - 1)}
+            onClick={
+              currentStep === 0
+                ? () => {
+                    if (hasUnsavedDraft && !window.confirm(ABANDON_CONFIRM_MESSAGE)) return;
+                    if (isCreateMode) clearDraft();
+                    onCancel?.();
+                  }
+                : () => goToStep(currentStep - 1)
+            }
           >
             {currentStep === 0 ? 'Annuler' : '← Précédent'}
           </Button>

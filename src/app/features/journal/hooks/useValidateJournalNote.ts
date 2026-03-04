@@ -66,6 +66,9 @@ export function useValidateJournalNote({
             validatedAt: data.validatedAt ?? null,
           };
 
+          queryClient.setQueryData<JournalNote[]>(queryKeys.journalNotes.list(), (prev) =>
+            prev?.map((n) => (n.id === updatedNote.id ? updatedNote : n)) ?? prev
+          );
           await queryClient.invalidateQueries({ queryKey: queryKeys.journalNotes.all });
           if (note.exercices && note.exercices.length > 0) {
             await queryClient.invalidateQueries({ queryKey: queryKeys.exercices.all });
@@ -83,8 +86,7 @@ export function useValidateJournalNote({
       }
     },
     [
-      note.id,
-      note.exercices?.length,
+      note,
       userId,
       targetDateKey,
       resetFrequency,

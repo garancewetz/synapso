@@ -142,25 +142,33 @@ test.describe('Journal', () => {
     await page.getByRole('button', { name: 'Lier des exercices' }).click();
     const pickerPanel = page.locator('[role="dialog"], [role="tabpanel"]').first();
     await pickerPanel.waitFor({ state: 'visible', timeout: 5000 });
+    await page.getByRole('tab', { name: 'Haut' }).click();
     await page.getByRole('button', { name: exerciceName }).click();
     await page.getByRole('button', { name: 'Valider' }).click();
-    // Attendre la réponse PUT pour s'assurer que les exercices sont sauvegardés
-    const editResponse = page.waitForResponse(
+    await expect(page.getByRole('button', { name: 'Modifier les exercices liés' })).toBeVisible({ timeout: 5000 });
+    const putResponsePromise = page.waitForResponse(
       (res) => /\/api\/journal\/notes\/\d+$/.test(res.url()) && res.request().method() === 'PUT',
       { timeout: 15000 }
     );
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-    await editResponse;
+    const putResponse = await putResponsePromise;
+    const putBody = await putResponse.json();
+    expect(Array.isArray(putBody.exercices) && putBody.exercices.length > 0, 'PUT doit retourner les exercices liés').toBe(true);
 
     await expect(page).toHaveURL(/\/journal\/?$/);
-    // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
+    const listResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/journal/notes') && res.request().method() === 'GET',
+      { timeout: 15000 }
+    );
     await page.reload();
+    await listResponse;
     await page.waitForLoadState('networkidle');
     await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 
     const cardAfterEdit = page.locator('li').filter({ hasText: title }).first();
     await cardAfterEdit.scrollIntoViewIfNeeded();
-    await expect(cardAfterEdit.getByText('Exercices liés')).toBeVisible({ timeout: 10000 });
+    await expect(cardAfterEdit.getByRole('link', { name: exerciceName })).toBeVisible({ timeout: 10000 });
+    await expect(cardAfterEdit.getByText('Exercices liés')).toBeVisible({ timeout: 5000 });
     const validateButton = cardAfterEdit.getByRole('button', { name: 'Valider' });
     await validateButton.waitFor({ state: 'visible', timeout: 5000 });
     await validateButton.click();
@@ -210,8 +218,10 @@ test.describe('Journal', () => {
     await page.getByRole('button', { name: 'Lier des exercices' }).click();
     const pickerPanel = page.locator('[role="dialog"], [role="tabpanel"]').first();
     await pickerPanel.waitFor({ state: 'visible', timeout: 5000 });
+    await page.getByRole('tab', { name: 'Haut' }).click();
     await page.getByRole('button', { name: exerciceName }).click();
     await page.getByRole('button', { name: 'Valider' }).click();
+    await expect(page.getByRole('button', { name: 'Modifier les exercices liés' })).toBeVisible({ timeout: 5000 });
     const editResponse = page.waitForResponse(
       (res) => /\/api\/journal\/notes\/\d+$/.test(res.url()) && res.request().method() === 'PUT',
       { timeout: 15000 }
@@ -219,13 +229,18 @@ test.describe('Journal', () => {
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
     await editResponse;
     await expect(page).toHaveURL(/\/journal\/?$/);
-    // Recharger pour s'assurer que la liste inclut les exercices liés fraîchement ajoutés
+    const listResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/journal/notes') && res.request().method() === 'GET',
+      { timeout: 15000 }
+    );
     await page.reload();
+    await listResponse;
     await page.waitForLoadState('networkidle');
     await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 
     const cardWithLink = page.locator('li').filter({ hasText: title }).first();
     await cardWithLink.scrollIntoViewIfNeeded();
+    await expect(page.getByText('Exercices liés').first()).toBeVisible({ timeout: 10000 });
     const exerciceLink = cardWithLink.getByRole('link', { name: exerciceName });
     await exerciceLink.waitFor({ state: 'visible', timeout: 10000 });
     await exerciceLink.click();

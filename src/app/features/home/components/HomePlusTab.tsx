@@ -32,7 +32,7 @@ export const HomePlusTab = memo(function HomePlusTab() {
         title="Journal"
         icon={<BookIcon className="w-5 h-5" />}
         description="Mes notes et réflexions"
-        href="/journal"
+        href={preserveDate('/journal')}
         iconBgColor={SITEMAP_ICON_STYLES.primary.journal.bg}
         iconTextColor={SITEMAP_ICON_STYLES.primary.journal.text}
       />

@@ -271,6 +271,28 @@ test.describe('Mode Sablier (Time Machine)', () => {
     expect(bannerStillVisible).toBeTruthy();
   });
 
+  test('devrait préserver le paramètre date lors de la navigation dans le journal', async ({ page }) => {
+    const yesterdayDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+
+    await page.goto(`/journal?date=${yesterdayDate}`);
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('[data-testid="time-machine-banner"]').first()).toBeVisible({ timeout: 5000 });
+    expect(page.url()).toContain(`date=${yesterdayDate}`);
+
+    await page.getByRole('link', { name: 'Ajouter une entrée' }).click();
+    await page.waitForLoadState('networkidle');
+
+    expect(page.url()).toContain('/journal/add');
+    expect(page.url()).toContain(`date=${yesterdayDate}`);
+
+    await page.getByRole('link', { name: /Retour à journal/ }).click();
+    await page.waitForLoadState('networkidle');
+
+    expect(page.url()).toContain(`date=${yesterdayDate}`);
+    expect(page.url()).toMatch(/\/journal\/?([?&]|$)/);
+  });
+
   test('devrait limiter le mode sablier à 28 jours en arrière', async ({ page }) => {
     // Aller à la page historique
     await timeMachineHelper.goToHistory();

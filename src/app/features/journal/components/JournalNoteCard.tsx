@@ -11,6 +11,7 @@ import { useTimeContext } from '@/app/contexts/TimeContext';
 import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
+import { usePreserveDateParam } from '@/app/features/time-machine/hooks/usePreserveDateParam';
 import { BaseCard, Badge, Button, BorderedIconList } from '@/app/components/ui';
 import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon, ChevronIcon } from '@/app/components/ui/icons';
 import clsx from 'clsx';
@@ -60,6 +61,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
     onCompleted: onUpdated,
   });
 
+  const preserveDate = usePreserveDateParam();
   const hasExercices = note.exercices && note.exercices.length > 0;
   const exerciceCount = note.exercices?.length ?? 0;
   const validateAriaLabel = hasExercices
@@ -70,8 +72,8 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
 
   const handleEdit = useCallback(() => {
     setIsActionsOpen(false);
-    router.push(`/journal/edit/${note.id}`);
-  }, [router, note.id]);
+    router.push(preserveDate(`/journal/edit/${note.id}`));
+  }, [router, note.id, preserveDate]);
 
   const handlePinClick = useCallback(async () => {
     await handlePin();

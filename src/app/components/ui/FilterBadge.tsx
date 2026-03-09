@@ -42,18 +42,17 @@ export function FilterBadge({
     inactiveBg: 'bg-gray-100',
     inactiveText: 'text-gray-800',
     inactiveBorder: 'border-gray-300',
-    inactiveTag: 'bg-gray-200 text-gray-700',
+    inactiveTag: 'bg-gray-200 text-gray-800',
     focusRing: 'focus:ring-gray-400',
   };
 
-  // Badges blancs (ex. filtre équipement)
   const whiteColors = {
     activeBg: 'bg-gray-900',
     activeRing: 'ring-gray-300',
     inactiveBg: 'bg-white',
     inactiveText: 'text-gray-800',
     inactiveBorder: 'border-gray-300',
-    inactiveTag: 'bg-gray-100 text-gray-700',
+    inactiveTag: 'bg-gray-200 text-gray-800',
     focusRing: 'focus:ring-gray-400',
   };
 

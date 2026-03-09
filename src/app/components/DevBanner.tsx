@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import clsx from 'clsx';
 import { WarningIcon } from '@/app/components/ui/icons';
 
 type DbInfo = {
@@ -54,7 +55,7 @@ export function DevBanner() {
         {!loading && dbInfo && (
           <>
             <span className="text-amber-200">•</span>
-            <span className={isDevDb ? 'text-green-200 font-semibold' : 'text-red-200 font-semibold'}>
+            <span className={clsx(isDevDb ? 'text-green-200 font-semibold' : 'text-red-200 font-semibold')}>
               DB: {dbTypeDisplay}
             </span>
             <span className="text-amber-200 text-xs">({dbHostDisplay})</span>

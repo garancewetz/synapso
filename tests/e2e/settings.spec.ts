@@ -34,13 +34,6 @@ test.describe('Paramètres', () => {
 
   test('change le mot de passe et affiche le message de succès', async ({ page }) => {
     const newPassword = 'NouveauMotDePasseE2E123';
-    let needRevert = false;
-    let userId: number | null = null;
-
-    // Récupérer l'ID utilisateur pour le revert API
-    const checkRes = await page.request.get('/api/auth/check');
-    const checkData = await checkRes.json();
-    userId = checkData.user?.id ?? null;
 
     try {
       await page.goto('/settings');
@@ -56,16 +49,23 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(newPassword);
 
       const patchPromise = page.waitForResponse(
-        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH',
         { timeout: 15000 }
       );
       await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
-      await patchPromise;
+      const patchRes = await patchPromise;
+      if (patchRes.status() !== 200) {
+        const body = await patchRes.json().catch(() => ({}));
+        throw new Error(
+          `Changement de mot de passe refusé (${patchRes.status()}). ` +
+            (body?.error ?? patchRes.statusText()) +
+            '. Vérifiez que E2E_PASSWORD dans .env correspond au mot de passe en base (ex. Test1234 pour l\'utilisateur E2E après seed).'
+        );
+      }
 
       await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
         timeout: 5000,
       });
-      needRevert = true;
 
       await page.getByRole('button', { name: 'Changer mon mot de passe' }).click();
       await page.getByLabel('Mot de passe actuel').fill(newPassword);
@@ -73,29 +73,25 @@ test.describe('Paramètres', () => {
       await page.getByLabel('Confirmer le nouveau mot de passe').fill(TEST_USER.password);
 
       const patchPromise2 = page.waitForResponse(
-        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH' && res.status() === 200,
+        (res) => res.url().includes('/api/users/') && res.url().includes('/password') && res.request().method() === 'PATCH',
         { timeout: 15000 }
       );
       await page.getByRole('button', { name: 'Modifier le mot de passe' }).click();
-      await patchPromise2;
+      const patchRes2 = await patchPromise2;
+      if (patchRes2.status() !== 200) {
+        const body2 = await patchRes2.json().catch(() => ({}));
+        throw new Error(
+          `Restauration du mot de passe refusée (${patchRes2.status()}). ` + (body2?.error ?? patchRes2.statusText())
+        );
+      }
 
       await expect(page.getByText(/mot de passe modifié avec succès/i)).toBeVisible({
         timeout: 5000,
       });
-      needRevert = false;
     } finally {
-      // Revert via appel API direct (beaucoup plus fiable que via l'UI)
-      if (needRevert && userId) {
-        try {
-          const res = await page.request.patch(`/api/users/${userId}/password`, {
-            data: { currentPassword: newPassword, newPassword: TEST_USER.password },
-          });
-          if (!res.ok()) {
-            console.error(`Revert password API failed: ${res.status()} ${await res.text()}`);
-          }
-        } catch (e) {
-          console.error('Revert password failed:', e);
-        }
+      const res = await page.request.post('/api/dev/reset-e2e-password');
+      if (!res.ok()) {
+        console.error(`Restore E2E password failed: ${res.status()} ${await res.text()}`);
       }
     }
   });

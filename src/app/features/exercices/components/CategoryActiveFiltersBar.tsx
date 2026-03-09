@@ -49,7 +49,7 @@ export function CategoryActiveFiltersBar({
       aria-label="Filtres actifs. Cliquez sur une croix pour retirer un filtre."
     >
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-gray-700 shrink-0">Filtres :</span>
+        <span className="text-sm font-medium text-gray-800 shrink-0">Filtres :</span>
         {hasStatusFilter && (
           <FilterBadge
             label={statusLabel}

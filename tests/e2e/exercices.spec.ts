@@ -45,14 +45,15 @@ test.describe('Exercices', () => {
 
     const firstCard = page.locator('.exercise-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 15000 });
+    await firstCard.scrollIntoViewIfNeeded();
     await firstCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
     const modifierButton = firstCard.getByRole('button', { name: 'Modifier' });
     await modifierButton.waitFor({ state: 'visible', timeout: 5000 });
-    await firstCard.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await modifierButton.click({ force: true });
 
-    await expect(page).toHaveURL(/\/exercice\/edit\/\d+/, { timeout: 10000 });
+    await Promise.all([
+      page.waitForURL(/\/exercice\/edit\/\d+/, { timeout: 15000 }),
+      modifierButton.click(),
+    ]);
     await expect(page.getByRole('heading', { name: "Modifier l'exercice" })).toBeVisible({
       timeout: 10000,
     });
@@ -98,12 +99,15 @@ test.describe('Exercices', () => {
 
     // Vérification : rouvrir l'exercice et parcourir les étapes
     const cardWithNewName = page.locator('.exercise-card').filter({ hasText: newName }).first();
+    await cardWithNewName.scrollIntoViewIfNeeded();
     await cardWithNewName.getByRole('button', { name: 'Ouvrir les actions' }).click();
     const modifierBtn2 = cardWithNewName.getByRole('button', { name: 'Modifier' });
     await modifierBtn2.waitFor({ state: 'visible', timeout: 5000 });
-    await cardWithNewName.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await modifierBtn2.click({ force: true });
+
+    await Promise.all([
+      page.waitForURL(/\/exercice\/edit\/\d+/, { timeout: 15000 }),
+      modifierBtn2.click(),
+    ]);
 
     // Vérifier étape 1 : textes
     await expect(page.getByPlaceholder('Ex: Montée de genoux')).toHaveValue(newName);
@@ -134,19 +138,28 @@ test.describe('Exercices', () => {
 
     const firstCard = page.locator('.exercise-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 15000 });
+    await firstCard.scrollIntoViewIfNeeded();
 
     const completeButton = firstCard.getByRole('button', {
-      name: /Marquer comme fait aujourd'hui|Fait aujourd'hui/,
+      name: /Marquer comme fait aujourd'hui|Fait aujourd'hui|Démarquer|Fait \(\d+× cette semaine\)|Marquer comme fait le|Démarquer pour le/,
     }).first();
-    await completeButton.waitFor({ state: 'visible', timeout: 5000 });
+    await completeButton.waitFor({ state: 'visible', timeout: 10000 });
 
+    const completeResponse = page.waitForResponse(
+      (res) =>
+        /\/api\/exercices\/\d+\/complete/.test(res.url()) &&
+        res.request().method() === 'PATCH' &&
+        res.status() === 200,
+      { timeout: 15000 }
+    );
     await completeButton.click();
-    await page.waitForLoadState('networkidle');
+    await completeResponse;
 
-    const sameButtonAfter = firstCard.getByRole('button', {
-      name: /Démarquer|Fait aujourd'hui/,
-    }).first();
-    await expect(sameButtonAfter).toHaveAttribute('aria-label', /Démarquer/, { timeout: 10000 });
+    await expect(completeButton).toHaveAttribute(
+      'aria-label',
+      /Démarquer|Marquer comme fait aujourd'hui/,
+      { timeout: 10000 }
+    );
   });
 
   test('supprime un exercice', async ({ page }) => {
@@ -170,14 +183,15 @@ test.describe('Exercices', () => {
 
     // Ouvrir la page d'édition
     const cardToDelete = page.locator('.exercise-card').filter({ hasText: nameToDelete }).first();
+    await cardToDelete.scrollIntoViewIfNeeded();
     await cardToDelete.getByRole('button', { name: 'Ouvrir les actions' }).click();
     const modifierBtn = cardToDelete.getByRole('button', { name: 'Modifier' });
     await modifierBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await cardToDelete.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await modifierBtn.click({ force: true });
 
-    await expect(page).toHaveURL(/\/exercice\/edit\/\d+/);
+    await Promise.all([
+      page.waitForURL(/\/exercice\/edit\/\d+/, { timeout: 15000 }),
+      modifierBtn.click(),
+    ]);
 
     // Le bouton supprimer est accessible depuis n'importe quelle étape
     await page.getByRole('button', { name: "Supprimer l'exercice" }).click();

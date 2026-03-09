@@ -20,9 +20,10 @@ type Props = {
   weekData?: HeatmapDay[];
   progressDates?: Set<string>;
   onDayClick?: (day: HeatmapDay) => void;
+  currentStreak?: number;
 };
 
-export function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick }: Props) {
+export function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick, currentStreak = 0 }: Props) {
   const { showCelebration, animationKey } = useCelebration(completedToday);
   const { isTimeMachineMode, selectedDate } = useSelectedDate();
   
@@ -52,7 +53,7 @@ export function WelcomeHeader({ userName, completedToday, resetFrequency = null,
         </div>
       )}
 
-      <WelcomeHeaderGreeting userName={userName} resetFrequency={resetFrequency} />
+      <WelcomeHeaderGreeting userName={userName} resetFrequency={resetFrequency} currentStreak={currentStreak} />
       <DailyGoalProgress completedToday={completedToday} />
       
       {weekData && weekData.length === 7 && (

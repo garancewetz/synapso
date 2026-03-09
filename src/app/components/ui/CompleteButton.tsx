@@ -116,7 +116,7 @@ export function CompleteButton({
       size="md"
       rounded="lg"
       className={clsx(
-        'flex-1 min-h-[44px] whitespace-nowrap shadow-sm font-semibold text-sm',
+        'complete-button flex-1 min-h-[44px] whitespace-nowrap shadow-sm font-semibold text-sm',
         getCustomStyles(),
         className
       )}

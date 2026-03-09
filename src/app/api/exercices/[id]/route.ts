@@ -91,9 +91,9 @@ export async function PUT(
       );
     }
 
-    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(updatedData.category)) {
+    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'FACE'].includes(updatedData.category)) {
       return NextResponse.json(
-        { error: 'Catégorie invalide. Valeurs attendues : UPPER_BODY, LOWER_BODY, STRETCHING, CORE' },
+        { error: 'Catégorie invalide. Valeurs attendues : UPPER_BODY, LOWER_BODY, STRETCHING, CORE, FACE' },
         { status: 400 }
       );
     }

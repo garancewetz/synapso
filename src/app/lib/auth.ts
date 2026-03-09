@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import crypto, { timingSafeEqual } from 'crypto';
 import { prisma } from './prisma';
 

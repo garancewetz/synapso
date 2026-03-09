@@ -5,54 +5,56 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 /**
  * Obtient le nom de la page actuelle basé sur le pathname
  * Utilise un langage simple et clair (FALC) pour les personnes ayant subi un AVC
+ * Accepte un pathname avec ou sans query string (ex. /journal?date=yyyy-MM-dd)
  */
 export function getCurrentPageName(pathname: string): string | null {
+  const path = (pathname || '').split('?')[0];
   // Page d'accueil
-  if (pathname === '/') {
+  if (path === '/') {
     return 'Accueil';
   }
 
   // Catégories d'exercices
   for (const category of Object.keys(CATEGORY_HREFS) as ExerciceCategory[]) {
-    if (pathname === CATEGORY_HREFS[category]) {
+    if (path === CATEGORY_HREFS[category]) {
       return CATEGORY_LABELS[category];
     }
   }
 
   // Historique
-  if (pathname === '/historique') {
+  if (path === '/historique') {
     return 'Ma progression';
   }
 
   // Journal
-  if (pathname === '/journal') {
+  if (path === '/journal') {
     return 'Journal';
   }
 
-  if (pathname === '/journal/add') {
+  if (path === '/journal/add') {
     return 'Ajouter une note';
   }
 
-  if (pathname.startsWith('/journal/edit/')) {
+  if (path.startsWith('/journal/edit/')) {
     return 'Modifier une note';
   }
 
   // Exercices
-  if (pathname === '/exercice/add') {
+  if (path === '/exercice/add') {
     return 'Ajouter un exercice';
   }
 
-  if (pathname.startsWith('/exercice/edit/')) {
+  if (path.startsWith('/exercice/edit/')) {
     return 'Modifier un exercice';
   }
 
   // Page vue globale
-  if (pathname === '/exercices/all' || pathname.startsWith('/exercices/all')) {
+  if (path === '/exercices/all' || path.startsWith('/exercices/all')) {
     return 'Vue globale';
   }
 
   // Pages d'exercices par catégorie - extraire la catégorie de l'URL
-  const categoryMatch = pathname.match(/^\/exercices\/([^\/]+)$/);
+  const categoryMatch = path.match(/^\/exercices\/([^\/]+)$/);
   if (categoryMatch) {
     const categoryParam = categoryMatch[1];
     // Convertir "upper_body" en "UPPER_BODY"
@@ -63,7 +65,7 @@ export function getCurrentPageName(pathname: string): string | null {
   }
 
   // Paramètres
-  if (pathname === '/settings') {
+  if (path === '/settings') {
     return 'Mon profil';
   }
 
@@ -76,38 +78,39 @@ export function getCurrentPageName(pathname: string): string | null {
  * Retourne null si aucun emoji n'est défini pour cette page
  */
 export function getPageEmoji(pathname: string): string | null {
+  const path = (pathname || '').split('?')[0];
   // Page d'accueil
-  if (pathname === '/') {
+  if (path === '/') {
     return NAVIGATION_EMOJIS.HOME;
   }
 
   // Catégories d'exercices
   for (const category of Object.keys(CATEGORY_HREFS) as ExerciceCategory[]) {
-    if (pathname === CATEGORY_HREFS[category]) {
+    if (path === CATEGORY_HREFS[category]) {
       return CATEGORY_ICONS[category];
     }
   }
 
   // Historique
-  if (pathname === '/historique') {
+  if (path === '/historique') {
     return NAVIGATION_EMOJIS.ROCKET;
   }
 
   // Journal
-  if (pathname === '/journal') {
+  if (path === '/journal') {
     return JOURNAL_EMOJI;
   }
 
-  if (pathname === '/journal/add') {
+  if (path === '/journal/add') {
     return JOURNAL_EMOJI;
   }
 
-  if (pathname.startsWith('/journal/edit/')) {
+  if (path.startsWith('/journal/edit/')) {
     return JOURNAL_EMOJI;
   }
 
   // Pages d'exercices par catégorie - extraire la catégorie de l'URL
-  const categoryMatch = pathname.match(/^\/exercices\/([^\/]+)$/);
+  const categoryMatch = path.match(/^\/exercices\/([^\/]+)$/);
   if (categoryMatch) {
     const categoryParam = categoryMatch[1];
     // Convertir "upper_body" en "UPPER_BODY"

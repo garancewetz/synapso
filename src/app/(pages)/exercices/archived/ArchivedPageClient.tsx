@@ -38,6 +38,7 @@ export function ArchivedPageClient() {
       LOWER_BODY: [],
       CORE: [],
       STRETCHING: [],
+      FACE: [],
     };
     
     archivedExercices.forEach(ex => {
@@ -69,7 +70,7 @@ export function ArchivedPageClient() {
         </div>
 
         {/* Exercices */}
-        <div className="px-4">
+        <div>
           {loadingExercices ? (
             <div className="flex items-center justify-center min-h-screen py-12">
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />

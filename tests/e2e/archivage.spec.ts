@@ -21,7 +21,15 @@ test.describe('Archivage', () => {
 
     await firstCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
     await page.waitForTimeout(500);
-    await firstCard.getByRole('button', { name: 'Archiver' }).click({ force: true });
+
+    const archiveButton = firstCard.getByRole('button', { name: 'Archiver' });
+    await archiveButton.waitFor({ state: 'visible', timeout: 5000 });
+    const archiveResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/exercices/') && res.url().includes('/archive') && res.request().method() === 'PATCH',
+      { timeout: 15000 }
+    );
+    await archiveButton.click();
+    await archiveResponse;
 
     await page.goto('/exercices/archived');
     await page.waitForLoadState('networkidle');
@@ -48,7 +56,15 @@ test.describe('Archivage', () => {
 
     await firstCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
     await page.waitForTimeout(500);
-    await firstCard.getByRole('button', { name: 'Désarchiver' }).click({ force: true });
+
+    const unarchiveButton = firstCard.getByRole('button', { name: 'Désarchiver' });
+    await unarchiveButton.waitFor({ state: 'visible', timeout: 5000 });
+    const unarchiveResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/exercices/') && res.url().includes('/archive') && res.request().method() === 'PATCH',
+      { timeout: 15000 }
+    );
+    await unarchiveButton.click();
+    await unarchiveResponse;
 
     await page.goto('/exercices/upper_body');
     await page.waitForLoadState('networkidle');

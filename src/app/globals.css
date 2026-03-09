@@ -206,6 +206,38 @@ input[type="email"]:focus {
   }
 } */
 
+/* ♿ WCAG 2.5.5 Target Size: zones tactiles ≥ 44px (AA), agrandies pour objectif AAA / usage à une main */
+.bottom-nav-item {
+  min-height: 56px;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+.bottom-nav-item > div:first-of-type {
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
+}
+.complete-button {
+  min-height: 52px;
+}
+.action-button-fab {
+  min-height: 56px;
+}
+.action-button-fab button {
+  min-height: 56px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+.back-button {
+  min-height: 52px;
+}
+.toggle-button-group button {
+  min-height: 52px;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
 /* Respect de la préférence reduced-motion pour l'accessibilité */
 @media (prefers-reduced-motion: reduce) {
   *,

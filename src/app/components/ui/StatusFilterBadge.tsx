@@ -38,9 +38,9 @@ export function StatusFilterBadge({
         activeBg: isCompletedFilter ? 'bg-emerald-500' : 'bg-gray-800',
         activeRing: isCompletedFilter ? 'ring-emerald-300' : 'ring-gray-400',
         inactiveBg: 'bg-white',
-        inactiveText: 'text-gray-700',
+        inactiveText: 'text-gray-800',
         inactiveBorder: 'border-gray-200',
-        inactiveTag: 'bg-gray-100 text-gray-600',
+        inactiveTag: 'bg-gray-200 text-gray-800',
         focusRing: isCompletedFilter ? 'focus:ring-emerald-500' : 'focus:ring-gray-400',
       }}
     />

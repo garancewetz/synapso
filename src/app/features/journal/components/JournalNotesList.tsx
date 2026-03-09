@@ -2,9 +2,11 @@
 
 import { useCallback, useMemo } from 'react';
 import type { JournalNote } from '@/app/types';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { JournalNoteCard } from './JournalNoteCard';
 import { useJournalNotes } from '../hooks/useJournalNotes';
 import { useExercices } from '@/app/features/exercices';
+import { isNoteValidatedForDay } from '../hooks/useValidateJournalNote';
 
 type Props = {
   limit?: number;
@@ -13,15 +15,23 @@ type Props = {
 export function JournalNotesList({ limit }: Props) {
   const { notes, refetch } = useJournalNotes();
   const { exercices } = useExercices();
+  const { referenceDateKey } = useTimeContext();
 
-  // Set des IDs d'exercices complétés dans la période (jour ou semaine selon resetFrequency)
+  // Set des IDs d'exercices complétés : progression générale + exercices des entrées validées pour le jour de référence
   const completedExerciceIds = useMemo(() => {
     const ids = new Set<number>();
     for (const ex of exercices) {
       if (ex.completed) ids.add(ex.id);
     }
+    for (const note of notes) {
+      if (referenceDateKey && isNoteValidatedForDay(note, referenceDateKey) && note.exercices?.length) {
+        for (const ex of note.exercices) {
+          ids.add(ex.id);
+        }
+      }
+    }
     return ids;
-  }, [exercices]);
+  }, [exercices, notes, referenceDateKey]);
 
   const handleNoteUpdated = useCallback((_updatedNote: JournalNote) => {
     refetch();

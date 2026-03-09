@@ -16,11 +16,10 @@ import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
-import { 
-  CATEGORY_ORDER, 
+import {
   CATEGORY_HREFS,
   CATEGORY_LABELS,
-  CATEGORY_COLORS
+  CATEGORY_COLORS,
 } from '@/app/constants/exercice.constants';
 
 /**
@@ -47,7 +46,8 @@ export function NavBar() {
   // ⚡ MODE SABLIER: Ajouter un padding-top si la bannière est visible
   const isBannerVisible = isDateSelected && selectedDate && !isToday(selectedDate);
 
-  const categories = CATEGORY_ORDER;
+  const { navCategories } = useLayoutContext();
+  const categories = navCategories.forDesktop;
   const isHomeActive = pathname === '/';
   const isHistoriqueActive = pathname === '/historique';
   const isJournalActive = pathname === '/journal' || pathname.startsWith('/journal/');
@@ -121,7 +121,7 @@ export function NavBar() {
             className="hidden md:flex items-center flex-1 justify-center px-2 gap-1"
             aria-label="Navigation principale"
           >
-            {/* Groupe 1 : Accueil + Exercices (dropdown) */}
+            {/* Groupe 1 : Accueil + Exercices (dropdown, masqué si aucune catégorie avec exercices) */}
             <div className="flex items-center gap-0.5">
               <TouchLink
                 href={preserveDate('/')}

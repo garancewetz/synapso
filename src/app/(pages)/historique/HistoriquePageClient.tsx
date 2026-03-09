@@ -9,7 +9,7 @@ import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
-import { useProgress, useProgressStats, useProgressModal } from '@/app/features/progress';
+import { useProgressInfinite, useProgressStats, useProgressModal } from '@/app/features/progress';
 import { usePeriodNavigation, useHeatmapNavigation, getRequiredDaysForOffset, getRequiredDaysForMonthOffset } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
@@ -40,9 +40,9 @@ import {
   calculateBodypartStatsByPeriod,
   getDonutDataBodyparts,
   calculateCurrentStreak,
+  HistoriqueStatistiquesSection,
+  HistoriqueProgresSection,
 } from '@/app/features/historique';
-import { HistoriqueStatistiquesSection } from '@/app/features/historique/components/HistoriqueStatistiquesSection';
-import { HistoriqueProgresSection } from '@/app/features/historique/components/HistoriqueProgresSection';
 
 type BodypartPeriodFilter = 'week' | 'month' | 'all';
 type ActiveTab = 'statistiques' | 'progres';
@@ -78,8 +78,13 @@ export function HistoriquePageClient() {
   // Charger l'historique (jours adaptés à la navigation des deux composants)
   const { history, loading: loadingHistory } = useHistory({ days: historyDays });
 
-  // Charger les progrès
-  const { progressList, loading: loadingProgress } = useProgress();
+  const {
+    progressList,
+    loading: loadingProgress,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useProgressInfinite();
   const queryClient = useQueryClient();
 
   const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
@@ -345,6 +350,9 @@ export function HistoriquePageClient() {
                 onOpenSlideshow={() => setIsSlideshowOpen(true)}
                 hasUser={!!effectiveUser}
                 starEmoji={STAR_BRIGHT_EMOJI}
+                onLoadMore={fetchNextPage}
+                hasMore={hasNextPage}
+                loadingMore={isFetchingNextPage}
               />
             </div>
           </div>

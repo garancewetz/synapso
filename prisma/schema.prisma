@@ -175,6 +175,7 @@ enum ExerciceCategory {
   LOWER_BODY
   STRETCHING
   CORE
+  FACE
 }
 
 enum ResetFrequency {

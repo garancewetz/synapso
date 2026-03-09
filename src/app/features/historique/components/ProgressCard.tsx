@@ -198,7 +198,7 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
                       duration: 0.15,
                       ease: "easeOut"
                     }}
-                    className="overflow-hidden"
+                    className="overflow-hidden -mx-4 md:-mx-5"
                   >
                     <ProgressMedia
                       medias={progress.medias}
@@ -246,7 +246,7 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
                 aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
                 aria-expanded={isActionsOpen}
               >
-                <DotsIcon className={`w-5 h-5 transition-transform duration-200 ${isActionsOpen ? 'rotate-90' : ''}`} />
+                <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
               </Button>
             </BaseCard.Footer>
 

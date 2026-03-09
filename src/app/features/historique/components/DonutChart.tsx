@@ -51,9 +51,9 @@ export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emp
       {filterSlot && <div className="mb-4">{filterSlot}</div>}
       
       {/* Sur mobile: toujours en colonne (légende en bas), sur desktop: selon legendPosition */}
-      <div className={`flex flex-col items-center gap-4 ${isHorizontalLayout ? 'md:flex-row md:items-center md:gap-6' : ''}`}>
+      <div className={clsx('flex flex-col items-center gap-4', isHorizontalLayout && 'md:flex-row md:items-center md:gap-6')}>
         {/* Graphique Donut */}
-        <div className={`w-full h-48 xl:h-56 ${isHorizontalLayout ? 'md:flex-1' : ''}`}>
+        <div className={clsx('w-full h-48 xl:h-56', isHorizontalLayout && 'md:flex-1')}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -83,7 +83,7 @@ export const DonutChart = memo(function DonutChart({ title, data, emptyIcon, emp
         </div>
 
         {/* Légende - toujours en grille sur mobile, colonne sur desktop si legendPosition="right" */}
-        <div className={`w-full grid grid-cols-2 gap-2 ${isHorizontalLayout ? 'md:flex-1 md:flex md:flex-col' : ''}`}>
+        <div className={clsx('w-full grid grid-cols-2 gap-2', isHorizontalLayout && 'md:flex-1 md:flex md:flex-col')}>
           {data.map((item) => (
             <div
               key={item.name}

@@ -14,17 +14,12 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
 import { useUser } from '@/app/contexts/UserContext';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
-import { useHandPreference } from '@/app/hooks/useHandPreference';
 
-/**
- * ♿ Main dominante : Accueil est placé du côté de la main utilisée (gauche = gaucher, droite = droitier)
- * pour faciliter l'usage à une main (post-AVC, hémiplégie).
- */
 export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
   const { preserveDate } = useLayoutContext();
-  const { isLeftHanded } = useHandPreference();
+
   
   if (!effectiveUser || loading) {
     return null;
@@ -113,9 +108,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
     [pathname, preserveDate]
   );
 
-  const navItems = isLeftHanded
-    ? [homeItem, ...categoryItems]
-    : [...categoryItems, homeItem];
+  const navItems = [homeItem, ...categoryItems];
 
   return (
     <nav

@@ -11,8 +11,8 @@ export function useReceivedShares() {
     queryKey: queryKeys.shares.received(),
     queryFn: fetchReceivedShares,
     enabled: !!effectiveUser,
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 5 * 60 * 1000, // Polling toutes les 5 minutes
     refetchOnWindowFocus: true,
   });
 

@@ -1,6 +1,5 @@
 import { ExerciceCategory } from '@/app/types/exercice';
 import { CATEGORY_LABELS_SHORT, CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
-import { CheckIcon } from '@/app/components/ui/icons';
 import clsx from 'clsx';
 
 type Props = {
@@ -16,7 +15,7 @@ export function ExerciceFormCategory({ category, onCategoryChange }: Props) {
       <label className="block text-base font-semibold text-gray-800 mb-3">
         Catégorie *
       </label>
-      <div className="grid grid-cols-4 gap-2 max-w-full">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-w-full">
         {categories.map((cat) => {
           const isSelected = category === cat;
           const colors = CATEGORY_COLORS[cat];
@@ -44,9 +43,6 @@ export function ExerciceFormCategory({ category, onCategoryChange }: Props) {
               <div className={clsx('text-sm md:text-base font-medium', colors.text)}>
                 {CATEGORY_LABELS_SHORT[cat]}
               </div>
-              {isSelected && (
-                <CheckIcon className="w-5 h-5 mt-2" strokeWidth={2.5} />
-              )}
             </button>
           );
         })}

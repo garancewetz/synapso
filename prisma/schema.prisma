@@ -175,6 +175,7 @@ enum ExerciceCategory {
   LOWER_BODY
   STRETCHING
   CORE
+  MAXILLO_FACIAL
 }
 
 enum ResetFrequency {

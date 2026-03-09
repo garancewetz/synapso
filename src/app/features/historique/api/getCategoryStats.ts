@@ -71,6 +71,7 @@ export async function getCategoryStats(params: GetCategoryStatsParams) {
         LOWER_BODY: 0,
         STRETCHING: 0,
         CORE: 0,
+        MAXILLO_FACIAL: 0,
       };
 
       statsResult.forEach((row) => {

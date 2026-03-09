@@ -41,7 +41,7 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
     queryFn: () => fetchHistory({ days: 40, referenceDate: referenceDateForQuery }),
     enabled: !!effectiveUser,
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
-    staleTime: 1000,
+    staleTime: 30 * 1000, // 30 secondes
     gcTime: 2 * 60 * 1000,
   });
 

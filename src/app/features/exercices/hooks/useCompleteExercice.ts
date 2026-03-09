@@ -78,8 +78,8 @@ export function useCompleteExercice({
 
       onCompleted?.(updatedExercice);
 
-      // ⚡ CACHE INVALIDATION CIBLÉE: Invalider les queries exercices pour la date concernée
-      // targetDate est maintenant toujours envoyé (referenceDateKey) ; on invalide la query correspondante
+      // Invalider exercices (liste filtrée par date) + history + todayCompletedCount
+      // Une seule passe : history.all couvre aussi les queries useCategoryStats
       queryClient.invalidateQueries({
         queryKey: ['exercices', 'list'],
         predicate: (query) => {
@@ -87,45 +87,16 @@ export function useCompleteExercice({
           if (!filters?.targetDate) return true;
           return filters.targetDate === targetDate;
         },
-        refetchType: 'active',
       });
-      
-      // ⚡ FIX: Invalider toutes les queries history (actives et inactives)
-      // Le problème : si on complète un exercice en mode sablier puis qu'on retourne sur la home,
-      // la query history utilisée par useCategoryStats doit être invalidée et refetchée
-      // Solution : invalider toutes les queries history (sans refetchType pour marquer comme invalidées)
-      // + refetchOnMount: true dans useCategoryStats garantit le refetch au prochain montage
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.history.all,
-        // ⚡ FIX: Ne pas utiliser refetchType pour invalider toutes les queries (actives et inactives)
-        // Par défaut, seules les queries actives sont refetchées immédiatement,
-        // mais toutes les queries sont marquées comme invalidées
-        // refetchOnMount: true dans useCategoryStats garantit le refetch au prochain montage
-        refetchType: 'active', // Refetch immédiat des queries actives
-        // Toutes les queries (actives et inactives) sont marquées comme invalidées
-        // et seront refetchées au prochain montage grâce à refetchOnMount: true
-      });
-      
-      // Invalider categoryStats pour cette date spécifique
-      if (effectiveUser?.id && effectiveUser?.resetFrequency) {
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.categoryStats.list({
-            userId: effectiveUser.id,
-            resetFrequency: effectiveUser.resetFrequency,
-            referenceDateKey: targetDate,
-          }),
-          refetchType: 'active',
-        });
-      }
-      
-      // Invalider todayCompletedCount pour cette date spécifique
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.history.all });
+
       if (effectiveUser?.id) {
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: queryKeys.todayCompletedCount.list({
             userId: effectiveUser.id,
             dateKey: targetDate,
           }),
-          refetchType: 'active',
         });
       }
     },

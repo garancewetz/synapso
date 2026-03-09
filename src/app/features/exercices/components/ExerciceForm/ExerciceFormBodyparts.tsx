@@ -1,16 +1,19 @@
-import { Fragment } from 'react';
 import {
   BODYPART_COLORS,
+  BODYPART_ICONS,
   AVAILABLE_BODYPARTS,
   BODYPART_TO_CATEGORY,
+  CATEGORY_COLORS,
 } from '@/app/constants/exercice.constants';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import { CheckIcon } from '@/app/components/ui/icons';
 import clsx from 'clsx';
 
-const BODYPART_CATEGORIES: Array<'UPPER_BODY' | 'CORE' | 'LOWER_BODY'> = [
+const BODYPART_CATEGORIES: Array<'UPPER_BODY' | 'CORE' | 'LOWER_BODY' | 'MAXILLO_FACIAL'> = [
   'UPPER_BODY',
   'CORE',
   'LOWER_BODY',
+  'MAXILLO_FACIAL',
 ];
 
 type Props = {
@@ -29,13 +32,14 @@ export function ExerciceFormBodyparts({ selectedBodyparts, onToggleBodypart }: P
         Parties du corps ciblées
       </label>
       <p className="text-sm text-gray-500 mb-4">Sélectionnez une ou plusieurs parties du corps</p>
-      <div className="flex flex-wrap gap-2">
-        {bodypartsByCategory.map((bodyparts, groupIndex) => (
-          <Fragment key={bodyparts[0]}>
-            {groupIndex > 0 && <span className="w-2 shrink-0" aria-hidden />}
+      <div className="space-y-3">
+        {bodypartsByCategory.map((bodyparts) => (
+          <div key={bodyparts[0]} className="flex flex-wrap gap-2">
             {bodyparts.map((bodypart) => {
               const isSelected = selectedBodyparts.includes(bodypart);
               const colorClass = BODYPART_COLORS[bodypart] || 'bg-gray-100 text-gray-600';
+              const category = BODYPART_TO_CATEGORY[bodypart] as ExerciceCategory | undefined;
+              const borderClass = category ? CATEGORY_COLORS[category].border : 'border-gray-200';
               return (
                 <button
                   key={bodypart}
@@ -45,12 +49,18 @@ export function ExerciceFormBodyparts({ selectedBodyparts, onToggleBodypart }: P
                     'px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer',
                     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
                     'active:scale-[0.98]',
+                    'border-2',
                     colorClass,
                     isSelected
-                      ? 'border-2 border-gray-400 ring-2 ring-offset-2 ring-gray-400 font-semibold'
-                      : 'border border-transparent font-medium md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2'
+                      ? 'border-gray-400 ring-2 ring-offset-2 ring-gray-400 font-semibold'
+                      : clsx(borderClass, 'font-medium md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
                   )}
                 >
+                  {BODYPART_ICONS[bodypart] && (
+                    <span className="mr-1.5" role="img" aria-hidden="true">
+                      {BODYPART_ICONS[bodypart]}
+                    </span>
+                  )}
                   {bodypart}
                   {isSelected && (
                     <CheckIcon className="inline-block w-3.5 h-3.5 ml-1" strokeWidth={2.5} />
@@ -58,7 +68,7 @@ export function ExerciceFormBodyparts({ selectedBodyparts, onToggleBodypart }: P
                 </button>
               );
             })}
-          </Fragment>
+          </div>
         ))}
       </div>
     </div>

@@ -11,9 +11,9 @@ export function usePendingShareCount() {
     queryKey: queryKeys.shares.count(),
     queryFn: fetchPendingShareCount,
     enabled: !!effectiveUser,
-    staleTime: 30 * 1000, // 30 secondes
+    staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000, // Polling toutes les minutes pour le badge
+    refetchInterval: 5 * 60 * 1000, // Polling toutes les 5 minutes
   });
 
   return { count };

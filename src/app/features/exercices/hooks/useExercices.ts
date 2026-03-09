@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Exercice } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
@@ -30,7 +30,7 @@ type UseExercicesReturn = {
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
 export function useExercices({ category, equipments, includeArchived }: UseExercicesOptions = {}): UseExercicesReturn {
-  const { effectiveUser, loading: userLoading } = useUser();
+  const { effectiveUser } = useUser();
   const { referenceDateKey } = useTimeContext();
   const queryClient = useQueryClient();
   
@@ -54,29 +54,13 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
     placeholderData: undefined,
-    // ⚡ FIX BUG HARD REFRESH: Réduire drastiquement staleTime pour forcer un refetch plus fréquent
-    // Cela garantit que les données sont toujours à jour, même après navigation
-    staleTime: 0, // Toujours considérer comme stale pour forcer le refetch
-    gcTime: 2 * 60 * 1000, // 2 minutes
-    // ⚡ FIX BUG HARD REFRESH: Forcer le refetch au montage pour garantir des données fraîches
-    // Cela évite d'avoir besoin d'un hard refresh pour voir les dernières données
-    refetchOnMount: true,
-    // ⚡ FIX BUG HARD REFRESH: Refetch aussi quand la fenêtre reprend le focus
-    // Utile quand on revient sur l'onglet après avoir complété un exercice ailleurs
-    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000, // 30 secondes — évite les refetches excessifs
+    gcTime: 2 * 60 * 1000,
+    refetchOnMount: true, // refetch seulement si stale
+    refetchOnWindowFocus: false,
   });
 
   const { data: exercices = [], isLoading, error, refetch } = queryResult;
-
-  useEffect(() => {
-    if (!effectiveUser) return;
-    
-    const timeoutId = setTimeout(() => {
-      refetch();
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [referenceDateKey, effectiveUser, refetch]);
 
   // ⚡ OPTIMISTIC UPDATE: Mettre à jour toutes les listes d'exercices en cache (page courante + archivés)
   // pour que la navigation vers "archivés" affiche tout de suite l'exercice sans refetch ni loader

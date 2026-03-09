@@ -16,6 +16,7 @@ export function calculateStats(data: HistoryEntry[]): Stats {
     UPPER_BODY: 0,
     STRETCHING: 0,
     CORE: 0,
+    MAXILLO_FACIAL: 0,
   };
 
   data.forEach(entry => {

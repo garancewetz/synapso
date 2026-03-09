@@ -16,6 +16,7 @@ const initialStats: Record<ExerciceCategory, number> = {
   LOWER_BODY: 0,
   STRETCHING: 0,
   CORE: 0,
+  MAXILLO_FACIAL: 0,
 };
 
 /**

@@ -1,3 +1,5 @@
+'use client';
+
 import { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress } from '@/app/features/exercices';

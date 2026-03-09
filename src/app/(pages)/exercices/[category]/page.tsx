@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import clsx from 'clsx';
 import {
   ExerciceCard,
   useExercices,
@@ -16,8 +17,23 @@ import { EmptyState } from '@/app/components/EmptyState';
 import { StatusFilterSection } from '@/app/components/ui';
 import type { ExerciceCategory, ExerciceStatusFilter, Exercice } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+
+const HIGHLIGHT_RING_BY_CATEGORY: Record<ExerciceCategory, string> = {
+  UPPER_BODY: 'ring-2 ring-orange-500',
+  CORE: 'ring-2 ring-teal-500',
+  LOWER_BODY: 'ring-2 ring-blue-500',
+  STRETCHING: 'ring-2 ring-purple-500',
+  MAXILLO_FACIAL: 'ring-2 ring-amber-500',
+};
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';
+
+function getHighlightedExerciceIdFromHash(): string | null {
+  if (typeof window === 'undefined') return null;
+  const hash = window.location.hash;
+  if (!hash.startsWith('#exercice-')) return null;
+  return hash.slice('#exercice-'.length);
+}
 
 export default function CategoryPage() {
   const [filter, setFilter] = useState<ExerciceStatusFilter>('all');
@@ -94,6 +110,16 @@ export default function CategoryPage() {
   );
 
   const hasScrolledToHashRef = useRef(false);
+  const [highlightedExerciceId, setHighlightedExerciceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = getHighlightedExerciceIdFromHash();
+    if (!id) return;
+    setHighlightedExerciceId(id);
+    const timeout = setTimeout(() => setHighlightedExerciceId(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [loadingExercices]);
+
   useEffect(() => {
     if (loadingExercices || hasScrolledToHashRef.current) return;
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
@@ -242,7 +268,15 @@ export default function CategoryPage() {
               className="grid gap-3 grid-cols-1 lg:grid-cols-2"
             >
               {filters.filteredExercices.map((exercice) => (
-                <div key={exercice.id} id={`exercice-${exercice.id}`} className="h-full scroll-mt-24">
+                <div
+                  key={exercice.id}
+                  id={`exercice-${exercice.id}`}
+                  className={clsx(
+                    'h-full scroll-mt-24 transition-shadow duration-300 rounded-xl',
+                    highlightedExerciceId === String(exercice.id) &&
+                      `${HIGHLIGHT_RING_BY_CATEGORY[exercice.category]} ring-offset-2 ring-offset-background shadow-lg`
+                  )}
+                >
                   <ExerciceCard
                     exercice={exercice}
                     onEdit={handleEditClick}
@@ -271,7 +305,15 @@ export default function CategoryPage() {
               </div>
               <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                 {filters.relatedStretchingExercices.map((exercice) => (
-                  <div key={exercice.id} id={`exercice-${exercice.id}`} className="h-full scroll-mt-24">
+                  <div
+                    key={exercice.id}
+                    id={`exercice-${exercice.id}`}
+                    className={clsx(
+                      'h-full scroll-mt-24 transition-shadow duration-300 rounded-xl',
+                      highlightedExerciceId === String(exercice.id) &&
+                        `${HIGHLIGHT_RING_BY_CATEGORY[exercice.category]} ring-offset-2 ring-offset-background shadow-lg`
+                    )}
+                  >
                     <ExerciceCard
                       exercice={exercice}
                       onEdit={handleEditClick}

@@ -45,6 +45,13 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     icon: '🧘‍♀️',
     href: '/exercices/stretching',
   },
+  MAXILLO_FACIAL: {
+    color: 'amber',
+    label: 'Maxillo-facial',
+    labelShort: 'Maxillo',
+    icon: '🦷',
+    href: '/exercices/maxillo_facial',
+  },
 };
 
 // Mapping couleur Tailwind → classes CSS et hex
@@ -117,6 +124,23 @@ const TAILWIND_COLOR_MAP = {
     mobileActive: 'bg-teal-600 text-white border-t-2 border-teal-600',
     mobileInactive: 'bg-white text-gray-600 border-t-2 border-teal-300',
   },
+  amber: {
+    hex: '#F59E0B',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    cardBorder: 'border-amber-100',
+    text: 'text-amber-800',
+    accent: 'bg-amber-500',
+    tag: 'bg-amber-100 text-amber-800',
+    focusRing: 'focus:ring-amber-500',
+    ring: 'ring-amber-200',
+    iconBg: 'bg-gradient-to-br from-amber-100 to-amber-200',
+    iconText: 'text-amber-700',
+    navActive: 'bg-amber-600 text-white border-amber-600',
+    navInactive: 'bg-white text-gray-600 border-amber-300 hover:border-amber-400',
+    mobileActive: 'bg-amber-600 text-white border-t-2 border-amber-600',
+    mobileInactive: 'bg-white text-gray-600 border-t-2 border-amber-300',
+  },
 } as const;
 
 // ============================================================================
@@ -124,7 +148,10 @@ const TAILWIND_COLOR_MAP = {
 // ============================================================================
 
 // Ordre standardisé des catégories
-export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
+export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING', 'MAXILLO_FACIAL'];
+
+/** Catégories affichées dans la barre de navigation mobile (sans Maxillo-facial, accessible via la home) */
+export const CATEGORY_ORDER_NAV: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
 // Labels affichés pour chaque catégorie
 export const CATEGORY_LABELS = Object.fromEntries(
@@ -246,6 +273,7 @@ const HEATMAP_COLOR_MAP: Record<keyof typeof TAILWIND_COLOR_MAP, { bg: string; b
   teal: { bg: 'bg-teal-400', border: 'border-teal-500' },
   blue: { bg: 'bg-blue-400', border: 'border-blue-500' },
   purple: { bg: 'bg-purple-400', border: 'border-purple-500' },
+  amber: { bg: 'bg-amber-400', border: 'border-amber-500' },
 };
 
 export const CATEGORY_HEATMAP_COLORS = Object.fromEntries(
@@ -262,7 +290,12 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
   'Bras': 'UPPER_BODY',
   'Mains': 'UPPER_BODY',
   'Épaules': 'UPPER_BODY',
+  'Cou': 'UPPER_BODY',
+  // 🦷 MAXILLO-FACIAL
+  'Mâchoire': 'MAXILLO_FACIAL',
+  // Rétrocompatibilité (anciennes valeurs en base)
   'Cou & Nuque': 'UPPER_BODY',
+  'Nuque / Cervicales': 'UPPER_BODY',
   // 🤸 MILIEU DU CORPS
   'Dos': 'CORE',
   'Corps': 'CORE',
@@ -272,17 +305,14 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
   'Jambes': 'LOWER_BODY',
   'Fessier': 'LOWER_BODY',
   'Pied': 'LOWER_BODY',
-  // Rétrocompatibilité (anciennes valeurs en base de données)
   'Epaules': 'UPPER_BODY',
-  'Nuque / Cervicales': 'UPPER_BODY',
 };
 
-// Liste des bodyparts disponibles (actifs uniquement)
+// Liste des bodyparts disponibles (actifs uniquement) — ordre du corps, haut vers le bas
 export const AVAILABLE_BODYPARTS = [
-  'Bras', 'Mains', 'Épaules', 'Cou & Nuque',  // Haut
-  'Dos', 'Corps', 'Bassin',  'Ventre',                  // Milieu
-  'Jambes', 'Fessier', 'Pied',
-  // Bas
+  'Mâchoire', 'Cou', 'Épaules', 'Bras', 'Mains',  // Haut
+  'Dos', 'Corps', 'Ventre', 'Bassin',                     // Milieu
+  'Fessier', 'Jambes', 'Pied',                            // Bas
 ] as const;
 
 // Icônes pour les bodyparts
@@ -290,7 +320,10 @@ export const BODYPART_ICONS: Record<string, string> = {
   'Bras': '💪',
   'Mains': '🖐️',
   'Épaules': '🏋️',
+  'Cou': '🦒',
+  'Mâchoire': '🦷',
   'Cou & Nuque': '🦒',
+  'Nuque / Cervicales': '🦒',
   'Dos': '🔙',
   'Corps': '🧍',
   'Bassin': '🦴',
@@ -299,9 +332,7 @@ export const BODYPART_ICONS: Record<string, string> = {
   'Jambes': '🦵',
   'Fessier': '🍑',
   'Pied': '🦶',
-  // Rétrocompatibilité
   'Epaules': '🏋️',
-  'Nuque / Cervicales': '🦒',
 };
 
 // Couleurs pour les bodyparts - générées automatiquement depuis BODYPART_TO_CATEGORY

@@ -101,6 +101,7 @@ export function EquipmentsPageClient() {
       LOWER_BODY: [],
       CORE: [],
       STRETCHING: [],
+      MAXILLO_FACIAL: [],
     };
     
     filteredExercices.forEach(ex => {

@@ -14,6 +14,7 @@ export function useRelatedStretchingByCategory() {
       CORE: 0,
       LOWER_BODY: 0,
       STRETCHING: 0,
+      MAXILLO_FACIAL: 0,
     };
     
     CATEGORY_ORDER.forEach((category) => {

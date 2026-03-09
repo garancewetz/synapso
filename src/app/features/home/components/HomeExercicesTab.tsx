@@ -45,7 +45,7 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-        {CATEGORY_ORDER.map((category, index) => {
+        {CATEGORY_ORDER.filter(category => (exercicesByCategory.get(category) || []).length > 0).map((category, index) => {
           const categoryExercices = exercicesByCategory.get(category) || [];
 
           return (

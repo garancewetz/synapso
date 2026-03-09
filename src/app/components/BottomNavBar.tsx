@@ -4,7 +4,6 @@ import { memo, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import {
-  CATEGORY_ORDER_NAV,
   CATEGORY_LABELS_SHORT,
   CATEGORY_ICONS,
   CATEGORY_MOBILE_STYLES,
@@ -18,14 +17,12 @@ import { useLayoutContext } from '@/app/contexts/LayoutContext';
 export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
-  const { preserveDate } = useLayoutContext();
+  const { preserveDate, navCategories } = useLayoutContext();
+  const categories = navCategories.forNav;
 
-  
   if (!effectiveUser || loading) {
     return null;
   }
-  
-  const categories = CATEGORY_ORDER_NAV;
   const isHomeActive = pathname === '/';
 
   const activeGradients = {
@@ -106,7 +103,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
         </TouchLink>
       );
     }),
-    [pathname, preserveDate]
+    [categories, pathname, preserveDate]
   );
 
   const navItems = [homeItem, ...categoryItems];
@@ -117,7 +114,10 @@ export const BottomNavBar = memo(function BottomNavBar() {
       aria-label="Navigation principale"
     >
       <div className="px-1">
-        <div className="grid grid-cols-5 gap-1">
+        <div
+          className="grid gap-1"
+          style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}
+        >
           {navItems}
         </div>
       </div>

@@ -1,11 +1,16 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
+import type { ExerciceCategory } from '@/app/types/exercice';
 
 type LayoutContextValue = {
   preserveDate: (path: string) => string;
   pendingShareCount: number;
   notificationBadge: ReactNode;
+  navCategories: {
+    forNav: ExerciceCategory[];
+    forDesktop: ExerciceCategory[];
+  };
 };
 
 const LayoutContext = createContext<LayoutContextValue | null>(null);

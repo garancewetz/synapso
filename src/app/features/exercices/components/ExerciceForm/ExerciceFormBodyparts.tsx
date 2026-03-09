@@ -9,11 +9,11 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { CheckIcon } from '@/app/components/ui/icons';
 import clsx from 'clsx';
 
-const BODYPART_CATEGORIES: Array<'UPPER_BODY' | 'CORE' | 'LOWER_BODY' | 'MAXILLO_FACIAL'> = [
+const BODYPART_CATEGORIES: Array<'UPPER_BODY' | 'CORE' | 'LOWER_BODY' | 'FACE'> = [
   'UPPER_BODY',
   'CORE',
   'LOWER_BODY',
-  'MAXILLO_FACIAL',
+  'FACE',
 ];
 
 type Props = {

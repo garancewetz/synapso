@@ -19,7 +19,7 @@ const initialStats: Record<ExerciceCategory, number> = {
   LOWER_BODY: 0,
   STRETCHING: 0,
   CORE: 0,
-  MAXILLO_FACIAL: 0,
+  FACE: 0,
 };
 
 export function useCategoryStats(): UseCategoryStatsReturn {
@@ -49,7 +49,7 @@ export function useCategoryStats(): UseCategoryStatsReturn {
         LOWER_BODY: new Set(),
         STRETCHING: new Set(),
         CORE: new Set(),
-        MAXILLO_FACIAL: new Set(),
+        FACE: new Set(),
       };
 
       const weekBounds =

@@ -8,7 +8,7 @@ const CATEGORY_COLOR_MAP: Record<ExerciceCategory, string> = {
   CORE: 'teal',
   LOWER_BODY: 'blue',
   STRETCHING: 'purple',
-  MAXILLO_FACIAL: 'amber',
+  FACE: 'amber',
 };
 
 // ============================================================================
@@ -52,7 +52,7 @@ export const PROGRESS_CATEGORY_COLORS: Record<ExerciceCategory, {
     active: 'bg-purple-200 ring-2 ring-purple-500', 
     inactive: 'bg-purple-50' 
   },
-  MAXILLO_FACIAL: { 
+  FACE: { 
     active: 'bg-amber-200 ring-2 ring-amber-500', 
     inactive: 'bg-amber-50' 
   },

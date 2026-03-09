@@ -67,7 +67,7 @@ export function getHeatmapData(history: HistoryEntry[], days: number = ROADMAP_P
             CORE: 0,
             LOWER_BODY: 0,
             STRETCHING: 0,
-            MAXILLO_FACIAL: 0,
+            FACE: 0,
           },
         };
       }
@@ -147,7 +147,7 @@ export function getLast7DaysData(history: HistoryEntry[], referenceDate?: Date):
             CORE: 0,
             LOWER_BODY: 0,
             STRETCHING: 0,
-            MAXILLO_FACIAL: 0,
+            FACE: 0,
           },
         };
       }
@@ -214,7 +214,7 @@ export function getCurrentWeekData(history: HistoryEntry[], referenceDate?: Date
             CORE: 0,
             LOWER_BODY: 0,
             STRETCHING: 0,
-            MAXILLO_FACIAL: 0,
+            FACE: 0,
           },
         };
       }

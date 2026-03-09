@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE'].includes(body.category)) {
+    if (body.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'FACE'].includes(body.category)) {
       return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, or CORE' },
+        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, CORE, or FACE' },
         { status: 400 }
       );
     }

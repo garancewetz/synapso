@@ -23,7 +23,7 @@ const HIGHLIGHT_RING_BY_CATEGORY: Record<ExerciceCategory, string> = {
   CORE: 'ring-2 ring-teal-500',
   LOWER_BODY: 'ring-2 ring-blue-500',
   STRETCHING: 'ring-2 ring-purple-500',
-  MAXILLO_FACIAL: 'ring-2 ring-amber-500',
+  FACE: 'ring-2 ring-amber-500',
 };
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { AddButton } from '@/app/components/ui/AddButton';

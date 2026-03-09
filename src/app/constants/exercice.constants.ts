@@ -45,12 +45,12 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     icon: '🧘‍♀️',
     href: '/exercices/stretching',
   },
-  MAXILLO_FACIAL: {
+  FACE: {
     color: 'amber',
-    label: 'Maxillo-facial',
-    labelShort: 'Maxillo',
+    label: 'Visage',
+    labelShort: 'Visage',
     icon: '🧑',
-    href: '/exercices/maxillo_facial',
+    href: '/exercices/face',
   },
 };
 
@@ -148,9 +148,9 @@ const TAILWIND_COLOR_MAP = {
 // ============================================================================
 
 // Ordre standardisé des catégories
-export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING', 'MAXILLO_FACIAL'];
+export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING', 'FACE'];
 
-/** Catégories affichées dans la barre de navigation mobile (sans Maxillo-facial, accessible via la home) */
+/** Catégories affichées dans la barre de navigation mobile (sans Visage, accessible via la home) */
 export const CATEGORY_ORDER_NAV: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
 // Labels affichés pour chaque catégorie
@@ -291,8 +291,8 @@ export const BODYPART_TO_CATEGORY: Record<string, ExerciceCategory> = {
   'Mains': 'UPPER_BODY',
   'Épaules': 'UPPER_BODY',
   'Cou': 'UPPER_BODY',
-  // 🦷 MAXILLO-FACIAL
-  'Mâchoire': 'MAXILLO_FACIAL',
+  // 🧑 VISAGE
+  'Mâchoire': 'FACE',
   // Rétrocompatibilité (anciennes valeurs en base)
   'Cou & Nuque': 'UPPER_BODY',
   'Nuque / Cervicales': 'UPPER_BODY',

@@ -1,5 +1,5 @@
 // Les 5 catégories d'exercices
-export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING' | 'CORE' | 'MAXILLO_FACIAL';
+export type ExerciceCategory = 'UPPER_BODY' | 'LOWER_BODY' | 'STRETCHING' | 'CORE' | 'FACE';
 
 // Type pour les filtres d'état des exercices
 export type ExerciceStatusFilter = 'all' | 'notCompleted' | 'completed';

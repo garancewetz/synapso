@@ -30,7 +30,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
     CORE: 'bg-linear-to-br from-teal-200 to-teal-300',
     LOWER_BODY: 'bg-linear-to-br from-blue-200 to-blue-300',
     STRETCHING: 'bg-linear-to-br from-purple-200 to-purple-300',
-    MAXILLO_FACIAL: 'bg-linear-to-br from-amber-200 to-amber-300',
+    FACE: 'bg-linear-to-br from-amber-200 to-amber-300',
   } as const satisfies Record<string, string>;
 
   const homeItem = (

@@ -42,7 +42,7 @@ export async function getExercices(params: GetExercicesParams) {
     userId: userId,
   };
 
-  if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'MAXILLO_FACIAL'].includes(category)) {
+  if (category && ['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'FACE'].includes(category)) {
     whereClause.category = category as PrismaExerciceCategory;
   }
 

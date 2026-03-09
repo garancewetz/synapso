@@ -38,7 +38,7 @@ export function ArchivedPageClient() {
       LOWER_BODY: [],
       CORE: [],
       STRETCHING: [],
-      MAXILLO_FACIAL: [],
+      FACE: [],
     };
     
     archivedExercices.forEach(ex => {

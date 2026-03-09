@@ -49,7 +49,7 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
     color: 'amber',
     label: 'Maxillo-facial',
     labelShort: 'Maxillo',
-    icon: '🦷',
+    icon: '🧑',
     href: '/exercices/maxillo_facial',
   },
 };
@@ -321,7 +321,7 @@ export const BODYPART_ICONS: Record<string, string> = {
   'Mains': '🖐️',
   'Épaules': '🏋️',
   'Cou': '🦒',
-  'Mâchoire': '🦷',
+  'Mâchoire': '👄',
   'Cou & Nuque': '🦒',
   'Nuque / Cervicales': '🦒',
   'Dos': '🔙',

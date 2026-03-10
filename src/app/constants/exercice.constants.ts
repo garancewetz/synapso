@@ -354,6 +354,31 @@ export function getBodypartChartColor(bodypart: string): string {
   return category ? CATEGORY_CHART_COLORS[category] : '#6B7280';
 }
 
+/** Ordre d'affichage des parties du corps (haut → bas) pour la page catégories */
+export const BODYPARTS_DISPLAY_ORDER = [
+  'Mâchoire', 'Cou', 'Épaules', 'Bras', 'Mains',
+  'Dos', 'Corps', 'Ventre', 'Bassin',
+  'Fessier', 'Jambes', 'Pied',
+] as const;
+
+/** Retourne les parties du corps groupées par catégorie (ordre corps = BODYPARTS_DISPLAY_ORDER) */
+export function getBodypartsByCategory(): Record<ExerciceCategory, string[]> {
+  const byCategory: Record<ExerciceCategory, string[]> = {
+    UPPER_BODY: [],
+    CORE: [],
+    LOWER_BODY: [],
+    STRETCHING: [],
+    FACE: [],
+  };
+  for (const bodypart of BODYPARTS_DISPLAY_ORDER) {
+    const category = BODYPART_TO_CATEGORY[bodypart];
+    if (category && byCategory[category]) {
+      byCategory[category].push(bodypart);
+    }
+  }
+  return byCategory;
+}
+
 // ============================================================================
 // FILTRES D'ÉTAT - Options de filtre pour les exercices
 // ============================================================================

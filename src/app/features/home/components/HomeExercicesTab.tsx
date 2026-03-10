@@ -65,6 +65,15 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         })}
       </div>
       <MenuLink
+        title="Catégories et parties du corps"
+        icon="📋"
+        description="Voir le détail des catégories et des zones ciblées"
+        href="/categories"
+        iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+        iconTextColor={SITEMAP_ICON_STYLES.default.text}
+        isSecondary={true}
+      />
+      <MenuLink
         title="Vue par équipement"
         icon="🏋️"
         description="Filtrer les exercices par équipement"

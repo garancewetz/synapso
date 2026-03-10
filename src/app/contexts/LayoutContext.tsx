@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, type PropsWithChildren, type ReactNode } from 'react';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
 type LayoutContextValue = {
@@ -11,6 +11,8 @@ type LayoutContextValue = {
     forNav: ExerciceCategory[];
     forDesktop: ExerciceCategory[];
   };
+  /** Catégories avec au moins un exercice (non archivé), même ordre que la home — pour le radial */
+  radialCategories: ExerciceCategory[];
   isRadialOpen: boolean;
   setRadialOpen: (open: boolean) => void;
 };
@@ -25,10 +27,9 @@ export function useLayoutContext(): LayoutContextValue {
   return value;
 }
 
-type LayoutProviderProps = {
+type LayoutProviderProps = PropsWithChildren<{
   value: LayoutContextValue;
-  children: ReactNode;
-};
+}>;
 
 export function LayoutProvider({ value, children }: LayoutProviderProps) {
   return (

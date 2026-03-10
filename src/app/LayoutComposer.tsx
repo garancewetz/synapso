@@ -9,6 +9,7 @@ import { NotificationBadge } from '@/app/features/sharing';
 import { LayoutProvider } from '@/app/contexts/LayoutContext';
 import { NavBar } from '@/app/components/NavBar';
 import { BottomNavBar } from '@/app/components/BottomNavBar';
+import { useExercices } from '@/app/features/exercices';
 import { CATEGORY_ORDER, CATEGORY_ORDER_NAV } from '@/app/constants/exercice.constants';
 import clsx from 'clsx';
 
@@ -35,11 +36,17 @@ const PWARegister = dynamic(
 export function LayoutComposer({ children }: PropsWithChildren) {
   const preserveDate = usePreserveDateParam();
   const { count: pendingShareCount } = usePendingShareCount();
+  const { exercices } = useExercices({ includeArchived: false });
   const [isRadialOpen, setRadialOpen] = useState(false);
   const navCategories = useMemo(() => ({
     forNav: CATEGORY_ORDER_NAV,
     forDesktop: CATEGORY_ORDER,
   }), []);
+  const radialCategories = useMemo(() => {
+    return CATEGORY_ORDER.filter(
+      (category) => exercices.filter((e) => e.category === category).length > 0
+    );
+  }, [exercices]);
   const notificationBadge = <NotificationBadge className="absolute top-1/2 -translate-y-1/2 right-2" />;
 
   const timeMachineContent = (
@@ -65,6 +72,7 @@ export function LayoutComposer({ children }: PropsWithChildren) {
         pendingShareCount,
         notificationBadge,
         navCategories,
+        radialCategories,
         isRadialOpen,
         setRadialOpen,
       }}
@@ -73,7 +81,7 @@ export function LayoutComposer({ children }: PropsWithChildren) {
       <PWARegister />
       <a
         href="#main-content"
-        className="fixed left-0 top-0 z-[200] -translate-y-full bg-gray-900 text-white px-4 py-3 rounded-br font-medium transition-transform focus-visible:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900"
+        className="fixed left-0 top-0 z-200 -translate-y-full bg-gray-900 text-white px-4 py-3 rounded-br font-medium transition-transform focus-visible:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900"
       >
         Aller au contenu
       </a>

@@ -8,38 +8,38 @@ import { TouchLink } from '@/app/components/TouchLink';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
-import { ExercisesRadialMenu } from '@/app/components/ExercisesRadialMenu';
+import { ExercisesCategoryBar } from '@/app/components/ExercisesCategoryBar';
 
 const SUIVI_EMOJI = '📈';
 
 export const BottomNavBar = memo(function BottomNavBar() {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
-  const { preserveDate, isRadialOpen, setRadialOpen } = useLayoutContext();
+  const { preserveDate, isCategoryBarOpen, setCategoryBarOpen } = useLayoutContext();
 
   const closedByPointerDownRef = useRef(false);
-  const openRadial = useCallback(() => {
+  const openCategoryBar = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(10);
     }
-    setRadialOpen(true);
-  }, [setRadialOpen]);
-  const closeRadial = useCallback(() => setRadialOpen(false), [setRadialOpen]);
+    setCategoryBarOpen(true);
+  }, [setCategoryBarOpen]);
+  const closeCategoryBar = useCallback(() => setCategoryBarOpen(false), [setCategoryBarOpen]);
   const handlePointerDownWhenOpen = useCallback(() => {
     closedByPointerDownRef.current = true;
-    closeRadial();
-  }, [closeRadial]);
+    closeCategoryBar();
+  }, [closeCategoryBar]);
   const handleClick = useCallback(() => {
     if (closedByPointerDownRef.current) {
       closedByPointerDownRef.current = false;
       return;
     }
-    if (isRadialOpen) {
-      closeRadial();
+    if (isCategoryBarOpen) {
+      closeCategoryBar();
     } else {
-      openRadial();
+      openCategoryBar();
     }
-  }, [isRadialOpen, closeRadial, openRadial]);
+  }, [isCategoryBarOpen, closeCategoryBar, openCategoryBar]);
 
   if (!effectiveUser || loading) {
     return null;
@@ -47,26 +47,25 @@ export const BottomNavBar = memo(function BottomNavBar() {
 
   const isHomeActive = pathname === '/';
   const isSuiviActive = pathname === '/historique' || pathname.startsWith('/historique');
-  const isExerciceActive = pathname.startsWith('/exercices');
 
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-60 bg-white border-t border-gray-200 pb-safe md:hidden shadow-lg"
+        className="fixed bottom-0 left-0 right-0 z-60 bg-white border-t border-gray-100 md:hidden rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.06)] pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
         aria-label="Navigation principale"
       >
-        <div className="flex items-stretch justify-between px-5 gap-4">
+        <div className="flex items-stretch justify-between px-4 pt-1.5 gap-2">
           <TouchLink
             href={preserveDate('/')}
             aria-label="Accueil"
             aria-current={isHomeActive ? 'page' : undefined}
             className={clsx(
-              'flex flex-1 flex-col items-center justify-center min-h-[56px] py-1.5 rounded-lg transition-colors',
+              'flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 rounded-lg transition-colors',
               isHomeActive ? 'bg-gray-100' : 'hover:bg-gray-50 active:bg-gray-100'
             )}
           >
             <span
-              className={clsx('text-2xl', isHomeActive ? 'text-gray-900 scale-110' : 'text-gray-600')}
+              className={clsx('text-xl', isHomeActive ? 'text-gray-900 scale-110' : 'text-gray-600')}
               role="img"
               aria-hidden="true"
             >
@@ -85,34 +84,36 @@ export const BottomNavBar = memo(function BottomNavBar() {
           <button
             type="button"
             onClick={handleClick}
-            onPointerDown={isRadialOpen ? handlePointerDownWhenOpen : undefined}
-            aria-label={isRadialOpen ? 'Fermer le menu des catégories' : 'Ouvrir le menu des catégories d’exercices'}
-            aria-expanded={isRadialOpen}
+            onPointerDown={isCategoryBarOpen ? handlePointerDownWhenOpen : undefined}
+            aria-label={isCategoryBarOpen ? 'Fermer le menu des catégories' : 'Ouvrir le menu des catégories'}
+            aria-expanded={isCategoryBarOpen}
             aria-haspopup="true"
-            aria-current={isExerciceActive ? 'page' : undefined}
             className={clsx(
-              'flex flex-1 flex-col items-center justify-center min-h-[56px] py-1.5 rounded-lg transition-colors',
+              'flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 rounded-lg transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900',
-              isRadialOpen && 'bg-gray-100',
-              !isRadialOpen && !isExerciceActive && 'hover:bg-gray-50 active:bg-gray-100',
-              isExerciceActive && !isRadialOpen && 'bg-gray-100'
+              isCategoryBarOpen ? 'bg-gray-100' : 'hover:bg-gray-50 active:bg-gray-100'
             )}
           >
-            <ChevronIcon
-              direction={isRadialOpen ? 'down' : 'up'}
+            <span
               className={clsx(
-                'w-8 h-8',
-                isExerciceActive ? 'text-gray-900 scale-110' : isRadialOpen ? 'text-gray-800' : 'text-gray-600'
+                'flex items-center justify-center rounded-full w-9 h-9 border border-gray-200 bg-gray-50/80',
+                isCategoryBarOpen && 'bg-gray-200 border-gray-300'
               )}
               aria-hidden
-            />
+            >
+              <ChevronIcon
+                direction={isCategoryBarOpen ? 'down' : 'up'}
+                className={clsx('w-4 h-4 text-gray-600', isCategoryBarOpen && 'text-gray-800')}
+                aria-hidden
+              />
+            </span>
             <span
               className={clsx(
                 'mt-0.5 text-xs',
-                isExerciceActive ? 'text-gray-900 font-semibold' : isRadialOpen ? 'text-gray-900 font-semibold' : 'text-gray-500 font-medium'
+                isCategoryBarOpen ? 'text-gray-900 font-semibold' : 'text-gray-500 font-medium'
               )}
             >
-              {isRadialOpen ? 'Fermer' : 'Exercices'}
+              {isCategoryBarOpen ? 'Fermer' : 'Voir les catégories'}
             </span>
           </button>
 
@@ -121,12 +122,12 @@ export const BottomNavBar = memo(function BottomNavBar() {
             aria-label="Suivi"
             aria-current={isSuiviActive ? 'page' : undefined}
             className={clsx(
-              'flex flex-1 flex-col items-center justify-center min-h-[56px] py-1.5 rounded-lg transition-colors',
+              'flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 rounded-lg transition-colors',
               isSuiviActive ? 'bg-gray-100' : 'hover:bg-gray-50 active:bg-gray-100'
             )}
           >
             <span
-              className={clsx('text-2xl', isSuiviActive ? 'text-gray-900 scale-110' : 'text-gray-600')}
+              className={clsx('text-xl', isSuiviActive ? 'text-gray-900 scale-110' : 'text-gray-600')}
               role="img"
               aria-hidden="true"
             >
@@ -144,7 +145,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
         </div>
       </nav>
 
-      <ExercisesRadialMenu isOpen={isRadialOpen} onClose={closeRadial} />
+      <ExercisesCategoryBar isOpen={isCategoryBarOpen} onClose={closeCategoryBar} />
     </>
   );
 });

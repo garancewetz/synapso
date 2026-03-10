@@ -37,12 +37,12 @@ export function LayoutComposer({ children }: PropsWithChildren) {
   const preserveDate = usePreserveDateParam();
   const { count: pendingShareCount } = usePendingShareCount();
   const { exercices } = useExercices({ includeArchived: false });
-  const [isRadialOpen, setRadialOpen] = useState(false);
+  const [isCategoryBarOpen, setCategoryBarOpen] = useState(false);
   const navCategories = useMemo(() => ({
     forNav: CATEGORY_ORDER_NAV,
     forDesktop: CATEGORY_ORDER,
   }), []);
-  const radialCategories = useMemo(() => {
+  const categoryBarCategories = useMemo(() => {
     return CATEGORY_ORDER.filter(
       (category) => exercices.filter((e) => e.category === category).length > 0
     );
@@ -72,9 +72,9 @@ export function LayoutComposer({ children }: PropsWithChildren) {
         pendingShareCount,
         notificationBadge,
         navCategories,
-        radialCategories,
-        isRadialOpen,
-        setRadialOpen,
+        categoryBarCategories,
+        isCategoryBarOpen,
+        setCategoryBarOpen,
       }}
     >
       <WebVitals />

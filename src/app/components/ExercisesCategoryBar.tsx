@@ -19,20 +19,20 @@ function triggerHaptic(durationMs = 10) {
   }
 }
 
-const BOTTOM_NAV_HEIGHT = 56;
+const BOTTOM_NAV_OFFSET = 'calc(70px + 0.5rem + env(safe-area-inset-bottom, 0px))';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export function ExercisesRadialMenu({ isOpen }: Props) {
+export function ExercisesCategoryBar({ isOpen }: Props) {
   const pathname = usePathname();
-  const { preserveDate, radialCategories } = useLayoutContext();
+  const { preserveDate, categoryBarCategories } = useLayoutContext();
 
   return (
     <AnimatePresence>
-      {isOpen && radialCategories.length > 0 && (
+      {isOpen && categoryBarCategories.length > 0 && (
         <motion.div
           key="categories-row"
           initial={{ opacity: 0, y: 8 }}
@@ -40,11 +40,11 @@ export function ExercisesRadialMenu({ isOpen }: Props) {
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.2 }}
           className="fixed left-0 right-0 z-70 px-4 pb-2 md:hidden"
-          style={{ bottom: BOTTOM_NAV_HEIGHT }}
+          style={{ bottom: BOTTOM_NAV_OFFSET }}
           aria-hidden
         >
-          <div className="flex flex-row items-center justify-center gap-3 overflow-x-auto py-2">
-            {radialCategories.map((category, index) => {
+          <div className="flex flex-row items-center justify-center gap-3 overflow-x-auto py-2 px-4 bg-white rounded-2xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+            {categoryBarCategories.map((category, index) => {
               const href = preserveDate(CATEGORY_HREFS[category]);
               const categoryPath = CATEGORY_HREFS[category];
               const isActive = pathname === categoryPath;
@@ -73,11 +73,10 @@ export function ExercisesRadialMenu({ isOpen }: Props) {
                     onClick={() => triggerHaptic(12)}
                     className={clsx(
                       'flex flex-col items-center justify-center rounded-full w-14 h-14 min-h-[56px] min-w-[56px]',
-                      'shadow-lg ring-4 ring-white',
+                      'shadow-lg ring-4 ring-white border-2',
                       'active:scale-95 transition-all py-1.5 px-1.5',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900',
-                      isActive && 'ring-2 ring-offset-2 ring-offset-white',
-                      isActive && styles.ring,
+                      isActive ? styles.border : 'border-transparent',
                       styles.iconBg
                     )}
                   >

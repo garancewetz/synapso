@@ -11,10 +11,10 @@ type LayoutContextValue = {
     forNav: ExerciceCategory[];
     forDesktop: ExerciceCategory[];
   };
-  /** Catégories avec au moins un exercice (non archivé), même ordre que la home — pour le radial */
-  radialCategories: ExerciceCategory[];
-  isRadialOpen: boolean;
-  setRadialOpen: (open: boolean) => void;
+  /** Catégories avec au moins un exercice (non archivé), même ordre que la home — pour la barre au-dessus de la nav */
+  categoryBarCategories: ExerciceCategory[];
+  isCategoryBarOpen: boolean;
+  setCategoryBarOpen: (open: boolean) => void;
 };
 
 const LayoutContext = createContext<LayoutContextValue | null>(null);

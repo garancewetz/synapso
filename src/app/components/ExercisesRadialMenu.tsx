@@ -19,8 +19,8 @@ function triggerHaptic(durationMs = 10) {
   }
 }
 
-const RADIUS = 88;
-const BUBBLE_HEIGHT = 52;
+const RADIUS = 100;
+const BUBBLE_HEIGHT = 64;
 const HITBOX_PADDING = 8;
 const HITBOX_SIZE = BUBBLE_HEIGHT + HITBOX_PADDING * 2;
 
@@ -114,9 +114,9 @@ export function ExercisesRadialMenu({ isOpen }: Props) {
                       aria-current={isActive ? 'page' : undefined}
                       onClick={() => triggerHaptic(12)}
                       className={clsx(
-                        'flex flex-col items-center justify-center shrink-0 rounded-lg min-h-[44px] min-w-[44px]',
-                        'shadow-md ring-4 ring-white',
-                        'active:scale-95 transition-all py-1 px-1.5',
+                        'flex flex-col items-center justify-center shrink-0 rounded-full w-16 h-16 min-h-[64px] min-w-[64px]',
+                        'shadow-lg ring-4 ring-white',
+                        'active:scale-95 transition-all py-1.5 px-1.5',
                         'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900',
                         isActive && 'ring-2 ring-offset-2 ring-offset-white',
                         isActive && styles.ring,
@@ -124,7 +124,7 @@ export function ExercisesRadialMenu({ isOpen }: Props) {
                       )}
                     >
                       <span
-                        className={clsx('text-xl flex items-center justify-center leading-none', styles.iconText)}
+                        className={clsx('text-2xl flex items-center justify-center leading-none', styles.iconText)}
                         role="img"
                         aria-hidden="true"
                       >
@@ -132,7 +132,7 @@ export function ExercisesRadialMenu({ isOpen }: Props) {
                       </span>
                       <span
                         className={clsx(
-                          'text-[10px] font-bold text-center leading-tight mt-0.5 px-0.5',
+                          'text-[11px] font-bold text-center leading-tight mt-0.5 px-0.5',
                           'drop-shadow-[0_0_1px_rgba(255,255,255,0.9)]',
                           styles.iconText
                         )}

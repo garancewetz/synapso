@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type PropsWithChildren } from 'react';
+import { useMemo, useState, type PropsWithChildren } from 'react';
 import dynamic from 'next/dynamic';
 import { SelectedDateBanner, TimeMachineWrapper, TimeMachineTransition } from '@/app/features/time-machine';
 import { usePreserveDateParam } from '@/app/features/time-machine';
@@ -35,6 +35,7 @@ const PWARegister = dynamic(
 export function LayoutComposer({ children }: PropsWithChildren) {
   const preserveDate = usePreserveDateParam();
   const { count: pendingShareCount } = usePendingShareCount();
+  const [isRadialOpen, setRadialOpen] = useState(false);
   const navCategories = useMemo(() => ({
     forNav: CATEGORY_ORDER_NAV,
     forDesktop: CATEGORY_ORDER,
@@ -64,6 +65,8 @@ export function LayoutComposer({ children }: PropsWithChildren) {
         pendingShareCount,
         notificationBadge,
         navCategories,
+        isRadialOpen,
+        setRadialOpen,
       }}
     >
       <WebVitals />

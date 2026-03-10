@@ -47,8 +47,8 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
   },
   FACE: {
     color: 'amber',
-    label: 'Visage',
-    labelShort: 'Visage',
+    label: 'Maxillo faciale',
+    labelShort: 'face',
     icon: '🧑',
     href: '/exercices/face',
   },
@@ -150,7 +150,7 @@ const TAILWIND_COLOR_MAP = {
 // Ordre standardisé des catégories
 export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING', 'FACE'];
 
-/** Catégories affichées dans la barre de navigation mobile (sans Visage, accessible via la home) */
+/** Catégories affichées dans la barre de navigation mobile (sans Maxillo faciale, accessible via la home) */
 export const CATEGORY_ORDER_NAV: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
 // Labels affichés pour chaque catégorie

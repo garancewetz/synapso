@@ -11,6 +11,8 @@ type LayoutContextValue = {
     forNav: ExerciceCategory[];
     forDesktop: ExerciceCategory[];
   };
+  isRadialOpen: boolean;
+  setRadialOpen: (open: boolean) => void;
 };
 
 const LayoutContext = createContext<LayoutContextValue | null>(null);

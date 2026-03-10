@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
@@ -17,6 +17,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
   const { effectiveUser, loading } = useUser();
   const { preserveDate, isRadialOpen, setRadialOpen } = useLayoutContext();
 
+  const closedByPointerDownRef = useRef(false);
   const openRadial = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(10);
@@ -24,6 +25,21 @@ export const BottomNavBar = memo(function BottomNavBar() {
     setRadialOpen(true);
   }, [setRadialOpen]);
   const closeRadial = useCallback(() => setRadialOpen(false), [setRadialOpen]);
+  const handlePointerDownWhenOpen = useCallback(() => {
+    closedByPointerDownRef.current = true;
+    closeRadial();
+  }, [closeRadial]);
+  const handleClick = useCallback(() => {
+    if (closedByPointerDownRef.current) {
+      closedByPointerDownRef.current = false;
+      return;
+    }
+    if (isRadialOpen) {
+      closeRadial();
+    } else {
+      openRadial();
+    }
+  }, [isRadialOpen, closeRadial, openRadial]);
 
   if (!effectiveUser || loading) {
     return null;
@@ -68,7 +84,8 @@ export const BottomNavBar = memo(function BottomNavBar() {
 
           <button
             type="button"
-            onClick={isRadialOpen ? closeRadial : openRadial}
+            onClick={handleClick}
+            onPointerDown={isRadialOpen ? handlePointerDownWhenOpen : undefined}
             aria-label={isRadialOpen ? 'Fermer le menu des catégories' : 'Ouvrir le menu des catégories d’exercices'}
             aria-expanded={isRadialOpen}
             aria-haspopup="true"

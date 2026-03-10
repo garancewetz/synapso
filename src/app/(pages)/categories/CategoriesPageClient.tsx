@@ -90,7 +90,11 @@ export function CategoriesPageClient() {
                             ))}
                           </ul>
                         ) : (
-                          <p className="text-xs text-gray-500 mt-1">Aucune partie du corps associée</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {category === 'STRETCHING'
+                              ? 'Peut cibler toutes les parties du corps'
+                              : 'Aucune partie du corps associée'}
+                          </p>
                         )}
                       </div>
                     </div>

@@ -19,7 +19,7 @@ function triggerHaptic(durationMs = 10) {
   }
 }
 
-const BOTTOM_NAV_OFFSET = 'calc(70px + 0.5rem + env(safe-area-inset-bottom, 0px))';
+const BOTTOM_NAV_OFFSET = 'calc(66px + 0.125rem + env(safe-area-inset-bottom, 0px))';
 
 type Props = {
   isOpen: boolean;

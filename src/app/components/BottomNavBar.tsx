@@ -51,7 +51,8 @@ export const BottomNavBar = memo(function BottomNavBar() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-60 bg-white border-t border-gray-100 md:hidden rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.06)] pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
+        className="fixed bottom-0 left-0 right-0 z-60 bg-white border-t border-gray-100 md:hidden rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.06)] pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+        style={{ touchAction: 'manipulation', overscrollBehavior: 'none' }}
         aria-label="Navigation principale"
       >
         <div className="flex items-stretch justify-between px-4 pt-1.5 gap-2">
@@ -88,6 +89,7 @@ export const BottomNavBar = memo(function BottomNavBar() {
             aria-label={isCategoryBarOpen ? 'Fermer le menu des catégories' : 'Ouvrir le menu des catégories'}
             aria-expanded={isCategoryBarOpen}
             aria-haspopup="true"
+            style={{ touchAction: 'manipulation' }}
             className={clsx(
               'flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 rounded-lg transition-colors',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900',

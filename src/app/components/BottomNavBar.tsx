@@ -31,7 +31,6 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
   }
 
   const isHomeActive = pathname === '/';
-  const isSuiviActive = pathname === '/historique' || pathname.startsWith('/historique');
 
   return (
     <nav
@@ -39,7 +38,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
       aria-label="Navigation principale"
     >
       <div className="flex flex-col gap-1.5 pt-2">
-        <div className="flex justify-between items-end">
+        <div className="flex justify-start items-end">
           <TouchLink
             href={preserveDate('/')}
             aria-label="Accueil"
@@ -48,7 +47,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
           >
             <div
               className={clsx(
-                'flex flex-col items-center justify-center w-14 h-14 rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:opacity-90 active:opacity-95 ',
+                'flex flex-col items-center justify-center w-14 h-14 rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-200 hover:opacity-90 active:opacity-95',
                 isHomeActive ? 'text-gray-900' : 'text-gray-600'
               )}
             >
@@ -58,28 +57,14 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
               <span className="text-[10px] font-bold leading-tight">Accueil</span>
             </div>
           </TouchLink>
-
-          <TouchLink
-            href={preserveDate('/historique')}
-            aria-label="Suivi"
-            aria-current={isSuiviActive ? 'page' : undefined}
-            className="flex flex-col items-end justify-end"
-          >
-            <div
-              className={clsx(
-                'flex flex-col items-center justify-center w-14 h-14 rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:opacity-90 active:opacity-95',
-                isSuiviActive ? 'text-gray-900' : 'text-gray-600'
-              )}
-            >
-              <span className="text-2xl leading-none" role="img" aria-hidden="true">
-                {NAVIGATION_EMOJIS.ROCKET}
-              </span>
-              <span className="text-[10px] font-bold leading-tight">Suivi</span>
-            </div>
-          </TouchLink>
         </div>
 
-        <div className="backdrop-blur-md bg-white/80 border border-white/70 shadow-lg rounded-2xl px-3 py-2 flex items-center justify-center gap-2 flex-wrap">
+        <div
+          className={clsx(
+            'backdrop-blur-md bg-white/80 border border-white/70 shadow-lg rounded-2xl px-3 py-2 flex items-center gap-2',
+            categoriesToShow.length > 3 ? 'justify-between' : 'justify-center'
+          )}
+        >
           {categoriesToShow.map((category) => {
             const href = CATEGORY_HREFS[category];
             const isActive = pathname === href;

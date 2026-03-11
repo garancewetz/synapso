@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 type TabValue = 'exercices' | 'pinned' | 'suivi';
 
@@ -8,8 +8,14 @@ type TabOptionData = {
   iconName: 'UserIcon' | 'BookmarkIcon' | 'RocketIcon';
 };
 
-export function useHomeTabs(pinnedCount: number) {
-  const [activeTab, setActiveTab] = useState<TabValue>('exercices');
+export function useHomeTabs(pinnedCount: number, initialTabFromUrl?: TabValue | null) {
+  const [activeTab, setActiveTab] = useState<TabValue>(initialTabFromUrl ?? 'exercices');
+
+  useEffect(() => {
+    if (initialTabFromUrl) {
+      setActiveTab(initialTabFromUrl);
+    }
+  }, [initialTabFromUrl]);
 
   const tabOptionsData = useMemo<TabOptionData[]>(() => {
     const options: TabOptionData[] = [];

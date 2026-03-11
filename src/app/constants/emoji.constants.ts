@@ -62,5 +62,11 @@ export const NAVIGATION_EMOJIS = {
   CLIPBOARD: '🌾',
   /** Sablier - utilisée pour le mode "machine à remonter le temps" (sablier) */
   HOURGLASS: '⏳',
+  /** Corps / zones - utilisée pour le bouton "Choisir une zone" */
+  BODY: '🧍',
+  /** Épingle - utilisée pour l'onglet / lien "Épinglé" */
+  PINNED: '📌',
+  /** Livre / journal - utilisée pour le lien "Journal" */
+  JOURNAL: '📔',
 } as const;
 

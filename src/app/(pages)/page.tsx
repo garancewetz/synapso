@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
@@ -30,6 +31,10 @@ const ProgressBottomSheet = dynamic(
 );
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = (tabFromUrl === 'pinned' || tabFromUrl === 'suivi' ? tabFromUrl : null) as 'pinned' | 'suivi' | null;
+
   const { effectiveUser, loading: userLoading } = useUser();
   const progressModal = useProgressModal();
   const queryClient = useQueryClient();
@@ -48,7 +53,10 @@ export default function Home() {
     }
     return ids;
   }, [exercices]);
-  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(pinnedExercices.length + pinnedProgress.length + pinnedNotes.length);
+  const { activeTab, setActiveTab, tabOptionsData } = useHomeTabs(
+    pinnedExercices.length + pinnedProgress.length + pinnedNotes.length,
+    initialTab
+  );
 
   const { handleEditClick: handlePinnedEdit, handleCompleted: handlePinnedUpdate } = useExerciceHandlers({
     updateExercice,

@@ -47,8 +47,8 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
   },
   FACE: {
     color: 'amber',
-    label: 'Visage',
-    labelShort: 'Visage',
+    label: 'Maxillo facile',
+    labelShort: 'Face',
     icon: '🧑',
     href: '/exercices/face',
   },
@@ -147,10 +147,10 @@ const TAILWIND_COLOR_MAP = {
 // CONSTANTES GÉNÉRÉES - Dérivées de la config de base
 // ============================================================================
 
-// Ordre standardisé des catégories
-export const CATEGORY_ORDER: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING', 'FACE'];
+// Ordre standardisé des catégories (Face en premier)
+export const CATEGORY_ORDER: ExerciceCategory[] = ['FACE', 'UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
-/** Catégories affichées dans la barre de navigation mobile (sans Visage, accessible via la home) */
+/** Catégories affichées dans la barre de navigation desktop (sans Face) */
 export const CATEGORY_ORDER_NAV: ExerciceCategory[] = ['UPPER_BODY', 'CORE', 'LOWER_BODY', 'STRETCHING'];
 
 // Labels affichés pour chaque catégorie

@@ -6,10 +6,12 @@ import { SelectedDateBanner, TimeMachineWrapper, TimeMachineTransition } from '@
 import { usePreserveDateParam } from '@/app/features/time-machine';
 import { usePendingShareCount } from '@/app/features/sharing';
 import { NotificationBadge } from '@/app/features/sharing';
+import { useExercices } from '@/app/features/exercices/hooks/useExercices';
 import { LayoutProvider } from '@/app/contexts/LayoutContext';
 import { NavBar } from '@/app/components/NavBar';
 import { BottomNavBar } from '@/app/components/BottomNavBar';
 import { CATEGORY_ORDER, CATEGORY_ORDER_NAV } from '@/app/constants/exercice.constants';
+import type { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
 
 const DayDetailModalWrapper = dynamic(
@@ -35,10 +37,16 @@ const PWARegister = dynamic(
 export function LayoutComposer({ children }: PropsWithChildren) {
   const preserveDate = usePreserveDateParam();
   const { count: pendingShareCount } = usePendingShareCount();
+  const { exercices } = useExercices({ includeArchived: false });
   const navCategories = useMemo(() => ({
     forNav: CATEGORY_ORDER_NAV,
     forDesktop: CATEGORY_ORDER,
   }), []);
+  const bottomNavCategories = useMemo(() => {
+    const used = new Set(exercices.map((e) => e.category as ExerciceCategory));
+    const ordered = CATEGORY_ORDER.filter((cat) => used.has(cat));
+    return ordered.length > 0 ? ordered : CATEGORY_ORDER;
+  }, [exercices]);
   const notificationBadge = <NotificationBadge className="absolute top-1/2 -translate-y-1/2 right-2" />;
 
   const timeMachineContent = (
@@ -53,7 +61,7 @@ export function LayoutComposer({ children }: PropsWithChildren) {
       >
         {children}
       </main>
-      <BottomNavBar />
+      <BottomNavBar categoriesToShow={bottomNavCategories} />
     </>
   );
 

@@ -3,7 +3,6 @@
 import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import type { ExerciceCategory } from '@/app/types/exercice';
 import {
   CATEGORY_LABELS_SHORT,
   CATEGORY_ICONS,
@@ -76,40 +75,43 @@ export const BottomNavBar = memo(function BottomNavBar() {
           </div>
         </TouchLink>
 
-        {CATEGORY_ORDER.map((category) => {
-          const href = CATEGORY_HREFS[category];
-          const isActive = pathname === href;
-          const styles = CATEGORY_MOBILE_STYLES[category];
-          const icon = CATEGORY_ICONS[category];
-          const label = CATEGORY_LABELS_SHORT[category];
-          return (
-            <TouchLink
-              key={category}
-              href={preserveDate(href)}
-              aria-label={label}
-              aria-current={isActive ? 'page' : undefined}
-              className={clsx(
-                'flex flex-col items-center justify-center min-h-[56px] py-2 px-1 gap-0.5 rounded-2xl transition-all duration-200',
-                'bg-white hover:opacity-90 active:opacity-95 shadow-sm',
-                isActive && 'ring-2 ring-gray-200 ring-offset-2 ring-offset-white'
-              )}
-            >
-              <div
+        <div className="col-span-5 backdrop-blur-md bg-white/80 border border-white/70 shadow-lg rounded-2xl px-3 py-2 flex items-center justify-between">
+          {CATEGORY_ORDER.map((category) => {
+            const href = CATEGORY_HREFS[category];
+            const isActive = pathname === href;
+            const styles = CATEGORY_MOBILE_STYLES[category];
+            const icon = CATEGORY_ICONS[category];
+            const label = CATEGORY_LABELS_SHORT[category];
+            return (
+              <TouchLink
+                key={category}
+                href={preserveDate(href)}
+                aria-label={label}
+                aria-current={isActive ? 'page' : undefined}
                 className={clsx(
-                  'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
-                  styles.iconBg
+                  'flex items-center justify-center p-1 rounded-2xl transition-all duration-200 bg-transparent',
+                  'hover:opacity-90 active:opacity-95',
+                  isActive && 'ring-2 ring-gray-300 ring-offset-2 ring-offset-transparent'
                 )}
               >
-                <span className={clsx('text-2xl', styles.iconText)} role="img" aria-hidden="true">
-                  {icon}
-                </span>
-              </div>
-              <span className="text-xs font-bold truncate max-w-full text-gray-700">
-                {label}
-              </span>
-            </TouchLink>
-          );
-        })}
+                <div
+                  className={clsx(
+                    'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
+                    styles.iconBg
+                  )}
+                >
+                  <span
+                    className={clsx('text-2xl', styles.iconText)}
+                    role="img"
+                    aria-hidden="true"
+                  >
+                    {icon}
+                  </span>
+                </div>
+              </TouchLink>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

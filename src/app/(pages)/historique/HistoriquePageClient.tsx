@@ -52,7 +52,12 @@ const MONTH_HEATMAP_DAYS = 28;
 // 15 jours par période pour le graphique montagne
 const CHART_DAYS_PER_PERIOD = 15;
 
-export function HistoriquePageClient() {
+type Props = {
+  /** Quand true, la page est affichée dans l’onglet Suivi de l’accueil (pas de bouton retour). */
+  embeddedInHome?: boolean;
+};
+
+export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isSlideshowOpen, setIsSlideshowOpen] = useState(false);
   const [bodypartPeriod, setBodypartPeriod] = useState<BodypartPeriodFilter>('week');
@@ -257,10 +262,12 @@ export function HistoriquePageClient() {
 
   return (
     <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-8 px-3 md:px-6 lg:px-8">
-      <BackButton 
-        className="mb-4" 
-        buttonClassName="py-3"
-      />
+      {!embeddedInHome && (
+        <BackButton
+          className="mb-4"
+          buttonClassName="py-3"
+        />
+      )}
 
       <div className="sm:p-6">
         {/* Header */}

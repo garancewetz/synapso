@@ -5,15 +5,16 @@ import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
-import { UserIcon, RocketIcon } from '@/app/components/ui/icons';
+import { UserIcon } from '@/app/components/ui/icons';
 import { BookmarkIcon } from '@/app/components/ui/icons';
+import { RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useExercices, useExerciceHandlers, useRelatedStretchingByCategory } from '@/app/features/exercices';
 import { useProgressModal, useProgress } from '@/app/features/progress';
 import { useJournalNotes } from '@/app/features/journal';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { useHomeTabs, HomeExercicesTab, HomePinnedTab, HomePlusTab } from '@/app/features/home';
+import { useHomeTabs, HomeExercicesTab, HomePinnedTab, HomeSuiviTab } from '@/app/features/home';
 
 const AnimatePresence = dynamic(
   () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
@@ -194,7 +195,9 @@ export default function Home() {
                   />
                 )}
 
-                {activeTab === 'suivi' && <HomePlusTab />}
+                {activeTab === 'suivi' && (
+                  <HomeSuiviTab />
+                )}
 
               </MotionDiv>
             )}

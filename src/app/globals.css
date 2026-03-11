@@ -49,6 +49,10 @@
 
 html {
   scroll-behavior: smooth;
+  /* iOS: évite que le premier tap après scroll soit ignoré sur les éléments fixed (hit area désynchronisée) */
+  height: 100%;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {

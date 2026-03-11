@@ -35,7 +35,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-60 md:hidden bg-transparent px-2 pb-2"
+      className="fixed bottom-0 left-0 right-0 z-60 md:hidden bg-transparent px-2 pb-2 touch-manipulation transform-[translateZ(0)]"
       aria-label="Navigation principale"
     >
       <div className="flex flex-col gap-1.5 pt-2">

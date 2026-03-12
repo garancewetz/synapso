@@ -47,7 +47,7 @@ const CATEGORY_CONFIG: Record<ExerciceCategory, {
   },
   FACE: {
     color: 'amber',
-    label: 'Maxillo facile',
+    label: 'Maxillo faciale',
     labelShort: 'Face',
     icon: '🧑',
     href: '/exercices/face',

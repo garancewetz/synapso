@@ -17,6 +17,7 @@ import { TouchLink } from '@/app/components/TouchLink';
 import { PlusIcon, BookIcon, SparklesIcon, MenuIcon, CloseIcon, RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
+import { useStopScrollOnTouch } from '@/app/hooks/useStopScrollOnTouch';
 
 type Props = {
   /** Catégories à afficher en bas (celles utilisées par l'utilisateur). Si non fourni, toutes les catégories sont affichées. */
@@ -42,6 +43,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
   } = useLayoutContext();
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
+  const stopScrollOnTouch = useStopScrollOnTouch();
 
   const isHomeActive = pathname === '/';
   const isExercicesAllActive = pathname === EXERCICES_ALL_HREF;
@@ -85,6 +87,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
       <nav
         className="fixed bottom-0 left-0 right-0 z-60 md:hidden bg-transparent px-2 pb-2 touch-manipulation transform-[translateZ(0)]"
         aria-label="Navigation principale"
+        onTouchStart={stopScrollOnTouch}
       >
         <div className={clsx('backdrop-blur-md bg-white/80 border border-white/70 shadow-lg rounded-2xl flex flex-col transition-all duration-300', isSlideExpanded ? 'pt-2 pb-2' : 'py-2')}>
           <div className={clsx('px-2 flex items-center justify-between gap-1', isSlideExpanded && 'pb-0')}>

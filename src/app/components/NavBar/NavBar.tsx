@@ -211,8 +211,7 @@ export function NavBar() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (navMenuType === 'page') setCategoriesOverlayOpen(true);
-                    else setCategoriesOverlayOpen(true);
+                    setCategoriesOverlayOpen(true);
                   }}
                   className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
                   aria-label="Ouvrir les catégories"

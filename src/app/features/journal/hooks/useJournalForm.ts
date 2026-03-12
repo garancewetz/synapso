@@ -8,7 +8,7 @@ type UseJournalFormOptions<T> = {
   createUrl: string;
   updateUrl: string;
   deleteUrl: string;
-  onSuccess?: () => void;
+  onSuccess?: (createdNoteId?: number) => void;
   transformToApi?: (formData: T) => Record<string, unknown>;
 };
 
@@ -17,7 +17,7 @@ type UseJournalFormReturn<T> = {
   error: string;
   showDeleteConfirm: boolean;
   setShowDeleteConfirm: (show: boolean) => void;
-  handleSubmit: (formData: T) => Promise<void>;
+  handleSubmit: (formData: T) => Promise<number | void>;
   handleDelete: () => Promise<void>;
 };
 
@@ -40,7 +40,7 @@ export function useJournalForm<T>({
     setError(err instanceof Error ? err.message : defaultMessage);
   }, []);
 
-  const handleSubmit = useCallback(async (formData: T) => {
+  const handleSubmit = useCallback(async (formData: T): Promise<number | void> => {
     if (!effectiveUser) {
       setError('Utilisateur non connecté');
       return;
@@ -70,11 +70,16 @@ export function useJournalForm<T>({
         throw new Error('Erreur lors de l\'enregistrement');
       }
 
+      const isCreate = !entityId && method === 'POST';
+      const createdNoteId = isCreate ? (await response.json() as { id?: number })?.id : undefined;
+
       await queryClient.invalidateQueries({ queryKey: queryKeys.journalNotes.all });
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(createdNoteId);
       }
+
+      return createdNoteId;
     } catch (err) {
       handleError(err, 'Erreur lors de l\'enregistrement');
     } finally {

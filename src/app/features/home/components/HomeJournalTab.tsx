@@ -8,7 +8,7 @@ export function HomeJournalTab() {
 
   return (
     <MenuLink
-      title="Journal"
+      title="Notes"
       icon={<BookIcon className="w-5 h-5" />}
       description="Mes notes"
       href={preserveDate('/journal')}

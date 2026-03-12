@@ -114,7 +114,7 @@ export function MenuDrawer({
           {/* Sélecteur d'utilisateur admin */}
           <AdminUserSelector onMenuClose={onClose} isMenuOpen={isOpen} />
 
-          {/* Sections principales (Journal et Parcours) */}
+          {/* Sections principales (Notes et Parcours) */}
           <MenuSections onMenuClose={onClose} isMenuOpen={isOpen} />
 
           {/* Actions rapides */}

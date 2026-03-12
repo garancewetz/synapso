@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
-  variant?: 'secondary' | 'danger' | 'action' | 'danger-outline' | 'golden' | 'simple';
+  variant?: 'secondary' | 'danger' | 'action' | 'danger-outline' | 'golden' | 'simple' | 'success';
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
@@ -63,9 +63,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]';
   
   const sizeStyles = {
-    sm: 'px-3 h-10 text-sm',
-    md: 'px-4 h-12 text-base',
-    lg: 'px-5 h-14 text-lg',
+    sm: 'px-3 min-h-[44px] h-11 text-sm',
+    md: 'px-4 min-h-[44px] h-11 text-base',
+    lg: 'px-5 min-h-[44px] h-11 text-lg',
   };
 
   const roundedStyles = {
@@ -76,6 +76,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   
   const variantStyles = {
     secondary: 'bg-gray-200 text-gray-700 md:hover:bg-gray-300 md:hover:ring-2 md:hover:ring-gray-300/60 md:hover:ring-offset-2',
+    success: 'border border-emerald-200 bg-emerald-50 text-emerald-700 md:hover:bg-emerald-100 md:hover:ring-2 md:hover:ring-emerald-300/50 md:hover:ring-offset-2',
     danger: 'bg-red-600 text-white md:hover:bg-red-700 md:hover:ring-2 md:hover:ring-red-400/60 md:hover:ring-offset-2',
     action: 'bg-blue-600 text-white md:hover:bg-blue-700 md:hover:ring-2 md:hover:ring-blue-400/60 md:hover:ring-offset-2',
     'danger-outline': 'bg-red-50 text-red-600 md:hover:bg-red-100 border border-red-300 md:hover:ring-2 md:hover:ring-red-300/50 md:hover:ring-offset-2',

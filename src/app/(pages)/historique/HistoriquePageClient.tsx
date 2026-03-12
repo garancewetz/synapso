@@ -31,7 +31,8 @@ const ConfettiRain = dynamic(
 );
 
 import { BackButton } from '@/app/components/ui/BackButton';
-import { SegmentedControl, Loader } from '@/app/components/ui';
+import { SegmentedControl, Loader, ProgressButton } from '@/app/components/ui';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatProgressForWhatsApp } from '@/app/utils/share';
@@ -94,6 +95,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
 
   const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
   const { referenceDate } = useTimeContext();
+  const { navMenuType } = useLayoutContext();
 
   // ⚡ PERFORMANCE: Utiliser useDeferredValue pour les calculs non critiques
   // Cela permet de rendre l'UI immédiatement et de différer les calculs lourds
@@ -148,27 +150,35 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   }, [deferredProgressList, isTimeMachineMode, selectedDateKey, progressDateKeys]);
 
 
-  // Déterminer l'onglet actif depuis l'URL (progrès par défaut)
+  // Déterminer l'onglet actif depuis l'URL (query param prioritaire, puis hash pour rétrocompat)
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
       const hash = window.location.hash;
-      const searchParams = new URLSearchParams(window.location.search);
-      
-      // Vérifier si on doit ouvrir le modal de création de progrès
-      if (searchParams.get('action') === 'add-progress') {
+
+      if (params.get('action') === 'add-progress') {
         openForCreate();
-        // Nettoyer l'URL
-        window.history.replaceState({}, '', window.location.pathname + (hash || '#progres'));
+        params.delete('action');
+        const tab = params.get('tab') || 'progres';
+        params.set('tab', tab);
+        const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+        window.history.replaceState({}, '', newPath);
       }
-      
-      if (hash === '#statistiques') {
+
+      const tabParam = params.get('tab');
+      if (tabParam === 'statistiques' || tabParam === 'progres') {
+        setActiveTab(tabParam);
+      } else if (hash === '#statistiques') {
         setActiveTab('statistiques');
+        params.set('tab', 'statistiques');
+        const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+        window.history.replaceState({}, '', newPath);
       } else {
-        // Par défaut, on affiche les progrès (plus important)
         setActiveTab('progres');
-        // Mettre à jour l'URL si pas de hash
-        if (!hash) {
-          window.history.replaceState({}, '', '#progres');
+        if (!tabParam) {
+          params.set('tab', 'progres');
+          const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+          window.history.replaceState({}, '', newPath);
         }
       }
     }
@@ -187,6 +197,13 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
     // ⚡ TANSTACK QUERY: Invalider les queries concernées
     // TanStack Query gère automatiquement la réactivité - les queries actives sont refetchées automatiquement
     queryClient.invalidateQueries({ 
+      queryKey: queryKeys.progress.all,
+      refetchType: 'active',
+    });
+  }, [queryClient]);
+
+  const handleProgressDeleteSuccess = useCallback(() => {
+    queryClient.invalidateQueries({
       queryKey: queryKeys.progress.all,
       refetchType: 'active',
     });
@@ -261,7 +278,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   const STAR_BRIGHT_EMOJI = PROGRESS_EMOJIS?.STAR_BRIGHT || '🌟';
 
   return (
-    <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-8 px-3 md:px-6 lg:px-8">
+    <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 pb-40 md:pb-8 px-3 md:px-6 lg:px-8">
       {!embeddedInHome && (
         <BackButton
           className="mb-4"
@@ -272,7 +289,10 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
       <div className="sm:p-6">
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          <div className={clsx('flex items-center justify-between mb-2', effectiveUser?.dominantHand === 'LEFT' && 'flex-row-reverse')}>
+          <div className={clsx(
+            'flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between md:gap-4',
+            effectiveUser?.dominantHand === 'LEFT' && 'md:flex-row-reverse'
+          )}>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
                 {NAVIGATION_EMOJIS.ROCKET} Ma progression
@@ -281,6 +301,14 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
                 Statistiques et progrès de ta progression de rééducation
               </p>
             </div>
+            {navMenuType === 'slide' && (
+              <ProgressButton
+                variant="inline"
+                onClick={() => progressModal.openForCreate()}
+                label="Ajouter un progrès"
+                className="shrink-0 w-full h-10! px-3! text-sm! md:w-auto md:h-11! md:px-5! md:text-base!"
+              />
+            )}
           </div>
         </div>
 
@@ -295,13 +323,12 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
               value={activeTab}
               onChange={(value) => {
                 setActiveTab(value as ActiveTab);
-                // ⚡ FIX: Préserver le paramètre date lors du changement d'onglet
                 const params = new URLSearchParams(searchParams.toString());
-                const hash = value === 'progres' ? '#progres' : '#statistiques';
-                const newUrl = params.toString() 
-                  ? `${window.location.pathname}?${params.toString()}${hash}`
-                  : `${window.location.pathname}${hash}`;
-                router.replace(newUrl);
+                params.set('tab', value);
+                const newUrl = params.toString()
+                  ? `${window.location.pathname}?${params.toString()}`
+                  : window.location.pathname;
+                router.replace(newUrl, { scroll: false });
               }}
               fullWidth
               size="md"
@@ -353,7 +380,6 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
                 onEdit={progressModal.openForEdit}
                 onShare={handleShare}
                 onPin={handlePin}
-                onOpenCreate={progressModal.openForCreate}
                 onOpenSlideshow={() => setIsSlideshowOpen(true)}
                 hasUser={!!effectiveUser}
                 starEmoji={STAR_BRIGHT_EMOJI}
@@ -381,6 +407,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
           isOpen={progressModal.isOpen}
           onClose={progressModal.close}
           onSuccess={handleProgressSuccess}
+          onDeleteSuccess={handleProgressDeleteSuccess}
           userId={effectiveUser.id}
           progressToEdit={progressModal.progressToEdit}
         />

@@ -3,6 +3,7 @@
 import { BackButton } from '@/app/components/ui/BackButton';
 import { Loader } from '@/app/components/ui/Loader';
 import { SettingsProfilSection } from './SettingsProfilSection';
+import { SettingsMenuCategorySection } from './SettingsMenuCategorySection';
 import { SettingsPasswordSection } from './SettingsPasswordSection';
 import { SettingsSessionSection } from './SettingsSessionSection';
 import { useSettingsPage } from './useSettingsPage';
@@ -94,6 +95,8 @@ export default function SettingsPage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
+
+        <SettingsMenuCategorySection />
 
         {!isImpersonating && (
           <SettingsPasswordSection

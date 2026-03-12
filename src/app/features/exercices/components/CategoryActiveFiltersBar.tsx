@@ -50,16 +50,6 @@ export function CategoryActiveFiltersBar({
     >
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium text-gray-800 shrink-0">Filtres :</span>
-        {hasStatusFilter && (
-          <FilterBadge
-            label={statusLabel}
-            isActive
-            category={categoryParam}
-            onClick={onRemoveStatusFilter}
-            ariaLabel={`Retirer le filtre ${statusLabel}`}
-            showCloseIcon
-          />
-        )}
         {selectedBodyparts.map((value) => (
           <FilterBadge
             key={value}
@@ -71,6 +61,16 @@ export function CategoryActiveFiltersBar({
             showCloseIcon
           />
         ))}
+        {hasStatusFilter && (
+          <FilterBadge
+            label={statusLabel}
+            isActive
+            category={categoryParam}
+            onClick={onRemoveStatusFilter}
+            ariaLabel={`Retirer le filtre ${statusLabel}`}
+            showCloseIcon
+          />
+        )}
         {selectedEquipments.map((value) => (
           <FilterBadge
             key={value}

@@ -62,31 +62,29 @@ export function InitialLoader({ confettiComponent: ConfettiComponent }: Props = 
       ))}
       
       <div className="relative flex flex-col items-center gap-8">
-        {/* Particules qui tournent autour comme des planètes - 4 couleurs des catégories */}
-        {/* Placées en arrière-plan pour passer derrière le texte */}
-        <div className="absolute top-[64px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 animate-[rotate_8s_linear_infinite] z-0">
-          {/* Orange - Haut du corps */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-orange-400 opacity-60 shadow-sm" />
-          {/* Teal - Milieu du corps */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-5 h-5 rounded-full bg-teal-400 opacity-60 shadow-sm" />
-          {/* Bleu - Bas du corps */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-5 h-5 rounded-full bg-blue-400 opacity-60 shadow-sm" />
-          {/* Violet - Étirement */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-purple-400 opacity-60 shadow-sm" />
-        </div>
+        {/* Conteneur commun : cercle et logo partagent le même centre */}
+        <div className="relative w-52 h-52 flex items-center justify-center">
+          {/* Orbite avec trait gris clair */}
+          <div className="absolute inset-0 rounded-full border border-gray-200/40 z-0" />
 
-        {/* Orbite avec trait gris clair */}
-        <div className="absolute top-[64px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full border border-gray-200/40 z-0" />
+          {/* Particules qui tournent autour - 5 couleurs des catégories */}
+          <div className="absolute inset-0 animate-[rotate_8s_linear_infinite] z-0">
+            <div className="loader-dot loader-dot-1 w-5 h-5 rounded-full bg-orange-400 opacity-60 shadow-sm" />
+            <div className="loader-dot loader-dot-2 w-5 h-5 rounded-full bg-amber-400 opacity-60 shadow-sm" />
+            <div className="loader-dot loader-dot-3 w-5 h-5 rounded-full bg-teal-400 opacity-60 shadow-sm" />
+            <div className="loader-dot loader-dot-4 w-5 h-5 rounded-full bg-blue-400 opacity-60 shadow-sm" />
+            <div className="loader-dot loader-dot-5 w-5 h-5 rounded-full bg-purple-400 opacity-60 shadow-sm" />
+          </div>
 
-        {/* Logo animé - cliquable */}
-        <div 
-          className="relative w-32 h-32 cursor-pointer active:scale-95 transition-all duration-200 hover:scale-110 group animate-[gentlePulse_3s_ease-in-out_infinite] z-10"
-          onClick={handleLogoClick}
-          onTouchStart={handleLogoClick}
-          role="button"
-          aria-label="Cliquez pour une explosion de confettis"
-          tabIndex={0}
-        >
+          {/* Logo animé - cliquable, centré dans le conteneur */}
+          <div 
+            className="relative w-32 h-32 cursor-pointer active:scale-95 transition-all duration-200 hover:scale-110 group animate-[gentlePulse_3s_ease-in-out_infinite] z-10"
+            onClick={handleLogoClick}
+            onTouchStart={handleLogoClick}
+            role="button"
+            aria-label="Cliquez pour une explosion de confettis"
+            tabIndex={0}
+          >
           {/* Cercle de fond avec effet de glow - plus visible au hover */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-100 to-white opacity-60 animate-[breathe_3s_ease-in-out_infinite] group-hover:opacity-90 group-hover:from-indigo-300 group-hover:to-indigo-100 group-hover:shadow-lg group-hover:shadow-indigo-200 transition-all duration-300" />
           
@@ -135,6 +133,7 @@ export function InitialLoader({ confettiComponent: ConfettiComponent }: Props = 
             />
             
           </svg>
+          </div>
         </div>
 
         {/* Nom de l'app avec effet de révélation - au premier plan */}
@@ -214,6 +213,34 @@ export function InitialLoader({ confettiComponent: ConfettiComponent }: Props = 
           100% {
             transform: translateX(200%) translateY(200%) rotate(45deg);
           }
+        }
+
+        .loader-dot {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform-origin: 50% 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .loader-dot-1 {
+          transform: translate(-50%, -50%) rotate(90deg) translateY(-104px);
+        }
+
+        .loader-dot-2 {
+          transform: translate(-50%, -50%) rotate(18deg) translateY(-104px);
+        }
+
+        .loader-dot-3 {
+          transform: translate(-50%, -50%) rotate(-54deg) translateY(-104px);
+        }
+
+        .loader-dot-4 {
+          transform: translate(-50%, -50%) rotate(-126deg) translateY(-104px);
+        }
+
+        .loader-dot-5 {
+          transform: translate(-50%, -50%) rotate(162deg) translateY(-104px);
         }
       `}</style>
     </div>

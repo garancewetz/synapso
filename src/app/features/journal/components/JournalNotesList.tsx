@@ -33,17 +33,17 @@ export function JournalNotesList({ limit }: Props) {
     return ids;
   }, [exercices, notes, referenceDateKey]);
 
-  const handleNoteUpdated = useCallback((_updatedNote: JournalNote) => {
+  const handleNoteUpdated = useCallback((_updatedNote?: JournalNote) => {
     refetch();
   }, [refetch]);
 
   const displayedNotes = limit ? notes.slice(0, limit) : notes;
 
   return (
-    <div>
+    <>
       {displayedNotes.length > 0 ? (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0 m-0">
-          {displayedNotes.map(note => (
+        <ul className="flex flex-col list-none p-0 m-0 gap-6">
+          {displayedNotes.map((note) => (
             <li key={note.id}>
               <JournalNoteCard
                 note={note}
@@ -54,10 +54,10 @@ export function JournalNotesList({ limit }: Props) {
           ))}
         </ul>
       ) : (
-        <div className="text-center text-gray-500 py-8">
-          Aucune entrée pour le moment
-        </div>
+        <p className="text-neutral-500 text-center py-12 text-sm">
+          Aucune note pour le moment. Ajoutez-en une pour commencer.
+        </p>
       )}
-    </div>
+    </>
   );
 }

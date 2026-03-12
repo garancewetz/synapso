@@ -199,8 +199,8 @@ input[type="email"]:focus {
 }
 
 /* Touch-friendly button sizes */
-/* ♿ ACCESSIBILITÉ: Garantir des zones de touch minimum 44x44px (Apple HIG, WCAG) */
-/* Note: La plupart des boutons utilisent déjà h-12 (48px) via les composants Button */
+/* ♿ ACCESSIBILITÉ: Garantir des zones de touch 44x44px (Apple HIG, WCAG 2.5.5 Target Size) */
+/* Note: La plupart des boutons utilisent déjà min-h-[44px] / h-11 (44px) via les composants Button */
 /* Cette règle garantit un minimum même pour les boutons custom */
 /* @media (pointer: coarse) {
   button:not([class*="h-"]):not([class*="min-h-"]),
@@ -210,34 +210,34 @@ input[type="email"]:focus {
   }
 } */
 
-/* ♿ WCAG 2.5.5 Target Size: zones tactiles ≥ 44px (AA), agrandies pour objectif AAA / usage à une main */
+/* ♿ WCAG 2.5.5 Target Size: zones tactiles 44px (AA) */
 .bottom-nav-item {
-  min-height: 56px;
+  min-height: 44px;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
 .bottom-nav-item > div:first-of-type {
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  min-height: 3rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
 }
 .complete-button {
-  min-height: 52px;
+  min-height: 44px;
 }
 .action-button-fab {
-  min-height: 56px;
+  min-height: 44px;
 }
 .action-button-fab button {
-  min-height: 56px;
+  min-height: 44px;
   padding-left: 1.25rem;
   padding-right: 1.25rem;
 }
 .back-button {
-  min-height: 52px;
+  min-height: 44px;
 }
 .toggle-button-group button {
-  min-height: 52px;
+  min-height: 44px;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }

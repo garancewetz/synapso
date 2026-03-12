@@ -25,7 +25,6 @@ type Props = {
   onEdit: (progress: Progress) => void;
   onShare: (progress: Progress) => void;
   onPin: () => void;
-  onOpenCreate: () => void;
   onOpenSlideshow: () => void;
   hasUser: boolean;
   starEmoji: string;
@@ -42,7 +41,6 @@ export function HistoriqueProgresSection({
   onEdit,
   onShare,
   onPin,
-  onOpenCreate,
   onOpenSlideshow,
   hasUser,
   starEmoji,
@@ -60,20 +58,10 @@ export function HistoriqueProgresSection({
     >
       <section id="progres" className="space-y-6 md:space-y-8">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <span>{starEmoji}</span>
             <span>Mes progrès</span>
           </h2>
-          <div className="flex items-center gap-2">
-            {hasUser && (
-              <ProgressButton
-                onClick={onOpenCreate}
-                variant="inline"
-                label="Noter un progrès"
-                ariaLabel="Ajouter un progrès"
-              />
-            )}
-          </div>
         </div>
 
         {!loadingProgress && deferredProgressList.length >= 2 && (
@@ -148,15 +136,6 @@ export function HistoriqueProgresSection({
           )}
         </AnimatePresence>
 
-        {hasUser && (
-          <div className="flex justify-center pt-4">
-            <ProgressButton
-              onClick={onOpenCreate}
-              variant="inline"
-              label="Noter un progrès"
-            />
-          </div>
-        )}
       </section>
     </MotionDiv>
   );

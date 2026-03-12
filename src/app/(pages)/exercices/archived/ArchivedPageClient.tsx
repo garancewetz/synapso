@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ExerciceCard, useExercices, useExerciceHandlers } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
-import { AddButton } from '@/app/components/ui';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { 
   CATEGORY_LABELS,
@@ -134,14 +133,6 @@ export function ArchivedPageClient() {
         </div>
       </div>
 
-      {/* Bouton "Ajouter un exercice" - centré en bas de page */}
-      <div className="flex justify-center mt-8 mb-6">
-        <AddButton 
-          href="/exercice/add" 
-          label="Ajouter un exercice"
-          addFromParam
-        />
-      </div>
     </section>
   );
 }

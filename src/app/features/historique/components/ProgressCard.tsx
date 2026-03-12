@@ -166,7 +166,7 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
               )}
               <h3 className={clsx(
                 GOLDEN_TEXT_STYLES.primary,
-                compact ? 'text-base sm:text-lg' : 'text-lg sm:text-xl',
+                compact ? 'text-sm sm:text-base' : 'text-base sm:text-lg',
                 'font-bold leading-tight tracking-tight'
               )}>
                 {progress.content}

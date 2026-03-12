@@ -5,6 +5,7 @@ type Props = {
   onSubmitLabel?: string;
   onCancel?: () => void;
   onCancelLabel?: string;
+  showSubmit?: boolean;
   showDelete?: boolean;
   onDelete?: () => void;
   deleteConfirm?: boolean;
@@ -17,6 +18,7 @@ export function FormActions({
   onSubmitLabel = 'Enregistrer',
   onCancel,
   onCancelLabel = 'Annuler',
+  showSubmit = true,
   showDelete = false,
   onDelete,
   deleteConfirm = false,
@@ -26,13 +28,15 @@ export function FormActions({
   return (
     <div className="space-y-3 pt-4">
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          type="submit"
-          variant="action"
-          disabled={loading}
-        >
-          {loading ? 'Enregistrement...' : onSubmitLabel}
-        </Button>
+        {showSubmit && (
+          <Button
+            type="submit"
+            variant="action"
+            disabled={loading}
+          >
+            {loading ? 'Enregistrement...' : onSubmitLabel}
+          </Button>
+        )}
         {onCancel && (
           <Button
             type="button"

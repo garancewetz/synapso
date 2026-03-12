@@ -4,6 +4,8 @@ import { memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { CategoryCardWithProgress } from '@/app/features/exercices';
 import { MenuLink } from '@/app/components';
+import { Card } from '@/app/components/ui/Card';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 import { SITEMAP_ICON_STYLES } from '@/app/constants/sitemap.constants';
 import type { Exercice } from '@/app/types/exercice';
@@ -14,11 +16,30 @@ const MotionDiv = dynamic(
   { ssr: false }
 );
 
+function CategoryCardPlaceholder() {
+  return (
+    <Card variant="default" padding="md">
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gray-200 animate-pulse shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-3 w-16 bg-gray-100 rounded animate-pulse" />
+        </div>
+        <div className="w-12 h-5 rounded-full bg-gray-200 animate-pulse shrink-0" />
+      </div>
+      <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full w-1/3 bg-gray-200 rounded-full animate-pulse" />
+      </div>
+    </Card>
+  );
+}
+
 type Props = {
   exercices: Exercice[];
   relatedStretchingByCategory: Record<ExerciceCategory, number>;
   archivedCount: number;
   error?: Error | null;
+  loading?: boolean;
 };
 
 export const HomeExercicesTab = memo(function HomeExercicesTab({
@@ -26,7 +47,9 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
   relatedStretchingByCategory,
   archivedCount,
   error,
+  loading = false,
 }: Props) {
+  const { navMenuType } = useLayoutContext();
   const activeExercices = useMemo(() => exercices.filter(e => !e.archived), [exercices]);
 
   const exercicesByCategory = useMemo(() => {
@@ -45,7 +68,11 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-        {CATEGORY_ORDER.filter(category => (exercicesByCategory.get(category) || []).length > 0).map((category, index) => {
+        {loading ? (
+          CATEGORY_ORDER.map((category) => (
+            <CategoryCardPlaceholder key={category} />
+          ))
+        ) : CATEGORY_ORDER.filter(category => (exercicesByCategory.get(category) || []).length > 0).map((category, index) => {
           const categoryExercices = exercicesByCategory.get(category) || [];
 
           return (
@@ -73,6 +100,16 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         iconTextColor={SITEMAP_ICON_STYLES.default.text}
         isSecondary={true}
       />
+      {navMenuType !== 'slide' && (
+        <MenuLink
+          title="Ajouter un exercice"
+          icon="➕"
+          href="/exercice/add"
+          iconBgColor={SITEMAP_ICON_STYLES.default.bg}
+          iconTextColor={SITEMAP_ICON_STYLES.default.text}
+          isSecondary={true}
+        />
+      )}
       <MenuLink
         title="Exercices archivés"
         icon="📦"

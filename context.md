@@ -1,6 +1,6 @@
 # Context - Synapso
 
-**Dernière mise à jour du contexte** : 2 mars 2025
+**Dernière mise à jour du contexte** : 12 mars 2026
 
 ### À lire en priorité
 
@@ -46,11 +46,11 @@ Architecture, composants et optimisations pensés pour le mobile : chargement mi
 
 ```
 src/app/
-├── (pages)/          # Pages : page.tsx (dashboard), exercice/, exercices/, historique/, settings/, journal/
+├── (pages)/          # Pages : page.tsx (dashboard), exercice/, exercices/, historique/, settings/, journal/, notifications/
 ├── api/              # Routes API (wrappers HTTP qui appellent features/*/api/)
-├── features/         # Par domaine : exercices, historique, progress, home, journal, time-machine, auth
+├── features/         # Par domaine : exercices, historique, progress, home, journal, time-machine, auth, sharing
 │   └── [feature]/    # components/, hooks/, api/, utils/, index.ts
-├── components/        # Partagés (ui/, NavBar, BottomNavBar…)
+├── components/       # Partagés (ui/, NavBar, BottomNavBar…)
 ├── contexts/         # UserContext, ToastContext, DayDetailModalContext, SelectedDateContext, TimeContext
 ├── providers/        # QueryProvider
 ├── lib/              # prisma, auth, api-queries
@@ -84,6 +84,7 @@ Détail complet dans `prisma/schema.prisma`.
 - **Progrès** : ProgressFAB partout, ProgressBottomSheet (tags, texte, médias, catégorie), ConfettiRain. Timeline sur /historique/victories.
 - **Auth** : AuthScreen (login/création avec code invitation), UserSetup après inscription (main dominante, rythme, journal). requireAuth() sur toutes les API.
 - **Paramètres** `/settings` : nom, main dominante, fréquence réinitialisation, journal, mot de passe ; gestion multi-utilisateurs.
+- **Partage & notifications** `/notifications` : partage d’exercices entre utilisateurs (ex. kiné ↔ patient, patient ↔ proche). Envoi via `useShareToUser` (simple ou multiple), réception via `useReceivedShares`, affichage des exercices partagés dans `SharedExerciceCard`, badge de notifications (nombre de partages en attente) via `usePendingShareCount`. Actions d’acceptation/refus et gestion des utilisateurs partageables via `useRespondToShare` et `useShareableUsers`.
 
 ---
 

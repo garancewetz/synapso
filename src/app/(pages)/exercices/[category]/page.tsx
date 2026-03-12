@@ -10,11 +10,12 @@ import {
   useExerciceStatusFilter,
   useExerciceHandlers,
   useCategoryFilters,
+  CategoryBodypartsSection,
   CategoryAffinerSection,
   CategoryActiveFiltersBar,
 } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
-import { StatusFilterSection } from '@/app/components/ui';
+import { AddButton } from '@/app/components/ui/AddButton';
 import type { ExerciceCategory, ExerciceStatusFilter, Exercice } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
 
@@ -26,7 +27,8 @@ const HIGHLIGHT_RING_BY_CATEGORY: Record<ExerciceCategory, string> = {
   FACE: 'ring-2 ring-amber-500',
 };
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { AddButton } from '@/app/components/ui/AddButton';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
+import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 function getHighlightedExerciceIdFromHash(): string | null {
   if (typeof window === 'undefined') return null;
@@ -39,6 +41,8 @@ export default function CategoryPage() {
   const [filter, setFilter] = useState<ExerciceStatusFilter>('all');
   const router = useRouter();
   const params = useParams();
+  const { preserveDate, navMenuType } = useLayoutContext();
+  const { isLeftHanded } = useHandPreference();
 
   const categoryParam = useMemo(() => {
     return (params.category as string)?.toUpperCase() as ExerciceCategory;
@@ -152,7 +156,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <section className="pb-12 md:pb-8" aria-live="polite" aria-busy={loadingExercices}>
+    <section className="pb-40 md:pb-8" aria-live="polite" aria-busy={loadingExercices}>
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto pt-2 md:pt-4 px-4 md:px-6 lg:px-8">
         {exercicesError && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -167,8 +171,11 @@ export default function CategoryPage() {
           </div>
         )}
         <div className="mb-6 md:mb-8">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+          <div className={clsx(
+            'flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-4',
+            isLeftHanded && 'md:flex-row-reverse'
+          )}>
+            <div className="flex-1 min-w-0">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 {CATEGORY_LABELS[categoryParam]}
               </h1>
@@ -190,27 +197,32 @@ export default function CategoryPage() {
                 </p>
               ) : null}
             </div>
-            <AddButton
-              href="/exercice/add"
-              queryParams={{ category: categoryParam.toLowerCase() }}
-              addFromParam
-              className="shrink-0"
-            />
+            {navMenuType === 'slide' && (
+              <AddButton
+                href={preserveDate(`/exercice/add?category=${categoryParam.toLowerCase()}`)}
+                label="Ajouter un exercice"
+                className="shrink-0 w-full h-10! px-3! text-sm! md:w-auto md:h-11! md:px-5! md:text-base!"
+              />
+            )}
           </div>
 
           <div className="mt-4 space-y-4">
-            <StatusFilterSection filter={filter} onFilterChange={setFilter} />
-            <CategoryAffinerSection
+            <CategoryBodypartsSection
               categoryParam={categoryParam}
               bodypartsWithCounts={filters.bodypartsWithCounts}
-              equipmentsWithCounts={filters.equipmentsWithCounts}
               selectedBodyparts={filters.selectedBodyparts}
               setSelectedBodyparts={filters.setSelectedBodyparts}
+              isAllBodypartsSelected={filters.isAllBodypartsSelected}
+              onSelectAllBodyparts={filters.handleSelectAllBodyparts}
+            />
+            <CategoryAffinerSection
+              categoryParam={categoryParam}
+              filter={filter}
+              onFilterChange={setFilter}
+              equipmentsWithCounts={filters.equipmentsWithCounts}
               selectedEquipments={filters.selectedEquipments}
               setSelectedEquipments={filters.setSelectedEquipments}
-              isAllBodypartsSelected={filters.isAllBodypartsSelected}
               isAllEquipmentsSelected={filters.isAllEquipmentsSelected}
-              onSelectAllBodyparts={filters.handleSelectAllBodyparts}
               onSelectAllEquipments={filters.handleSelectAllEquipments}
             />
           </div>
@@ -324,15 +336,6 @@ export default function CategoryPage() {
               </div>
             </motion.div>
           )}
-      </div>
-
-      <div className="flex justify-center mt-8 mb-6">
-        <AddButton
-          href="/exercice/add"
-          label="Ajouter un exercice"
-          queryParams={{ category: categoryParam.toLowerCase() }}
-          addFromParam
-        />
       </div>
     </section>
   );

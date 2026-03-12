@@ -21,7 +21,7 @@ export function UserDeleteButton({ onDelete, disabled = false, className = '' }:
       variant={deleteConfirmation.showConfirm ? 'danger' : 'danger-outline'}
       size="sm"
       rounded="lg"
-      className={clsx('!w-9 !h-9 !p-0 !text-xs !min-w-0', className)}
+      className={clsx('!min-w-[44px] !min-h-[44px] !w-11 !h-11 !p-0 !text-xs', className)}
     >
       {deleteConfirmation.isDeleting ? (
         <span className="animate-spin">⏳</span>

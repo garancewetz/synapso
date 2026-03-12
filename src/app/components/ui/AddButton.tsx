@@ -4,13 +4,14 @@ import { ActionButton } from './ActionButton';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 type Props = {
-  href: string;
+  href?: string;
   label?: string;
   className?: string;
   position?: 'left' | 'right' | 'auto';
   queryParams?: Record<string, string>;
   addFromParam?: boolean;
   display?: 'inline' | 'fixed';
+  onClick?: () => void;
 };
 
 /**
@@ -29,7 +30,8 @@ export function AddButton({
   queryParams,
   addFromParam = false,
   display = 'inline',
-  position = 'auto'
+  position = 'auto',
+  onClick,
 }: Props) {
   const { isLeftHanded } = useHandPreference();
   
@@ -48,6 +50,7 @@ export function AddButton({
       className={className}
       queryParams={queryParams}
       addFromParam={addFromParam}
+      onClick={onClick}
       aria-label={label || 'Ajouter'}
     />
   );

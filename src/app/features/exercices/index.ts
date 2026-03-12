@@ -7,6 +7,7 @@ export { ExerciceCardTags } from './components/ExerciceCardTags';
 export { ExerciceTags } from './components/ExerciceTags';
 export { ExerciceMedia } from './components/ExerciceMedia';
 export { CategoryCardWithProgress } from './components/CategoryCardWithProgress';
+export { CategoryBodypartsSection } from './components/CategoryBodypartsSection';
 export { CategoryAffinerSection } from './components/CategoryAffinerSection';
 export { CategoryActiveFiltersBar } from './components/CategoryActiveFiltersBar';
 export { DailyGoalProgress } from './components/DailyGoalProgress';

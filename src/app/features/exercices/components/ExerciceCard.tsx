@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, memo, useRef, useLayoutEffect } from "react";
+import { useState, useCallback, useMemo, memo, useRef, useEffect } from "react";
 import clsx from 'clsx';
 import type { Exercice } from '@/app/types';
 import { CATEGORY_COLORS } from '@/app/constants/exercice.constants';
@@ -36,7 +36,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
     const [isExpanded, setIsExpanded] = useState(false);
     const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-    const [confettiCenter, setConfettiCenter] = useState({ x: 50, y: 50 });
     const cardRef = useRef<HTMLDivElement>(null);
     const completeButtonRef = useRef<HTMLDivElement>(null);
     const { effectiveUser } = useUser();
@@ -60,6 +59,44 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
         userId: effectiveUser?.id ?? 0,
         onCompleted: effectiveUser ? onCompleted : undefined,
     });
+
+    useEffect(() => {
+        if (!isActionsOpen) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            const element = cardRef.current;
+            if (!element) {
+                return;
+            }
+
+            const rect = element.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+            const willMenuBeHidden = rect.bottom > viewportHeight;
+
+            if (!willMenuBeHidden) {
+                return;
+            }
+
+            const documentHeight = document.documentElement.scrollHeight;
+            const currentScrollTop = window.scrollY || window.pageYOffset;
+            const targetTop = Math.min(
+                Math.max(currentScrollTop + rect.top - viewportHeight * 0.3, 0),
+                documentHeight - viewportHeight
+            );
+
+            window.scrollTo({
+                top: targetTop,
+                behavior: 'smooth',
+            });
+        }, 200);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [isActionsOpen]);
 
     const handleEdit = useCallback(() => {
         setIsActionsOpen(false);
@@ -110,15 +147,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
         }
     }, [exercice.media]);
 
-    useLayoutEffect(() => {
-        if (showSuccess && completeButtonRef.current) {
-            const rect = completeButtonRef.current.getBoundingClientRect();
-            setConfettiCenter({
-                x: ((rect.left + rect.width / 2) / window.innerWidth) * 100,
-                y: ((rect.top + rect.height / 2) / window.innerHeight) * 100,
-            });
-        }
-    }, [showSuccess]);
 
     return (
         <div ref={cardRef} className="relative h-full">
@@ -176,7 +204,7 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                             <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
                         </Button>
 
-                        <div ref={completeButtonRef} className="flex-1 flex min-w-0">
+                        <div ref={completeButtonRef} className="relative flex-1 flex min-w-0">
                             <CompleteButton
                                 onClick={handleComplete}
                                 isCompleted={exercice.completed}
@@ -184,6 +212,13 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                                 isLoading={isCompleting}
                                 weeklyCount={exercice.weeklyCompletions?.length || 0}
                             />
+                            {showSuccess && (
+                                <ConfettiValidate
+                                    show
+                                    centerX={50}
+                                    centerY={50}
+                                />
+                            )}
                         </div>
                     </BaseCard.Footer>
 
@@ -224,14 +259,6 @@ const ExerciceCard = memo(function ExerciceCard({ exercice, onEdit, onCompleted,
                 </div>
             </BaseCard.Content>
             </BaseCard>
-            
-            {showSuccess && (
-                <ConfettiValidate
-                    show
-                    centerX={confettiCenter.x}
-                    centerY={confettiCenter.y}
-                />
-            )}
 
             {/* Lightbox - rendu en dehors de la carte pour être plein écran */}
             {exercice.media && exercice.media.photos && exercice.media.photos.length > 0 && lightboxIndex !== null && (

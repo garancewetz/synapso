@@ -27,6 +27,8 @@ const EMERALD_COLORS = [
 
 const ANIMATION_DURATION = 1.1;
 
+const EXPLOSION_DISTANCE_PX = 90;
+
 function ValidateConfetti({
   delay,
   angle,
@@ -45,15 +47,17 @@ function ValidateConfetti({
   centerY: number;
 }) {
   const radians = (angle * Math.PI) / 180;
-  const endX = Math.cos(radians) * distance * 0.9;
-  const endY = Math.sin(radians) * distance * 0.35;
+  const endX = Math.cos(radians) * (EXPLOSION_DISTANCE_PX * (distance / 16)) * 0.9;
+  const endY = Math.sin(radians) * (EXPLOSION_DISTANCE_PX * (distance / 16)) * 0.35;
 
   return (
     <motion.div
-      className="fixed pointer-events-none z-50"
+      className="absolute pointer-events-none z-50"
       style={{
         left: `${centerX}%`,
         top: `${centerY}%`,
+        marginLeft: -size / 2,
+        marginTop: -(size * 1.5) / 2,
         width: size,
         height: size * 1.5,
         backgroundColor: color,
@@ -64,8 +68,8 @@ function ValidateConfetti({
       animate={{
         opacity: [0, 1, 1, 0.9, 0.6, 0.3, 0],
         scale: [0, 1.2, 1.1, 1, 0.9, 0.7, 0.5],
-        x: [0, `${endX}vw`],
-        y: [0, `${endY}vh`],
+        x: [0, endX],
+        y: [0, endY],
         rotate: [0, angle + 540],
       }}
       transition={{
@@ -106,7 +110,7 @@ export const ConfettiValidate = memo(function ConfettiValidate({
   if (!show) return null;
 
   return (
-    <>
+    <div className="absolute inset-0 pointer-events-none z-50">
       {confettis.map((c) => (
         <ValidateConfetti
           key={c.id}
@@ -119,6 +123,6 @@ export const ConfettiValidate = memo(function ConfettiValidate({
           centerY={centerY}
         />
       ))}
-    </>
+    </div>
   );
 });

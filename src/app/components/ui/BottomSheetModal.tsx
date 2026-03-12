@@ -128,7 +128,7 @@ export function BottomSheetModal({
               type="button"
               iconOnly
               onClick={onClose}
-              className="hidden md:flex absolute top-3 right-3 w-8 h-8 !p-0 !border-0 rounded-full bg-gray-100 hover:bg-gray-200 z-50"
+              className="hidden md:flex absolute top-3 right-3 w-11 h-11 !p-0 !border-0 rounded-full bg-gray-100 hover:bg-gray-200 z-50"
               aria-label="Fermer"
             >
               <span className="text-gray-500 text-lg">✕</span>

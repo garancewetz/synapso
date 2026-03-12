@@ -8,6 +8,8 @@ import { usePreserveDateParam } from '@/app/features/time-machine/hooks/usePrese
 
 export function HomeSuiviTab() {
   const preserveDate = usePreserveDateParam();
+  const historiqueBase = preserveDate('/historique');
+  const separator = historiqueBase.includes('?') ? '&' : '?';
 
   return (
     <div className="space-y-3">
@@ -15,7 +17,7 @@ export function HomeSuiviTab() {
         title="Progrès"
         icon={<SparklesIcon className="w-5 h-5" />}
         description="Tous mes progrès et leur évolution dans le temps"
-        href={preserveDate('/historique#progres')}
+        href={`${historiqueBase}${separator}tab=progres`}
         iconBgColor={MENU_COLORS.PROGRES.bg}
         iconTextColor={MENU_COLORS.PROGRES.text}
       />
@@ -23,12 +25,12 @@ export function HomeSuiviTab() {
         title="Progression"
         icon={<MapIcon className="w-5 h-5" />}
         description="Mon activité, mes graphiques et les zones travaillées"
-        href={preserveDate('/historique#statistiques')}
+        href={`${historiqueBase}${separator}tab=statistiques`}
         iconBgColor={SITEMAP_ICON_STYLES.primary.parcours.bg}
         iconTextColor={SITEMAP_ICON_STYLES.primary.parcours.text}
       />
       <MenuLink
-        title="Journal"
+        title="Notes"
         icon={<BookIcon className="w-5 h-5" />}
         description="Mes notes"
         href={preserveDate('/journal')}

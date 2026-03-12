@@ -1,49 +1,57 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect, memo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { useState, memo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import type { JournalNote } from '@/app/types';
-import type { ExerciceCategory } from '@/app/types/exercice';
+import type { MediaItem } from '@/app/types/exercice';
+import type { LinkedExercice } from '@/app/types/journal';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
-import { usePreserveDateParam } from '@/app/features/time-machine/hooks/usePreserveDateParam';
-import { BaseCard, Badge, Button, BorderedIconList } from '@/app/components/ui';
-import { DotsIcon, EditIcon, BookmarkIcon, CheckIcon, ShareIcon, ChevronIcon } from '@/app/components/ui/icons';
+import { Button, BorderedIconList } from '@/app/components/ui';
+import { MediaUploader } from '@/app/components/ui';
+import { ExercicePickerModal } from './ExercicePickerModal';
+import { DotsIcon, BookmarkIcon, ShareIcon, CameraIcon, CheckIcon } from '@/app/components/ui/icons';
+import { TrashIcon } from '@/app/components/ui/icons/TrashIcon';
+import { CATEGORY_HREFS, CATEGORY_COLORS, CATEGORY_ICONS } from '@/app/constants/exercice.constants';
+import { JOURNAL_NOTE_STYLES } from '@/app/constants/journal.constants';
 import clsx from 'clsx';
-import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_HREFS } from '@/app/constants/exercice.constants';
 
 type Props = {
   note: JournalNote;
   completedExerciceIds?: Set<number>;
-  onUpdated?: (updatedNote: JournalNote) => void;
+  onUpdated?: (updatedNote?: JournalNote) => void;
 };
 
-export const JournalNoteCard = memo(function JournalNoteCard({ note, completedExerciceIds, onUpdated }: Props) {
-  const router = useRouter();
+export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }: Props) {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const fullHeightRef = useRef(0);
+  const [title, setTitle] = useState(note.title);
+  const [description, setDescription] = useState(note.description ?? '');
+  const [media, setMedia] = useState<MediaItem[]>(Array.isArray(note.media) ? (note.media as MediaItem[]) : []);
+  const [exerciceIds, setExerciceIds] = useState<number[]>(note.exercices ? note.exercices.map((e) => e.id) : []);
+  const [exerciceNames, setExerciceNames] = useState<LinkedExercice[]>(
+    note.exercices
+      ? note.exercices.map((e) => ({
+          id: e.id,
+          name: e.name,
+          category: e.category,
+        }))
+      : []
+  );
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [showMediaUploader, setShowMediaUploader] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [hasAutoSavedOnce, setHasAutoSavedOnce] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
   const { effectiveUser } = useUser();
   const { referenceDateKey } = useTimeContext();
   const targetDateKey = referenceDateKey ?? format(new Date(), 'yyyy-MM-dd');
-
-  // Mesurer la hauteur complète et détecter la troncature
-  // Seulement au montage et quand la description change (pas quand isExpanded change,
-  // sinon la transition CSS fausse la mesure de clientHeight)
-  useLayoutEffect(() => {
-    const el = descriptionRef.current;
-    if (el) {
-      fullHeightRef.current = el.scrollHeight;
-      setIsTruncated(el.scrollHeight > el.clientHeight + 1);
-    }
-  }, [note.description]);
 
   const { handlePin, isPinning } = usePinJournalNote({
     note,
@@ -61,19 +69,61 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
     onCompleted: onUpdated,
   });
 
-  const preserveDate = usePreserveDateParam();
   const hasExercices = note.exercices && note.exercices.length > 0;
-  const exerciceCount = note.exercices?.length ?? 0;
-  const validateAriaLabel = hasExercices
-    ? `Valider l'entrée et marquer les ${exerciceCount} exercice${exerciceCount > 1 ? 's' : ''} comme faits`
-    : "Valider l'entrée";
-  const buttonLabel = isValidatedForReferenceDay ? 'Dévalider' : 'Valider';
-  const buttonAriaLabel = isValidatedForReferenceDay ? "Dévalider l'entrée" : validateAriaLabel;
+  const validateActionLabel = isValidatedForReferenceDay ? 'Validée' : 'Valider';
+  const validateAriaLabel = isValidatedForReferenceDay
+    ? "Annuler la validation pour aujourd'hui"
+    : hasExercices
+      ? `Valider pour aujourd'hui et marquer les ${note.exercices?.length ?? 0} exercice(s) comme faits`
+      : "Valider pour aujourd'hui";
 
-  const handleEdit = useCallback(() => {
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTitle(e.target.value);
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const resizeDescription = useCallback(() => {
+    const el = descriptionRef.current;
+    if (!el) return;
+
+    const value = el.value;
+    const lineCount = value.split('\n').length;
+    const isEmpty = value.trim() === '';
+    const minHeight = isEmpty || lineCount <= 1 ? 40 : 80;
+
+    el.style.height = 'auto';
+    el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    resizeDescription();
+  }, [description, resizeDescription]);
+
+  const handleMediaChange = useCallback((items: MediaItem[]) => {
+    setMedia(items);
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleExerciceChange = useCallback((selected: LinkedExercice[]) => {
+    setExerciceIds(selected.map((e) => e.id));
+    setExerciceNames(selected);
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleAddMediaClick = useCallback(() => {
+    setShowMediaUploader(true);
     setIsActionsOpen(false);
-    router.push(preserveDate(`/journal/edit/${note.id}`));
-  }, [router, note.id, preserveDate]);
+  }, []);
+
+  const handleLinkExercicesClick = useCallback(() => {
+    setIsPickerOpen(true);
+    setIsActionsOpen(false);
+  }, []);
 
   const handlePinClick = useCallback(async () => {
     await handlePin();
@@ -85,172 +135,327 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, completedEx
     setIsActionsOpen(prev => !prev);
   }, []);
 
-  const toggleExpand = useCallback(() => {
-    setIsActionsOpen(false);
-    setIsExpanded(prev => !prev);
-  }, []);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleExpand();
+  useEffect(() => {
+    if (!isActionsOpen) {
+      setShowDeleteConfirm(false);
     }
-  }, [toggleExpand]);
+  }, [isActionsOpen]);
+
+  const handleDeleteClick = useCallback(async () => {
+    if (!showDeleteConfirm) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/journal/notes/${note.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        onUpdated?.();
+        setIsActionsOpen(false);
+      }
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [showDeleteConfirm, note.id, onUpdated]);
+
+  useEffect(() => {
+    if (!isActionsOpen) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const element = cardRef.current;
+      if (!element) {
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+      const willMenuBeHidden = rect.bottom > viewportHeight;
+
+      if (!willMenuBeHidden) {
+        return;
+      }
+
+      const documentHeight = document.documentElement.scrollHeight;
+      const currentScrollTop = window.scrollY || window.pageYOffset;
+      const targetTop = Math.min(
+        Math.max(currentScrollTop + rect.top - viewportHeight * 0.3, 0),
+        documentHeight - viewportHeight
+      );
+
+      window.scrollTo({
+        top: targetTop,
+        behavior: 'smooth',
+      });
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isActionsOpen]);
+
+  useEffect(() => {
+    setTitle(note.title);
+    setDescription(note.description ?? '');
+    setMedia(Array.isArray(note.media) ? (note.media as MediaItem[]) : []);
+    setExerciceIds(note.exercices ? note.exercices.map((e) => e.id) : []);
+    setExerciceNames(
+      note.exercices
+        ? note.exercices.map((e) => ({
+            id: e.id,
+            name: e.name,
+            category: e.category,
+          }))
+        : []
+    );
+    setHasUnsavedChanges(false);
+    setHasAutoSavedOnce(false);
+    setShowMediaUploader((prev) => prev || (Array.isArray(note.media) && (note.media as MediaItem[]).length > 0));
+  }, [note]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const isEmpty =
+      !title.trim() &&
+      !description.trim() &&
+      media.length === 0 &&
+      exerciceIds.length === 0;
+
+    setIsAutoSaving(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        if (isEmpty) {
+          const response = await fetch(`/api/journal/notes/${note.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+          if (response.ok) {
+            onUpdated?.();
+          }
+          setHasUnsavedChanges(false);
+          return;
+        }
+
+        if (!title.trim()) {
+          setIsAutoSaving(false);
+          return;
+        }
+
+        const response = await fetch(`/api/journal/notes/${note.id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: title.trim(),
+            description,
+            media,
+            exerciceIds,
+          }),
+        });
+
+        if (response.ok) {
+          const updatedNote = await response.json() as JournalNote;
+          onUpdated?.(updatedNote);
+          setHasAutoSavedOnce(true);
+          setHasUnsavedChanges(false);
+        }
+      } finally {
+        setIsAutoSaving(false);
+      }
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [description, exerciceIds, hasUnsavedChanges, media, note.id, onUpdated, title]);
 
   return (
-      <BaseCard
-        role={isTruncated ? 'button' : 'article'}
-        tabIndex={isTruncated ? 0 : undefined}
-        ariaLabel={`Entrée : ${note.title}`}
-        ariaExpanded={isTruncated ? isExpanded : undefined}
-        onClick={isTruncated ? toggleExpand : undefined}
-        onKeyDown={isTruncated ? handleKeyDown : undefined}
+    <>
+      <article
+        role="article"
+        aria-label={`Entrée : ${note.title}`}
+        className={clsx('flex flex-col', JOURNAL_NOTE_STYLES.block)}
+        ref={cardRef}
       >
-        <BaseCard.Content>
-          <div className="p-4 md:p-5">
+        <div className="flex-1">
+          <div className={JOURNAL_NOTE_STYLES.contentArea}>
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-base md:text-lg font-semibold text-gray-800 flex-1 min-w-0">
-                {note.title}
-              </h3>
+              <h2 className={clsx('flex-1 min-w-0 focus-within:ring-0 focus-within:outline-none', JOURNAL_NOTE_STYLES.title)}>
+                <textarea
+                  value={title}
+                  onChange={handleTitleChange}
+                  placeholder="Titre"
+                  className="w-full border-0! bg-transparent p-0 outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-neutral-400 resize-none"
+                />
+              </h2>
               <div className="flex items-center gap-1.5 shrink-0">
                 {note.pinned && (
                   <BookmarkIcon className="w-4 h-4 text-amber-500" filled />
                 )}
                 {isValidatedForReferenceDay && (
-                  <Badge className="bg-emerald-100 text-emerald-700 text-xs">
-                    Validé
-                  </Badge>
+                  <CheckIcon className="w-5 h-5 text-emerald-500 shrink-0" aria-hidden />
                 )}
               </div>
             </div>
 
-            {note.media && note.media.length > 0 && (
+            <div className="mt-3">
+              <textarea
+                ref={descriptionRef}
+                value={description}
+                onChange={handleDescriptionChange}
+                placeholder="Écrire une note..."
+                className={clsx('w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-neutral-400', JOURNAL_NOTE_STYLES.body)}
+              />
+            </div>
+            {showMediaUploader && (
               <div className="mt-3">
-                <Image
-                  src={note.media[0].url}
-                  alt={`Image de l'entrée "${note.title}"`}
-                  width={400}
-                  height={300}
-                  className="w-full h-48 object-cover rounded-lg"
+                <MediaUploader
+                  value={media}
+                  onChange={handleMediaChange}
+                  maxItems={1}
+                  multiple={false}
                 />
               </div>
             )}
-
-            {note.exercices && note.exercices.length > 0 && (
+            {exerciceNames.length > 0 && (
               <div className="mt-3">
                 <BorderedIconList
                   title="Exercices liés"
-                  titleId="journal-note-exercices-label"
-                  titleClassName="text-xs text-gray-500 font-medium mb-1.5"
-                  ariaLabel="Liste des exercices liés à cette entrée"
-                  items={note.exercices.map((ex) => {
-                    const cat = ex.category as ExerciceCategory;
-                    const colors = CATEGORY_COLORS[cat];
+                  ariaLabel="Exercices liés à cette note"
+                  items={exerciceNames.map((ex) => {
+                    const baseHref = CATEGORY_HREFS[ex.category as keyof typeof CATEGORY_HREFS];
+                    const href = `${baseHref}#exercice-${ex.id}`;
+                    const colors = CATEGORY_COLORS[ex.category as keyof typeof CATEGORY_COLORS];
                     return {
                       key: ex.id,
                       label: ex.name,
-                      icon: CATEGORY_ICONS[cat],
+                      icon: CATEGORY_ICONS[ex.category as keyof typeof CATEGORY_ICONS],
                       borderClass: colors?.border || 'border-gray-200',
-                      href: `${CATEGORY_HREFS[cat]}#exercice-${ex.id}`,
-                      completed: completedExerciceIds?.has(ex.id),
+                      href,
                     };
                   })}
-                  onItemClick={(e) => e.stopPropagation()}
                 />
               </div>
             )}
-
-            {note.description && (
-              <>
-                <div
-                  ref={descriptionRef}
-                  className="mt-2 overflow-hidden transition-[max-height] duration-200 ease-out"
-                  style={{ maxHeight: isExpanded ? `${fullHeightRef.current}px` : '4.5em' }}
-                >
-                  <p className="text-sm md:text-base text-gray-600 whitespace-pre-wrap">
-                    {note.description}
-                  </p>
-                </div>
-                {isTruncated && (
-                  <div className="flex justify-center mt-2">
-                    <ChevronIcon
-                      className="w-4 h-4 text-gray-400 transition-transform duration-200"
-                      direction={isExpanded ? 'up' : 'down'}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-            {note.date && (
-              <p className="mt-1.5 text-xs text-gray-500">
-                {new Date(note.date).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </p>
-            )}
+            <div className={clsx('mt-3 flex flex-wrap items-center gap-x-3 gap-y-1', JOURNAL_NOTE_STYLES.meta)}>
+              {note.date && (
+                <span>
+                  {new Date(note.date).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              )}
+              {isAutoSaving && <span>Enregistrement…</span>}
+              {!isAutoSaving && hasAutoSavedOnce && !hasUnsavedChanges && <span>Enregistrée</span>}
+            </div>
           </div>
 
           <div onClick={(e) => e.stopPropagation()}>
-            <BaseCard.Footer>
+            <div className={clsx(JOURNAL_NOTE_STYLES.footer, 'gap-2')}>
               <Button
-                iconOnly
-                onClick={toggleActions}
-                aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
-                aria-expanded={isActionsOpen}
-              >
-                <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
-              </Button>
-
-              <button
                 type="button"
-                onClick={handleValidateOrUnvalidate}
+                variant={isValidatedForReferenceDay ? 'success' : 'secondary'}
+                size="sm"
+                rounded="lg"
+                icon={isValidating ? undefined : <CheckIcon className="w-4 h-4" />}
                 disabled={isValidating}
-                aria-label={buttonAriaLabel}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all min-h-[44px] ${
-                  isValidatedForReferenceDay
-                    ? 'bg-emerald-500 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                } disabled:opacity-50 disabled:pointer-events-none`}
+                aria-label={validateAriaLabel}
+                onClick={() => void handleValidateOrUnvalidate()}
+                className="flex-1 min-w-0 order-1"
               >
                 {isValidating ? (
-                  <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
                 ) : (
-                  <CheckIcon className="w-4 h-4" />
+                  validateActionLabel
                 )}
-                <span>{isValidatedForReferenceDay ? 'Dévalider' : 'Valider'}</span>
-              </button>
-            </BaseCard.Footer>
+              </Button>
+              <div className="flex items-center gap-1 order-2">
+                <Button
+                  iconOnly
+                  onClick={toggleActions}
+                  aria-label={isActionsOpen ? 'Fermer les actions' : 'Ouvrir les actions'}
+                  aria-expanded={isActionsOpen}
+                  className="shrink-0"
+                >
+                  <DotsIcon className={clsx('w-5 h-5 transition-transform duration-200', isActionsOpen && 'rotate-90')} />
+                </Button>
+              </div>
+            </div>
 
             {/* Actions inline */}
             <div
-              className="grid overflow-hidden transition-all duration-200 ease-out bg-gray-50/70"
+              className={clsx('grid overflow-hidden transition-all duration-200 ease-out', JOURNAL_NOTE_STYLES.actionsPanel)}
               style={{ gridTemplateRows: isActionsOpen ? '1fr' : '0fr' }}
             >
               <div className="min-h-0">
-                <div className="grid grid-cols-3 border-t border-gray-200">
-                  <button type="button" onClick={handleEdit} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-r border-gray-200">
-                    <EditIcon className="w-5 h-5" />
-                    <span className="font-medium">Modifier</span>
+                <div className={clsx('grid grid-cols-2 border-t', JOURNAL_NOTE_STYLES.actionsBorder)}>
+                  <button type="button" onClick={handleAddMediaClick} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-r border-b', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover)}>
+                    <CameraIcon className="w-5 h-5" />
+                    <span className="font-medium">{media.length > 0 ? 'Modifier l\'image' : 'Ajouter une image'}</span>
                   </button>
-                  <button type="button" onClick={handlePinClick} disabled={isPinning} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px] border-r border-gray-200 disabled:opacity-50 disabled:pointer-events-none">
+                  <button type="button" onClick={handleLinkExercicesClick} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-b', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover)}>
+                    <CheckIcon className="w-5 h-5" />
+                    <span className="font-medium">{exerciceIds.length > 0 ? 'Modifier les exercices' : 'Lier des exercices'}</span>
+                  </button>
+                  <button type="button" onClick={handlePinClick} disabled={isPinning} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-r', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover, 'disabled:opacity-50 disabled:pointer-events-none')}>
                     {isPinning ? (
-                      <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                      <span className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
                     ) : (
                       <BookmarkIcon className="w-5 h-5" filled={note.pinned} />
                     )}
                     <span className="font-medium">{note.pinned ? 'Désépingler' : 'Épingler'}</span>
                   </button>
-                  <button type="button" onClick={handleShare} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors min-h-[44px]">
+                  <button type="button" onClick={handleShare} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px]', JOURNAL_NOTE_STYLES.actionsButtonHover)}>
                     <ShareIcon className="w-5 h-5" />
                     <span className="font-medium">Partager</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting}
+                    className={clsx(
+                      'col-span-2 px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm min-h-[44px] border-t',
+                      JOURNAL_NOTE_STYLES.actionsBorder,
+                      showDeleteConfirm ? 'text-red-600 font-medium' : 'text-neutral-600',
+                      JOURNAL_NOTE_STYLES.actionsButtonHover,
+                      'disabled:opacity-50 disabled:pointer-events-none'
+                    )}
+                    aria-label={showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'entrée'}
+                  >
+                    {isDeleting ? (
+                      <span className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
+                    ) : (
+                      <span className="font-medium">
+                        {showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'entrée'}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </BaseCard.Content>
-      </BaseCard>
+        </div>
+      </article>
+      <ExercicePickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        value={exerciceIds}
+        onChange={handleExerciceChange}
+      />
+    </>
   );
 });

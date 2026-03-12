@@ -23,7 +23,7 @@ type InitialNoteData = NoteFormData & {
 
 type Props = {
   noteId?: number;
-  onSuccess?: () => void;
+  onSuccess?: (createdNoteId?: number) => void;
   onCancel?: () => void;
 };
 
@@ -36,6 +36,12 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
   const [exerciceIds, setExerciceIds] = useState<number[]>([]);
   const [exerciceNames, setExerciceNames] = useState<LinkedExercice[]>([]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [hasAutoSavedOnce, setHasAutoSavedOnce] = useState(false);
+  const [createdNoteId, setCreatedNoteId] = useState<number | undefined>(undefined);
+
+  const effectiveNoteId = noteId ?? createdNoteId;
 
   const { formData: initialData, loading: loadingInitial } = useFormData<InitialNoteData>({
     entityId: noteId,
@@ -63,10 +69,10 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
     handleSubmit: handleFormSubmit,
     handleDelete,
   } = useJournalForm<NoteFormData>({
-    entityId: noteId,
+    entityId: effectiveNoteId,
     createUrl: '/api/journal/notes',
-    updateUrl: `/api/journal/notes/${noteId}`,
-    deleteUrl: `/api/journal/notes/${noteId}`,
+    updateUrl: `/api/journal/notes/${effectiveNoteId}`,
+    deleteUrl: `/api/journal/notes/${effectiveNoteId}`,
     onSuccess,
     transformToApi: (data) => ({
       title: data.title,
@@ -89,24 +95,86 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
     }
   }, [initialData]);
 
+  const handleTitleChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, title: value }));
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleDescriptionChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, description: value }));
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleMediaChange = useCallback((items: MediaItem[]) => {
+    setMedia(items);
+    setHasUnsavedChanges(true);
+  }, []);
+
   const handleExerciceChange = useCallback((selected: LinkedExercice[]) => {
     setExerciceIds(selected.map((e) => e.id));
     setExerciceNames(selected);
+    setHasUnsavedChanges(true);
   }, []);
 
   const removeExercice = useCallback((id: number) => {
     setExerciceIds((prev) => prev.filter((eid) => eid !== id));
     setExerciceNames((prev) => prev.filter((e) => e.id !== id));
+    setHasUnsavedChanges(true);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleFormSubmit(formData);
-  };
+  useEffect(() => {
+    if (!effectiveNoteId) {
+      return;
+    }
+
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    if (!formData.title.trim()) {
+      return;
+    }
+
+    setIsAutoSaving(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      const createdId = await handleFormSubmit(formData);
+      if (createdId != null) {
+        setCreatedNoteId(createdId);
+      }
+      setIsAutoSaving(false);
+      setHasUnsavedChanges(false);
+      setHasAutoSavedOnce(true);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [effectiveNoteId, formData, hasUnsavedChanges, handleFormSubmit]);
+
+  const autosaveMessage =
+    isAutoSaving || loading
+      ? 'Enregistrement en cours...'
+      : hasAutoSavedOnce && !hasUnsavedChanges
+        ? 'Note enregistrée automatiquement.'
+        : '';
+
+  const handleFinish = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+
+      const createdId = await handleFormSubmit(formData);
+
+      if (onSuccess) {
+        onSuccess(createdId ?? undefined);
+      }
+    },
+    [formData, handleFormSubmit, onSuccess]
+  );
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form className="space-y-4" onSubmit={handleFinish}>
         <ErrorMessage message={error} />
 
         <InputWithSpeech
@@ -114,7 +182,7 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
           type="text"
           required
           value={formData.title}
-          onValueChange={(value) => setFormData({ ...formData, title: value })}
+          onValueChange={handleTitleChange}
           placeholder="Titre de l'entrée"
           disabled={loadingInitial}
         />
@@ -123,14 +191,14 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
           label="Description"
           rows={4}
           value={formData.description}
-          onValueChange={(value) => setFormData({ ...formData, description: value })}
+          onValueChange={handleDescriptionChange}
           placeholder="Description (optionnel)"
           disabled={loadingInitial}
         />
 
         <MediaUploader
           value={media}
-          onChange={setMedia}
+          onChange={handleMediaChange}
           maxItems={1}
           multiple={false}
         />
@@ -177,14 +245,17 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
 
         <FormActions
           loading={loading || loadingInitial}
-          onSubmitLabel={noteId ? 'Modifier' : 'Créer'}
           onCancel={onCancel}
-          showDelete={!!noteId}
+          showSubmit={!effectiveNoteId}
+          onSubmitLabel="Terminer"
+          showDelete={!!effectiveNoteId}
           onDelete={handleDelete}
           deleteConfirm={showDeleteConfirm}
           deleteLabel="Supprimer l'entrée"
           deleteConfirmLabel="Confirmer la suppression"
         />
+
+        {autosaveMessage && <p>{autosaveMessage}</p>}
       </form>
 
       <ExercicePickerModal

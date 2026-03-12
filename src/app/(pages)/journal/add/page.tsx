@@ -9,8 +9,12 @@ export default function JournalNoteAddPage() {
   const router = useRouter();
   const preserveDate = usePreserveDateParam();
 
-  const handleSuccess = () => {
-    router.push(preserveDate('/journal'));
+  const handleSuccess = (createdNoteId?: number) => {
+    if (createdNoteId != null) {
+      router.push(preserveDate(`/journal/edit/${createdNoteId}`));
+    } else {
+      router.push(preserveDate('/journal'));
+    }
   };
 
   const handleCancel = () => {

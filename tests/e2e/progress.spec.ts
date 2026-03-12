@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { AuthHelper } from './helpers/auth';
 import { TEST_USER } from './helpers/test-constants';
 
+const NAV_MENU_TYPE_STORAGE_KEY = 'synapso_nav_menu_type';
+
 test.describe('Progrès', () => {
   test.beforeEach(async ({ page }) => {
     const authHelper = new AuthHelper(page);
@@ -9,10 +11,15 @@ test.describe('Progrès', () => {
   });
 
   test('crée un nouveau progrès', async ({ page }) => {
+    await page.evaluate((key) => localStorage.setItem(key, 'slide'), NAV_MENU_TYPE_STORAGE_KEY);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     await page.goto('/historique');
     await page.waitForLoadState('networkidle');
 
-    await page.getByRole('button', { name: 'Noter un progrès' }).first().click();
+    const progressButton = page.getByRole('button', { name: /Noter un progrès|Ajouter un progrès/ }).first();
+    await progressButton.waitFor({ state: 'visible', timeout: 15000 });
+    await progressButton.click();
 
     await expect(page.getByPlaceholder('Décris ton progrès...')).toBeVisible({
       timeout: 10000,
@@ -29,6 +36,9 @@ test.describe('Progrès', () => {
   });
 
   test('modifie un progrès', async ({ page }) => {
+    await page.evaluate((key) => localStorage.setItem(key, 'slide'), NAV_MENU_TYPE_STORAGE_KEY);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     await page.goto('/historique');
     await page.waitForLoadState('networkidle');
 
@@ -59,10 +69,15 @@ test.describe('Progrès', () => {
   });
 
   test('supprime un progrès', async ({ page }) => {
+    await page.evaluate((key) => localStorage.setItem(key, 'slide'), NAV_MENU_TYPE_STORAGE_KEY);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     await page.goto('/historique');
     await page.waitForLoadState('networkidle');
 
-    await page.getByRole('button', { name: 'Noter un progrès' }).first().click();
+    const progressButton = page.getByRole('button', { name: /Noter un progrès|Ajouter un progrès/ }).first();
+    await progressButton.waitFor({ state: 'visible', timeout: 15000 });
+    await progressButton.click();
     await expect(page.getByPlaceholder('Décris ton progrès...')).toBeVisible({
       timeout: 10000,
     });

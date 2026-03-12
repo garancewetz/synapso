@@ -3,12 +3,14 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import clsx from 'clsx';
 import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon } from '@/app/components/ui/icons';
 import { BookmarkIcon } from '@/app/components/ui/icons';
 import { RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { useExercices, useExerciceHandlers, useRelatedStretchingByCategory } from '@/app/features/exercices';
 import { useProgressModal, useProgress } from '@/app/features/progress';
 import { useJournalNotes } from '@/app/features/journal';
@@ -37,10 +39,11 @@ export default function Home() {
   const initialTab = (tabFromUrl === 'pinned' || tabFromUrl === 'suivi' ? tabFromUrl : null) as 'pinned' | 'suivi' | null;
 
   const { effectiveUser, loading: userLoading } = useUser();
+  const { navMenuType } = useLayoutContext();
   const progressModal = useProgressModal();
   const queryClient = useQueryClient();
 
-  const { exercices, updateExercice, error: exercicesError } = useExercices({ includeArchived: true });
+  const { exercices, updateExercice, loading: exercicesLoading, error: exercicesError } = useExercices({ includeArchived: true });
   const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
   const { progressList } = useProgress();
   const { notes: journalNotes, refetch: refetchNotes } = useJournalNotes();
@@ -78,12 +81,17 @@ export default function Home() {
       }
     };
 
-    return tabOptionsData.map(opt => ({
+    const options = navMenuType === 'slide'
+      ? tabOptionsData.filter(opt => opt.value !== 'suivi')
+      : tabOptionsData;
+    return options.map(opt => ({
       value: opt.value,
       label: opt.label,
       icon: getIcon(opt.iconName),
     }));
-  }, [tabOptionsData]);
+  }, [tabOptionsData, navMenuType]);
+
+  const effectiveActiveTab = navMenuType === 'slide' && activeTab === 'suivi' ? 'exercices' : activeTab;
 
   // No-op stable pour afficher le bouton Partager (la logique est dans useShareProgress du ProgressCard)
   const handleShareProgress = useCallback(() => {}, []);
@@ -111,7 +119,10 @@ export default function Home() {
 
         {/* Contenu principal */}
         <div
-          className="px-3 md:px-6 lg:px-8 pb-12 md:pb-8"
+          className={clsx(
+            'px-3 md:px-6 lg:px-8 md:pb-8',
+            effectiveActiveTab === 'suivi' ? 'pb-40' : 'pb-12'
+          )}
           aria-live="polite"
           aria-busy={userLoading}
           aria-atomic="true"
@@ -162,7 +173,7 @@ export default function Home() {
                   <div>
                     <SegmentedControl
                       options={tabOptions}
-                      value={activeTab}
+                      value={effectiveActiveTab}
                       onChange={setActiveTab}
                       fullWidth
                       size="md"
@@ -171,16 +182,17 @@ export default function Home() {
                   </div>
                 )}
 
-                {activeTab === 'exercices' && (
+                {effectiveActiveTab === 'exercices' && (
                   <HomeExercicesTab
                     exercices={exercices}
                     relatedStretchingByCategory={relatedStretchingByCategory}
                     archivedCount={archivedCount}
                     error={exercicesError}
+                    loading={exercicesLoading}
                   />
                 )}
 
-                {activeTab === 'pinned' && (
+                {effectiveActiveTab === 'pinned' && (
                   <HomePinnedTab
                     pinnedExercices={pinnedExercices}
                     pinnedProgress={pinnedProgress}
@@ -195,7 +207,7 @@ export default function Home() {
                   />
                 )}
 
-                {activeTab === 'suivi' && (
+                {effectiveActiveTab === 'suivi' && (
                   <HomeSuiviTab />
                 )}
 

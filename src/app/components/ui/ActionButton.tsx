@@ -6,6 +6,8 @@ import { TouchLink } from '@/app/components/TouchLink';
 import { usePathname } from 'next/navigation';
 import { PlusIcon } from './icons';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { useUser } from '@/app/contexts/UserContext';
+import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import clsx from 'clsx';
 
 type ActionButtonProps = {
@@ -38,7 +40,7 @@ type ActionButtonProps = {
 export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(function ActionButton({ 
   variant,
   display = 'inline',
-  position = 'right',
+  position,
   label,
   className = '',
   children,
@@ -53,9 +55,20 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   disabled = false,
 }, ref) {
   const pathname = usePathname();
+  const { effectiveUser } = useUser();
+  const { navMenuType } = useLayoutContext();
   const isFixed = display === 'fixed';
+
+  if (isFixed && navMenuType === 'slide') {
+    return null;
+  }
   const isLink = !!href;
   const isProgress = variant === 'golden';
+  const effectivePosition: 'left' | 'right' = position
+    ? position
+    : effectiveUser?.dominantHand === 'LEFT'
+      ? 'left'
+      : 'right';
 
   // Construire l'URL avec les paramètres de requête pour les liens
   let finalHref = href;
@@ -76,12 +89,12 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   }
 
   const positionClass = isFixed 
-    ? (position === 'left' ? 'left-4 md:left-8 right-auto' : 'right-4 md:right-8 left-auto')
+    ? (effectivePosition === 'left' ? 'left-4 md:left-8 right-auto' : 'right-4 md:right-8 left-auto')
     : '';
 
   const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-full';
   
-  const sizeStyles = isFixed ? 'px-4 h-12 text-sm' : 'px-5 h-14 text-base' 
+  const sizeStyles = isFixed ? 'px-4 h-11 text-sm' : 'px-5 h-11 text-base' 
 
   const variantStyles = variant === 'golden'
     ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 md:hover:from-amber-500 md:hover:via-yellow-500 md:hover:to-amber-600 shadow-lg md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2'

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type PropsWithChildren } from 'react';
+import { useMemo, useState, useEffect, useCallback, type PropsWithChildren } from 'react';
 import dynamic from 'next/dynamic';
 import { SelectedDateBanner, TimeMachineWrapper, TimeMachineTransition } from '@/app/features/time-machine';
 import { usePreserveDateParam } from '@/app/features/time-machine';
@@ -10,7 +10,13 @@ import { useExercices } from '@/app/features/exercices/hooks/useExercices';
 import { LayoutProvider } from '@/app/contexts/LayoutContext';
 import { NavBar } from '@/app/components/NavBar';
 import { BottomNavBar } from '@/app/components/BottomNavBar';
+import { CategoriesFullOverlay } from '@/app/components/CategoriesFullOverlay';
 import { CATEGORY_ORDER, CATEGORY_ORDER_NAV } from '@/app/constants/exercice.constants';
+import {
+  MENU_CATEGORY_STORAGE_KEY,
+  NAV_MENU_TYPE_STORAGE_KEY,
+  type NavMenuType,
+} from '@/app/constants/settings.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
 
@@ -34,10 +40,37 @@ const PWARegister = dynamic(
   { ssr: false }
 );
 
+const VALID_MENU_TYPES: NavMenuType[] = ['category', 'slide'];
+
+function readNavMenuType(): NavMenuType {
+  if (typeof window === 'undefined') return 'category';
+  const raw = localStorage.getItem(NAV_MENU_TYPE_STORAGE_KEY);
+  if (raw && VALID_MENU_TYPES.includes(raw as NavMenuType)) return raw as NavMenuType;
+  if (raw === 'page') return 'category';
+  const legacy = localStorage.getItem(MENU_CATEGORY_STORAGE_KEY);
+  if (legacy === 'false') return 'slide';
+  return 'category';
+}
+
 export function LayoutComposer({ children }: PropsWithChildren) {
   const preserveDate = usePreserveDateParam();
   const { count: pendingShareCount } = usePendingShareCount();
   const { exercices } = useExercices({ includeArchived: false });
+  const [navMenuType, setNavMenuTypeState] = useState<NavMenuType>('category');
+  const [categoriesOverlayOpen, setCategoriesOverlayOpen] = useState(false);
+  const [categoriesSlideOpen, setCategoriesSlideOpen] = useState(false);
+
+  useEffect(() => {
+    setNavMenuTypeState(readNavMenuType());
+  }, []);
+
+  const setNavMenuType = useCallback((value: NavMenuType) => {
+    setNavMenuTypeState(value);
+    localStorage.setItem(NAV_MENU_TYPE_STORAGE_KEY, value);
+  }, []);
+
+  const showCategoryMenu = navMenuType === 'category';
+
   const navCategories = useMemo(() => ({
     forNav: CATEGORY_ORDER_NAV,
     forDesktop: CATEGORY_ORDER,
@@ -65,6 +98,8 @@ export function LayoutComposer({ children }: PropsWithChildren) {
     </>
   );
 
+  const hasHorseshoeNav = bottomNavCategories.length >= 5;
+
   return (
     <LayoutProvider
       value={{
@@ -72,6 +107,14 @@ export function LayoutComposer({ children }: PropsWithChildren) {
         pendingShareCount,
         notificationBadge,
         navCategories,
+        hasHorseshoeNav,
+        navMenuType,
+        setNavMenuType,
+        showCategoryMenu,
+        categoriesOverlayOpen,
+        setCategoriesOverlayOpen,
+        categoriesSlideOpen,
+        setCategoriesSlideOpen,
       }}
     >
       <WebVitals />
@@ -86,6 +129,7 @@ export function LayoutComposer({ children }: PropsWithChildren) {
       <TimeMachineWrapper>
         {timeMachineContent}
       </TimeMachineWrapper>
+      <CategoriesFullOverlay />
       <DayDetailModalWrapper />
       <GlobalCelebration />
     </LayoutProvider>

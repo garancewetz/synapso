@@ -17,6 +17,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onDeleteSuccess?: () => void;
   userId: number;
   progressToEdit?: Progress | null;
   defaultCategory?: ProgressCategory;
@@ -26,7 +27,7 @@ type Props = {
 
 type ProgressCategory = ExerciceCategory | 'ORTHOPHONIE' | 'AUTRE';
 
-export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progressToEdit, defaultCategory, initialContent, initialEmoji }: Props) {
+export function ProgressBottomSheet({ isOpen, onClose, onSuccess, onDeleteSuccess, userId, progressToEdit, defaultCategory, initialContent, initialEmoji }: Props) {
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedMedias, setSelectedMedias] = useState<string[]>([]);
@@ -168,7 +169,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
 
       if (response.ok) {
         resetForm();
-        onSuccess();
+        onDeleteSuccess?.();
         handleClose();
       } else {
         throw new Error('Erreur lors de la suppression');
@@ -197,7 +198,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
       <div className="flex flex-col h-full max-h-[90vh]">
         {/* Titre */}
         <div className="text-center pb-3 md:pt-4 md:px-12 shrink-0">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-lg font-bold text-gray-900">
             {isEditMode ? 'Modifier ton progrès ✏️' : `Ton progrès ! ${PROGRESS_EMOJIS.STAR_BRIGHT}`}
           </h2>
         </div>
@@ -228,7 +229,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`absolute right-2 top-2 w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                className={`absolute right-2 top-2 w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                   isListening 
                     ? 'bg-red-500 text-white animate-pulse shadow-lg' 
                     : 'bg-gray-100 hover:bg-amber-100 text-gray-500 hover:text-amber-700'
@@ -282,10 +283,10 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
           />
         </div>
 
-        {/* Catégories */}
+        {/* Catégories - 2 lignes pour zones cliquables plus grandes */}
         <div className="mb-4">
           <p className="text-xs text-gray-500 text-center mb-2">Zone travaillée (optionnel)</p>
-          <div className="flex justify-center gap-3 flex-wrap">
+          <div className="grid grid-cols-3 gap-4">
             {/* Catégories physiques */}
             {CATEGORY_ORDER.map((category) => {
               const emoji = CATEGORY_ICONS[category];
@@ -294,7 +295,6 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               const isSelected = selectedCategory === category;
               
               const handleCategoryClick = () => {
-                // Toggle la sélection de la catégorie (ne modifie pas le textarea)
                 setSelectedCategory(isSelected ? null : category);
               };
               
@@ -303,19 +303,19 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                   key={category}
                   type="button"
                   onClick={handleCategoryClick}
-                  className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
+                  className="flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer min-w-0"
                 >
                   <div className={clsx(
-                    'w-12 h-12 rounded-full flex items-center justify-center',
+                    'w-14 h-14 rounded-full flex items-center justify-center shrink-0',
                     'transition-all duration-150',
                     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
                     'active:scale-[0.98]',
                     isSelected ? clsx(colors.active, 'ring-2 ring-offset-2 ring-gray-400') : clsx(colors.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
                   )}>
-                    <span className="text-xl">{emoji}</span>
+                    <span className="text-2xl">{emoji}</span>
                   </div>
                   <span className={clsx(
-                    'text-[10px] font-medium',
+                    'text-xs font-medium',
                     isSelected ? 'text-gray-900' : 'text-gray-500'
                   )}>
                     {label}
@@ -324,14 +324,14 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
               );
             })}
             
-            {/* Option Autre - remplace Orthophonie */}
+            {/* Option Autre */}
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'AUTRE' ? null : 'AUTRE')}
-              className="flex flex-col items-center gap-1 transition-all duration-150 cursor-pointer"
+              className="flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer min-w-0"
             >
               <div className={clsx(
-                'w-12 h-12 rounded-full flex items-center justify-center',
+                'w-14 h-14 rounded-full flex items-center justify-center shrink-0',
                 'transition-all duration-150',
                 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
                 'active:scale-[0.98]',
@@ -339,10 +339,10 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, userId, progre
                   ? clsx(AUTRE_COLORS.active, 'ring-2 ring-offset-2 ring-gray-400')
                   : clsx(AUTRE_COLORS.inactive, 'md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2')
               )}>
-                <span className="text-xl">{AUTRE_PROGRESS_EMOJI}</span>
+                <span className="text-2xl">{AUTRE_PROGRESS_EMOJI}</span>
               </div>
               <span className={clsx(
-                'text-[10px] font-medium',
+                'text-xs font-medium',
                 selectedCategory === 'AUTRE' ? 'text-gray-900' : 'text-gray-500'
               )}>
                 Autre

@@ -46,7 +46,12 @@ export function NavBar() {
   // ⚡ MODE SABLIER: Ajouter un padding-top si la bannière est visible
   const isBannerVisible = isDateSelected && selectedDate && !isToday(selectedDate);
 
-  const { navCategories } = useLayoutContext();
+  const {
+    navCategories,
+    showCategoryMenu,
+    navMenuType,
+    setCategoriesOverlayOpen,
+  } = useLayoutContext();
   const categories = navCategories.forDesktop;
   const isHomeActive = pathname === '/';
   const isHistoriqueActive = pathname === '/historique';
@@ -121,7 +126,7 @@ export function NavBar() {
             className="hidden md:flex items-center flex-1 justify-center px-2 gap-1"
             aria-label="Navigation principale"
           >
-            {/* Groupe 1 : Accueil + Exercices (dropdown, masqué si aucune catégorie avec exercices) */}
+            {/* Groupe 1 : Accueil + Exercices (dropdown, masqué si menu catégorie désactivé) */}
             <div className="flex items-center gap-0.5">
               <TouchLink
                 href={preserveDate('/')}
@@ -139,74 +144,88 @@ export function NavBar() {
                 )}
               </TouchLink>
 
-              <div ref={exercicesDropdownRef} className="relative">
+              {showCategoryMenu ? (
+                <div ref={exercicesDropdownRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsExercicesDropdownOpen((open) => !open)}
+                    className={clsx(
+                      'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                      'hover:bg-gray-50',
+                      isAnyCategoryActive && activeCategoryColors
+                        ? activeCategoryColors.text
+                        : 'text-gray-600 hover:text-gray-900'
+                    )}
+                    aria-expanded={isExercicesDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label={isExercicesDropdownOpen ? 'Fermer le menu Exercices' : 'Ouvrir le menu Exercices'}
+                  >
+                    Exercices
+                    <ChevronIcon
+                    direction="down"
+                    className={clsx('w-4 h-4 transition-transform', isExercicesDropdownOpen && 'rotate-180')}
+                    aria-hidden
+                  />
+                    {isAnyCategoryActive && activeCategoryColors && (
+                      <span
+                        className={clsx(
+                          'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
+                          activeCategoryColors.accent
+                        )}
+                      />
+                    )}
+                  </button>
+                  {isExercicesDropdownOpen && (
+                    <ul
+                      role="menu"
+                      className="absolute top-full left-0 mt-0.5 min-w-[180px] py-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50"
+                    >
+                      {categories.map((category) => {
+                        const colors = CATEGORY_COLORS[category];
+                        const label = CATEGORY_LABELS[category];
+                        const href = CATEGORY_HREFS[category];
+                        const isActive = pathname === href;
+                        return (
+                          <li key={category} role="none">
+                            <TouchLink
+                              href={preserveDate(href)}
+                              role="menuitem"
+                              className={clsx(
+                                'block px-3 py-2 text-sm font-medium rounded-md mx-1',
+                                'hover:bg-gray-50',
+                                isActive ? colors.text : 'text-gray-700'
+                              )}
+                              aria-label={label}
+                              aria-current={isActive ? 'page' : undefined}
+                              onClick={closeExercicesDropdown}
+                            >
+                              {label}
+                            </TouchLink>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              ) : (
                 <button
                   type="button"
-                  onClick={() => setIsExercicesDropdownOpen((open) => !open)}
-                  className={clsx(
-                    'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                    'hover:bg-gray-50',
-                    isAnyCategoryActive && activeCategoryColors
-                      ? activeCategoryColors.text
-                      : 'text-gray-600 hover:text-gray-900'
-                  )}
-                  aria-expanded={isExercicesDropdownOpen}
-                  aria-haspopup="true"
-                  aria-label={isExercicesDropdownOpen ? 'Fermer le menu Exercices' : 'Ouvrir le menu Exercices'}
+                  onClick={() => {
+                    if (navMenuType === 'page') setCategoriesOverlayOpen(true);
+                    else setCategoriesOverlayOpen(true);
+                  }}
+                  className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
+                  aria-label="Ouvrir les catégories"
                 >
-                  Exercices
-                  <ChevronIcon
-                  direction="down"
-                  className={clsx('w-4 h-4 transition-transform', isExercicesDropdownOpen && 'rotate-180')}
-                  aria-hidden
-                />
-                  {isAnyCategoryActive && activeCategoryColors && (
-                    <span
-                      className={clsx(
-                        'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
-                        activeCategoryColors.accent
-                      )}
-                    />
-                  )}
+                  Catégories
                 </button>
-                {isExercicesDropdownOpen && (
-                  <ul
-                    role="menu"
-                    className="absolute top-full left-0 mt-0.5 min-w-[180px] py-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50"
-                  >
-                    {categories.map((category) => {
-                      const colors = CATEGORY_COLORS[category];
-                      const label = CATEGORY_LABELS[category];
-                      const href = CATEGORY_HREFS[category];
-                      const isActive = pathname === href;
-                      return (
-                        <li key={category} role="none">
-                          <TouchLink
-                            href={preserveDate(href)}
-                            role="menuitem"
-                            className={clsx(
-                              'block px-3 py-2 text-sm font-medium rounded-md mx-1',
-                              'hover:bg-gray-50',
-                              isActive ? colors.text : 'text-gray-700'
-                            )}
-                            aria-label={label}
-                            aria-current={isActive ? 'page' : undefined}
-                            onClick={closeExercicesDropdown}
-                          >
-                            {label}
-                          </TouchLink>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Séparateur visuel entre navigation principale et secondaire */}
             <span className="w-px h-5 bg-gray-200 mx-1" aria-hidden />
 
-            {/* Groupe 2 : Ma progression + Journal */}
+            {/* Groupe 2 : Ma progression + Notes */}
             <div className="flex items-center gap-0.5">
               <TouchLink
                 href={preserveDate('/historique')}
@@ -230,10 +249,10 @@ export function NavBar() {
                   'hover:bg-gray-50',
                   isJournalActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
                 )}
-                aria-label="Journal"
+                aria-label="Notes"
                 aria-current={isJournalActive ? 'page' : undefined}
               >
-                Journal
+                Notes
                 {isJournalActive && (
                   <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-gray-900 rounded-full" />
                 )}

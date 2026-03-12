@@ -166,7 +166,7 @@ function EmptyState({ hideTitle }: EmptyStateProps) {
 // Composant: Titre du graphique
 function ChartTitle() {
   return (
-    <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+    <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
       <span>{PROGRESS_EMOJIS.TROPHY}</span>
       <span>Mes progrès</span>
     </h2>

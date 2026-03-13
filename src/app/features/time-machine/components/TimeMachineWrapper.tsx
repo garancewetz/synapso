@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 
 type Props = {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ type Props = {
  * ⚡ MODE SABLIER: Fond indigo cosmique avec pattern d'étoiles + cadre indigo épais pour immersion maximale
  */
 export function TimeMachineWrapper({ children }: Props) {
-  const { isTimeMachineMode } = useSelectedDate();
+  const { isTimeMachineMode } = useTimeContext();
 
   return (
     <div 

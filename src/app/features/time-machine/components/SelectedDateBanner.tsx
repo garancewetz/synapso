@@ -1,6 +1,6 @@
 'use client';
 
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { formatShortDate } from '@/app/utils/date.utils';
 import { isToday } from 'date-fns';
 import { Button } from '@/app/components/ui';
@@ -8,7 +8,7 @@ import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import clsx from 'clsx';
 
 export function SelectedDateBanner() {
-  const { selectedDate, clearSelectedDate, isDateSelected } = useSelectedDate();
+  const { selectedDate, clearSelectedDate, isDateSelected } = useTimeContext();
 
   // Ne pas afficher le bandeau si aucune date n'est sélectionnée ou si c'est aujourd'hui
   if (!isDateSelected || !selectedDate || isToday(selectedDate)) {

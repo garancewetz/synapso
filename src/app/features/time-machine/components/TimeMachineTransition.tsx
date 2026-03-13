@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { TimeMachineEnterTransition } from './TimeMachineEnterTransition';
 import { TimeMachineExitTransition } from './TimeMachineExitTransition';
 
@@ -10,7 +10,7 @@ import { TimeMachineExitTransition } from './TimeMachineExitTransition';
  * Composant wrapper qui affiche l'animation d'entrée ou de sortie selon le contexte
  */
 export function TimeMachineTransition() {
-  const { isTransitioning, transitionType } = useSelectedDate();
+  const { isTransitioning, transitionType } = useTimeContext();
   const [showTransition, setShowTransition] = useState(false);
 
   // ⚡ FIX: Utiliser transitionType directement depuis le contexte

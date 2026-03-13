@@ -48,7 +48,7 @@ export function ShareToUserModal({ isOpen, onClose, exerciceId }: Props) {
 
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <Loader size="small" />
+            <Loader size="md" />
           </div>
         ) : users.length === 0 ? (
           <p className="text-gray-500 text-center py-8">

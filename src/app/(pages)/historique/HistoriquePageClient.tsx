@@ -6,7 +6,6 @@ import clsx from 'clsx';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
 import { useProgressInfinite, useProgressStats, useProgressModal } from '@/app/features/progress';
@@ -35,7 +34,7 @@ import { SegmentedControl, Loader, ProgressButton } from '@/app/components/ui';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
-import { formatProgressForWhatsApp } from '@/app/utils/share';
+import { formatProgressForShare } from '@/app/utils/share';
 import { getDateKeyUTC } from '@/app/utils/date.utils';
 import {
   calculateBodypartStatsByPeriod,
@@ -93,8 +92,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   } = useProgressInfinite();
   const queryClient = useQueryClient();
 
-  const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
-  const { referenceDate } = useTimeContext();
+  const { selectedDateKey, isTimeMachineMode, referenceDate } = useTimeContext();
   const { navMenuType } = useLayoutContext();
 
   // ⚡ PERFORMANCE: Utiliser useDeferredValue pour les calculs non critiques
@@ -222,7 +220,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
     // L'API Web Share permet de choisir entre Mail, Messages, WhatsApp, etc.
     if (navigator.share) {
       try {
-        const message = formatProgressForWhatsApp(progress);
+        const message = formatProgressForShare(progress);
         await navigator.share({
           text: message,
           title: 'Mon progrès sur Synapso',
@@ -339,7 +337,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <Loader size="large" />
+            <Loader size="xl" />
             <p className="text-gray-600 font-medium">
               Chargement de ta progression... 📊
             </p>

@@ -1,4 +1,4 @@
-import { TextareaWithSpeech, InputWithSpeech } from '@/app/components/ui';
+import { Input, Textarea } from '@/app/components/ui';
 
 type Props = {
   name: string;
@@ -19,7 +19,8 @@ export function ExerciceFormFields({
 }: Props) {
   return (
     <>
-      <InputWithSpeech
+      <Input
+        speech
         label="Nom de l'exercice"
         required
         placeholder="Ex: Montée de genoux"
@@ -27,7 +28,8 @@ export function ExerciceFormFields({
         onValueChange={onNameChange}
       />
 
-      <TextareaWithSpeech
+      <Textarea
+        speech
         label="Description (optionnel)"
         rows={4}
         placeholder="Décrivez comment réaliser l'exercice..."
@@ -35,7 +37,8 @@ export function ExerciceFormFields({
         onValueChange={onDescriptionTextChange}
       />
 
-      <InputWithSpeech
+      <Input
+        speech
         label="Conseil ou note (optionnel)"
         placeholder="Ajoutez un conseil ou une remarque..."
         value={descriptionComment}

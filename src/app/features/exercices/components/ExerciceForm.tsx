@@ -243,7 +243,7 @@ export function ExerciceForm({ exerciceId, onSuccess, onCancel, initialCategory 
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader size="large" />
+        <Loader size="xl" />
       </div>
     );
   }

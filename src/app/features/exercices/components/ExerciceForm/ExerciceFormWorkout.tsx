@@ -1,4 +1,4 @@
-import { InputWithSpeech } from '@/app/components/ui';
+import { Input } from '@/app/components/ui';
 
 type Props = {
   workoutRepeat: string;
@@ -23,21 +23,21 @@ export function ExerciceFormWorkout({
         Paramètres de l&apos;exercice (optionnel)
       </label>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl">
-        <InputWithSpeech
+        <Input speech
           label="Répétitions"
           placeholder="Ex: 10"
           value={workoutRepeat}
           onValueChange={onWorkoutRepeatChange}
         />
 
-        <InputWithSpeech
+        <Input speech
           label="Séries"
           placeholder="Ex: 3"
           value={workoutSeries}
           onValueChange={onWorkoutSeriesChange}
         />
 
-        <InputWithSpeech
+        <Input speech
           label="Durée"
           placeholder="Ex: 30 secondes"
           value={workoutDuration}

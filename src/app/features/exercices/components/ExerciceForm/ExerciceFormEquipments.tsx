@@ -39,7 +39,7 @@ export function ExerciceFormEquipments({
       
       {loadingEquipments ? (
         <div className="flex items-center justify-center py-8">
-          <Loader size="small" />
+          <Loader size="md" />
         </div>
       ) : allEquipments.length > 0 ? (
         <div className="flex flex-wrap gap-2 mb-4">

@@ -93,6 +93,40 @@ describe('getDateKeyUTC', () => {
   });
 });
 
+describe('noon UTC trick — dateKey parsing sûr côté serveur', () => {
+  it('midi UTC donne le même jour calendaire que le dateKey', () => {
+    const dateKey = '2026-02-06';
+    const noonUTC = new Date(dateKey + 'T12:00:00.000Z');
+    expect(getDateKeyUTC(noonUTC)).toBe(dateKey);
+  });
+
+  it('minuit CET (23:00 UTC veille) donnerait le mauvais jour — noon UTC non', () => {
+    // Simulation du bug : minuit CET = 23:00 UTC du 5 février
+    const midnightCET = new Date('2026-02-05T23:00:00.000Z');
+    // En UTC, c'est le 5 → mauvais jour si on voulait le 6
+    expect(getDateKeyUTC(midnightCET)).toBe('2026-02-05');
+
+    // Noon UTC trick : toujours le bon jour
+    const noonUTC = new Date('2026-02-06T12:00:00.000Z');
+    expect(getDateKeyUTC(noonUTC)).toBe('2026-02-06');
+  });
+
+  it('fonctionne aux bornes de mois et de fin d\'année', () => {
+    expect(getDateKeyUTC(new Date('2026-01-31T12:00:00.000Z'))).toBe('2026-01-31');
+    expect(getDateKeyUTC(new Date('2026-02-01T12:00:00.000Z'))).toBe('2026-02-01');
+    expect(getDateKeyUTC(new Date('2025-12-31T12:00:00.000Z'))).toBe('2025-12-31');
+    expect(getDateKeyUTC(new Date('2026-01-01T12:00:00.000Z'))).toBe('2026-01-01');
+  });
+
+  it('roundtrip dateKey → noon UTC → getDateKeyUTC est stable', () => {
+    const keys = ['2026-02-06', '2026-03-01', '2025-12-31', '2026-06-15'];
+    for (const key of keys) {
+      const noonUTC = new Date(key + 'T12:00:00.000Z');
+      expect(getDateKeyUTC(noonUTC)).toBe(key);
+    }
+  });
+});
+
 describe('getWeekKey', () => {
   it('returns null for null input', () => {
     expect(getWeekKey(null)).toBeNull();

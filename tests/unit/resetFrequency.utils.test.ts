@@ -38,6 +38,36 @@ describe('isDateInPeriodRange', () => {
     const completed = new Date('2026-02-05T12:00:00.000Z');
     expect(isDateInPeriodRange(completed, 'DAILY', ref)).toBe(false);
   });
+
+  it('returns true when date is within same week (WEEKLY)', () => {
+    // Mercredi 4 mars 2026 comme référence
+    const ref = new Date('2026-03-04T12:00:00.000Z');
+    // Lundi 2 mars (début de semaine)
+    const monday = new Date('2026-03-02T12:00:00.000Z');
+    expect(isDateInPeriodRange(monday, 'WEEKLY', ref)).toBe(true);
+    // Mardi
+    const tuesday = new Date('2026-03-03T12:00:00.000Z');
+    expect(isDateInPeriodRange(tuesday, 'WEEKLY', ref)).toBe(true);
+  });
+
+  it('returns false when date is in previous week (WEEKLY)', () => {
+    // Lundi 2 mars comme référence
+    const ref = new Date('2026-03-02T12:00:00.000Z');
+    // Dimanche 1 mars (semaine précédente)
+    const sunday = new Date('2026-03-01T12:00:00.000Z');
+    expect(isDateInPeriodRange(sunday, 'WEEKLY', ref)).toBe(false);
+  });
+
+  it('handles week boundary at midnight (dimanche → lundi) en timezone locale', () => {
+    // Lundi 2 mars 2026 midi (local)
+    const ref = new Date('2026-03-02T12:00:00');
+    // Dimanche 1 mars 14h (local) — semaine précédente
+    const sundayAfternoon = new Date('2026-03-01T14:00:00');
+    expect(isDateInPeriodRange(sundayAfternoon, 'WEEKLY', ref)).toBe(false);
+    // Lundi 2 mars 08h (local) — même semaine
+    const mondayMorning = new Date('2026-03-02T08:00:00');
+    expect(isDateInPeriodRange(mondayMorning, 'WEEKLY', ref)).toBe(true);
+  });
 });
 
 describe('isCompletedInPeriod', () => {

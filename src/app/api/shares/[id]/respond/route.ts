@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { respondToShare } from '@/app/features/sharing/api';
+import { parseNumericId } from '@/app/lib/api-route-utils';
+import { validateBody, requireJsonContentType, respondToShareSchema } from '@/app/lib/validation';
 
 /**
  * POST /api/shares/:id/respond
@@ -20,31 +22,28 @@ export async function POST(
       return NextResponse.json({ error: 'Utilisateur non authentifié' }, { status: 401 });
     }
 
-    const { id } = await params;
-    const shareId = parseInt(id, 10);
-    if (isNaN(shareId)) {
-      return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
-    }
+    const ctError = requireJsonContentType(request);
+    if (ctError) return ctError;
+
+    const { id: idParam } = await params;
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const shareId = parsed.id;
 
     const body = await request.json();
-    const { action } = body;
-
-    if (!action || !['ACCEPTED', 'REJECTED'].includes(action)) {
-      return NextResponse.json(
-        { error: 'action doit être ACCEPTED ou REJECTED' },
-        { status: 400 }
-      );
-    }
+    const validated = validateBody(respondToShareSchema, body);
+    if (validated instanceof NextResponse) return validated;
+    const { data } = validated;
 
     const result = await respondToShare({
       shareId,
       receiverId: userId,
-      action,
+      action: data.action,
     });
 
     if (!result.success) {
       if (result.reason === 'NOT_FOUND') {
-        return NextResponse.json({ error: 'Partage non trouvé ou déjà traité' }, { status: 404 });
+        return NextResponse.json({ error: 'Ressource non trouvée' }, { status: 404 });
       }
       if (result.reason === 'EXERCICE_DELETED') {
         return NextResponse.json({ error: "L'exercice original a été supprimé" }, { status: 410 });

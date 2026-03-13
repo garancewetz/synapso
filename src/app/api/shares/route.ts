@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { createShare, getReceivedShares } from '@/app/features/sharing/api';
+import { validateBody, requireJsonContentType, createShareSchema } from '@/app/lib/validation';
 
 /**
  * POST /api/shares - Créer un partage d'exercice
@@ -16,20 +17,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Utilisateur non authentifié' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { exerciceId, receiverId } = body;
+    const ctError = requireJsonContentType(request);
+    if (ctError) return ctError;
 
-    if (!exerciceId || !receiverId) {
-      return NextResponse.json(
-        { error: 'exerciceId et receiverId sont requis' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const result = validateBody(createShareSchema, body);
+    if (result instanceof NextResponse) return result;
+    const { data } = result;
 
     const share = await createShare({
-      exerciceId: Number(exerciceId),
+      exerciceId: data.exerciceId,
       senderId: userId,
-      receiverId: Number(receiverId),
+      receiverId: data.receiverId,
     });
 
     return NextResponse.json(share, { status: 201 });

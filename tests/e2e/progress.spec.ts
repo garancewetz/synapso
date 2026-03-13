@@ -94,10 +94,10 @@ test.describe('Progrès', () => {
     await modifierBtn.scrollIntoViewIfNeeded();
     await modifierBtn.evaluate((el: HTMLElement) => el.click());
 
-    await expect(page.getByRole('button', { name: '🗑️ Supprimer ce progrès' })).toBeVisible({
+    await expect(page.getByRole('button', { name: '🧹 Supprimer ce progrès' })).toBeVisible({
       timeout: 15000,
     });
-    await page.getByRole('button', { name: '🗑️ Supprimer ce progrès' }).click();
+    await page.getByRole('button', { name: '🧹 Supprimer ce progrès' }).click();
     await page
       .getByRole('button', { name: '⚠️ Confirmer la suppression' })
       .waitFor({ state: 'visible', timeout: 5000 });

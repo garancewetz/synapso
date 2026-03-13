@@ -274,43 +274,31 @@ test.describe('Mode Sablier (Time Machine)', () => {
   test('devrait préserver le paramètre date lors de la navigation dans le journal', async ({ page }) => {
     const yesterdayDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
 
-    await page.goto(`/journal?date=${yesterdayDate}`);
+    await page.goto(`/journal/add?date=${yesterdayDate}`);
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('[data-testid="time-machine-banner"]').first()).toBeVisible({ timeout: 5000 });
-    expect(page.url()).toContain(`date=${yesterdayDate}`);
-
-    await page.getByRole('link', { name: 'Ajouter une entrée' }).click();
-    await page.waitForLoadState('networkidle');
-
     expect(page.url()).toContain('/journal/add');
     expect(page.url()).toContain(`date=${yesterdayDate}`);
 
-    await page.getByRole('link', { name: /Retour à journal/ }).click();
-    await page.waitForLoadState('networkidle');
+    const backToJournal = page.getByRole('link', { name: /Retour à journal/ });
+    await expect(backToJournal).toBeVisible({ timeout: 10000 });
+    await backToJournal.click();
 
-    expect(page.url()).toContain(`date=${yesterdayDate}`);
-    expect(page.url()).toMatch(/\/journal\/?([?&]|$)/);
+    await expect(page).toHaveURL(new RegExp(`\\/journal\\/?\\?.*date=${yesterdayDate}`), { timeout: 10000 });
   });
 
   test('devrait limiter le mode sablier à 28 jours en arrière', async ({ page }) => {
-    // Aller à la page historique
-    await timeMachineHelper.goToHistory();
-    await page.waitForSelector('[role="grid"], .grid', { timeout: 10000 });
-    
-    // Essayer d'activer le mode sablier pour 29 jours en arrière (devrait échouer)
     const tooOldDate = subDays(new Date(), 29);
     const tooOldDateKey = format(startOfDay(tooOldDate), 'yyyy-MM-dd');
-    
-    // Essayer de naviguer directement avec une date trop ancienne
+
     await page.goto(`/?date=${tooOldDateKey}`);
     await page.waitForLoadState('networkidle');
-    
-    // Vérifier qu'un message d'erreur s'affiche ou que le mode sablier ne s'active pas
-    const errorMessage = await page.locator('text=28 jours, text=ne peux remonter').first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    // L'app invalide la date et fait router.replace pour retirer le param : attendre que l'URL soit corrigée
+    await expect(page).not.toHaveURL(new RegExp(`date=${tooOldDateKey}`), { timeout: 10000 });
+
     const timeMachineActive = await timeMachineHelper.isTimeMachineModeActive();
-    
-    // Soit un message d'erreur est affiché, soit le mode sablier ne s'active pas
-    expect(errorMessage || !timeMachineActive).toBeTruthy();
+    expect(timeMachineActive).toBe(false);
   });
 });

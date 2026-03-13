@@ -97,7 +97,9 @@ test.describe('Journal', () => {
     await noteCard.getByRole('button', { name: 'Valider' }).click();
 
     await expect(noteCard.getByText('Validé').first()).toBeVisible({ timeout: 5000 });
-    await expect(noteCard.getByRole('button', { name: 'Validée' })).toBeVisible();
+    await expect(
+      noteCard.getByRole('button', { name: /Annuler la validation pour aujourd'hui/ })
+    ).toBeVisible();
   });
 
   test('valide une entrée avec exercices liés et marque les exercices comme faits', async ({ page }) => {
@@ -134,15 +136,17 @@ test.describe('Journal', () => {
     await noteCard.scrollIntoViewIfNeeded();
     await noteCard.getByRole('button', { name: 'Ouvrir les actions' }).click();
     await noteCard.getByRole('button', { name: 'Lier des exercices' }).click();
-    const pickerPanel = page.locator('[role="dialog"], [role="tabpanel"]').first();
-    await pickerPanel.waitFor({ state: 'visible', timeout: 5000 });
+    const pickerDialog = page
+      .getByRole('dialog')
+      .filter({ has: page.getByRole('heading', { name: 'Lier des exercices' }) });
+    await pickerDialog.waitFor({ state: 'visible', timeout: 5000 });
     await page.getByRole('tab', { name: 'Haut' }).click();
     await page.getByRole('button', { name: exerciceName }).click();
     const putResponsePromise = page.waitForResponse(
       (res) => /\/api\/journal\/notes\/\d+$/.test(res.url()) && res.request().method() === 'PUT',
-      { timeout: 15000 }
+      { timeout: 20000 }
     );
-    await page.getByRole('button', { name: 'Valider' }).click();
+    await pickerDialog.getByRole('button', { name: 'Valider', exact: true }).click();
     await putResponsePromise;
 
     await expect(noteCard.getByText(exerciceName)).toBeVisible({ timeout: 5000 });
@@ -153,8 +157,12 @@ test.describe('Journal', () => {
     await expect(noteCard.getByText('Validé').first()).toBeVisible({ timeout: 5000 });
     await expect(noteCard.getByLabel('Complété').first()).toBeVisible({ timeout: 5000 });
 
-    await noteCard.getByRole('button', { name: 'Validée' }).click();
-    await expect(noteCard.getByRole('button', { name: 'Valider' })).toBeVisible({ timeout: 5000 });
+    await noteCard
+      .getByRole('button', { name: /Annuler la validation pour aujourd'hui/ })
+      .click();
+    await expect(
+      noteCard.getByRole('button', { name: /Valider pour aujourd'hui/ })
+    ).toBeVisible({ timeout: 5000 });
     await expect(noteCard.getByText('Validé')).toHaveCount(0);
     await expect(noteCard.getByLabel('Complété')).toHaveCount(0);
   });

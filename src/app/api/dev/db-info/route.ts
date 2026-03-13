@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/app/lib/auth';
 
 /**
  * Route API pour obtenir des informations sur la base de données en développement
  * Ne retourne que des informations non sensibles
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   // Vérifier que nous sommes en développement
   if (process.env.NEXT_PUBLIC_ENVIRONMENT !== 'dev') {
     return NextResponse.json(
@@ -12,6 +13,10 @@ export async function GET() {
       { status: 403 }
     );
   }
+
+  // Defense-in-depth : vérifier les droits admin même en dev
+  const authError = await requireAdmin(request);
+  if (authError) return authError;
 
   const isDev = process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev';
   const hasDevDb = !!process.env.DATABASE_URL_DEV;

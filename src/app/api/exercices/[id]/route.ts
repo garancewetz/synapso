@@ -6,6 +6,7 @@ import { logError } from '@/app/lib/logger';
 import { CACHE_TAGS } from '@/app/lib/cache';
 import { parseNumericId } from '@/app/lib/api-route-utils';
 import { getExercice, updateExercice, deleteExercice } from '@/app/features/exercices/api';
+import { validateBody, requireJsonContentType, updateExerciceSchema } from '@/app/lib/validation';
 
 const DATE_KEY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -82,21 +83,14 @@ export async function PUT(
     if (parsed instanceof NextResponse) return parsed;
     const { id } = parsed;
 
+    const ctError = requireJsonContentType(request);
+    if (ctError) return ctError;
+
     const updatedData = await request.json();
 
-    if (updatedData.name !== undefined && (!updatedData.name || !updatedData.name.trim())) {
-      return NextResponse.json(
-        { error: 'Le nom de l\'exercice est obligatoire' },
-        { status: 400 }
-      );
-    }
-
-    if (updatedData.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'FACE'].includes(updatedData.category)) {
-      return NextResponse.json(
-        { error: 'Catégorie invalide. Valeurs attendues : UPPER_BODY, LOWER_BODY, STRETCHING, CORE, FACE' },
-        { status: 400 }
-      );
-    }
+    const validated = validateBody(updateExerciceSchema, updatedData);
+    if (validated instanceof NextResponse) return validated;
+    const validatedData = validated.data;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -110,16 +104,17 @@ export async function PUT(
       );
     }
 
+    const { description, workout, ...rest } = validatedData;
     const data = {
-      ...updatedData,
-      ...(updatedData.description && {
-        descriptionText: updatedData.description.text,
-        descriptionComment: updatedData.description.comment ?? null,
+      ...rest,
+      ...(description && {
+        descriptionText: description.text,
+        descriptionComment: description.comment ?? null,
       }),
-      ...(updatedData.workout && {
-        workoutRepeat: updatedData.workout.repeat ?? null,
-        workoutSeries: updatedData.workout.series ?? null,
-        workoutDuration: updatedData.workout.duration ?? null,
+      ...(workout && {
+        workoutRepeat: workout.repeat ?? null,
+        workoutSeries: workout.series ?? null,
+        workoutDuration: workout.duration ?? null,
       }),
     };
 

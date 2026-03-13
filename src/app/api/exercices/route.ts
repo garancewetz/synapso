@@ -4,10 +4,14 @@ import { logError } from '@/app/lib/logger';
 import { prisma } from '@/app/lib/prisma';
 import { getExercices, createExercice } from '@/app/features/exercices/api';
 import { ExerciceCategory } from '@/app/types/exercice';
+import { validateBody, requireJsonContentType, createExerciceSchema } from '@/app/lib/validation';
 
 export async function POST(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
+
+  const ctError = requireJsonContentType(request);
+  if (ctError) return ctError;
 
   try {
     const userId = await getEffectiveUserId(request);
@@ -21,33 +25,23 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    if (!body.name || !body.name.trim()) {
-      return NextResponse.json(
-        { error: 'Le nom de l\'exercice est obligatoire' },
-        { status: 400 }
-      );
-    }
-
-    if (body.category && !['UPPER_BODY', 'LOWER_BODY', 'STRETCHING', 'CORE', 'FACE'].includes(body.category)) {
-      return NextResponse.json(
-        { error: 'Invalid category. Must be UPPER_BODY, LOWER_BODY, STRETCHING, CORE, or FACE' },
-        { status: 400 }
-      );
-    }
+    const parsed = validateBody(createExerciceSchema, body);
+    if (parsed instanceof NextResponse) return parsed;
+    const data = parsed.data;
 
     const exercice = await createExercice({
-      name: body.name.trim(),
-      descriptionText: body.description?.text || '',
-      descriptionComment: body.description?.comment || null,
-      workoutRepeat: body.workout?.repeat || null,
-      workoutSeries: body.workout?.series || null,
-      workoutDuration: body.workout?.duration || null,
-      category: body.category || 'UPPER_BODY',
-      bodyparts: body.bodyparts || [],
-      equipments: body.equipments || [],
-      media: body.media || undefined,
+      name: data.name,
+      descriptionText: data.description?.text || '',
+      descriptionComment: data.description?.comment || null,
+      workoutRepeat: data.workout?.repeat || null,
+      workoutSeries: data.workout?.series || null,
+      workoutDuration: data.workout?.duration || null,
+      category: data.category,
+      bodyparts: data.bodyparts as unknown as string[],
+      equipments: data.equipments,
+      media: data.media || undefined,
       userId,
-      ...(body.createdAt && { createdAt: new Date(body.createdAt) }),
+      ...(data.createdAt && { createdAt: new Date(data.createdAt) }),
     });
 
     return NextResponse.json(exercice, { status: 201 });

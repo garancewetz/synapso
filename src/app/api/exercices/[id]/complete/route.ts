@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { completeExercice } from '@/app/features/exercices/api';
+import { parseNumericId } from '@/app/lib/api-route-utils';
+import { validateBody, requireJsonContentType, completeExerciceSchema } from '@/app/lib/validation';
 
 export async function PATCH(
   request: NextRequest,
@@ -12,11 +14,9 @@ export async function PATCH(
 
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
-    }
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const { id } = parsed;
 
     const userId = await getEffectiveUserId(request);
     if (!userId) {
@@ -26,16 +26,20 @@ export async function PATCH(
       );
     }
 
+    const ctError = requireJsonContentType(request);
+    if (ctError) return ctError;
+
     let completedAt = new Date();
     let resetFrequency: 'DAILY' | 'WEEKLY' = 'DAILY';
     try {
       const body = await request.json();
-      if (body?.completedAt && /^\d{4}-\d{2}-\d{2}$/.test(body.completedAt)) {
-        completedAt = new Date(body.completedAt + 'T12:00:00.000Z');
+      const parsed = validateBody(completeExerciceSchema, body);
+      if (parsed instanceof NextResponse) return parsed;
+      const data = parsed.data;
+      if (data.completedAt) {
+        completedAt = new Date(data.completedAt + 'T12:00:00.000Z');
       }
-      if (body?.resetFrequency === 'WEEKLY') {
-        resetFrequency = 'WEEKLY';
-      }
+      resetFrequency = data.resetFrequency;
     } catch {
       // Body vide, utiliser les valeurs par défaut
     }

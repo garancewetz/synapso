@@ -10,7 +10,6 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTodayCompletedCount } from '@/app/features/exercices';
 import { useProgress } from '@/app/features/progress';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import {
   getCurrentWeekData,
   getLast7DaysData,
@@ -28,8 +27,7 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
   const { effectiveUser, loading } = useUser();
   const { openDayDetail } = useDayDetailModal();
   const completedToday = useTodayCompletedCount();
-  const { selectedDate, isTimeMachineMode } = useSelectedDate();
-  const { referenceDateKey, referenceDate } = useTimeContext();
+  const { selectedDate, isTimeMachineMode, referenceDateKey, referenceDate } = useTimeContext();
   const displayName = effectiveUser?.name || "";
   const resetFrequency = effectiveUser?.resetFrequency || null;
   const { progressList } = useProgress();

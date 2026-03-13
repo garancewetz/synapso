@@ -6,7 +6,6 @@ import clsx from 'clsx';
 import { CategoryCardWithProgress } from '@/app/features/exercices';
 import { MenuLink } from '@/app/components';
 import { Card } from '@/app/components/ui/Card';
-import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import {
   CATEGORY_COLORS,
   CATEGORY_HREFS,
@@ -57,17 +56,27 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
   error,
   loading = false,
 }: Props) {
-  const { navMenuType } = useLayoutContext();
   const preserveDate = usePreserveDateParam();
-  const activeExercices = useMemo(() => exercices.filter(e => !e.archived), [exercices]);
-
-  const exercicesByCategory = useMemo(() => {
+  const { activeExercices, exercicesByCategory } = useMemo(() => {
+    const active = exercices.filter(exercice => !exercice.archived);
     const map = new Map<ExerciceCategory, Exercice[]>();
+
     CATEGORY_ORDER.forEach(category => {
-      map.set(category, activeExercices.filter(e => e.category === category));
+      map.set(category, []);
     });
-    return map;
-  }, [activeExercices]);
+
+    active.forEach(exercice => {
+      const categoryExercices = map.get(exercice.category);
+      if (categoryExercices) {
+        categoryExercices.push(exercice);
+      }
+    });
+
+    return {
+      activeExercices: active,
+      exercicesByCategory: map,
+    };
+  }, [exercices]);
 
   const hasAnyActiveExercice = activeExercices.length > 0;
   const categoriesWithExercices = CATEGORY_ORDER.filter(category => (exercicesByCategory.get(category) || []).length > 0);
@@ -118,16 +127,6 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         iconTextColor={SITEMAP_ICON_STYLES.default.text}
         isSecondary={true}
       />
-      {navMenuType !== 'slide' && (
-        <MenuLink
-          title="Ajouter un exercice"
-          icon="➕"
-          href="/exercice/add"
-          iconBgColor={SITEMAP_ICON_STYLES.default.bg}
-          iconTextColor={SITEMAP_ICON_STYLES.default.text}
-          isSecondary={true}
-        />
-      )}
       <MenuLink
         title="Exercices archivés"
         icon="📦"
@@ -138,34 +137,46 @@ export const HomeExercicesTab = memo(function HomeExercicesTab({
         isSecondary={true}
       />
       {!loading && categoriesWithoutExercices.length > 0 && (
-        <section aria-label="Autres zones d'exercices possibles" className="pt-2 border-t border-gray-100">
-          <p className="text-sm text-gray-600">
-            Autres zones du corps que vous pouvez travailler :
-          </p>
+        <section
+          aria-labelledby="other-body-zones-heading"
+          className="pt-3"
+        >
+          <h2 id="other-body-zones-heading" className="text-sm font-medium text-gray-500 mb-2">
+            Autres zones du corps
+          </h2>
           <nav aria-label="Choisir une autre zone du corps">
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {categoriesWithoutExercices.map(category => (
-                <li key={category}>
-                  <a
-                    href={preserveDate(CATEGORY_HREFS[category])}
-                    className="inline-flex items-center px-3 py-1 rounded-full border border-gray-200 text-xs text-gray-700 bg-white"
-                  >
-                    <span
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {categoriesWithoutExercices.map(category => {
+                const styles = CATEGORY_COLORS[category];
+                return (
+                  <li key={category}>
+                    <a
+                      href={preserveDate(CATEGORY_HREFS[category])}
                       className={clsx(
-                        'w-2 h-2 rounded-full mr-2',
-                        CATEGORY_COLORS[category].accent
+                        'flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all duration-200',
+                        'active:scale-[0.97] md:hover:ring-2 md:hover:ring-offset-1',
+                        styles.bg,
+                        styles.cardBorder,
+                        styles.focusRing
                       )}
-                      aria-hidden="true"
-                    />
-                    <span aria-hidden="true" className="mr-1">
-                      {CATEGORY_ICONS[category]}
-                    </span>
-                    <span>
-                      {CATEGORY_LABELS[category]}
-                    </span>
-                  </a>
-                </li>
-              ))}
+                      aria-label={`Explorer ${CATEGORY_LABELS[category]}`}
+                    >
+                      <span
+                        className={clsx(
+                          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-base',
+                          styles.iconBg
+                        )}
+                        aria-hidden="true"
+                      >
+                        {CATEGORY_ICONS[category]}
+                      </span>
+                      <span className={clsx('text-sm font-medium', styles.text)}>
+                        {CATEGORY_LABELS[category]}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         </section>

@@ -7,7 +7,7 @@ import { WelcomeHeaderGreeting } from './WelcomeHeaderGreeting';
 import { DailyGoalProgress } from '@/app/features/exercices';
 import { WelcomeHeaderCelebration } from './WelcomeHeaderCelebration';
 import { WeekCalendar } from '@/app/features/historique';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { formatShortDate } from '@/app/utils/date.utils';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 
@@ -25,7 +25,7 @@ type Props = {
 
 export function WelcomeHeader({ userName, completedToday, resetFrequency = null, weekData, progressDates, onDayClick, currentStreak = 0 }: Props) {
   const { showCelebration, animationKey } = useCelebration(completedToday);
-  const { isTimeMachineMode, selectedDate } = useSelectedDate();
+  const { isTimeMachineMode, selectedDate } = useTimeContext();
   
   const isLoading = completedToday === null;
   const count = completedToday ?? 0;

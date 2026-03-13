@@ -3,7 +3,6 @@
 import { ClockIcon, CalendarIcon } from '@/app/components/ui/icons';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { useTimeContext } from '@/app/contexts/TimeContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { RESET_FREQUENCY_COLORS } from '@/app/constants/ui.constants';
 import { formatShortDate } from '@/app/utils/date.utils';
 import clsx from 'clsx';
@@ -23,8 +22,7 @@ function getTimeGreeting(referenceDate: Date) {
 
 export function WelcomeHeaderGreeting({ userName, resetFrequency, currentStreak = 0 }: Props) {
   const { isLeftHanded } = useHandPreference();
-  const { referenceDate, isTimeMachineMode } = useTimeContext();
-  const { selectedDate } = useSelectedDate();
+  const { referenceDate, isTimeMachineMode, selectedDate } = useTimeContext();
   
   const greeting = getTimeGreeting(referenceDate);
   const greetingText = isTimeMachineMode && selectedDate

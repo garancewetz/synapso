@@ -80,9 +80,8 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
       if (!hasExercise) continue;
       let next = old.map((ex) => (ex.id === updatedExercice.id ? updatedExercice : ex));
       const isArchivedList = listFilters?.includeArchived === true;
+      // Retirer un exercice archivé des listes non-archivées (il ne devrait plus y apparaître)
       if (!isArchivedList && updatedExercice.archived) {
-        next = next.filter((ex) => ex.id !== updatedExercice.id);
-      } else if (isArchivedList && !updatedExercice.archived) {
         next = next.filter((ex) => ex.id !== updatedExercice.id);
       }
       queryClient.setQueryData<Exercice[]>(queryKey, next);

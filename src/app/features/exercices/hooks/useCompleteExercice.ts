@@ -7,6 +7,7 @@ import type { Exercice } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useUser } from '@/app/contexts/UserContext';
 import { useToast } from '@/app/contexts/ToastContext';
+import { useConfetti } from '@/app/contexts/ConfettiContext';
 import { queryKeys } from '@/app/lib/api-queries';
 
 type UseCompleteExerciceOptions = {
@@ -31,6 +32,7 @@ export function useCompleteExercice({
   const { effectiveUser } = useUser();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { requestConfetti } = useConfetti();
 
   const targetDate = referenceDateKey || format(new Date(), 'yyyy-MM-dd');
   const willComplete = !exercice.completedToday;
@@ -71,19 +73,23 @@ export function useCompleteExercice({
         weeklyCompletions,
       };
 
-      if (!exercice.completedToday && updatedExercice.completedToday) {
+      if (!exercice.completedToday && updatedExercice.completedToday && requestConfetti('low')) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 1500);
       }
 
       onCompleted?.(updatedExercice);
 
-      // Invalider exercices (liste filtrée par date) + history + todayCompletedCount
-      // Une seule passe : history.all couvre aussi les queries useCategoryStats
+      // Invalider exercices (sauf les listes includeArchived:true utilisées pour les vues globales/épinglées)
+      // + history + todayCompletedCount. Les listes includeArchived:true sont déjà tenues à jour
+      // de façon optimiste via updateExercice (voir useExercices → updateExercice).
       queryClient.invalidateQueries({
         queryKey: ['exercices', 'list'],
         predicate: (query) => {
-          const filters = query.queryKey[2] as { targetDate?: string } | undefined;
+          const filters = query.queryKey[2] as { targetDate?: string; includeArchived?: boolean } | undefined;
+          if (filters?.includeArchived) {
+            return false;
+          }
           if (!filters?.targetDate) return true;
           return filters.targetDate === targetDate;
         },

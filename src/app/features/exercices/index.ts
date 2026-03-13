@@ -4,7 +4,6 @@ export { ExerciceForm } from './components/ExerciceForm';
 export { ExerciceCardHeader } from './components/ExerciceCardHeader';
 export { ExerciceCardExpandable } from './components/ExerciceCardExpandable';
 export { ExerciceCardTags } from './components/ExerciceCardTags';
-export { ExerciceTags } from './components/ExerciceTags';
 export { ExerciceMedia } from './components/ExerciceMedia';
 export { CategoryCardWithProgress } from './components/CategoryCardWithProgress';
 export { CategoryBodypartsSection } from './components/CategoryBodypartsSection';
@@ -24,12 +23,12 @@ export { useExercices } from './hooks/useExercices';
 export { useCompleteExercice } from './hooks/useCompleteExercice';
 export { usePinExercice } from './hooks/usePinExercice';
 export { useArchiveExercice } from './hooks/useArchiveExercice';
-export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 export { useExerciceStatusFilter } from './hooks/useExerciceStatusFilter';
 export { useCategoryFilters } from './hooks/useCategoryFilters';
 export { useCategoryStats } from './hooks/useCategoryStats';
 export { useTodayCompletedCount } from './hooks/useTodayCompletedCount';
 export { useRelatedStretchingByCategory } from './hooks/useRelatedStretchingByCategory';
+export { useExerciceHandlers } from './hooks/useExerciceHandlers';
 
 // Utils
 export * from './utils/exercice-complete.utils';

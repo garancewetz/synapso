@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/app/contexts/UserContext';
 import { useToast } from '@/app/contexts/ToastContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { getDateKey } from '@/app/utils/date.utils';
 import { queryKeys } from '@/app/lib/api-queries';
 import type { ExerciceCategory } from '@/app/types/exercice';
@@ -35,7 +35,7 @@ export function useExerciceFormMutations({
 }: UseExerciceFormMutationsParams) {
   const { effectiveUser } = useUser();
   const { showToast } = useToast();
-  const { selectedDate, isDateSelected } = useSelectedDate();
+  const { selectedDate, isDateSelected } = useTimeContext();
   const queryClient = useQueryClient();
 
   const createOrUpdateMutation = useMutation({

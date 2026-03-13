@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ErrorMessage, FormActions } from '@/app/components';
-import { InputWithSpeech, TextareaWithSpeech, MediaUploader } from '@/app/components/ui';
+import { Input, Textarea, MediaUploader } from '@/app/components/ui';
 import { Button } from '@/app/components/ui/Button';
 import { useJournalForm } from '../hooks/useJournalForm';
 import { useFormData } from '@/app/hooks/forms/useFormData';
@@ -177,7 +177,8 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
       <form className="space-y-4" onSubmit={handleFinish}>
         <ErrorMessage message={error} />
 
-        <InputWithSpeech
+        <Input
+          speech
           label="Titre"
           type="text"
           required
@@ -187,7 +188,8 @@ export function JournalNoteForm({ noteId, onSuccess, onCancel }: Props) {
           disabled={loadingInitial}
         />
 
-        <TextareaWithSpeech
+        <Textarea
+          speech
           label="Description"
           rows={4}
           value={formData.description}

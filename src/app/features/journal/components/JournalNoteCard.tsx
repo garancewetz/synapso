@@ -10,7 +10,7 @@ import { useTimeContext } from '@/app/contexts/TimeContext';
 import { usePinJournalNote } from '../hooks/usePinJournalNote';
 import { useValidateJournalNote } from '../hooks/useValidateJournalNote';
 import { useShareJournalNote } from '../hooks/useShareJournalNote';
-import { Button, BorderedIconList } from '@/app/components/ui';
+import { Button, BorderedIconList, CardActionButton, CardActionsPanel, InlineSpinner } from '@/app/components/ui';
 import { MediaUploader } from '@/app/components/ui';
 import { ExercicePickerModal } from './ExercicePickerModal';
 import { DotsIcon, BookmarkIcon, ShareIcon, CameraIcon, CheckIcon } from '@/app/components/ui/icons';
@@ -25,7 +25,11 @@ type Props = {
   onUpdated?: (updatedNote?: JournalNote) => void;
 };
 
-export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }: Props) {
+export const JournalNoteCard = memo(function JournalNoteCard({
+  note,
+  completedExerciceIds,
+  onUpdated,
+}: Props) {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [description, setDescription] = useState(note.description ?? '');
@@ -297,6 +301,8 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
                   value={title}
                   onChange={handleTitleChange}
                   placeholder="Titre"
+                  rows={1}
+                  style={{ fieldSizing: 'content' }}
                   className="w-full border-0! bg-transparent p-0 outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-neutral-400 resize-none"
                 />
               </h2>
@@ -344,6 +350,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
                       icon: CATEGORY_ICONS[ex.category as keyof typeof CATEGORY_ICONS],
                       borderClass: colors?.border || 'border-gray-200',
                       href,
+                      completed: completedExerciceIds?.has(ex.id) ?? false,
                     };
                   })}
                 />
@@ -378,7 +385,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
                 className="flex-1 min-w-0 order-1"
               >
                 {isValidating ? (
-                  <span className="w-4 h-4 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+                  <InlineSpinner color="emerald" size="sm" />
                 ) : (
                   validateActionLabel
                 )}
@@ -397,56 +404,54 @@ export const JournalNoteCard = memo(function JournalNoteCard({ note, onUpdated }
             </div>
 
             {/* Actions inline */}
-            <div
-              className={clsx('grid overflow-hidden transition-all duration-200 ease-out', JOURNAL_NOTE_STYLES.actionsPanel)}
-              style={{ gridTemplateRows: isActionsOpen ? '1fr' : '0fr' }}
-            >
-              <div className="min-h-0">
-                <div className={clsx('grid grid-cols-2 border-t', JOURNAL_NOTE_STYLES.actionsBorder)}>
-                  <button type="button" onClick={handleAddMediaClick} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-r border-b', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover)}>
-                    <CameraIcon className="w-5 h-5" />
-                    <span className="font-medium">{media.length > 0 ? 'Modifier l\'image' : 'Ajouter une image'}</span>
-                  </button>
-                  <button type="button" onClick={handleLinkExercicesClick} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-b', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover)}>
-                    <CheckIcon className="w-5 h-5" />
-                    <span className="font-medium">{exerciceIds.length > 0 ? 'Modifier les exercices' : 'Lier des exercices'}</span>
-                  </button>
-                  <button type="button" onClick={handlePinClick} disabled={isPinning} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px] border-r', JOURNAL_NOTE_STYLES.actionsBorder, JOURNAL_NOTE_STYLES.actionsButtonHover, 'disabled:opacity-50 disabled:pointer-events-none')}>
-                    {isPinning ? (
-                      <span className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
-                    ) : (
-                      <BookmarkIcon className="w-5 h-5" filled={note.pinned} />
-                    )}
-                    <span className="font-medium">{note.pinned ? 'Désépingler' : 'Épingler'}</span>
-                  </button>
-                  <button type="button" onClick={handleShare} className={clsx('px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-neutral-700 transition-colors min-h-[44px]', JOURNAL_NOTE_STYLES.actionsButtonHover)}>
-                    <ShareIcon className="w-5 h-5" />
-                    <span className="font-medium">Partager</span>
-                  </button>
-                  <button
-                    type="button"
+            <CardActionsPanel isOpen={isActionsOpen} color="neutral">
+                  <CardActionButton
+                    icon={<CameraIcon className="w-5 h-5" />}
+                    label={media.length > 0 ? 'Modifier l\'image' : 'Ajouter une image'}
+                    onClick={handleAddMediaClick}
+                    color="neutral"
+                    className={clsx('border-r border-b', JOURNAL_NOTE_STYLES.actionsBorder)}
+                  />
+                  <CardActionButton
+                    icon={<CheckIcon className="w-5 h-5" />}
+                    label={exerciceIds.length > 0 ? 'Modifier les exercices' : 'Lier des exercices'}
+                    onClick={handleLinkExercicesClick}
+                    color="neutral"
+                    className={clsx('border-b', JOURNAL_NOTE_STYLES.actionsBorder)}
+                  />
+                  <CardActionButton
+                    icon={isPinning
+                      ? <InlineSpinner color="neutral" />
+                      : <BookmarkIcon className="w-5 h-5" filled={note.pinned} />
+                    }
+                    label={note.pinned ? 'Désépingler' : 'Épingler'}
+                    onClick={handlePinClick}
+                    disabled={isPinning}
+                    color="neutral"
+                    className={clsx('border-r', JOURNAL_NOTE_STYLES.actionsBorder)}
+                  />
+                  <CardActionButton
+                    icon={<ShareIcon className="w-5 h-5" />}
+                    label="Partager"
+                    onClick={handleShare}
+                    color="neutral"
+                  />
+                  <CardActionButton
+                    icon={isDeleting
+                      ? <InlineSpinner color="neutral" />
+                      : <TrashIcon className="w-5 h-5" />
+                    }
+                    label={showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'entrée'}
                     onClick={handleDeleteClick}
                     disabled={isDeleting}
                     className={clsx(
-                      'col-span-2 px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm min-h-[44px] border-t',
+                      'col-span-2 border-t',
                       JOURNAL_NOTE_STYLES.actionsBorder,
-                      showDeleteConfirm ? 'text-red-600 font-medium' : 'text-neutral-600',
-                      JOURNAL_NOTE_STYLES.actionsButtonHover,
-                      'disabled:opacity-50 disabled:pointer-events-none'
+                      showDeleteConfirm ? 'text-red-600' : 'text-neutral-600'
                     )}
                     aria-label={showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'entrée'}
-                  >
-                    {isDeleting ? (
-                      <span className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
-                    ) : (
-                      <span className="font-medium">
-                        {showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'entrée'}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+                  />
+            </CardActionsPanel>
           </div>
         </div>
       </article>

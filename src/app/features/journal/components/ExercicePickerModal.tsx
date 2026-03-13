@@ -131,7 +131,7 @@ export function ExercicePickerModal({ isOpen, onClose, value, onChange }: Props)
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader size="small" />
+            <Loader size="md" />
           </div>
         ) : exercices.length === 0 ? (
           <p className="text-gray-500 text-center py-12 px-5">

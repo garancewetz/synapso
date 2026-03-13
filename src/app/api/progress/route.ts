@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { getProgress, createProgress } from '@/app/features/progress/api';
+import { validateBody, requireJsonContentType, createProgressSchema } from '@/app/lib/validation';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -45,10 +46,13 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
+  const ctError = requireJsonContentType(request);
+  if (ctError) return ctError;
+
   try {
     // Récupérer l'userId effectif depuis le cookie
     const userId = await getEffectiveUserId(request);
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
@@ -57,20 +61,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, emoji, tags, medias } = body;
-
-    if (!content || !content.trim()) {
-      return NextResponse.json(
-        { error: 'Le contenu est obligatoire' },
-        { status: 400 }
-      );
-    }
+    const validated = validateBody(createProgressSchema, body);
+    if (validated instanceof NextResponse) return validated;
+    const { data } = validated;
 
     const progress = await createProgress({
-      content: content.trim(),
-      emoji: emoji ? emoji.trim() : null,
-      tags: Array.isArray(tags) ? tags : [],
-      medias: Array.isArray(medias) ? medias : [],
+      content: data.content,
+      emoji: data.emoji ?? null,
+      tags: data.tags,
+      medias: data.medias,
       userId,
     });
 

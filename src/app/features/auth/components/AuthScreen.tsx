@@ -309,7 +309,7 @@ export const AuthScreen = memo(function AuthScreen({ onSuccess }: Props) {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader size="small" />
+                  <Loader size="md" />
                   <span>{mode === 'login' ? 'Connexion...' : 'Création...'}</span>
                 </span>
               ) : (

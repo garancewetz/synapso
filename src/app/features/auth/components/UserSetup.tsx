@@ -138,7 +138,7 @@ export const UserSetup = memo(function UserSetup({ userId, onComplete }: Props) 
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <Loader size="small" />
+                <Loader size="md" />
                 <span>Sauvegarde...</span>
               </span>
             ) : (

@@ -37,7 +37,7 @@ export function ProgressButton({
   return (
     <ActionButton
       variant="golden"
-      display={variant}
+      layout={variant}
       position={position}
       label={label}
       onClick={onClick}

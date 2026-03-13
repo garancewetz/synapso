@@ -4,7 +4,7 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { isSameDay, startOfWeek, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { getDateKey } from '@/app/utils/date.utils';
 
 type Props = {
@@ -26,7 +26,7 @@ const WEEK_DAYS = [
 export function WeeklyCompletionIndicator({ completions, className }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedDate, isTimeMachineMode } = useSelectedDate();
+  const { selectedDate, isTimeMachineMode } = useTimeContext();
 
   // Fermer le tooltip au clic extérieur
   useEffect(() => {

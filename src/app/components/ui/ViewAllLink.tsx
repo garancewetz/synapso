@@ -1,4 +1,4 @@
-import { LinkButton } from './LinkButton';
+import { Button } from './Button';
 import { ChevronIcon } from './icons';
 
 type Props = {
@@ -11,12 +11,12 @@ type Props = {
  * Lien de navigation réutilisable pour "Voir tout"
  * Style cohérent avec les autres boutons de navigation
  * 
- * Utilise LinkButton pour un lien stylé comme un bouton (sémantiquement correct, mobile-first)
+ * Utilise Button pour un lien stylé comme un bouton (sémantiquement correct, mobile-first)
  */
-export function ViewAllLink({ href, label, emoji = '📜' }: Props) {
+export function ViewAllLink({ href, label, emoji = '📋' }: Props) {
   return (
     <div className="mt-4">
-      <LinkButton
+      <Button
         href={href}
         variant="secondary"
         size="md"
@@ -25,7 +25,7 @@ export function ViewAllLink({ href, label, emoji = '📜' }: Props) {
       >
         <span>{emoji} {label}</span>
         <ChevronIcon direction="right" className="w-4 h-4" />
-      </LinkButton>
+      </Button>
     </div>
   );
 }

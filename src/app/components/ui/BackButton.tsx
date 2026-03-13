@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { ChevronIcon } from '@/app/components/ui/icons';
-import { LinkButton } from '@/app/components/ui/LinkButton';
+import { Button } from '@/app/components/ui/Button';
 import { getCurrentPageName, getPageEmoji } from '@/app/utils/navigation.utils';
 import clsx from 'clsx';
 
@@ -59,7 +59,7 @@ export function BackButton({
 
   return (
     <div className={wrapperClasses}>
-      <LinkButton
+      <Button
         href={backHref}
         variant="secondary"
         size="md"
@@ -70,7 +70,7 @@ export function BackButton({
         <ChevronIcon className="w-6 h-6 text-gray-700" direction="left" />
         {pageEmoji && <span>{pageEmoji}</span>}
         <span>{label}</span>
-      </LinkButton>
+      </Button>
     </div>
   );
 }

@@ -1,26 +1,16 @@
 import clsx from 'clsx';
+import { InlineSpinner } from './InlineSpinner';
 
 type Props = {
-  size?: 'small' | 'medium' | 'large';
+  /** Taille du spinner — mêmes valeurs que InlineSpinner (sm=16px, md=20px, lg=32px, xl=48px) */
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 };
 
-export function Loader({ size = 'medium', className = '' }: Props) {
-  const sizeClasses = {
-    small: 'w-4 h-4',
-    medium: 'w-8 h-8',
-    large: 'w-12 h-12',
-  };
-
+export function Loader({ size = 'lg', className }: Props) {
   return (
     <div className={clsx('flex items-center justify-center', className)}>
-      <div
-        className={clsx(sizeClasses[size], 'border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin')}
-        role="status"
-        aria-label="Chargement en cours"
-      >
-        <span className="sr-only">Chargement...</span>
-      </div>
+      <InlineSpinner size={size} />
     </div>
   );
 }

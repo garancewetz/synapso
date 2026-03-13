@@ -12,7 +12,8 @@ import clsx from 'clsx';
 
 type ActionButtonProps = {
   variant?: 'golden' | 'simple';
-  display?: 'fixed' | 'inline';
+  /** 'fixed' = bouton flottant (FAB), 'inline' = intégré dans la page */
+  layout?: 'fixed' | 'inline';
   position?: 'left' | 'right';
   label?: string;
   className?: string;
@@ -31,15 +32,18 @@ type ActionButtonProps = {
 };
 
 /**
- * Bouton d'action unifié - Gros bouton sans variant par défaut
- * 
- * Display :
- * - `fixed` : Bouton flottant fixe en bas de l'écran
+ * Bouton d'action unifié - Gros bouton CTA (add/progrès)
+ *
+ * Layout :
+ * - `fixed` : Bouton flottant fixe en bas de l'écran (FAB)
  * - `inline` : Bouton standard pour intégration dans une page
+ *
+ * Utilisé via AddButton (variant="simple") et ProgressButton (variant="golden").
+ * Utiliser directement uniquement pour un FAB custom.
  */
-export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(function ActionButton({ 
+export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(function ActionButton({
   variant,
-  display = 'inline',
+  layout = 'inline',
   position,
   label,
   className = '',
@@ -57,7 +61,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
   const pathname = usePathname();
   const { effectiveUser } = useUser();
   const { navMenuType } = useLayoutContext();
-  const isFixed = display === 'fixed';
+  const isFixed = layout === 'fixed';
 
   if (isFixed && navMenuType === 'slide') {
     return null;
@@ -92,7 +96,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
     ? (effectivePosition === 'left' ? 'left-4 md:left-8 right-auto' : 'right-4 md:right-8 left-auto')
     : '';
 
-  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-full';
+  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg';
   
   const sizeStyles = isFixed ? 'px-4 h-11 text-sm' : 'px-5 h-11 text-base' 
 

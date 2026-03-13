@@ -1,27 +1,48 @@
+'use client';
+
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { TouchLink } from '@/app/components/TouchLink';
 import clsx from 'clsx';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
-  variant?: 'secondary' | 'danger' | 'action' | 'danger-outline' | 'golden' | 'simple' | 'success';
+  /** Si fourni, rend un <a> via TouchLink au lieu d'un <button> */
+  href?: string;
+  variant?: 'secondary' | 'danger' | 'action' | 'danger-outline' | 'success';
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
-  rounded?: 'md' | 'lg' | 'full';
+  rounded?: 'md' | 'lg';
   iconOnly?: boolean;
   isActive?: boolean;
   activeClassName?: string;
 };
 
-/**
- * Composant Button réutilisable avec support du forwardRef
- * 
- * Note: Utilise `export const` avec forwardRef car c'est la convention React
- * pour les composants qui nécessitent le forwardRef
- */
+const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]';
+
+const sizeStyles = {
+  sm: 'px-3 min-h-[44px] h-11 text-sm',
+  md: 'px-4 min-h-[44px] h-11 text-base',
+  lg: 'px-5 min-h-[44px] h-11 text-lg',
+};
+
+const roundedStyles = {
+  md: 'rounded-md',
+  lg: 'rounded-lg',
+};
+
+const variantStyles = {
+  secondary: 'bg-gray-100 text-gray-700 border border-gray-200 md:hover:bg-gray-200 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2',
+  success: 'border border-emerald-200 bg-emerald-50 text-emerald-700 md:hover:bg-emerald-100 md:hover:ring-2 md:hover:ring-emerald-300/50 md:hover:ring-offset-2',
+  danger: 'bg-rose-500 text-white md:hover:bg-rose-600 md:hover:ring-2 md:hover:ring-rose-300/60 md:hover:ring-offset-2',
+  action: 'bg-blue-500 text-white md:hover:bg-blue-600 md:hover:ring-2 md:hover:ring-blue-300/60 md:hover:ring-offset-2',
+  'danger-outline': 'bg-rose-50 text-rose-600 md:hover:bg-rose-100 border border-rose-200 md:hover:ring-2 md:hover:ring-rose-200/50 md:hover:ring-offset-2',
+};
+
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   children,
+  href,
   onClick,
   variant = 'action',
   type = 'button',
@@ -34,55 +55,37 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   iconOnly = false,
   isActive = false,
   activeClassName = 'bg-red-50 text-red-600 border-red-200',
+  'aria-label': ariaLabel,
   ...props
 }, ref) {
-  // Styles pour iconOnly (ancien IconButton) — zone tactile ≥ 44px (WCAG / Apple HIG)
+  // Styles pour iconOnly — zone tactile ≥ 44px (WCAG / Apple HIG)
   if (iconOnly) {
-    const baseStyles = 'flex items-center justify-center min-h-[44px] min-w-[44px] h-11 w-11 rounded-lg transition-all duration-200 ease-out border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 active:scale-[0.97]';
+    const iconBaseStyles = 'flex items-center justify-center min-h-[44px] min-w-[44px] h-11 w-11 rounded-lg transition-all duration-200 ease-out border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 active:scale-[0.97]';
     const inactiveStyles = 'bg-white text-gray-500 border-gray-200 md:hover:border-gray-300 md:hover:text-gray-700 md:hover:ring-2 md:hover:ring-gray-300/50 md:hover:ring-offset-2';
-    
+    const iconClassName = clsx(iconBaseStyles, isActive ? activeClassName : inactiveStyles, className);
+
+    if (href) {
+      return (
+        <TouchLink href={href} className={iconClassName} aria-label={ariaLabel}>
+          {children}
+        </TouchLink>
+      );
+    }
     return (
-      <button
-        ref={ref}
-        type={type}
-        onClick={onClick}
-        disabled={disabled}
-        className={clsx(
-          baseStyles,
-          isActive ? activeClassName : inactiveStyles,
-          className
-        )}
-        {...props}
-      >
+      <button ref={ref} type={type} onClick={onClick} disabled={disabled} className={iconClassName} aria-label={ariaLabel} {...props}>
         {children}
       </button>
     );
   }
 
-  // Styles normaux pour Button
-  const baseStyles = 'flex items-center justify-center gap-2 cursor-pointer font-medium transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]';
-  
-  const sizeStyles = {
-    sm: 'px-3 min-h-[44px] h-11 text-sm',
-    md: 'px-4 min-h-[44px] h-11 text-base',
-    lg: 'px-5 min-h-[44px] h-11 text-lg',
-  };
-
-  const roundedStyles = {
-    md: 'rounded-md',
-    lg: 'rounded-lg',
-    full: 'rounded-full',
-  };
-  
-  const variantStyles = {
-    secondary: 'bg-gray-200 text-gray-700 md:hover:bg-gray-300 md:hover:ring-2 md:hover:ring-gray-300/60 md:hover:ring-offset-2',
-    success: 'border border-emerald-200 bg-emerald-50 text-emerald-700 md:hover:bg-emerald-100 md:hover:ring-2 md:hover:ring-emerald-300/50 md:hover:ring-offset-2',
-    danger: 'bg-red-600 text-white md:hover:bg-red-700 md:hover:ring-2 md:hover:ring-red-400/60 md:hover:ring-offset-2',
-    action: 'bg-blue-600 text-white md:hover:bg-blue-700 md:hover:ring-2 md:hover:ring-blue-400/60 md:hover:ring-offset-2',
-    'danger-outline': 'bg-red-50 text-red-600 md:hover:bg-red-100 border border-red-300 md:hover:ring-2 md:hover:ring-red-300/50 md:hover:ring-offset-2',
-    golden: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 md:hover:from-amber-500 md:hover:via-yellow-500 md:hover:to-amber-600 shadow-lg md:hover:ring-2 md:hover:ring-amber-400/60 md:hover:ring-offset-2',
-    simple: 'bg-gray-800 text-white md:hover:bg-gray-700 md:hover:ring-2 md:hover:ring-gray-400/60 md:hover:ring-offset-2',
-  };
+  const buttonClassName = clsx(
+    baseStyles,
+    sizeStyles[size],
+    roundedStyles[rounded],
+    variantStyles[variant],
+    disabled && 'opacity-50 cursor-not-allowed',
+    className
+  );
 
   const iconElement = icon && (
     <span className={clsx(
@@ -93,25 +96,34 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
     </span>
   );
 
+  const content = (
+    <>
+      {icon && iconPosition === 'left' && iconElement}
+      {children}
+      {icon && iconPosition === 'right' && iconElement}
+    </>
+  );
+
+  // Mode lien : rend un <a> sémantiquement correct via TouchLink
+  if (href) {
+    return (
+      <TouchLink href={href} className={buttonClassName} aria-label={ariaLabel}>
+        {content}
+      </TouchLink>
+    );
+  }
+
   return (
     <button
       ref={ref}
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={clsx(
-        baseStyles,
-        sizeStyles[size],
-        roundedStyles[rounded],
-        variantStyles[variant],
-        className
-      )}
+      className={buttonClassName}
+      aria-label={ariaLabel}
       {...props}
     >
-      {icon && iconPosition === 'left' && iconElement}
-      {children}
-      {icon && iconPosition === 'right' && iconElement}
+      {content}
     </button>
   );
 });
-

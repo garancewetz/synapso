@@ -10,7 +10,8 @@ type Props = {
   position?: 'left' | 'right' | 'auto';
   queryParams?: Record<string, string>;
   addFromParam?: boolean;
-  display?: 'inline' | 'fixed';
+  /** 'fixed' = bouton flottant (FAB), 'inline' = intégré dans la page */
+  layout?: 'inline' | 'fixed';
   onClick?: () => void;
 };
 
@@ -20,30 +21,30 @@ type Props = {
  * 
  * Utilise ActionButton avec variant="simple"
  * 
- * @param display - 'inline' pour intégration dans une page, 'fixed' pour bouton flottant
+ * @param layout - 'inline' pour intégration dans une page, 'fixed' pour bouton flottant
  * @param position - Position du bouton flottant ('left' | 'right' | 'auto'). Si 'auto', utilise la préférence de main
  */
-export function AddButton({ 
-  href, 
-  label, 
+export function AddButton({
+  href,
+  label,
   className = '',
   queryParams,
   addFromParam = false,
-  display = 'inline',
+  layout = 'inline',
   position = 'auto',
   onClick,
 }: Props) {
   const { isLeftHanded } = useHandPreference();
-  
+
   // Déterminer la position automatiquement si 'auto'
-  const finalPosition = position === 'auto' 
+  const finalPosition = position === 'auto'
     ? (isLeftHanded ? 'left' : 'right')
     : position;
 
   return (
     <ActionButton
       variant="simple"
-      display={display}
+      layout={layout}
       position={finalPosition}
       href={href}
       label={label}

@@ -361,6 +361,13 @@ export function Lightbox({ images, currentIndex, onClose, onIndexChange, title }
         )}
       </div>
 
+      {/* Instructions clavier pour lecteurs d'écran */}
+      <span className="sr-only">
+        {hasMultipleImages
+          ? 'Utilisez les flèches gauche et droite pour naviguer entre les photos. Appuyez sur Échap pour fermer.'
+          : 'Appuyez sur Échap pour fermer.'}
+      </span>
+
       {/* Indicateur de position */}
       {hasMultipleImages && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">

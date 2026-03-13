@@ -199,7 +199,7 @@ export function MediaUploader({ value, onChange, maxItems = 3, multiple = true }
             >
               {uploading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <Loader size="small" />
+                  <Loader size="md" />
                   <span>Upload...</span>
                 </div>
               ) : (

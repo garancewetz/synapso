@@ -3,6 +3,7 @@
 import { useMemo, memo, useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/app/hooks/useReducedMotion';
 
 type ConfettiVariant = 'default' | 'golden';
 
@@ -166,9 +167,10 @@ const ConfettiRain = memo(function ConfettiRain({
   colors,
   variant = 'default',
 }: Props) {
+  const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
-  const actualEmojiCount = isMobile ? Math.min(emojiCount, 6) : emojiCount;
-  const actualConfettiCount = isMobile ? Math.min(confettiCount, 30) : confettiCount;
+  const actualEmojiCount = isMobile ? Math.min(emojiCount, 4) : emojiCount;
+  const actualConfettiCount = isMobile ? Math.min(confettiCount, 15) : confettiCount;
   
   const preset = VARIANT_PRESETS[variant];
   const finalEmojis = emojis ?? preset.emojis;
@@ -209,7 +211,7 @@ const ConfettiRain = memo(function ConfettiRain({
     });
   }, [show, actualConfettiCount, fromWindow]);
 
-  if (!show) return null;
+  if (!show || prefersReducedMotion) return null;
 
   return (
     <>

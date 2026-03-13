@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useTimeContext } from '@/app/contexts/TimeContext';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
 import { formatShortDate } from '@/app/utils/date.utils';
 
 const DAILY_GOAL = 5;
@@ -14,8 +13,7 @@ type Props = {
 };
 
 export function DailyGoalProgress({ completedToday }: Props) {
-  const { isTimeMachineMode } = useTimeContext();
-  const { selectedDate } = useSelectedDate();
+  const { isTimeMachineMode, selectedDate, selectedDateKey } = useTimeContext();
   const isLoading = completedToday === null;
   const count = completedToday ?? 0;
   const progress = isLoading ? 0 : Math.min(count / DAILY_GOAL, 1);
@@ -23,8 +21,6 @@ export function DailyGoalProgress({ completedToday }: Props) {
   const bonusExercices = isLoading ? 0 : Math.max(0, count - DAILY_GOAL);
   
   // Adapter le label selon le mode sablier
-  // ⚡ MODE SABLIER: Utiliser selectedDateKey pour la stabilité (string au lieu de Date)
-  const { selectedDateKey } = useSelectedDate();
   const goalLabel = useMemo(() => {
     if (isTimeMachineMode && selectedDate && selectedDateKey) {
       const formattedDate = formatShortDate(selectedDate);

@@ -2,6 +2,7 @@
 
 import { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/app/hooks/useReducedMotion';
 
 type Props = {
   show?: boolean;
@@ -88,8 +89,9 @@ export const ConfettiValidate = memo(function ConfettiValidate({
   centerY = 50,
   confettiCount = 28,
 }: Props) {
+  const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
-  const actualCount = isMobile ? Math.min(confettiCount, 22) : confettiCount;
+  const actualCount = isMobile ? Math.min(confettiCount, 14) : confettiCount;
 
   const confettis = useMemo(() => {
     if (!show) return [];
@@ -107,7 +109,7 @@ export const ConfettiValidate = memo(function ConfettiValidate({
     });
   }, [show, actualCount]);
 
-  if (!show) return null;
+  if (!show || prefersReducedMotion) return null;
 
   return (
     <div className="absolute inset-0 pointer-events-none z-50">

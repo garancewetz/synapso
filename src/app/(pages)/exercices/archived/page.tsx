@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default function ArchivedPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="xl" /></div>}>
       <ArchivedPageClient />
     </Suspense>
   );

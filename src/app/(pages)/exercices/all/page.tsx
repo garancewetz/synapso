@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default function EquipmentsPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="xl" /></div>}>
       <EquipmentsPageClient />
     </Suspense>
   );

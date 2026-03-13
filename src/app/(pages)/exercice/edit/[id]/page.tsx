@@ -21,7 +21,7 @@ export default function AdminEditPage({ params }: AdminEditPageProps) {
   }
 
   return (
-    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="large" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader size="xl" /></div>}>
       <EditPageClient exerciceId={exerciceId} />
     </Suspense>
   );

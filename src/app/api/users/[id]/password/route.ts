@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, getEffectiveUserId, isAdmin } from '@/app/lib/auth';
+import { requireAuth, getEffectiveUserId, isAdmin, clearAuthCookie } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { updateUserPassword } from '@/app/features/auth/api';
+import { parseNumericId } from '@/app/lib/api-route-utils';
+import { validateBody, requireJsonContentType, changePasswordSchema } from '@/app/lib/validation';
 
 export async function PATCH(
   request: NextRequest,
@@ -11,15 +13,10 @@ export async function PATCH(
   if (authError) return authError;
 
   try {
-    const { id } = await params;
-    const requestedUserId = parseInt(id);
-
-    if (isNaN(requestedUserId)) {
-      return NextResponse.json(
-        { error: 'ID invalide' },
-        { status: 400 }
-      );
-    }
+    const { id: idParam } = await params;
+    const parsed = parseNumericId(idParam);
+    if (parsed instanceof NextResponse) return parsed;
+    const requestedUserId = parsed.id;
 
     // Récupérer l'userId effectif
     const effectiveUserId = await getEffectiveUserId(request);
@@ -33,24 +30,34 @@ export async function PATCH(
       );
     }
 
-    const data = await request.json();
-    const { currentPassword, newPassword } = data;
+    const ctError = requireJsonContentType(request);
+    if (ctError) return ctError;
+
+    const body = await request.json();
+    const validated = validateBody(changePasswordSchema, body);
+    if (validated instanceof NextResponse) return validated;
+    const { data } = validated;
 
     const result = await updateUserPassword({
       userId: requestedUserId,
-      currentPassword,
-      newPassword,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
     });
 
-    return NextResponse.json(result);
+    // Invalider la session : l'utilisateur devra se reconnecter
+    const response = NextResponse.json(result);
+    return clearAuthCookie(response);
   } catch (error) {
     logError('Error updating password', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la modification du mot de passe';
-    const status = errorMessage.includes('obligatoire') || errorMessage.includes('incorrect') || errorMessage.includes('différent') ? 400 : errorMessage.includes('non trouvé') ? 404 : 500;
-    return NextResponse.json(
-      { error: errorMessage },
-      { status }
-    );
+    if (error instanceof Error) {
+      if (error.message.includes('non trouvé')) {
+        return NextResponse.json({ error: 'Ressource non trouvée' }, { status: 404 });
+      }
+      if (error.message.includes('obligatoire') || error.message.includes('incorrect') || error.message.includes('différent')) {
+        return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+      }
+    }
+    return NextResponse.json({ error: 'Erreur lors de la modification du mot de passe' }, { status: 500 });
   }
 }
 

@@ -27,7 +27,7 @@ export function SettingsSessionSection({
         >
           {loggingOut ? (
             <>
-              <Loader size="small" />
+              <Loader size="md" />
               <span>Déconnexion...</span>
             </>
           ) : (
@@ -47,7 +47,7 @@ export function SettingsSessionSection({
         >
           {isDeleting ? (
             <>
-              <Loader size="small" />
+              <Loader size="md" />
               <span>Suppression...</span>
             </>
           ) : (

@@ -26,7 +26,7 @@ export default function NotificationsPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader size="medium" />
+            <Loader />
           </div>
         ) : shares.length === 0 ? (
           <motion.div

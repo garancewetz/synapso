@@ -3,7 +3,6 @@
 import { BackButton } from '@/app/components/ui/BackButton';
 import { Loader } from '@/app/components/ui/Loader';
 import { SettingsProfilSection } from './SettingsProfilSection';
-import { SettingsMenuCategorySection } from './SettingsMenuCategorySection';
 import { SettingsPasswordSection } from './SettingsPasswordSection';
 import { SettingsSessionSection } from './SettingsSessionSection';
 import { useSettingsPage } from './useSettingsPage';
@@ -50,7 +49,7 @@ export default function SettingsPage() {
     return (
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 md:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader size="large" />
+          <Loader size="xl" />
         </div>
       </div>
     );
@@ -95,8 +94,6 @@ export default function SettingsPage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
-
-        <SettingsMenuCategorySection />
 
         {!isImpersonating && (
           <SettingsPasswordSection

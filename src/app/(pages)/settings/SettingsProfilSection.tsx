@@ -124,7 +124,7 @@ export function SettingsProfilSection({
         >
           {loading ? (
             <>
-              <Loader size="small" />
+              <Loader size="md" />
               <span>Enregistrement...</span>
             </>
           ) : (

@@ -163,7 +163,7 @@ export function SettingsPasswordSection({
               >
                 {changingPassword ? (
                   <>
-                    <Loader size="small" />
+                    <Loader size="md" />
                     <span>Modification...</span>
                   </>
                 ) : (

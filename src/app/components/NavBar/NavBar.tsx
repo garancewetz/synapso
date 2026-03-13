@@ -10,7 +10,7 @@ import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
 import { MenuDrawer } from './MenuDrawer';
@@ -38,7 +38,7 @@ export function NavBar() {
   const { isOpen, openMenu, closeMenu } = useMenuState();
   const { isLeftHanded } = useHandPreference();
   const { preserveDate, pendingShareCount } = useLayoutContext();
-  const { selectedDate, isDateSelected } = useSelectedDate();
+  const { selectedDate, isDateSelected } = useTimeContext();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
@@ -49,8 +49,6 @@ export function NavBar() {
   const {
     navCategories,
     showCategoryMenu,
-    navMenuType,
-    setCategoriesOverlayOpen,
   } = useLayoutContext();
   const categories = navCategories.forDesktop;
   const isHomeActive = pathname === '/';
@@ -144,81 +142,68 @@ export function NavBar() {
                 )}
               </TouchLink>
 
-              {showCategoryMenu ? (
-                <div ref={exercicesDropdownRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsExercicesDropdownOpen((open) => !open)}
-                    className={clsx(
-                      'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
-                      'hover:bg-gray-50',
-                      isAnyCategoryActive && activeCategoryColors
-                        ? activeCategoryColors.text
-                        : 'text-gray-600 hover:text-gray-900'
-                    )}
-                    aria-expanded={isExercicesDropdownOpen}
-                    aria-haspopup="true"
-                    aria-label={isExercicesDropdownOpen ? 'Fermer le menu Exercices' : 'Ouvrir le menu Exercices'}
-                  >
-                    Exercices
-                    <ChevronIcon
+              <div ref={exercicesDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsExercicesDropdownOpen((open) => !open)}
+                  className={clsx(
+                    'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md',
+                    'hover:bg-gray-50',
+                    isAnyCategoryActive && activeCategoryColors
+                      ? activeCategoryColors.text
+                      : 'text-gray-600 hover:text-gray-900'
+                  )}
+                  aria-expanded={isExercicesDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label={isExercicesDropdownOpen ? 'Fermer le menu Exercices' : 'Ouvrir le menu Exercices'}
+                >
+                  {showCategoryMenu ? 'Exercices' : 'Catégories'}
+                  <ChevronIcon
                     direction="down"
                     className={clsx('w-4 h-4 transition-transform', isExercicesDropdownOpen && 'rotate-180')}
                     aria-hidden
                   />
-                    {isAnyCategoryActive && activeCategoryColors && (
-                      <span
-                        className={clsx(
-                          'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
-                          activeCategoryColors.accent
-                        )}
-                      />
-                    )}
-                  </button>
-                  {isExercicesDropdownOpen && (
-                    <ul
-                      role="menu"
-                      className="absolute top-full left-0 mt-0.5 min-w-[180px] py-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50"
-                    >
-                      {categories.map((category) => {
-                        const colors = CATEGORY_COLORS[category];
-                        const label = CATEGORY_LABELS[category];
-                        const href = CATEGORY_HREFS[category];
-                        const isActive = pathname === href;
-                        return (
-                          <li key={category} role="none">
-                            <TouchLink
-                              href={preserveDate(href)}
-                              role="menuitem"
-                              className={clsx(
-                                'block px-3 py-2 text-sm font-medium rounded-md mx-1',
-                                'hover:bg-gray-50',
-                                isActive ? colors.text : 'text-gray-700'
-                              )}
-                              aria-label={label}
-                              aria-current={isActive ? 'page' : undefined}
-                              onClick={closeExercicesDropdown}
-                            >
-                              {label}
-                            </TouchLink>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                  {isAnyCategoryActive && activeCategoryColors && (
+                    <span
+                      className={clsx(
+                        'absolute bottom-0 left-1 right-1 h-0.5 rounded-full',
+                        activeCategoryColors.accent
+                      )}
+                    />
                   )}
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCategoriesOverlayOpen(true);
-                  }}
-                  className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
-                  aria-label="Ouvrir les catégories"
-                >
-                  Catégories
                 </button>
-              )}
+                {isExercicesDropdownOpen && (
+                  <ul
+                    role="menu"
+                    className="absolute top-full left-0 mt-0.5 min-w-[180px] py-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50"
+                  >
+                    {categories.map((category) => {
+                      const colors = CATEGORY_COLORS[category];
+                      const label = CATEGORY_LABELS[category];
+                      const href = CATEGORY_HREFS[category];
+                      const isActive = pathname === href;
+                      return (
+                        <li key={category} role="none">
+                          <TouchLink
+                            href={preserveDate(href)}
+                            role="menuitem"
+                            className={clsx(
+                              'block px-3 py-2 text-sm font-medium rounded-md mx-1',
+                              'hover:bg-gray-50',
+                              isActive ? colors.text : 'text-gray-700'
+                            )}
+                            aria-label={label}
+                            aria-current={isActive ? 'page' : undefined}
+                            onClick={closeExercicesDropdown}
+                          >
+                            {label}
+                          </TouchLink>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </div>
 
             {/* Séparateur visuel entre navigation principale et secondaire */}
@@ -314,7 +299,7 @@ export function NavBar() {
               aria-controls="main-menu"
             >
               {loading ? (
-                <Loader size="small" />
+                <Loader size="md" />
               ) : (
                 <MenuIcon className="w-6 h-6 flex items-center justify-center" />
               )}

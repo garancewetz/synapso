@@ -28,7 +28,7 @@ export function UserDeleteButton({ onDelete, disabled = false, className = '' }:
       ) : deleteConfirmation.showConfirm ? (
         '⚠️'
       ) : (
-        '🗑️'
+        '🧹'
       )}
     </Button>
   );

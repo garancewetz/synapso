@@ -169,7 +169,7 @@ export function AdminUserSelector({ onMenuClose: _onMenuClose, isMenuOpen }: Pro
                       'w-10 h-10 rounded-full flex items-center justify-center text-lg',
                       user.role === 'ADMIN' ? 'bg-amber-100' : 'bg-gray-100'
                     )}>
-                      {user.role === 'ADMIN' ? '👑' : '👤'}
+                      {user.role === 'ADMIN' ? '👑' : '🧑'}
                     </div>
                     
                     <div className="flex-1 min-w-0">

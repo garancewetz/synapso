@@ -6,7 +6,7 @@ import { fr } from 'date-fns/locale';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, CATEGORY_HEATMAP_COLORS } from '@/app/constants/exercice.constants';
 import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { HeatmapDay } from '../utils/historique.utils';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 
 export const ActivityHeatmapCell = memo(function ActivityHeatmapCell({ day, progressDates, onDayClick, showDate = true }: Props) {
   // ⚡ PERFORMANCE: Appeler le hook AVANT tout return early (règle des hooks React)
-  const { selectedDateKey, isTimeMachineMode } = useSelectedDate();
+  const { selectedDateKey, isTimeMachineMode } = useTimeContext();
   
   // Case vide pour l'alignement
   if (!day) {

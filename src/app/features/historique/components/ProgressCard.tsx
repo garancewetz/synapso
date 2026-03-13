@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Progress } from '@/app/types';
 import { EditIcon, EyeIcon, ChevronIcon, DotsIcon, BookmarkIcon } from '@/app/components/ui/icons';
-import { BaseCard, Button } from '@/app/components/ui';
+import { BaseCard, Button, CardActionButton, CardActionsPanel, InlineSpinner } from '@/app/components/ui';
 import { ShareIcon } from '@/app/components/ui/icons';
 import { useShareProgress, usePinProgress } from '@/app/features/progress';
 import { formatVictoryDate } from '@/app/utils/date.utils';
@@ -251,37 +251,38 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
             </BaseCard.Footer>
 
             {/* Actions inline — s'ouvre en dessous du footer */}
-            <div
-              className="grid overflow-hidden transition-all duration-200 ease-out bg-amber-50/70"
-              style={{ gridTemplateRows: isActionsOpen ? '1fr' : '0fr' }}
-            >
-              <div className="min-h-0">
-                <div className={clsx('grid border-t border-amber-200', actionCount === 1 && 'grid-cols-1', actionCount === 2 && 'grid-cols-2', actionCount === 3 && 'grid-cols-3')}>
+            <CardActionsPanel isOpen={isActionsOpen} color="amber" columns={actionCount as 1 | 2 | 3}>
                   {onEdit && (
-                    <button type="button" onClick={handleEdit} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px] not-last:border-r not-last:border-amber-200">
-                      <EditIcon className="w-5 h-5" />
-                      <span className="font-medium">Modifier</span>
-                    </button>
+                    <CardActionButton
+                      icon={<EditIcon className="w-5 h-5" />}
+                      label="Modifier"
+                      onClick={handleEdit}
+                      color="amber"
+                      className="not-last:border-r not-last:border-amber-200"
+                    />
                   )}
                   {onPin && (
-                    <button type="button" onClick={handlePinClick} disabled={isPinning} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px] not-last:border-r not-last:border-amber-200 disabled:opacity-50 disabled:pointer-events-none">
-                      {isPinning ? (
-                        <span className="w-5 h-5 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
-                      ) : (
-                        <BookmarkIcon className="w-5 h-5" filled={progress.pinned === true} />
-                      )}
-                      <span className="font-medium">{progress.pinned ? 'Désépingler' : 'Épingler'}</span>
-                    </button>
+                    <CardActionButton
+                      icon={isPinning
+                        ? <InlineSpinner color="amber" />
+                        : <BookmarkIcon className="w-5 h-5" filled={progress.pinned === true} />
+                      }
+                      label={progress.pinned ? 'Désépingler' : 'Épingler'}
+                      onClick={handlePinClick}
+                      disabled={isPinning}
+                      color="amber"
+                      className="not-last:border-r not-last:border-amber-200"
+                    />
                   )}
                   {onShare && (
-                    <button type="button" onClick={handleShareClick} className="px-2 py-3 flex flex-col items-center justify-center gap-1 text-center text-sm text-amber-800 hover:bg-amber-100 active:bg-amber-200 transition-colors min-h-[44px]">
-                      <ShareIcon className="w-5 h-5" />
-                      <span className="font-medium">Partager</span>
-                    </button>
+                    <CardActionButton
+                      icon={<ShareIcon className="w-5 h-5" />}
+                      label="Partager"
+                      onClick={handleShareClick}
+                      color="amber"
+                    />
                   )}
-                </div>
-              </div>
-            </div>
+            </CardActionsPanel>
           </div>
         )}
       </BaseCard.Content>

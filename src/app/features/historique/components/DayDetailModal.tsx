@@ -5,7 +5,7 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { formatShortDate } from '@/app/utils/date.utils';
 import { BottomSheetModal } from '@/app/components/ui';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useToast } from '@/app/contexts/ToastContext';
 import { isBefore, isAfter, startOfDay, subDays } from 'date-fns';
 import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
@@ -29,7 +29,7 @@ type Props = {
 
 export function DayDetailModal({ isOpen, onClose, date, exercises, progress, categoryStats }: Props) {
   const formattedDate = date ? formatShortDate(date) : '';
-  const { setSelectedDate, clearSelectedDate } = useSelectedDate();
+  const { setSelectedDate, clearSelectedDate } = useTimeContext();
   const { showToast } = useToast();
 
   const handleAddExercisesForDay = () => {

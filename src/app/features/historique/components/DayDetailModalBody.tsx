@@ -6,7 +6,7 @@ import { PROGRESS_EMOJIS, NAVIGATION_EMOJIS } from '@/app/constants/emoji.consta
 import { formatTime, formatShortDate } from '@/app/utils/date.utils';
 import { Button, BorderedIconList } from '@/app/components/ui';
 import { MAX_TIME_MACHINE_DAYS } from '@/app/constants/historique.constants';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday, subDays, isBefore, isAfter, startOfDay } from 'date-fns';
 import clsx from 'clsx';
 
@@ -34,7 +34,7 @@ export function DayDetailModalBody({
   onAddExercisesForDay,
   onReturnToToday,
 }: Props) {
-  const { isTimeMachineMode } = useSelectedDate();
+  const { isTimeMachineMode } = useTimeContext();
   const formattedDate = date ? formatShortDate(date) : '';
   const isPastDay = date ? !isToday(date) : false;
   const isCurrentDay = date ? isToday(date) : false;

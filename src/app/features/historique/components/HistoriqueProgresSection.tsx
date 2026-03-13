@@ -91,7 +91,7 @@ export function HistoriqueProgresSection({
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center min-h-[400px] gap-4"
             >
-              <Loader size="large" />
+              <Loader size="xl" />
               <p className="text-gray-600 font-medium">
                 Chargement de tes progrès... 🌟
               </p>
@@ -123,7 +123,7 @@ export function HistoriqueProgresSection({
                   >
                     {loadingMore ? (
                       <span className="inline-flex items-center gap-2">
-                        <Loader size="small" />
+                        <Loader size="md" />
                         Chargement...
                       </span>
                     ) : (

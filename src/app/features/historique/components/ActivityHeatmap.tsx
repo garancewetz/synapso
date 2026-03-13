@@ -10,7 +10,7 @@ import type { HeatmapDay } from '../utils/historique.utils';
 import { ViewAllLink } from '@/app/components/ui/ViewAllLink';
 import { ActivityHeatmapCell } from './ActivityHeatmapCell';
 import { Card } from '@/app/components/ui/Card';
-import { useSelectedDate } from '@/app/contexts/SelectedDateContext';
+import { useTimeContext } from '@/app/contexts/TimeContext';
 import { formatShortDate } from '@/app/utils/date.utils';
 
 type Props = {
@@ -26,7 +26,7 @@ type Props = {
 const WEEKDAY_NAMES = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 export function ActivityHeatmap({ data, currentStreak, showFullLink = true, userName, progressDates, onDayClick }: Props) {
-  const { isTimeMachineMode, selectedDate } = useSelectedDate();
+  const { isTimeMachineMode, selectedDate } = useTimeContext();
   
   // Filtrer les jours vides et ne garder que les vrais jours
   const realDays = data.filter(day => !day.isEmpty);

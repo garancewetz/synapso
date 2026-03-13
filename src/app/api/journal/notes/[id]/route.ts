@@ -5,6 +5,7 @@ import { logError } from '@/app/lib/logger';
 import { getJournalNoteById, updateJournalNote, deleteJournalNote } from '@/app/features/journal/api';
 import { deleteCloudinaryMedia } from '@/app/utils/cloudinary.utils';
 import type { MediaItem } from '@/app/types/exercice';
+import { validateBody, requireJsonContentType, updateJournalNoteSchema } from '@/app/lib/validation';
 
 export async function GET(
   request: NextRequest,
@@ -46,29 +47,28 @@ export async function PUT(
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
+  const ctError = requireJsonContentType(request);
+  if (ctError) return ctError;
+
   try {
     const { id: idParam } = await params;
     const parsed = parseNumericId(idParam);
     if (parsed instanceof NextResponse) return parsed;
     const { id } = parsed;
 
-    const updatedData = await request.json();
-
-    if (!updatedData.title || !updatedData.title.trim()) {
-      return NextResponse.json(
-        { error: 'Le titre est obligatoire' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const validated = validateBody(updateJournalNoteSchema, body);
+    if (validated instanceof NextResponse) return validated;
+    const { data } = validated;
 
     const note = await updateJournalNote({
       noteId: id,
       userId,
       data: {
-        title: updatedData.title.trim(),
-        description: updatedData.description !== undefined ? updatedData.description.trim() : undefined,
-        media: updatedData.media !== undefined ? (Array.isArray(updatedData.media) ? updatedData.media : []) : undefined,
-        exerciceIds: updatedData.exerciceIds !== undefined ? (Array.isArray(updatedData.exerciceIds) ? updatedData.exerciceIds : []) : undefined,
+        title: data.title,
+        description: data.description,
+        media: data.media,
+        exerciceIds: data.exerciceIds,
       },
     });
 

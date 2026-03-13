@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getEffectiveUserId } from '@/app/lib/auth';
 import { logError } from '@/app/lib/logger';
 import { getJournalNotes, createJournalNote } from '@/app/features/journal/api';
+import { validateBody, requireJsonContentType, createJournalNoteSchema } from '@/app/lib/validation';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth(request);
@@ -33,6 +34,9 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
+  const ctError = requireJsonContentType(request);
+  if (ctError) return ctError;
+
   try {
     const userId = await getEffectiveUserId(request);
 
@@ -43,38 +47,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await request.json();
-    const { title, description, media, exerciceIds } = data;
-
-    const MAX_TITLE_LENGTH = 200;
-    const MAX_DESCRIPTION_LENGTH = 5000;
-
-    if (!title || !title.trim()) {
-      return NextResponse.json(
-        { error: 'Le titre est obligatoire' },
-        { status: 400 }
-      );
-    }
-
-    if (title.trim().length > MAX_TITLE_LENGTH) {
-      return NextResponse.json(
-        { error: `Le titre ne peut pas dépasser ${MAX_TITLE_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
-
-    if (description && description.trim().length > MAX_DESCRIPTION_LENGTH) {
-      return NextResponse.json(
-        { error: `La description ne peut pas dépasser ${MAX_DESCRIPTION_LENGTH} caractères` },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const validated = validateBody(createJournalNoteSchema, body);
+    if (validated instanceof NextResponse) return validated;
+    const { data } = validated;
 
     const note = await createJournalNote({
-      title: title.trim(),
-      description: description ? description.trim() : '',
-      media: Array.isArray(media) ? media : undefined,
-      exerciceIds: Array.isArray(exerciceIds) ? exerciceIds : undefined,
+      title: data.title,
+      description: data.description,
+      media: data.media,
+      exerciceIds: data.exerciceIds,
       userId,
     });
 

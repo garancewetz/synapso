@@ -210,7 +210,7 @@ async function main() {
       role: 'USER',
     },
   });
-  console.log(`👤 Utilisateur créé : ${calypso.name} (mot de passe par défaut : ${DEFAULT_PASSWORD})`);
+  console.log(`🧑 Utilisateur créé : ${calypso.name} (mot de passe par défaut : ${DEFAULT_PASSWORD})`);
 
   const e2ePasswordHash = await bcrypt.hash(E2E_USER_PASSWORD, 12);
   const e2eUser = await prisma.user.upsert({
@@ -222,12 +222,12 @@ async function main() {
       role: 'USER',
     },
   });
-  console.log(`👤 Utilisateur E2E : ${e2eUser.name} (mot de passe : ${E2E_USER_PASSWORD})`);
+  console.log(`🧑 Utilisateur E2E : ${e2eUser.name} (mot de passe : ${E2E_USER_PASSWORD})`);
 
   // Supprimer les exercices existants
   await prisma.exerciceBodypart.deleteMany();
   await prisma.exercice.deleteMany();
-  console.log('🗑️  Anciennes données supprimées');
+  console.log('🧹  Anciennes données supprimées');
 
   // Insérer les exercices de démonstration
   console.log('\n🏋️ Insertion des exercices...\n');

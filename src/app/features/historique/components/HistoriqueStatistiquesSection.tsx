@@ -5,9 +5,8 @@ import { Card } from '@/app/components/ui';
 import { SegmentedControl } from '@/app/components/ui';
 import { PeriodNavigation } from '@/app/components/ui/PeriodNavigation';
 import {
-  DonutChart,
   ActivityHeatmap,
-  ActivityLineChart,
+  BodypartsBarChart,
 } from '@/app/features/historique';
 import type { HeatmapDay } from '@/app/features/historique';
 import type { DonutChartItem } from '@/app/features/historique/utils/historique.types';
@@ -26,18 +25,11 @@ type Props = {
   goToNextHeatmapPeriod: () => void;
   canGoBackHeatmap: boolean;
   canGoForwardHeatmap: boolean;
-  barChartData: HeatmapDay[];
-  selectedMonthLabel: string;
-  goToPreviousPeriod: () => void;
-  goToNextPeriod: () => void;
-  canGoBack: boolean;
-  canGoForward: boolean;
   donutDataBodyparts: DonutChartItem[];
   bodypartPeriod: BodypartPeriodFilter;
   onBodypartPeriodChange: (value: BodypartPeriodFilter) => void;
   onDayClick: (day: HeatmapDay) => void;
   currentStreak: number;
-  progressCountByDate?: Map<string, number>;
   progressDates: Set<string>;
   loadingHistory: boolean;
   displayName: string;
@@ -50,18 +42,11 @@ export function HistoriqueStatistiquesSection({
   goToNextHeatmapPeriod,
   canGoBackHeatmap,
   canGoForwardHeatmap,
-  barChartData,
-  selectedMonthLabel,
-  goToPreviousPeriod,
-  goToNextPeriod,
-  canGoBack,
-  canGoForward,
   donutDataBodyparts,
   bodypartPeriod,
   onBodypartPeriodChange,
   onDayClick,
   currentStreak,
-  progressCountByDate,
   progressDates,
   loadingHistory,
   displayName,
@@ -103,41 +88,11 @@ export function HistoriqueStatistiquesSection({
           </Card>
         )}
 
-        <Card variant="default" padding="md">
-          <PeriodNavigation
-            label={selectedMonthLabel}
-            onPrevious={goToPreviousPeriod}
-            onNext={goToNextPeriod}
-            canGoBack={canGoBack}
-            canGoForward={canGoForward}
-          />
-
-          {!loadingHistory && (
-            <MotionDiv
-              key="chart"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-            >
-              <ActivityLineChart
-                data={barChartData}
-                currentStreak={currentStreak}
-                onDayClick={onDayClick}
-                showFullLink={false}
-                progressCountByDate={progressCountByDate}
-              />
-            </MotionDiv>
-          )}
-        </Card>
-
-        <DonutChart
+        <BodypartsBarChart
           title="🦴 Zones travaillées"
           data={donutDataBodyparts}
           emptyIcon="💪"
           emptyMessage="Tes zones travaillées apparaîtront ici !"
-          fullWidth={true}
-          legendPosition="right"
           filterSlot={
             <SegmentedControl
               options={[

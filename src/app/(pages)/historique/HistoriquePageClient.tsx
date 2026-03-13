@@ -9,7 +9,7 @@ import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
 import { useProgressInfinite, useProgressStats, useProgressModal } from '@/app/features/progress';
-import { usePeriodNavigation, useHeatmapNavigation, getRequiredDaysForOffset, getRequiredDaysForMonthOffset } from '@/app/features/historique';
+import { useHeatmapNavigation, getRequiredDaysForOffset } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
 
@@ -49,8 +49,6 @@ type ActiveTab = 'statistiques' | 'progres';
 
 // 28 jours pour le heatmap du mois
 const MONTH_HEATMAP_DAYS = 28;
-// 15 jours par période pour le graphique montagne
-const CHART_DAYS_PER_PERIOD = 15;
 
 type Props = {
   /** Quand true, la page est affichée dans l’onglet Suivi de l’accueil (pas de bouton retour). */
@@ -70,15 +68,9 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   const { openForCreate } = progressModal;
   const displayName = effectiveUser?.name || "";
 
-  // States de navigation (remontés ici pour adapter le fetch dynamiquement)
   const [heatmapOffset, setHeatmapOffset] = useState(0);
-  const [chartOffset, setChartOffset] = useState(0);
 
-  // "Tout" dans les zones travaillées → charger tout l'historique (days: null)
-  const historyDays = bodypartPeriod === 'all' ? null : Math.max(
-    getRequiredDaysForOffset(heatmapOffset, MONTH_HEATMAP_DAYS),
-    getRequiredDaysForMonthOffset(chartOffset, CHART_DAYS_PER_PERIOD),
-  );
+  const historyDays = bodypartPeriod === 'all' ? null : getRequiredDaysForOffset(heatmapOffset, MONTH_HEATMAP_DAYS);
 
   // Charger l'historique (jours adaptés à la navigation des deux composants)
   const { history, loading: loadingHistory } = useHistory({ days: historyDays });
@@ -259,17 +251,6 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   
   const currentStreak = useMemo(() => calculateCurrentStreak(heatmapData, referenceDate), [heatmapData, referenceDate]);
 
-  // Navigation par période pour le graphique montagne
-  // ⚡ PERFORMANCE: Utiliser filteredHistory (déjà calculé) pour éviter les recalculs
-  const {
-    barChartData,
-    selectedMonthLabel,
-    canGoBack,
-    canGoForward,
-    goToPreviousPeriod,
-    goToNextPeriod,
-  } = usePeriodNavigation(filteredHistory, CHART_DAYS_PER_PERIOD, { value: chartOffset, set: setChartOffset });
-
   const handleDayClick = useCallback((day: HeatmapDay) => openDayDetail(day), [openDayDetail]);
 
   const loading = loadingHistory || loadingProgress;
@@ -352,18 +333,11 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
                 goToNextHeatmapPeriod={goToNextHeatmapPeriod}
                 canGoBackHeatmap={canGoBackHeatmap}
                 canGoForwardHeatmap={canGoForwardHeatmap}
-                barChartData={barChartData}
-                selectedMonthLabel={selectedMonthLabel}
-                goToPreviousPeriod={goToPreviousPeriod}
-                goToNextPeriod={goToNextPeriod}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
                 donutDataBodyparts={donutDataBodyparts}
                 bodypartPeriod={bodypartPeriod}
                 onBodypartPeriodChange={setBodypartPeriod}
                 onDayClick={handleDayClick}
                 currentStreak={currentStreak}
-                progressCountByDate={progressCountByDate}
                 progressDates={progressDates}
                 loadingHistory={loadingHistory}
                 displayName={displayName}

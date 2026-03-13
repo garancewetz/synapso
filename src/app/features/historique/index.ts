@@ -3,6 +3,7 @@ export { ActivityHeatmap } from './components/ActivityHeatmap';
 export { ActivityHeatmapCell } from './components/ActivityHeatmapCell';
 export { ActivityHeatmapSkeleton } from './components/ActivityHeatmapSkeleton';
 export { ActivityLineChart } from './components/ActivityLineChart';
+export { BodypartsBarChart } from './components/BodypartsBarChart';
 export { ActivityLineChartSkeleton } from './components/ActivityLineChartSkeleton';
 export { DayDetailModal } from './components/DayDetailModal';
 export { DayDetailModalWrapper } from './components/DayDetailModalWrapper';

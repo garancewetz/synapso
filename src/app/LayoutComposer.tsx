@@ -19,6 +19,7 @@ import {
 } from '@/app/constants/settings.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
+import { ErrorBoundary } from '@/app/components/ui/ErrorBoundary';
 
 const DayDetailModalWrapper = dynamic(
   () => import('@/app/features/historique').then(mod => ({ default: mod.DayDetailModalWrapper })),
@@ -126,9 +127,11 @@ export function LayoutComposer({ children }: PropsWithChildren) {
         Aller au contenu
       </a>
       <TimeMachineTransition />
-      <TimeMachineWrapper>
-        {timeMachineContent}
-      </TimeMachineWrapper>
+      <ErrorBoundary>
+        <TimeMachineWrapper>
+          {timeMachineContent}
+        </TimeMachineWrapper>
+      </ErrorBoundary>
       <CategoriesFullOverlay />
       <DayDetailModalWrapper />
       <GlobalCelebration />

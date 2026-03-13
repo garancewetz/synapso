@@ -10,9 +10,9 @@ import { SiteProtection } from "@/app/features/auth";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { UserProvider } from "@/app/contexts/UserContext";
 import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
-import { SelectedDateProvider } from "@/app/contexts/SelectedDateContext";
 import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
+import { ConfettiProvider } from "@/app/contexts/ConfettiContext";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -71,19 +71,18 @@ export default function RootLayout({
           <UserProvider>
             <ToastProvider>
               <DayDetailModalProvider>
-                {/* Suspense pour gérer useSearchParams() dans les composants enfants */}
-                {/* fallback={null} car on ne veut pas bloquer le rendu de l'application */}
+                {/* Suspense pour useSearchParams() dans TimeProvider — fallback={null} pour ne pas bloquer le rendu */}
                 <Suspense fallback={null}>
-                  <SelectedDateProvider>
-                    <TimeProvider>
+                  <TimeProvider>
+                    <ConfettiProvider>
                       <DevBanner />
                       <AuthWrapper protectionComponent={SiteProtection}>
                         <LayoutComposer>
                           {children}
                         </LayoutComposer>
                       </AuthWrapper>
-                    </TimeProvider>
-                  </SelectedDateProvider>
+                    </ConfettiProvider>
+                  </TimeProvider>
                 </Suspense>
               </DayDetailModalProvider>
             </ToastProvider>

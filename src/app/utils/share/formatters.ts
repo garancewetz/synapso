@@ -19,13 +19,6 @@ ${date}`;
 }
 
 /**
- * @deprecated Utiliser formatProgressForShare à la place
- */
-export function formatProgressForWhatsApp(progress: Progress): string {
-  return formatProgressForShare(progress);
-}
-
-/**
  * Formate un exercice pour le partage (Mail, Messages, WhatsApp, etc.)
  * Format clair avec titre, catégorie et description
  */

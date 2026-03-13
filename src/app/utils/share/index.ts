@@ -6,7 +6,6 @@
 // Formatters
 export {
   formatProgressForShare,
-  formatProgressForWhatsApp,
   formatExerciceForShare,
   formatJournalNoteForShare,
 } from './formatters';

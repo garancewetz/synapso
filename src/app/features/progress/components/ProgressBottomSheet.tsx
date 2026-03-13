@@ -417,7 +417,7 @@ export function ProgressBottomSheet({ isOpen, onClose, onSuccess, onDeleteSucces
               ) : deleteConfirmation.showConfirm ? (
                 '⚠️ Confirmer la suppression'
               ) : (
-                '🗑️ Supprimer ce progrès'
+                '🧹 Supprimer ce progrès'
               )}
             </Button>
           )}

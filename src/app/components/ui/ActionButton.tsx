@@ -128,7 +128,11 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
         <span className={clsx(isFixed ? 'text-xl' : 'text-lg')}>{icon ?? PROGRESS_EMOJIS.STAR_BRIGHT}</span>
       )}
       {variant === 'simple' && (
-        <PlusIcon className={clsx(isFixed ? 'w-5 h-5' : 'w-6 h-6 md:w-7 md:h-7')} strokeWidth={3} />
+        icon ? (
+          <span className={clsx(isFixed ? 'text-xl' : 'text-lg')}>{icon}</span>
+        ) : (
+          <PlusIcon className={clsx(isFixed ? 'w-5 h-5' : 'w-6 h-6 md:w-7 md:h-7')} strokeWidth={3} />
+        )
       )}
       {children || (
         <>

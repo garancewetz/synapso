@@ -21,6 +21,8 @@ type Props = {
   filteredProgress: Progress[];
   filteredHistory: HistoryEntry[];
   deferredProgressList: Progress[];
+  /** Liste complète des progrès (non paginée) pour le graphique cumulatif */
+  fullProgressList: Progress[];
   loadingProgress: boolean;
   victoryNumbersById?: Record<number, number>;
   onEdit: (progress: Progress) => void;
@@ -38,6 +40,7 @@ export function HistoriqueProgresSection({
   filteredProgress,
   filteredHistory,
   deferredProgressList,
+  fullProgressList,
   loadingProgress,
   onEdit,
   onShare,
@@ -66,9 +69,9 @@ export function HistoriqueProgresSection({
           </h2>
         </div>
 
-        {!loadingProgress && deferredProgressList.length >= 2 && (
+        {!loadingProgress && fullProgressList.length >= 2 && (
           <div>
-            <ProgressStatsChart progressList={deferredProgressList} />
+            <ProgressStatsChart progressList={fullProgressList} />
           </div>
         )}
 

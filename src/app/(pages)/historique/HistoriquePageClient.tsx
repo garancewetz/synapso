@@ -367,6 +367,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
                 filteredProgress={filteredProgress}
                 filteredHistory={filteredHistory}
                 deferredProgressList={deferredProgressList}
+                fullProgressList={allProgressList}
                 loadingProgress={loadingProgress}
                 victoryNumbersById={victoryNumbersById}
                 onEdit={progressModal.openForEdit}

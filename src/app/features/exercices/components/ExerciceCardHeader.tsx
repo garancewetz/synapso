@@ -33,7 +33,7 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
             onClick={onOpenMedia}
             className={clsx(
               'flex items-center justify-center',
-              'w-7 h-7 rounded-md',
+              'w-6 h-6 rounded-md',
               'bg-transparent text-gray-400',
               'transition-all duration-200',
               'md:hover:bg-gray-50 md:hover:text-gray-500',
@@ -45,7 +45,7 @@ export function ExerciceCardHeader({ exercice, effectiveUserResetFrequency, onOp
             aria-label="Voir les photos de l'exercice"
             title="Voir les photos"
           >
-            <EyeIcon className="w-4 h-4" strokeWidth={2} />
+            <EyeIcon className="w-3 h-3" strokeWidth={2} />
           </button>
         )}
         <div className="min-w-0">

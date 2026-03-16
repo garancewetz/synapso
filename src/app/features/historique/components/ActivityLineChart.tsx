@@ -342,13 +342,13 @@ export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Pro
             );
           })}
 
-          {/* Étoiles sur les sommets (ou au niveau du sol si pas d'exercice) */}
+          {/* Étoiles sur les sommets (une par progrès) */}
           {points.map((point) => {
             const progressCount = progressCountByDate?.get(point.day.dateKey) || 0;
             if (progressCount === 0) return null;
 
-            // Créer plusieurs étoiles superposées en fonction du nombre de progrès
-            const stars = Array.from({ length: Math.min(progressCount, 5) }, (_, i) => {
+            // Créer autant d'étoiles que de progrès pour ce jour
+            const stars = Array.from({ length: progressCount }, (_, i) => {
               // Décalages pour positionner les étoiles au-dessus de la ligne de crête
               const offsetX = 2; // Léger décalage horizontal pour centrer l'étoile dans le halo
               const offsetY = i === 0 ? -25 : -42 - (i - 1) * 18; // 1ère à 25px au-dessus de la ligne, autres empilées avec espacement de 18px
@@ -390,30 +390,6 @@ export function ActivityLineChart({ data, progressCountByDate, onDayClick }: Pro
                 onClick={() => onDayClick?.(point.day)}
               >
                 {stars}
-                {/* Badge numérique si plus de 5 progrès */}
-                {progressCount > 5 && (
-                  <g>
-                    <circle
-                      cx={point.x + 22}
-                      cy={point.y - 20}
-                      r="10"
-                      fill="#dc2626"
-                      stroke="white"
-                      strokeWidth="2"
-                    />
-                    <text
-                      x={point.x + 22}
-                      y={point.y - 20}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="11"
-                      fontWeight="bold"
-                      fill="white"
-                    >
-                      {progressCount}
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}

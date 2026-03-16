@@ -22,26 +22,26 @@ export function useProgressStats(progressList: Progress[]): ProgressStats {
     return progressList.filter(p => !isOrthophonieProgress(p.emoji));
   }, [progressList]);
 
-  // Dates des progrès physiques pour afficher les étoiles
+  // Dates des progrès (tous types confondus) pour afficher les étoiles
   // IMPORTANT : Utiliser startOfDay pour normaliser comme dans HeatmapDay.dateKey
   const progressDates = useMemo(() => {
     return new Set(
-      physicalProgress
+      progressList
         .map(p => getDateKey(new Date(p.createdAt)))
         .filter((k): k is string => k != null)
     );
-  }, [physicalProgress]);
+  }, [progressList]);
 
-  // Comptage des progrès physiques par jour
+  // Comptage des progrès par jour (tous types confondus)
   // IMPORTANT : Utiliser startOfDay pour normaliser comme dans HeatmapDay.dateKey
   const progressCountByDate = useMemo(() => {
     const counts = new Map<string, number>();
-    physicalProgress.forEach(p => {
+    progressList.forEach(p => {
       const dateKey = getDateKey(new Date(p.createdAt));
       if (dateKey) counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
     });
     return counts;
-  }, [physicalProgress]);
+  }, [progressList]);
 
   // Statistiques totales
   const totalProgress = progressList.length;

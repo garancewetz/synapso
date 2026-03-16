@@ -148,12 +148,12 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
                   onClick={handleOpenMedia}
                   className={clsx(
                     'flex items-center justify-center',
-                    'w-10 h-10 rounded-lg',
-                    'bg-amber-100 text-amber-700',
-                    'border border-amber-200',
+                    'w-7 h-7 rounded-md',
+                    'bg-amber-50 text-amber-600',
+                    'border border-amber-100',
                     'transition-all duration-200',
-                    'md:hover:bg-amber-200 md:hover:border-amber-300 md:hover:scale-105',
-                    'active:bg-amber-200 active:scale-95',
+                    'md:hover:bg-amber-100 md:hover:border-amber-200 md:hover:scale-105',
+                    'active:bg-amber-100 active:scale-95',
                     'focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2',
                     'shrink-0',
                     'touch-manipulation'
@@ -161,7 +161,7 @@ export function ProgressCard({ progress, onEdit, onShare, onPin, compact = false
                   aria-label="Voir les photos du progrès"
                   title="Voir les photos"
                 >
-                  <EyeIcon className="w-5 h-5" strokeWidth={2.5} />
+                  <EyeIcon className="w-3 h-3" strokeWidth={2.5} />
                 </button>
               )}
               <h3 className={clsx(

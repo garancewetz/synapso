@@ -15,15 +15,6 @@ type Props = {
   className?: string;
 };
 
-/**
- * Bouton "Noter un progrès" réutilisable
- * 
- * Variantes :
- * - `fixed` : Bouton flottant fixe en bas de l'écran
- * - `inline` : Bouton standard pour intégration dans une page
- * 
- * Utilise ActionButton avec le variant "golden" pour le style doré
- */
 export function ProgressButton({
   onClick,
   variant = 'inline',
@@ -34,9 +25,11 @@ export function ProgressButton({
   iconPosition = 'left',
   className,
 }: Props) {
+  const isAddProgressButton = label === 'Ajouter un progrès' || !label;
+
   return (
     <ActionButton
-      variant="golden"
+      variant={isAddProgressButton ? 'golden' : 'simple'}
       layout={variant}
       position={position}
       label={label}

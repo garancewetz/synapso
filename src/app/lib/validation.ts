@@ -103,7 +103,7 @@ export const createJournalNoteSchema = z.object({
 
 export const updateJournalNoteSchema = z.object({
   title: z.string().min(1, 'Le titre est obligatoire').max(200).transform((v) => v.trim()),
-  description: z.string().max(5000).optional().transform((v) => v?.trim()),
+  description: z.string().max(5000).optional(),
   media: z.array(mediaItemSchema).max(10).optional(),
   exerciceIds: z.array(z.number().int().positive()).max(50).optional(),
 });

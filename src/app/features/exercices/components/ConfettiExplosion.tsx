@@ -18,6 +18,7 @@ const useIsMobile = () => {
 
 const CATEGORY_COLORS = [
   '#F97316',
+  '#FBBF24',
   '#14B8A6',
   '#3B82F6',
   '#8B5CF6',

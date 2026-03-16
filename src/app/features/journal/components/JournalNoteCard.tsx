@@ -53,6 +53,7 @@ export const JournalNoteCard = memo(function JournalNoteCard({
   const [isDeleting, setIsDeleting] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLElement | null>(null);
+  const skipNextNoteResetRef = useRef(false);
   const { effectiveUser } = useUser();
   const { referenceDateKey } = useTimeContext();
   const targetDateKey = referenceDateKey ?? format(new Date(), 'yyyy-MM-dd');
@@ -205,6 +206,10 @@ export const JournalNoteCard = memo(function JournalNoteCard({
   }, [isActionsOpen]);
 
   useEffect(() => {
+    if (skipNextNoteResetRef.current) {
+      skipNextNoteResetRef.current = false;
+      return;
+    }
     setTitle(note.title);
     setDescription(note.description ?? '');
     setMedia(Array.isArray(note.media) ? (note.media as MediaItem[]) : []);
@@ -271,9 +276,10 @@ export const JournalNoteCard = memo(function JournalNoteCard({
 
         if (response.ok) {
           const updatedNote = await response.json() as JournalNote;
-          onUpdated?.(updatedNote);
+          skipNextNoteResetRef.current = true;
           setHasAutoSavedOnce(true);
           setHasUnsavedChanges(false);
+          onUpdated?.(updatedNote);
         }
       } finally {
         setIsAutoSaving(false);

@@ -8,7 +8,7 @@ import { useUser } from '@/app/contexts/UserContext';
 import { useDayDetailModal } from '@/app/contexts/DayDetailModalContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { useHistory } from '@/app/features/historique';
-import { useProgressInfinite, useProgressStats, useProgressModal } from '@/app/features/progress';
+import { useProgress, useProgressInfinite, useProgressStats, useProgressModal } from '@/app/features/progress';
 import { useHeatmapNavigation, getRequiredDaysForOffset } from '@/app/features/historique';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
@@ -75,6 +75,9 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   // Charger l'historique (jours adaptés à la navigation des deux composants)
   const { history, loading: loadingHistory } = useHistory({ days: historyDays });
 
+  // Récupérer tous les progrès pour calculer le nombre total de victoires (compteur global)
+  const { progressList: allProgressList } = useProgress();
+
   const {
     progressList,
     loading: loadingProgress,
@@ -91,6 +94,22 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
   // Cela permet de rendre l'UI immédiatement et de différer les calculs lourds
   const deferredHistory = useDeferredValue(history);
   const deferredProgressList = useDeferredValue(progressList);
+
+  // Calculer les numéros de victoire globaux à partir de la liste complète des progrès
+  const victoryNumbersById = useMemo(() => {
+    if (!allProgressList || allProgressList.length === 0) {
+      return {} as Record<number, number>;
+    }
+
+    const total = allProgressList.length;
+    const map: Record<number, number> = {};
+
+    allProgressList.forEach((progressItem, index) => {
+      map[progressItem.id] = total - index;
+    });
+
+    return map;
+  }, [allProgressList]);
 
   // ⚡ PERFORMANCE: Pré-calculer les dateKeys UNE SEULE FOIS (indexation)
   // Utiliser deferredHistory pour différer les calculs lourds
@@ -349,6 +368,7 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
                 filteredHistory={filteredHistory}
                 deferredProgressList={deferredProgressList}
                 loadingProgress={loadingProgress}
+                victoryNumbersById={victoryNumbersById}
                 onEdit={progressModal.openForEdit}
                 onShare={handleShare}
                 onPin={handlePin}

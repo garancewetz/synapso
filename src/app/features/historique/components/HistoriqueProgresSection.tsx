@@ -22,6 +22,7 @@ type Props = {
   filteredHistory: HistoryEntry[];
   deferredProgressList: Progress[];
   loadingProgress: boolean;
+  victoryNumbersById?: Record<number, number>;
   onEdit: (progress: Progress) => void;
   onShare: (progress: Progress) => void;
   onPin: () => void;
@@ -47,6 +48,7 @@ export function HistoriqueProgresSection({
   onLoadMore,
   hasMore,
   loadingMore,
+  victoryNumbersById,
 }: Props) {
   return (
     <MotionDiv
@@ -110,6 +112,7 @@ export function HistoriqueProgresSection({
                 onEdit={onEdit}
                 onShare={onShare}
                 onPin={onPin}
+                victoryNumbersById={victoryNumbersById}
               />
               {hasMore && onLoadMore && (
                 <div className="flex justify-center pt-6 pb-2">

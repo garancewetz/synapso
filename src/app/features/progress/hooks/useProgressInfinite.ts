@@ -6,7 +6,7 @@ import type { Progress } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { queryKeys, fetchProgress } from '@/app/lib/api-queries';
 
-const PROGRESS_PAGE_SIZE = 30;
+const PROGRESS_PAGE_SIZE = 20;
 
 type UseProgressInfiniteReturn = {
   progressList: Progress[];
@@ -20,7 +20,7 @@ type UseProgressInfiniteReturn = {
 
 /**
  * Charge les progrès par pages pour éviter des listes trop longues.
- * Premier chargement : 30 progrès ; "Charger plus" ajoute les 30 suivants.
+ * Premier chargement : 20 progrès ; "Charger plus" ajoute les 20 suivants.
  */
 export function useProgressInfinite(): UseProgressInfiniteReturn {
   const { effectiveUser } = useUser();

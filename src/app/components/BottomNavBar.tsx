@@ -41,6 +41,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
   const stopScrollOnTouch = useStopScrollOnTouch();
+  const [isDesktopLayout, setIsDesktopLayout] = useState(false);
 
   const handleToggleCategoriesSlide = useCallback(() => {
     setCategoriesSlideOpen(!categoriesSlideOpen);
@@ -52,6 +53,19 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
 
   const handleCloseAddMenu = useCallback(() => {
     setAddMenuOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopLayout(window.innerWidth >= 1024);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const isHomeActive = pathname === '/';
@@ -69,13 +83,13 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [addMenuOpen]);
 
-  if (!effectiveUser || loading) {
+  if (!effectiveUser || loading || isDesktopLayout) {
     return null;
   }
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-60 md:hidden bg-transparent px-2 pb-2 touch-manipulation transform-[translateZ(0)]"
+      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent px-2 pb-2 touch-manipulation transform-[translateZ(0)]"
       aria-label="Navigation principale"
       onTouchStart={stopScrollOnTouch}
     >

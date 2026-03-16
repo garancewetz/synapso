@@ -61,8 +61,22 @@ export function NavBar() {
 
   const [isExercicesDropdownOpen, setIsExercicesDropdownOpen] = useState(false);
   const exercicesDropdownRef = useRef<HTMLDivElement>(null);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(false);
 
   const closeExercicesDropdown = useCallback(() => setIsExercicesDropdownOpen(false), []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopLayout(window.innerWidth >= 1024);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isExercicesDropdownOpen) return;
@@ -121,7 +135,10 @@ export function NavBar() {
 
           {/* Navigation desktop - Masquée sur mobile */}
           <nav
-            className="hidden md:flex items-center flex-1 justify-center px-2 gap-1"
+            className={clsx(
+              'items-center flex-1 justify-center px-2 gap-1',
+              isDesktopLayout ? 'flex' : 'hidden'
+            )}
             aria-label="Navigation principale"
           >
             {/* Groupe 1 : Accueil + Exercices (dropdown, masqué si menu catégorie désactivé) */}

@@ -85,11 +85,15 @@ function SpeechInput({
 
 export function Input(props: Props) {
   if (props.speech) {
-    const { speech: _speech, ...rest } = props;
+    const { speech, ...rest } = props;
+    void speech;
     return <SpeechInput {...rest} />;
   }
 
-  const { label, required, className = '', id, speech: _speech, onValueChange: _onValueChange, onSpeechError: _onSpeechError, ...inputProps } = props;
+  const { label, required, className = '', id, speech, onValueChange, onSpeechError, ...inputProps } = props;
+  void speech;
+  void onValueChange;
+  void onSpeechError;
   const inputId = id || (label ? `input-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined);
 
   return (

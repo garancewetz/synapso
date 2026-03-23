@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -18,6 +19,9 @@ test-results/
 playwright-report/
 playwright/.cache/
 blob-report/
+tests/**/.vite/
+*.tsbuildinfo
+*.vite
 
 # next.js
 /.next/
@@ -43,8 +47,14 @@ yarn-error.log*
 .vercel
 
 # typescript
-*.tsbuildinfo
 next-env.d.ts
+
+# AI / IDE config
+CLAUDE.md
+.claude/
+.cursor/
+.cursorrules
+context.md
 
 /src/generated/prisma
 

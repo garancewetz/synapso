@@ -53,7 +53,7 @@ export function ActivityLineChartSkeleton() {
         />
         
         {/* Points skeleton */}
-        {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const x = padding.left + innerWidth * ratio;
           const y = padding.top + innerHeight / 2 + (i % 2 === 0 ? -20 : 20);
           return (
@@ -69,7 +69,7 @@ export function ActivityLineChartSkeleton() {
         })}
         
         {/* Labels axe X skeleton */}
-        {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const x = padding.left + innerWidth * ratio;
           return (
             <rect

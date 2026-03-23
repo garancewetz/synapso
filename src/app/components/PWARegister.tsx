@@ -20,10 +20,6 @@ export function PWARegister() {
             updateViaCache: 'none' // Toujours vérifier les mises à jour depuis le serveur
           })
           .then((registration) => {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Service Worker enregistré avec succès:', registration.scope);
-            }
-
             // Vérifier les mises à jour toutes les heures
             setInterval(() => {
               registration.update();
@@ -36,20 +32,13 @@ export function PWARegister() {
               if (newWorker) {
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    if (process.env.NODE_ENV === 'development') {
-                      console.log('Nouvelle version disponible, rechargement...');
-                    }
                     window.location.reload();
                   }
                 });
               }
             });
           })
-          .catch((error) => {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Erreur lors de l\'enregistrement du Service Worker:', error);
-            }
-          });
+          .catch(() => undefined);
       };
 
       // Enregistrer immédiatement
@@ -62,9 +51,6 @@ export function PWARegister() {
       // Écouter les messages du service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'SW_UPDATED') {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Service Worker mis à jour, rechargement...');
-          }
           window.location.reload();
         }
       });

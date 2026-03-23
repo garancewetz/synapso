@@ -10,7 +10,7 @@ import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 
 export default function JournalPage() {
-  const { preserveDate, navMenuType } = useLayoutContext();
+  useLayoutContext();
   const { isLeftHanded } = useHandPreference();
   const [showInlineForm, setShowInlineForm] = useState(false);
 

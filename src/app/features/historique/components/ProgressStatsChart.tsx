@@ -5,7 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianG
 import { format, parseISO, startOfWeek, eachWeekOfInterval, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getDateKey } from '@/app/utils/date.utils';
-import { CATEGORY_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
 import { CATEGORY_CHART_COLORS } from '@/app/constants/exercice.constants';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import type { Progress } from '@/app/types';

@@ -1,5 +1,5 @@
 import { prisma } from '@/app/lib/prisma';
-import { verifyPassword, setAuthCookie } from '@/app/lib/auth';
+import { verifyPassword } from '@/app/lib/auth';
 
 type LoginParams = {
   name: string;
@@ -36,7 +36,8 @@ export async function login(params: LoginParams) {
     throw new Error('Identifiants incorrects');
   }
 
-  const { passwordHash: _unused, ...userWithoutPassword } = user;
+  const { passwordHash, ...userWithoutPassword } = user;
+  void passwordHash;
 
   return userWithoutPassword;
 }

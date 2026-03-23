@@ -1,5 +1,4 @@
 import { prisma } from '@/app/lib/prisma';
-import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
 import { addDays, startOfDay } from 'date-fns';
 import { getDateKey, getDateKeyUTC } from '@/app/utils/date.utils';
 import { cacheApiResponse, generateCacheKey, CACHE_TAGS } from '@/app/lib/cache';

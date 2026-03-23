@@ -245,7 +245,6 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
 
   const {
     progressDates,
-    progressCountByDate,
   } = useProgressStats(deferredProgressList);
 
   const donutDataBodyparts = useMemo(() => {

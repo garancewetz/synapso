@@ -33,7 +33,10 @@ test.describe('Paramètres', () => {
   });
 
   test('change le mot de passe et affiche le message de succès', async ({ page }) => {
-    const newPassword = 'NouveauMotDePasseE2E123';
+    const newPassword = process.env.E2E_PASSWORD_NEW;
+    if (!newPassword) {
+      throw new Error('E2E_PASSWORD_NEW doit être défini dans .env pour ce test.');
+    }
 
     try {
       await page.goto('/settings');
@@ -59,7 +62,7 @@ test.describe('Paramètres', () => {
         throw new Error(
           `Changement de mot de passe refusé (${patchRes.status()}). ` +
             (body?.error ?? patchRes.statusText()) +
-            '. Vérifiez que E2E_PASSWORD dans .env correspond au mot de passe en base (ex. Test1234 pour l\'utilisateur E2E après seed).'
+            '. Vérifiez que E2E_PASSWORD dans .env correspond au mot de passe en base de l\'utilisateur E2E.'
         );
       }
 

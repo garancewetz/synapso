@@ -85,7 +85,7 @@ export function useJournalForm<T>({
     } finally {
       setLoading(false);
     }
-  }, [entityId, createUrl, updateUrl, effectiveUser, onSuccess, transformToApi, handleError]);
+  }, [entityId, createUrl, updateUrl, effectiveUser, onSuccess, transformToApi, handleError, clearError, queryClient]);
 
   const handleDelete = useCallback(async () => {
     if (!showDeleteConfirm) {
@@ -123,7 +123,7 @@ export function useJournalForm<T>({
       setLoading(false);
       setShowDeleteConfirm(false);
     }
-  }, [showDeleteConfirm, deleteUrl, effectiveUser, onSuccess, handleError]);
+  }, [showDeleteConfirm, deleteUrl, effectiveUser, onSuccess, handleError, clearError, queryClient]);
 
   return {
     loading,

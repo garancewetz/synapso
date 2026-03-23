@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
-/** Mot de passe temporaire du test "change le mot de passe". Si ce test a échoué avant la restauration, la base peut être restée avec ce mot de passe. */
-const FALLBACK_PASSWORD_AFTER_FAILED_CHANGE = 'NouveauMotDePasseE2E123';
+/** Mot de passe de secours optionnel pour restaurer une base laissée dans un état intermédiaire. */
+const FALLBACK_PASSWORD_AFTER_FAILED_CHANGE = process.env.E2E_PASSWORD_FALLBACK ?? '';
 
 /**
  * Helper pour l'authentification dans les tests
@@ -57,8 +57,11 @@ export class AuthHelper {
     // Vérifier s'il y a une protection par mot de passe du site
     const sitePasswordInput = this.page.locator('input[type="password"][placeholder*="mot de passe du site"], input[type="password"][placeholder*="Mot de passe du site"]').first();
     if (await sitePasswordInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // Remplir le mot de passe du site (généralement "calylove" ou depuis ENV)
-      const sitePassword = process.env.SITE_PASSWORD || 'calylove';
+      // Remplir le mot de passe du site depuis les variables d'environnement
+      const sitePassword = process.env.SITE_PASSWORD;
+      if (!sitePassword) {
+        throw new Error('SITE_PASSWORD doit être défini dans .env pour lancer les tests E2E.');
+      }
       await sitePasswordInput.fill(sitePassword);
       
       // Soumettre le formulaire de protection
@@ -71,8 +74,6 @@ export class AuthHelper {
     // S'assurer qu'on est en mode "login" (pas "register")
     // Le mode login est actif par défaut, mais vérifions quand même
     const loginTab = this.page.locator('button:has-text("Se connecter")').first();
-    const registerTab = this.page.locator('button:has-text("Créer un compte")').first();
-    
     // Vérifier quel onglet est actif (classe avec border-amber-500 ou bg-amber-50)
     const loginTabActive = await loginTab.evaluate((el) => {
       return el.classList.contains('border-amber-500') || 
@@ -164,9 +165,6 @@ export class AuthHelper {
     // ⚡ FIX: Capturer les erreurs réseau pour debug
     const networkErrors: string[] = [];
     const networkResponses: Array<{ url: string; status: number; body: string }> = [];
-    let loginResponse: { status: number; body: string } | null = null;
-    let checkResponse: { status: number; body: string } | null = null;
-    
     // Intercepter les réponses API
     this.page.on('response', async (response) => {
       const url = response.url();
@@ -175,18 +173,9 @@ export class AuthHelper {
         const body = await response.text().catch(() => '');
         networkResponses.push({ url, status, body });
         
-        if (url.includes('/api/auth/login')) {
-          loginResponse = { status, body };
-        }
-        if (url.includes('/api/auth/check')) {
-          checkResponse = { status, body };
-        }
-        
         if (status >= 400) {
           networkErrors.push(`${url} returned ${status}: ${body.substring(0, 200)}`);
           console.error(`❌ API Error: ${url} - ${status} - ${body.substring(0, 200)}`);
-        } else {
-          console.log(`✅ API Success: ${url} - ${status}`);
         }
       }
     });
@@ -216,10 +205,12 @@ export class AuthHelper {
       const loginResponseObj = await loginResponsePromise;
       const loginStatus = loginResponseObj.status();
       const loginBody = await loginResponseObj.text().catch(() => '');
-      console.log(`Login response: ${loginStatus} - ${loginBody.substring(0, 200)}`);
-
       if (loginStatus >= 400) {
-        if (loginStatus === 401 && password !== FALLBACK_PASSWORD_AFTER_FAILED_CHANGE) {
+        if (
+          loginStatus === 401 &&
+          FALLBACK_PASSWORD_AFTER_FAILED_CHANGE &&
+          password !== FALLBACK_PASSWORD_AFTER_FAILED_CHANGE
+        ) {
           await passwordInput.clear();
           await passwordInput.fill(FALLBACK_PASSWORD_AFTER_FAILED_CHANGE);
           await this.page.waitForTimeout(300);
@@ -233,7 +224,7 @@ export class AuthHelper {
           const loginBody2 = await loginResponseObj2.text().catch(() => '');
           if (loginStatus2 === 200) {
             console.warn(
-              '[E2E] Connexion avec le mot de passe de secours (NouveauMotDePasseE2E123). ' +
+              '[E2E] Connexion avec le mot de passe de secours (E2E_PASSWORD_FALLBACK). ' +
                 'La base a probablement été laissée dans cet état par un test "change le mot de passe" non restauré. ' +
                 'Pour remettre E2E_PASSWORD en cohérence, exécutez le test Paramètres une fois ou réinitialisez le mot de passe en base.'
             );
@@ -255,13 +246,13 @@ export class AuthHelper {
             }
           } else {
             const hint =
-              ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".';
+              ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base).';
             throw new Error(`Login API returned ${loginStatus2}: ${loginBody2}.${hint}`);
           }
         } else {
           const hint =
             loginStatus === 401
-              ? ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base). Si le test "change le mot de passe" a échoué avant la restauration, le mot de passe en base est peut-être "NouveauMotDePasseE2E123".'
+              ? ' Vérifiez E2E_USERNAME et E2E_PASSWORD dans .env (utilisateur existant en base).'
               : '';
           throw new Error(`Login API returned ${loginStatus}: ${loginBody}.${hint}`);
         }
@@ -293,7 +284,6 @@ export class AuthHelper {
         const checkResponseObj = await checkResponsePromise;
         const checkStatus = checkResponseObj.status();
         const checkBody = await checkResponseObj.text().catch(() => '');
-        console.log(`Check response: ${checkStatus} - ${checkBody.substring(0, 200)}`);
         if (checkStatus >= 400) {
           throw new Error(`Auth check API returned ${checkStatus}: ${checkBody}`);
         }
@@ -306,8 +296,7 @@ export class AuthHelper {
                 `Vérifiez que le cookie d'authentification est bien défini.`
             );
           }
-          console.log(`✅ User authenticated: ${checkData.user.name}`);
-        } catch (parseError) {
+        } catch {
           if (checkStatus >= 400) {
             throw new Error(`Auth check failed with status ${checkStatus}: ${checkBody}`);
           }

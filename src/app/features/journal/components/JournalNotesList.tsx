@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import type { JournalNote } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { JournalNoteCard } from './JournalNoteCard';
 import { useJournalNotes } from '../hooks/useJournalNotes';
@@ -33,7 +32,7 @@ export function JournalNotesList({ limit }: Props) {
     return ids;
   }, [exercices, notes, referenceDateKey]);
 
-  const handleNoteUpdated = useCallback((_updatedNote?: JournalNote) => {
+  const handleNoteUpdated = useCallback(() => {
     refetch();
   }, [refetch]);
 

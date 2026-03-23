@@ -1,6 +1,6 @@
 import type { HistoryEntry } from '@/app/types';
 import type { ExerciceCategory } from '@/app/types/exercice';
-import { subDays, isSameDay, startOfDay, eachDayOfInterval, getDay, startOfWeek, endOfWeek } from 'date-fns';
+import { subDays, isSameDay, eachDayOfInterval, getDay, startOfWeek, endOfWeek } from 'date-fns';
 import { getDateKey } from '@/app/utils/date.utils';
 import { ROADMAP_PREVIEW_DAYS } from '@/app/constants/historique.constants';
 import type { HeatmapDay } from './historique.types';

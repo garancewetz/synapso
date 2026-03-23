@@ -2,7 +2,7 @@ import { prisma } from '@/app/lib/prisma';
 import { ExerciceCategory } from '@/app/types/exercice';
 import { ExerciceCategory as PrismaExerciceCategory } from '@prisma/client';
 import { getStartOfPeriod } from '@/app/utils/resetFrequency.utils';
-import { addDays, startOfDay, format } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
 
 type CreateExerciceData = {
   name: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Exercice } from '@/app/types';
 import { useArchiveExercice } from './useArchiveExercice';
 import { usePinExercice } from './usePinExercice';

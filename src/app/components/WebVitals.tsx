@@ -25,25 +25,16 @@ type WebVitalsReport = {
 export function WebVitals() {
   useEffect(() => {
     const reportMetric = (metric: Metric) => {
-      // En développement, afficher dans la console
-      if (process.env.NODE_ENV === 'development') {
-        const report: WebVitalsReport = {
-          name: metric.name,
-          value: metric.value,
-          rating: metric.rating as 'good' | 'needs-improvement' | 'poor',
-          delta: metric.delta,
-          id: metric.id,
-        };
-        
-        if (process.env.NODE_ENV === 'development') {
-          const emoji = report.rating === 'good' ? '✅' : report.rating === 'needs-improvement' ? '⚠️' : '❌';
-          console.log(`${emoji} [Web Vitals] ${report.name}: ${Math.round(report.value)}ms (${report.rating})`);
-        }
-      }
+      const report: WebVitalsReport = {
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating as 'good' | 'needs-improvement' | 'poor',
+        delta: metric.delta,
+        id: metric.id,
+      };
+      void report;
 
-      // ⚡ PRODUCTION: Envoyer les métriques à un service d'analytics si configuré
-      // Pour l'instant, on log uniquement en développement
-      // TODO: Implémenter l'envoi vers un service d'analytics (ex: Vercel Analytics, Google Analytics)
+      // ⚡ PRODUCTION: point d'extension pour brancher un service d'analytics si nécessaire
       if (process.env.NODE_ENV === 'production') {
         // Exemple avec Vercel Analytics (si disponible) :
         // if (typeof window !== 'undefined' && (window as any).va) {

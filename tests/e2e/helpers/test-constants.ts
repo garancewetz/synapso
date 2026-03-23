@@ -8,7 +8,7 @@ config();
  * Constantes partagées pour les tests E2E.
  * Identifiants lus depuis .env (E2E_USERNAME, E2E_PASSWORD).
  * Pour que le test "change le mot de passe" passe : E2E_PASSWORD doit correspondre
- * au mot de passe en base (ex. Test1234 pour l'utilisateur E2E après seed).
+ * au mot de passe actuellement enregistré en base pour l'utilisateur E2E.
  */
 export const TEST_USER = {
   username: process.env.E2E_USERNAME ?? '',

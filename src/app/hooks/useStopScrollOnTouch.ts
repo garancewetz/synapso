@@ -9,7 +9,7 @@ import { useCallback } from 'react';
  * immédiatement, permettant au click de se déclencher sur le même tap.
  */
 export function useStopScrollOnTouch() {
-  return useCallback((e: React.TouchEvent) => {
+  return useCallback(() => {
     // Stopper le scroll inertiel en forçant la position actuelle
     // Cela n'a aucun effet visuel mais coupe le momentum
     window.scrollTo(window.scrollX, window.scrollY);

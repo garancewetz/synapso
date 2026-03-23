@@ -7,7 +7,7 @@ type CheckAuthParams = {
 
 export async function checkAuth(params: CheckAuthParams) {
   const { request } = params;
-  const userId = getCurrentUserId(request as any);
+  const userId = getCurrentUserId(request);
   
   if (!userId) {
     return {
@@ -44,7 +44,7 @@ export async function checkAuth(params: CheckAuthParams) {
   let impersonatedUser = null;
 
   if (isAdmin) {
-    const impersonatedUserId = getImpersonatedUserId(request as any);
+    const impersonatedUserId = getImpersonatedUserId(request);
     
     if (impersonatedUserId && impersonatedUserId !== userId) {
       impersonatedUser = await prisma.user.findUnique({

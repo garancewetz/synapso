@@ -3,12 +3,12 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-// Mot de passe par défaut pour le seed (à changer après le premier login)
-const DEFAULT_PASSWORD = 'Calypso123';
+// Mots de passe de seed injectés via variables d'environnement (évite tout secret codé en dur)
+const DEFAULT_PASSWORD = process.env.SEED_DEFAULT_PASSWORD;
 
 // Utilisateur E2E : doit correspondre à E2E_USERNAME / E2E_PASSWORD dans .env
-const E2E_USER_NAME = 'Testeuse';
-const E2E_USER_PASSWORD = 'Test1234';
+const E2E_USER_NAME = process.env.E2E_USERNAME ?? 'Testeuse';
+const E2E_USER_PASSWORD = process.env.E2E_PASSWORD;
 
 // Données de démonstration avec les 3 catégories
 const mockExercices = [
@@ -196,6 +196,13 @@ const mockExercices = [
 ];
 
 async function main() {
+  if (!DEFAULT_PASSWORD) {
+    throw new Error('Missing SEED_DEFAULT_PASSWORD environment variable');
+  }
+  if (!E2E_USER_PASSWORD) {
+    throw new Error('Missing E2E_PASSWORD environment variable');
+  }
+
   console.log('🌱 Début du seed avec les données de démonstration...\n');
 
   // Créer l'utilisateur Calypso avec un mot de passe par défaut
@@ -210,7 +217,7 @@ async function main() {
       role: 'USER',
     },
   });
-  console.log(`🧑 Utilisateur créé : ${calypso.name} (mot de passe par défaut : ${DEFAULT_PASSWORD})`);
+  console.log(`🧑 Utilisateur créé : ${calypso.name}`);
 
   const e2ePasswordHash = await bcrypt.hash(E2E_USER_PASSWORD, 12);
   const e2eUser = await prisma.user.upsert({
@@ -222,7 +229,7 @@ async function main() {
       role: 'USER',
     },
   });
-  console.log(`🧑 Utilisateur E2E : ${e2eUser.name} (mot de passe : ${E2E_USER_PASSWORD})`);
+  console.log(`🧑 Utilisateur E2E : ${e2eUser.name}`);
 
   // Supprimer les exercices existants
   await prisma.exerciceBodypart.deleteMany();

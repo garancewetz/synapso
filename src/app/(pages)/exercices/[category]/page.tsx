@@ -94,17 +94,17 @@ export default function CategoryPage() {
   const onRemoveBodypart = useCallback(
     (value: string) =>
       filters.setSelectedBodyparts((prev) => prev.filter((bp) => bp !== value)),
-    [filters.setSelectedBodyparts]
+    [filters]
   );
   const onRemoveEquipment = useCallback(
     (value: string) =>
       filters.setSelectedEquipments((prev) => prev.filter((eq) => eq !== value)),
-    [filters.setSelectedEquipments]
+    [filters]
   );
   const onResetAll = useCallback(() => {
     setFilter('all');
     filters.handleResetAllFilters();
-  }, [filters.handleResetAllFilters]);
+  }, [filters]);
 
   const handleArchive = useCallback(
     (updatedExercice: Exercice) => {

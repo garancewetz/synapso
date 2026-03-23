@@ -190,7 +190,7 @@ const ConfettiRain = memo(function ConfettiRain({
         swayDirection,
       };
     });
-  }, [show, actualEmojiCount, fromWindow]);
+  }, [show, actualEmojiCount, fromWindow, finalEmojis]);
 
   const confettis = useMemo(() => {
     if (!show) return [];
@@ -209,7 +209,7 @@ const ConfettiRain = memo(function ConfettiRain({
         swayDirection,
       };
     });
-  }, [show, actualConfettiCount, fromWindow]);
+  }, [show, actualConfettiCount, fromWindow, finalColors]);
 
   if (!show || prefersReducedMotion) return null;
 

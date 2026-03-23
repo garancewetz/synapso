@@ -67,7 +67,7 @@ export function useAllEquipments(): UseAllEquipmentsReturn {
     } finally {
       setLoading(false);
     }
-  }, [effectiveUser?.id, userLoading]);
+  }, [effectiveUser, userLoading]);
 
   useEffect(() => {
     fetchEquipments();

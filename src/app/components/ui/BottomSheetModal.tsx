@@ -34,7 +34,6 @@ export function BottomSheetModal({
   className = '',
   showFooterClose = false,
   closeLabel = 'Fermer',
-  triggerRef,
 }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const touchHandledRef = useRef(false);

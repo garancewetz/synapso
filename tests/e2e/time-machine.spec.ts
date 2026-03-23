@@ -3,7 +3,6 @@ import { AuthHelper } from './helpers/auth';
 import { TimeMachineHelper } from './helpers/time-machine';
 import { TEST_USER } from './helpers/test-constants';
 import { format, subDays, startOfDay } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 /**
  * Tests E2E pour le mode sablier (time machine)
@@ -173,8 +172,8 @@ test.describe('Mode Sablier (Time Machine)', () => {
     await page.waitForLoadState('networkidle');
     
     // Capturer l'état initial des exercices (pour aujourd'hui)
-    const initialExercices = await page.locator('[data-testid="exercice-card"], .exercice-card').all();
-    const initialCompletedCount = await page.locator('button:has-text("Fait"), button:has-text("Fait aujourd\'hui")').count();
+    await page.locator('[data-testid="exercice-card"], .exercice-card').all();
+    await page.locator('button:has-text("Fait"), button:has-text("Fait aujourd\'hui")').count();
     
     // Aller à la page historique et activer le mode sablier pour hier
     await timeMachineHelper.goToHistory();

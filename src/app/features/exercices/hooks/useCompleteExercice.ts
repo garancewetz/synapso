@@ -35,8 +35,6 @@ export function useCompleteExercice({
   const { requestConfetti } = useConfetti();
 
   const targetDate = referenceDateKey || format(new Date(), 'yyyy-MM-dd');
-  const willComplete = !exercice.completedToday;
-
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const response = await fetch(
@@ -118,7 +116,7 @@ export function useCompleteExercice({
         mutate();
       }
     },
-    [userId, mutate, exercice.id, exercice.name, willComplete, targetDate]
+    [userId, mutate]
   );
 
   return {

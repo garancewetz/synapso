@@ -103,7 +103,8 @@ export function Textarea(props: Props) {
   }, [plainValue, props.speech]);
 
   if (props.speech) {
-    const { speech: _speech, ...rest } = props;
+    const { speech, ...rest } = props;
+    void speech;
     return <SpeechTextarea {...rest} />;
   }
 

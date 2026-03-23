@@ -1,4 +1,3 @@
-import type { ExerciceCategory } from '@/app/types/exercice';
 import {
   BODYPART_TO_CATEGORY,
   CATEGORY_CHART_COLORS,

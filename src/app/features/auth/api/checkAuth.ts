@@ -1,8 +1,9 @@
+import { NextRequest } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getCurrentUserId, getImpersonatedUserId } from '@/app/lib/auth';
 
 type CheckAuthParams = {
-  request: Request;
+  request: NextRequest;
 };
 
 export async function checkAuth(params: CheckAuthParams) {

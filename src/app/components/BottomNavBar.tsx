@@ -1,9 +1,8 @@
 'use client';
 
-import { memo, useState, useRef, useEffect, useCallback } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   CATEGORY_LABELS_SHORT,
   CATEGORY_ICONS,
@@ -14,21 +13,18 @@ import {
 import type { ExerciceCategory } from '@/app/types/exercice';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
 import { TouchLink } from '@/app/components/TouchLink';
-import { PlusIcon, BookIcon, SparklesIcon, MenuIcon, CloseIcon, RocketIcon } from '@/app/components/ui/icons';
+import { MenuIcon, CloseIcon, MapIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { useStopScrollOnTouch } from '@/app/hooks/useStopScrollOnTouch';
+import { AddMenu } from '@/app/components/BottomNavBar/AddMenu';
 
 type Props = {
   /** Catégories à afficher en bas (celles utilisées par l'utilisateur). Si non fourni, toutes les catégories sont affichées. */
   categoriesToShow?: ExerciceCategory[];
 };
 
-const ADD_EXERCICE_HREF = '/exercice/add';
-const ADD_PROGRES_HREF = '/historique?action=add-progress';
-const ADD_NOTE_HREF = '/journal/add';
-const JOURNAL_HREF = '/journal';
-const SUIVI_HREF = '/historique';
+const PROGRESSION_HREF = '/historique';
 
 export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATEGORY_ORDER }: Props) {
   const pathname = usePathname();
@@ -38,22 +34,12 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
     categoriesSlideOpen,
     setCategoriesSlideOpen,
   } = useLayoutContext();
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
-  const addMenuRef = useRef<HTMLDivElement>(null);
   const stopScrollOnTouch = useStopScrollOnTouch();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
 
   const handleToggleCategoriesSlide = useCallback(() => {
     setCategoriesSlideOpen(!categoriesSlideOpen);
   }, [setCategoriesSlideOpen, categoriesSlideOpen]);
-
-  const handleToggleAddMenu = useCallback(() => {
-    setAddMenuOpen(open => !open);
-  }, []);
-
-  const handleCloseAddMenu = useCallback(() => {
-    setAddMenuOpen(false);
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -69,19 +55,7 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
   }, []);
 
   const isHomeActive = pathname === '/';
-  const isJournalActive = pathname === JOURNAL_HREF || pathname.startsWith(`${JOURNAL_HREF}/`);
-  const isSuiviActive = pathname === SUIVI_HREF;
-
-  useEffect(() => {
-    if (!addMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
-        setAddMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [addMenuOpen]);
+  const isProgressionActive = pathname === PROGRESSION_HREF || pathname.startsWith(`${PROGRESSION_HREF}/`);
 
   if (!effectiveUser || loading || isDesktopLayout) {
     return null;
@@ -136,124 +110,20 @@ export const BottomNavBar = memo(function BottomNavBar({ categoriesToShow = CATE
             </div>
           </button>
 
-          <div ref={addMenuRef} className="relative flex flex-col items-center justify-end shrink-0">
-            <AnimatePresence>
-              {addMenuOpen && (
-                <motion.div
-                  key="add-menu"
-                  initial={{ opacity: 0, scale: 0.9, y: 6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: 4 }}
-                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-end justify-center gap-4 px-2 py-3 z-10"
-                  style={{
-                    backgroundImage: 'radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.95), transparent 65%)'
-                  }}
-                  role="menu"
-                  aria-label="Ajouter"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="flex flex-col items-center translate-x-2 translate-y-1.5"
-                  >
-                    <TouchLink
-                      href={preserveDate(ADD_EXERCICE_HREF)}
-                      onClick={handleCloseAddMenu}
-                      role="menuitem"
-                      aria-label="Exercice"
-                      className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-white/95 backdrop-blur shadow-md border border-gray-200/80 hover:bg-gray-50 active:opacity-90 transition-all text-gray-700"
-                    >
-                      <PlusIcon className="w-5 h-5 shrink-0" strokeWidth={2} aria-hidden />
-                      <span className="text-[10px] font-semibold">Exercice</span>
-                    </TouchLink>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="flex flex-col items-center -translate-y-3"
-                  >
-                    <TouchLink
-                      href={preserveDate(ADD_PROGRES_HREF)}
-                      onClick={handleCloseAddMenu}
-                      role="menuitem"
-                      aria-label="Progrès"
-                      className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-white/95 backdrop-blur shadow-md border border-gray-200/80 hover:bg-gray-50 active:opacity-90 transition-all text-gray-700"
-                    >
-                      <SparklesIcon className="w-5 h-5 shrink-0" strokeWidth={2} aria-hidden />
-                      <span className="text-[10px] font-semibold">Progrès</span>
-                    </TouchLink>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: 0.09, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="flex flex-col items-center -translate-x-2 translate-y-1.5"
-                  >
-                    <TouchLink
-                      href={preserveDate(ADD_NOTE_HREF)}
-                      onClick={handleCloseAddMenu}
-                      role="menuitem"
-                      aria-label="Note"
-                      className="flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-white/95 backdrop-blur shadow-md border border-gray-200/80 hover:bg-gray-50 active:opacity-90 transition-all text-gray-700"
-                    >
-                      <BookIcon className="w-5 h-5 shrink-0" aria-hidden />
-                      <span className="text-[10px] font-semibold">Note</span>
-                    </TouchLink>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button
-              type="button"
-              onClick={handleToggleAddMenu}
-              aria-label="Ajouter"
-              aria-expanded={addMenuOpen}
-              aria-haspopup="menu"
-              className="flex flex-col items-center justify-end shrink-0"
-            >
-              <div
-                className={clsx(
-                  'flex flex-col items-center justify-center w-14 h-14 rounded-2xl shadow-sm bg-white/90 transition-all duration-200 hover:opacity-90 active:opacity-95 shrink-0 gap-0.5',
-                  'w-16 h-16',
-                  addMenuOpen ? 'text-gray-900 ring-2 ring-gray-300 ring-offset-2 ring-offset-transparent' : 'text-gray-600'
-                )}
-              >
-                <PlusIcon className="w-7 h-7 shrink-0" strokeWidth={2.5} aria-hidden />
-                <span className="text-[10px] font-semibold leading-tight tracking-tight">Ajouter</span>
-              </div>
-            </button>
-          </div>
+          <AddMenu />
 
           <TouchLink
-            href={preserveDate(JOURNAL_HREF)}
-            aria-label="Journal"
-            aria-current={isJournalActive ? 'page' : undefined}
+            href={preserveDate(PROGRESSION_HREF)}
+            aria-label="Progression"
+            aria-current={isProgressionActive ? 'page' : undefined}
             className="flex flex-col items-center justify-end shrink-0"
           >
             <div className={clsx(
               'flex flex-col items-center justify-center w-14 h-14 rounded-2xl shadow-sm bg-white/90 transition-all duration-200 hover:opacity-90 active:opacity-95 shrink-0 gap-0.5',
-              isJournalActive ? 'text-gray-900 ring-2 ring-gray-300 ring-offset-2 ring-offset-transparent' : 'text-gray-600'
+              isProgressionActive ? 'text-gray-900 ring-2 ring-gray-300 ring-offset-2 ring-offset-transparent' : 'text-gray-600'
             )}>
-              <BookIcon className="w-5 h-5 shrink-0" aria-hidden />
-              <span className="text-[10px] font-semibold leading-tight tracking-tight">Journal</span>
-            </div>
-          </TouchLink>
-
-          <TouchLink
-            href={preserveDate(SUIVI_HREF)}
-            aria-label="Suivi"
-            aria-current={isSuiviActive ? 'page' : undefined}
-            className="flex flex-col items-center justify-end shrink-0"
-          >
-            <div className={clsx(
-              'flex flex-col items-center justify-center w-14 h-14 rounded-2xl shadow-sm bg-white/90 transition-all duration-200 hover:opacity-90 active:opacity-95 shrink-0 gap-0.5',
-              isSuiviActive ? 'text-gray-900 ring-2 ring-gray-300 ring-offset-2 ring-offset-transparent' : 'text-gray-600'
-            )}>
-              <RocketIcon className="w-5 h-5 shrink-0" aria-hidden />
-              <span className="text-[10px] font-semibold leading-tight tracking-tight">Suivi</span>
+              <MapIcon className="w-5 h-5 shrink-0" aria-hidden />
+              <span className="text-[10px] font-semibold leading-tight tracking-tight">Progression</span>
             </div>
           </TouchLink>
         </div>

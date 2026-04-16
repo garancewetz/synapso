@@ -16,17 +16,15 @@ test.describe('Exercices', () => {
       timeout: 10000,
     });
 
-    // Étape 1 : Nom et description
+    // Nom et description
     await page.getByPlaceholder('Ex: Montée de genoux').fill('Exercice E2E créé');
     await page.getByPlaceholder('Décrivez comment réaliser l\'exercice...').fill('Description du test');
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Étape 2 : Catégorie et parties du corps
+    // Catégorie et parties du corps
     await page.getByRole('button', { name: 'Haut' }).click();
     await page.getByRole('button', { name: 'Bras' }).click();
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Étape 3 : Paramètres workout et soumission
+    // Paramètres workout
     await page.getByPlaceholder('Ex: 10').fill('12');
     await page.getByPlaceholder('Ex: 3', { exact: true }).fill('2');
     await page.getByPlaceholder('Ex: 30 secondes').fill('45 secondes');
@@ -68,21 +66,19 @@ test.describe('Exercices', () => {
     const newSeries = '4';
     const newDuration = '60 secondes';
 
-    // Étape 1 : Modifier nom, description, conseil
+    // Modifier nom, description, conseil
     await page.getByPlaceholder('Ex: Montée de genoux').clear();
     await page.getByPlaceholder('Ex: Montée de genoux').fill(newName);
     await page.getByPlaceholder('Décrivez comment réaliser l\'exercice...').clear();
     await page.getByPlaceholder('Décrivez comment réaliser l\'exercice...').fill(newDescription);
     await page.getByPlaceholder('Ajoutez un conseil ou une remarque...').clear();
     await page.getByPlaceholder('Ajoutez un conseil ou une remarque...').fill(newComment);
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Étape 2 : Modifier catégorie et parties du corps
+    // Modifier catégorie et parties du corps
     await page.getByRole('button', { name: 'Milieu' }).click();
     await page.getByRole('button', { name: 'Dos' }).click();
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Étape 3 : Modifier paramètres workout et enregistrer
+    // Modifier paramètres workout et enregistrer
     await page.getByPlaceholder('Ex: 10').clear();
     await page.getByPlaceholder('Ex: 10').fill(newRepeat);
     await page.getByPlaceholder('Ex: 3', { exact: true }).clear();
@@ -97,7 +93,7 @@ test.describe('Exercices', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.getByText(newName).first()).toBeVisible({ timeout: 10000 });
 
-    // Vérification : rouvrir l'exercice et parcourir les étapes
+    // Vérification : rouvrir l'exercice et vérifier les champs
     const cardWithNewName = page.locator('.exercise-card').filter({ hasText: newName }).first();
     await cardWithNewName.scrollIntoViewIfNeeded();
     await cardWithNewName.getByRole('button', { name: 'Ouvrir les actions' }).click();
@@ -109,7 +105,7 @@ test.describe('Exercices', () => {
       modifierBtn2.click(),
     ]);
 
-    // Vérifier étape 1 : textes
+    // Vérifier les textes
     await expect(page.getByPlaceholder('Ex: Montée de genoux')).toHaveValue(newName);
     await expect(page.getByPlaceholder('Décrivez comment réaliser l\'exercice...')).toHaveValue(
       newDescription
@@ -117,16 +113,14 @@ test.describe('Exercices', () => {
     await expect(page.getByPlaceholder('Ajoutez un conseil ou une remarque...')).toHaveValue(
       newComment
     );
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Vérifier étape 2 : catégorie
+    // Vérifier la catégorie
     await expect(page.getByRole('button', { name: 'Milieu' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
-    await page.getByRole('button', { name: 'Suivant →' }).click();
 
-    // Vérifier étape 3 : workout
+    // Vérifier le workout
     await expect(page.getByPlaceholder('Ex: 10')).toHaveValue(newRepeat);
     await expect(page.getByPlaceholder('Ex: 3', { exact: true })).toHaveValue(newSeries);
     await expect(page.getByPlaceholder('Ex: 30 secondes')).toHaveValue(newDuration);
@@ -168,12 +162,7 @@ test.describe('Exercices', () => {
     await page.waitForLoadState('networkidle');
 
     const nameToDelete = 'Exercice E2E à supprimer';
-    // Étape 1 : Nom
     await page.getByPlaceholder('Ex: Montée de genoux').fill(nameToDelete);
-    await page.getByRole('button', { name: 'Suivant →' }).click();
-    // Étape 2 : Catégorie (Haut du corps par défaut)
-    await page.getByRole('button', { name: 'Suivant →' }).click();
-    // Étape 3 : Créer
     await page.getByRole('button', { name: "Créer l'exercice" }).click();
 
     await expect(page).not.toHaveURL(/\/exercice\/add/);
@@ -193,7 +182,6 @@ test.describe('Exercices', () => {
       modifierBtn.click(),
     ]);
 
-    // Le bouton supprimer est accessible depuis n'importe quelle étape
     await page.getByRole('button', { name: "Supprimer l'exercice" }).click();
     await page
       .getByRole('button', { name: '⚠️ Confirmer la suppression' })

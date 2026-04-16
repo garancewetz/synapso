@@ -12,7 +12,7 @@ type Props = {
   onAuthSuccess?: () => void;
 };
 
-const MIN_LOADING_DURATION = 2000; // 3 secondes minimum
+const MIN_LOADING_DURATION = 500;
 
 /**
  * ⚡ PERFORMANCE: 
@@ -47,7 +47,7 @@ export const SiteProtection = memo(function SiteProtection({ children, onAuthSuc
     onAuthSuccess?.();
   }, [refreshUser, onAuthSuccess]);
 
-  // Afficher le loader pendant le chargement initial (minimum 3 secondes)
+  // Afficher le loader pendant le chargement initial
   if (showLoader || userLoading) {
     return <InitialLoader confettiComponent={ConfettiExplosion} />;
   }

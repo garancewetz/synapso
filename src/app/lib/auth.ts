@@ -1,28 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
-import crypto, { timingSafeEqual } from 'crypto';
 import { prisma } from './prisma';
-
-// Constantes pour les cookies
-const AUTH_COOKIE_NAME = 'synapso_auth';
-const IMPERSONATE_COOKIE_NAME = 'synapso_impersonate';
-
-// 🔒 SÉCURITÉ: Le secret DOIT être défini en production
-// En développement ou pendant le build, utiliser un secret par défaut
-function getSecret(): string {
-  const secret = process.env.COOKIE_SECRET;
-  if (secret) return secret;
-  
-  // En production réelle (pas pendant le build), le secret est obligatoire
-  // On vérifie via NEXT_PUBLIC_ENVIRONMENT car NODE_ENV=production aussi pendant le build
-  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'production') {
-    throw new Error('COOKIE_SECRET environment variable is required in production');
-  }
-  
-  return 'dev-only-secret-not-for-production';
-}
-
-const SECRET = getSecret();
+import {
+  AUTH_COOKIE_NAME,
+  IMPERSONATE_COOKIE_NAME,
+  signValue,
+  readUserIdFromCookieValue,
+} from './auth-shared';
 
 // Configuration des cookies
 const COOKIE_OPTIONS = {
@@ -32,47 +16,6 @@ const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 30, // 30 jours
   path: '/',
 };
-
-/**
- * Crée une signature HMAC pour le cookie
- * Utilise SHA-256 complet pour une sécurité maximale
- */
-function signValue(value: string): string {
-  const hmac = crypto
-    .createHmac('sha256', SECRET)
-    .update(value)
-    .digest('hex');
-  return `${value}.${hmac}`;
-}
-
-/**
- * Vérifie et extrait la valeur d'un cookie signé
- * Utilise une comparaison timing-safe pour prévenir les timing attacks
- */
-function verifySignedValue(signedValue: string): string | null {
-  const parts = signedValue.split('.');
-  if (parts.length !== 2) return null;
-  
-  const [value, signature] = parts;
-  const expectedSignature = crypto
-    .createHmac('sha256', SECRET)
-    .update(value)
-    .digest('hex');
-  
-  // Comparaison timing-safe pour éviter les timing attacks
-  const sigBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-  
-  // Les buffers doivent avoir la même longueur pour timingSafeEqual
-  if (sigBuffer.length !== expectedBuffer.length) {
-    return null;
-  }
-  
-  if (timingSafeEqual(sigBuffer, expectedBuffer)) {
-    return value;
-  }
-  return null;
-}
 
 /**
  * Hash un mot de passe avec bcrypt
@@ -92,30 +35,14 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
  * Récupère l'ID de l'utilisateur connecté depuis le cookie
  */
 export function getCurrentUserId(request: NextRequest): number | null {
-  const authCookie = request.cookies.get(AUTH_COOKIE_NAME);
-  
-  if (!authCookie) return null;
-  
-  const userId = verifySignedValue(authCookie.value);
-  if (!userId) return null;
-  
-  const parsed = parseInt(userId, 10);
-  return isNaN(parsed) ? null : parsed;
+  return readUserIdFromCookieValue(request.cookies.get(AUTH_COOKIE_NAME)?.value);
 }
 
 /**
  * Récupère l'ID de l'utilisateur impersonné (admin only)
  */
 export function getImpersonatedUserId(request: NextRequest): number | null {
-  const impersonateCookie = request.cookies.get(IMPERSONATE_COOKIE_NAME);
-  
-  if (!impersonateCookie) return null;
-  
-  const userId = verifySignedValue(impersonateCookie.value);
-  if (!userId) return null;
-  
-  const parsed = parseInt(userId, 10);
-  return isNaN(parsed) ? null : parsed;
+  return readUserIdFromCookieValue(request.cookies.get(IMPERSONATE_COOKIE_NAME)?.value);
 }
 
 /**

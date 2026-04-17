@@ -13,6 +13,7 @@ import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
 import { ConfettiProvider } from "@/app/contexts/ConfettiContext";
+import { getInitialAuthData } from "@/app/lib/auth-server";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -59,16 +60,19 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  // ⚡ SSR: Fetch auth côté serveur pour hydrater UserContext sans waterfall client
+  const initialAuthData = await getInitialAuthData();
+
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
         <QueryProvider>
-          <UserProvider>
+          <UserProvider initialData={initialAuthData}>
             <ToastProvider>
               <DayDetailModalProvider>
                 {/* Suspense pour useSearchParams() dans TimeProvider — fallback={null} pour ne pas bloquer le rendu */}

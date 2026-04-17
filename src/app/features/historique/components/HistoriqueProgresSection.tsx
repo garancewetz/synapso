@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Loader } from '@/app/components/ui';
 import { ProgressButton } from '@/app/components/ui/ProgressButton';
-import { ProgressTimeline, ProgressStatsChart } from '@/app/features/historique';
+import { ProgressTimeline, LazyProgressStatsChart as ProgressStatsChart } from '@/app/features/historique';
 import type { Progress } from '@/app/types';
 import type { HistoryEntry } from '@/app/types';
 

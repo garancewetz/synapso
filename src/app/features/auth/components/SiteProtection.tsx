@@ -1,11 +1,16 @@
 'use client';
 
 import { memo, useCallback, useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { AuthScreen } from './AuthScreen';
 import { InitialLoader } from '@/app/components/InitialLoader';
-import { ConfettiExplosion } from '@/app/features/exercices';
 import { useUser } from '@/app/contexts/UserContext';
 import type { ReactNode } from 'react';
+
+const ConfettiExplosion = dynamic(
+  () => import('@/app/features/exercices').then(mod => ({ default: mod.ConfettiExplosion })),
+  { ssr: false, loading: () => null }
+);
 
 type Props = {
   children: ReactNode;

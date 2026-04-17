@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback, type PropsWithChildren } from 'react';
 import dynamic from 'next/dynamic';
-import { SelectedDateBanner, TimeMachineWrapper, TimeMachineTransition } from '@/app/features/time-machine';
+import { SelectedDateBanner, TimeMachineWrapper } from '@/app/features/time-machine';
 import { usePreserveDateParam } from '@/app/features/time-machine';
 import { usePendingShareCount } from '@/app/features/sharing';
 import { NotificationBadge } from '@/app/features/sharing';
@@ -20,6 +20,11 @@ import {
 import type { ExerciceCategory } from '@/app/types/exercice';
 import clsx from 'clsx';
 import { ErrorBoundary } from '@/app/components/ui/ErrorBoundary';
+
+const TimeMachineTransition = dynamic(
+  () => import('@/app/features/time-machine').then(mod => ({ default: mod.TimeMachineTransition })),
+  { ssr: false, loading: () => null }
+);
 
 const DayDetailModalWrapper = dynamic(
   () => import('@/app/features/historique').then(mod => ({ default: mod.DayDetailModalWrapper })),

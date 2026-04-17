@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { ExerciceCard, useExercices, useExerciceStatusFilter, useExerciceHandlers, CategoryActiveFiltersBar } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
@@ -10,9 +10,9 @@ import { StatusFilterSection, EquipmentFilterBadge, AddButton } from '@/app/comp
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { 
+import {
   CATEGORY_LABELS,
-  CATEGORY_ORDER, 
+  CATEGORY_ORDER,
   CATEGORY_ICONS,
   EXERCICE_STATUS_FILTER_OPTIONS
 } from '@/app/constants/exercice.constants';
@@ -20,6 +20,11 @@ import { getEquipmentIcon } from '@/app/constants/equipment.constants';
 import { useEquipmentMetadata } from '@/app/hooks/useEquipmentMetadata';
 import { ChevronIcon } from '@/app/components/ui/icons';
 import type { Exercice, ExerciceCategory, ExerciceStatusFilter } from '@/app/types/exercice';
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false, loading: () => null }
+);
 
 export function EquipmentsPageClient() {
   const router = useRouter();
@@ -296,7 +301,7 @@ export function EquipmentsPageClient() {
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
           ) : filteredExercices.length === 0 ? (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -318,7 +323,7 @@ export function EquipmentsPageClient() {
                     : "Aucun exercice ne correspond aux filtres sélectionnés."
                 }
               />
-            </motion.div>
+            </MotionDiv>
           ) : (
             <div className="space-y-10 md:space-y-8">
               {CATEGORY_ORDER.map((category) => {
@@ -331,7 +336,7 @@ export function EquipmentsPageClient() {
                 }
 
                 return (
-                  <motion.div
+                  <MotionDiv
                     key={category}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -358,7 +363,7 @@ export function EquipmentsPageClient() {
                         </div>
                       ))}
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 );
               })}
             </div>

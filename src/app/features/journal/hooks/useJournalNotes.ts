@@ -12,7 +12,7 @@ export function useJournalNotes() {
   } = useQuery({
     queryKey: queryKeys.journalNotes.list(),
     queryFn: fetchJournalNotes,
-    enabled: !userLoading && !!effectiveUser?.id,
+    enabled: !!effectiveUser?.id,
   });
 
   return {

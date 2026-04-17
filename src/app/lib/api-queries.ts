@@ -109,7 +109,7 @@ type User = {
   createdAt?: string;
 };
 
-type FetchUserResponse = {
+export type FetchUserResponse = {
   authenticated: boolean;
   user: User | null;
   isAdmin: boolean;

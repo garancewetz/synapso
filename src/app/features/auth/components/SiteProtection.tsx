@@ -17,7 +17,7 @@ type Props = {
   onAuthSuccess?: () => void;
 };
 
-const MIN_LOADING_DURATION = 500;
+const MIN_LOADING_DURATION = 100;
 
 /**
  * ⚡ PERFORMANCE: 

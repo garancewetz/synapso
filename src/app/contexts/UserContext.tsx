@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, u
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { queryKeys, fetchUser } from '@/app/lib/api-queries';
+import { queryKeys, fetchUser, type FetchUserResponse } from '@/app/lib/api-queries';
 
 type User = {
   id: number;
@@ -56,7 +56,12 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children }: { children: ReactNode }) {
+type UserProviderProps = {
+  children: ReactNode;
+  initialData?: FetchUserResponse;
+};
+
+export function UserProvider({ children, initialData }: UserProviderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
@@ -73,8 +78,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     placeholderData: (previousData) => previousData,
     // ⚡ FIX: Ne pas retry en cas d'erreur (l'utilisateur n'est peut-être pas authentifié)
     retry: false,
-    // ⚡ FIX: Ne pas utiliser initialData car cela force authenticated: false au premier rendu
-    // Laisser TanStack Query gérer l'état initial (undefined pendant le chargement)
+    // ⚡ SSR: Hydrate avec les données auth fetchées côté serveur dans layout.tsx
+    // → pas de waterfall client → pas d'écran loader 2-3s
+    initialData,
   });
 
   // Extraire les données de l'utilisateur depuis la réponse

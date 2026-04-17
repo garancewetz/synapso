@@ -176,7 +176,7 @@ export function TimeProvider({ children }: PropsWithChildren) {
         queryKey: queryKeys.exercices.list({ targetDate: nextDayKey }),
         queryFn: () => fetchExercices({ targetDate: nextDayKey }),
       });
-    }, 500);
+    }, 100);
 
     return () => clearTimeout(timeoutId);
   }, [selectedDateKey, isTimeMachineMode, effectiveUser?.id, queryClient]);

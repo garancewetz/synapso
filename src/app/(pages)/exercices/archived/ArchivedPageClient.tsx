@@ -1,16 +1,21 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { ExerciceCard, useExercices, useExerciceHandlers } from '@/app/features/exercices';
 import { EmptyState } from '@/app/components/EmptyState';
 import { NAVIGATION_EMOJIS } from '@/app/constants/emoji.constants';
-import { 
+import {
   CATEGORY_LABELS,
-  CATEGORY_ORDER, 
+  CATEGORY_ORDER,
   CATEGORY_ICONS,
 } from '@/app/constants/exercice.constants';
 import type { Exercice, ExerciceCategory } from '@/app/types/exercice';
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false, loading: () => null }
+);
 
 export function ArchivedPageClient() {
   // Charger tous les exercices (y compris archivés)
@@ -75,7 +80,7 @@ export function ArchivedPageClient() {
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
           ) : archivedExercices.length === 0 ? (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -85,7 +90,7 @@ export function ArchivedPageClient() {
                 title="Aucun exercice archivé"
                 message="Les exercices que vous archivez apparaîtront ici. Vous pourrez les désarchiver à tout moment."
               />
-            </motion.div>
+            </MotionDiv>
           ) : (
             <div className="space-y-10 md:space-y-8">
               {CATEGORY_ORDER.map((category) => {
@@ -98,7 +103,7 @@ export function ArchivedPageClient() {
                 }
 
                 return (
-                  <motion.div
+                  <MotionDiv
                     key={category}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -125,7 +130,7 @@ export function ArchivedPageClient() {
                         </div>
                       ))}
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 );
               })}
             </div>

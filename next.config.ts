@@ -48,6 +48,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // ⚡ PERFORMANCE: tree-shaking plus agressif sur les librairies partiellement utilisées
+  experimental: {
+    optimizePackageImports: ['date-fns', 'clsx', 'zod', 'framer-motion'],
+  },
   images: {
     remotePatterns: [
       {

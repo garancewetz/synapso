@@ -1,9 +1,14 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { Loader } from '@/app/components/ui/Loader';
 import { EmptyState } from '@/app/components/EmptyState';
 import { SharedExerciceCard, useReceivedShares } from '@/app/features/sharing';
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false, loading: () => null }
+);
 
 export default function NotificationsPage() {
   const { shares, isLoading } = useReceivedShares();
@@ -29,7 +34,7 @@ export default function NotificationsPage() {
             <Loader />
           </div>
         ) : shares.length === 0 ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
@@ -39,7 +44,7 @@ export default function NotificationsPage() {
               title="Aucune notification"
               message="Vous n'avez aucun exercice partagé en attente."
             />
-          </motion.div>
+          </MotionDiv>
         ) : (
           <div className="space-y-3 max-w-2xl">
             {shares.map(share => (

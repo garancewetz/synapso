@@ -10,6 +10,7 @@ import { Button } from '@/app/components/ui/Button';
 import { useMenuState } from '@/app/hooks/useMenuState';
 import { useBodyScrollLock } from '@/app/hooks/useBodyScrollLock';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+import { useStopScrollOnTouch } from '@/app/hooks/useStopScrollOnTouch';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
@@ -39,6 +40,7 @@ export function NavBar() {
   const { isLeftHanded } = useHandPreference();
   const { preserveDate, pendingShareCount } = useLayoutContext();
   const { selectedDate, isDateSelected } = useTimeContext();
+  const stopScrollOnTouch = useStopScrollOnTouch();
 
   // Bloquer le scroll du body quand le menu est ouvert
   useBodyScrollLock(isOpen);
@@ -99,7 +101,9 @@ export function NavBar() {
   return (
     <>
       {/* Header minimaliste */}
-      <header className={clsx(
+      <header
+        onTouchStart={stopScrollOnTouch}
+        className={clsx(
         'bg-white/95 backdrop-blur-sm max-w-8xl w-full mx-auto rounded-md mb-4 md:mb-4 px-4 md:px-6',
         'md:sticky md:top-0 md:z-50 md:border-b md:border-gray-100',
         'transition-all duration-300',

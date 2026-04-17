@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { Button } from '@/app/components/ui/Button';
 import { Input } from '@/app/components/ui/Input';
@@ -8,8 +9,12 @@ import { Loader } from '@/app/components/ui/Loader';
 import { Logo } from '@/app/components/ui/Logo';
 import { UserSetup } from './UserSetup';
 import { InitialLoader } from '@/app/components/InitialLoader';
-import { ConfettiExplosion } from '@/app/features/exercices';
 import { useUserNameValidation } from '@/app/hooks/useUserNameValidation';
+
+const ConfettiExplosion = dynamic(
+  () => import('@/app/features/exercices').then(mod => ({ default: mod.ConfettiExplosion })),
+  { ssr: false, loading: () => null }
+);
 
 type Props = {
   onSuccess: () => Promise<void>;

@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useUser } from '@/app/contexts/UserContext';
 import { ProgressBottomSheet } from './ProgressBottomSheet';
 import { ProgressButton } from '@/app/components/ui/ProgressButton';
-import { ConfettiRain } from '@/app/features/exercices';
 import { useHandPreference } from '@/app/hooks/useHandPreference';
+
+const ConfettiRain = dynamic(
+  () => import('@/app/features/exercices').then(mod => ({ default: mod.ConfettiRain })),
+  { ssr: false, loading: () => null }
+);
 
 type Props = {
   onSuccess?: () => void;

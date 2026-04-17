@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import {
   ExerciceCard,
@@ -18,6 +18,11 @@ import { EmptyState } from '@/app/components/EmptyState';
 import { AddButton } from '@/app/components/ui/AddButton';
 import type { ExerciceCategory, ExerciceStatusFilter, Exercice } from '@/app/types/exercice';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '@/app/constants/exercice.constants';
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
+  { ssr: false, loading: () => null }
+);
 
 const HIGHLIGHT_RING_BY_CATEGORY: Record<ExerciceCategory, string> = {
   UPPER_BODY: 'ring-2 ring-orange-500',
@@ -246,7 +251,7 @@ export default function CategoryPage() {
               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
           ) : filters.filteredExercices.length === 0 ? (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -271,9 +276,9 @@ export default function CategoryPage() {
                   filter === 'all' ? 'Ajoutez des exercices depuis le menu.' : undefined
                 }
               />
-            </motion.div>
+            </MotionDiv>
           ) : (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
@@ -297,11 +302,11 @@ export default function CategoryPage() {
                   />
                 </div>
               ))}
-            </motion.div>
+            </MotionDiv>
           )}
 
           {filters.relatedStretchingExercices.length > 0 && (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.1 }}
@@ -334,7 +339,7 @@ export default function CategoryPage() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
       </div>
     </section>

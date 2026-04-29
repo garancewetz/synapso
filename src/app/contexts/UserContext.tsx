@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, use } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -58,29 +58,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 type UserProviderProps = {
   children: ReactNode;
+  /** Données auth déjà résolues (compat). Préférer authPromise pour streaming SSR. */
   initialData?: FetchUserResponse;
+  /** Promise SSR non-awaitée — résolue via use() pour streamer le HTML sans attendre la DB. */
+  authPromise?: Promise<FetchUserResponse>;
 };
 
-export function UserProvider({ children, initialData }: UserProviderProps) {
+export function UserProvider({ children, initialData, authPromise }: UserProviderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
 
-  // ⚡ TANSTACK QUERY: Utiliser useQuery pour charger l'utilisateur
-  // Cela permet aux autres requêtes de démarrer en parallèle dès que l'utilisateur est disponible
+  // ⚡ STREAMING SSR: use() suspend le rendu jusqu'à résolution de la promise
+  // → le Suspense parent affiche InitialLoader, le HTML part immédiatement
+  // → plus d'écran noir au cold start lambda Netlify
+  const resolvedInitialData = authPromise ? use(authPromise) : initialData;
+
   const { data: userData, isLoading: userLoading, refetch: refetchUser } = useQuery({
     queryKey: queryKeys.user.current(),
     queryFn: fetchUser,
-    // ⚡ PERFORMANCE: Cache long pour l'utilisateur (ne change pas souvent)
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    // ⚡ TRANSITION FLUIDE: Garder les données précédentes pendant le chargement
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     placeholderData: (previousData) => previousData,
-    // ⚡ FIX: Ne pas retry en cas d'erreur (l'utilisateur n'est peut-être pas authentifié)
     retry: false,
-    // ⚡ SSR: Hydrate avec les données auth fetchées côté serveur dans layout.tsx
-    // → pas de waterfall client → pas d'écran loader 2-3s
-    initialData,
+    initialData: resolvedInitialData,
   });
 
   // Extraire les données de l'utilisateur depuis la réponse

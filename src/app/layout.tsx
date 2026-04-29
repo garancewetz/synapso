@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
+import { InitialLoader } from "@/app/components/InitialLoader";
 import { LayoutComposer } from "@/app/LayoutComposer";
 import { SiteProtection } from "@/app/features/auth";
 import { QueryProvider } from "@/app/providers/QueryProvider";
@@ -60,37 +61,41 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  // ⚡ SSR: Fetch auth côté serveur pour hydrater UserContext sans waterfall client
-  const initialAuthData = await getInitialAuthData();
+  // ⚡ STREAMING SSR: pas d'await — la promise est passée à UserProvider qui la résout via use()
+  // → le HTML (shell + InitialLoader) part immédiatement, sans attendre la DB
+  // → plus d'écran noir au cold start lambda Netlify
+  const authPromise = getInitialAuthData();
 
   return (
     <html lang="fr" className={inter.variable}>
       <body className={`${inter.className} antialiased`}>
         <QueryProvider>
-          <UserProvider initialData={initialAuthData}>
-            <ToastProvider>
-              <DayDetailModalProvider>
-                {/* Suspense pour useSearchParams() dans TimeProvider — fallback={null} pour ne pas bloquer le rendu */}
-                <Suspense fallback={null}>
-                  <TimeProvider>
-                    <ConfettiProvider>
-                      <DevBanner />
-                      <AuthWrapper protectionComponent={SiteProtection}>
-                        <LayoutComposer>
-                          {children}
-                        </LayoutComposer>
-                      </AuthWrapper>
-                    </ConfettiProvider>
-                  </TimeProvider>
-                </Suspense>
-              </DayDetailModalProvider>
-            </ToastProvider>
-          </UserProvider>
+          <Suspense fallback={<InitialLoader />}>
+            <UserProvider authPromise={authPromise}>
+              <ToastProvider>
+                <DayDetailModalProvider>
+                  {/* Suspense pour useSearchParams() dans TimeProvider — fallback={null} pour ne pas bloquer le rendu */}
+                  <Suspense fallback={null}>
+                    <TimeProvider>
+                      <ConfettiProvider>
+                        <DevBanner />
+                        <AuthWrapper protectionComponent={SiteProtection}>
+                          <LayoutComposer>
+                            {children}
+                          </LayoutComposer>
+                        </AuthWrapper>
+                      </ConfettiProvider>
+                    </TimeProvider>
+                  </Suspense>
+                </DayDetailModalProvider>
+              </ToastProvider>
+            </UserProvider>
+          </Suspense>
         </QueryProvider>
       </body>
     </html>

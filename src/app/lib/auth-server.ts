@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import type { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
@@ -47,7 +48,7 @@ const UNAUTHENTICATED: InitialAuthData = {
   impersonatedUser: null,
 };
 
-export async function getInitialAuthData(): Promise<InitialAuthData> {
+export const getInitialAuthData = cache(async (): Promise<InitialAuthData> => {
   const cookieStore = await cookies();
 
   const userId = readUserIdFromCookieValue(cookieStore.get(AUTH_COOKIE_NAME)?.value);
@@ -81,4 +82,4 @@ export async function getInitialAuthData(): Promise<InitialAuthData> {
     isAdmin,
     impersonatedUser: impersonatedUser ? serializeUser(impersonatedUser) : null,
   };
-}
+});

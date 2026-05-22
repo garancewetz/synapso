@@ -1,19 +1,20 @@
-import { HydrationBoundary, dehydrate, QueryClient } from '@tanstack/react-query';
+import { Suspense } from 'react';
 import { getInitialAuthData } from '@/app/lib/auth-server';
-import { getExercices } from '@/app/features/exercices/api';
-import { getProgress } from '@/app/features/progress/api';
-import { getJournalNotes } from '@/app/features/journal/api';
-import { queryKeys } from '@/app/lib/query-keys';
 import { HomeClient } from './HomeClient';
+import { ExercicesSection } from './ExercicesSection';
+import { HomeExercicesSkeleton } from './HomeExercicesSkeleton';
+import { WelcomeHeaderSection } from './WelcomeHeaderSection';
+import { WelcomeHeaderSkeleton } from './WelcomeHeaderSkeleton';
 
-// ⚡ STREAMING SSR: page server qui prefetch les données critiques en parallèle.
-// Les hooks client (useExercices, useProgress, useJournalNotes) trouvent les données
-// dans le cache TanStack Query au mount → pas de waterfall réseau après l'auth.
+// ⚡ STREAMING SSR: la page n'attend QUE l'auth.
+// - WelcomeHeader (heatmap + streak) stream via Suspense
+// - Cards exercices stream via Suspense
+// - Le shell (tabs, layout) part en premier
+// - progress / journalNotes se chargent en lazy côté client (non critique)
 export default async function HomePage() {
   const initial = await getInitialAuthData();
   const effectiveUser = initial.impersonatedUser ?? initial.user;
 
-  // Pas connecté → SiteProtection affichera l'AuthScreen, pas besoin de prefetch
   if (!effectiveUser) {
     return <HomeClient />;
   }
@@ -21,32 +22,19 @@ export default async function HomePage() {
   const userId = effectiveUser.id;
   const resetFrequency = effectiveUser.resetFrequency ?? 'DAILY';
 
-  const queryClient = new QueryClient();
+  const welcomeHeaderSlot = (
+    <Suspense fallback={<WelcomeHeaderSkeleton />}>
+      <WelcomeHeaderSection userId={userId} />
+    </Suspense>
+  );
 
-  // Filters identiques à ceux générés par useExercices côté client (Home appelle avec includeArchived: true)
-  const exercicesFilters = {
-    includeArchived: true,
-    resetFrequency,
-  };
-
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.exercices.list(exercicesFilters),
-      queryFn: () => getExercices({ userId, includeArchived: true, resetFrequency }),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.progress.list({}),
-      queryFn: () => getProgress({ userId }),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.journalNotes.list(),
-      queryFn: () => getJournalNotes({ userId }),
-    }),
-  ]);
+  const exercicesSlot = (
+    <Suspense fallback={<HomeExercicesSkeleton />}>
+      <ExercicesSection userId={userId} resetFrequency={resetFrequency} />
+    </Suspense>
+  );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <HomeClient />
-    </HydrationBoundary>
+    <HomeClient welcomeHeaderSlot={welcomeHeaderSlot} exercicesSlot={exercicesSlot} />
   );
 }

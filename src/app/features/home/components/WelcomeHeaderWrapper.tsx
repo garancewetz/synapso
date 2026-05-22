@@ -18,11 +18,18 @@ import {
   type HeatmapDay,
 } from '@/app/features/historique';
 import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
+import type { HistoryEntry } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
 
-export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
+type Props = {
+  // ⚡ STREAMING SSR: history prefetché côté serveur par WelcomeHeaderSection.
+  // Évite un fetch client au mount → heatmap et streak visibles immédiatement.
+  initialHistory?: HistoryEntry[];
+};
+
+export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper({ initialHistory }: Props = {}) {
   const pathname = usePathname();
   const { effectiveUser, loading } = useUser();
   const { openDayDetail } = useDayDetailModal();
@@ -34,10 +41,16 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper() {
 
   const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
 
+  // ⚡ STREAMING SSR: en mode normal (pas time machine), on hydrate avec la donnée
+  // fournie par WelcomeHeaderSection. En mode time machine, on ignore initialHistory
+  // (la donnée serveur est pour aujourd'hui, pas pour la date sélectionnée).
+  const shouldUseInitialHistory = !isTimeMachineMode && !!initialHistory;
   const { data: history = [] } = useQuery({
     queryKey: queryKeys.history.list({ days: 40, referenceDate: referenceDateForQuery }),
     queryFn: () => fetchHistory({ days: 40, referenceDate: referenceDateForQuery }),
     enabled: !!effectiveUser,
+    initialData: shouldUseInitialHistory ? initialHistory : undefined,
+    initialDataUpdatedAt: shouldUseInitialHistory ? Date.now() : undefined,
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
     staleTime: 30 * 1000, // 30 secondes
     gcTime: 2 * 60 * 1000,

@@ -14,6 +14,9 @@ type UseExercicesOptions = {
   category?: ExerciceCategory;
   equipments?: string[];
   includeArchived?: boolean;
+  // ⚡ STREAMING SSR: données initiales fournies par un server component (ex: ExercicesSection).
+  // Évite un fetch client au mount quand la donnée est déjà disponible côté serveur.
+  initialData?: Exercice[];
 };
 
 type UseExercicesReturn = {
@@ -29,7 +32,7 @@ type UseExercicesReturn = {
  * Centralise la logique de récupération et de mise à jour des exercices
  * L'userId est automatiquement récupéré depuis le cookie côté serveur
  */
-export function useExercices({ category, equipments, includeArchived }: UseExercicesOptions = {}): UseExercicesReturn {
+export function useExercices({ category, equipments, includeArchived, initialData }: UseExercicesOptions = {}): UseExercicesReturn {
   const { effectiveUser } = useUser();
   const { referenceDateKey } = useTimeContext();
   const queryClient = useQueryClient();
@@ -54,6 +57,10 @@ export function useExercices({ category, equipments, includeArchived }: UseExerc
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
     placeholderData: undefined,
+    // ⚡ STREAMING SSR: si on a des données initiales (fournies par un server component),
+    // on les marque comme fraîches → pas de refetch immédiat au mount.
+    initialData,
+    initialDataUpdatedAt: initialData ? Date.now() : undefined,
     staleTime: 30 * 1000, // 30 secondes — évite les refetches excessifs
     gcTime: 2 * 60 * 1000,
     refetchOnMount: true, // refetch seulement si stale

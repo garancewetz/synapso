@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
+import { AnimatePresence, motion } from 'framer-motion';
 import { WelcomeHeaderWrapper } from '@/app/features/home';
 import { SegmentedControl } from '@/app/components/ui';
 import { UserIcon } from '@/app/components/ui/icons';
@@ -11,29 +12,27 @@ import { BookmarkIcon } from '@/app/components/ui/icons';
 import { RocketIcon } from '@/app/components/ui/icons';
 import { useUser } from '@/app/contexts/UserContext';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
-import { useExercices, useExerciceHandlers, useRelatedStretchingByCategory } from '@/app/features/exercices';
+import { useExercices, useExerciceHandlers } from '@/app/features/exercices';
 import { useProgressModal, useProgress } from '@/app/features/progress';
 import { useJournalNotes } from '@/app/features/journal';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/app/lib/api-queries';
-import { useHomeTabs, HomeExercicesTab, HomePinnedTab, HomeSuiviTab } from '@/app/features/home';
+import { useHomeTabs, HomePinnedTab, HomeSuiviTab } from '@/app/features/home';
+import { HomeExercicesView } from './HomeExercicesView';
 
-const AnimatePresence = dynamic(
-  () => import('framer-motion').then(mod => ({ default: mod.AnimatePresence })),
-  { ssr: false }
-);
-
-const MotionDiv = dynamic(
-  () => import('framer-motion').then(mod => ({ default: mod.motion.div })),
-  { ssr: false }
-);
+const MotionDiv = motion.div;
 
 const ProgressBottomSheet = dynamic(
   () => import('@/app/features/progress').then(mod => ({ default: mod.ProgressBottomSheet })),
   { ssr: false }
 );
 
-export function HomeClient() {
+type HomeClientProps = {
+  exercicesSlot?: ReactNode;
+  welcomeHeaderSlot?: ReactNode;
+};
+
+export function HomeClient({ exercicesSlot, welcomeHeaderSlot }: HomeClientProps = {}) {
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const initialTab = (tabFromUrl === 'pinned' || tabFromUrl === 'suivi' ? tabFromUrl : null) as 'pinned' | 'suivi' | null;
@@ -43,8 +42,7 @@ export function HomeClient() {
   const progressModal = useProgressModal();
   const queryClient = useQueryClient();
 
-  const { exercices, updateExercice, loading: exercicesLoading, error: exercicesError } = useExercices({ includeArchived: true });
-  const { relatedStretchingByCategory } = useRelatedStretchingByCategory();
+  const { exercices, updateExercice } = useExercices({ includeArchived: true });
   const { progressList } = useProgress();
   const { notes: journalNotes, refetch: refetchNotes } = useJournalNotes();
   const pinnedExercices = useMemo(() => exercices.filter(e => !e.archived && e.pinned), [exercices]);
@@ -66,8 +64,6 @@ export function HomeClient() {
     updateExercice,
     fromPath: '/',
   });
-
-  const archivedCount = useMemo(() => exercices.filter(e => e.archived).length, [exercices]);
 
   const tabOptions = useMemo(() => {
     const getIcon = (iconName: 'UserIcon' | 'BookmarkIcon' | 'RocketIcon') => {
@@ -115,7 +111,7 @@ export function HomeClient() {
     <section>
       <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
         {/* Welcome Header - uniquement sur la page d'accueil */}
-        <WelcomeHeaderWrapper />
+        {welcomeHeaderSlot ?? <WelcomeHeaderWrapper />}
 
         {/* Contenu principal */}
         <div
@@ -182,15 +178,7 @@ export function HomeClient() {
                   </div>
                 )}
 
-                {effectiveActiveTab === 'exercices' && (
-                  <HomeExercicesTab
-                    exercices={exercices}
-                    relatedStretchingByCategory={relatedStretchingByCategory}
-                    archivedCount={archivedCount}
-                    error={exercicesError}
-                    loading={exercicesLoading}
-                  />
-                )}
+                {effectiveActiveTab === 'exercices' && (exercicesSlot ?? <HomeExercicesView />)}
 
                 {effectiveActiveTab === 'pinned' && (
                   <HomePinnedTab

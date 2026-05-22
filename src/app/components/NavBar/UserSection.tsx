@@ -9,12 +9,13 @@ import clsx from 'clsx';
 
 type Props = {
   effectiveUser: User | null;
+  onMenuClose?: () => void;
 };
 
 /**
  * Carte de l'utilisateur actuel avec lien vers les paramètres
  */
-export function UserSection({ effectiveUser }: Props) {
+export function UserSection({ effectiveUser, onMenuClose }: Props) {
   const { isAdmin, currentUser } = useUser();
   const { isLeftHanded } = useHandPreference();
 
@@ -37,6 +38,7 @@ export function UserSection({ effectiveUser }: Props) {
   return (
     <TouchLink
       href="/settings"
+      onClick={onMenuClose}
       className={clsx(
         'bg-gray-50 rounded-lg p-3 border-2 border-gray-200',
         'hover:bg-gray-100 hover:border-gray-300 transition-all duration-200',

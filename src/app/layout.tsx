@@ -59,6 +59,12 @@ export const metadata: Metadata = {
     icon: '/icon.svg',
     apple: '/apple-touch-icon.png',
   },
+  // Next.js 16 n'émet plus `apple-mobile-web-app-capable` (seulement le nouveau
+  // standard `mobile-web-app-capable`), mais iOS l'exige toujours pour activer
+  // les apple-touch-startup-image. On le réinjecte manuellement.
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
   openGraph: {
     title: "Synapso",
     description: "Les exercices de Calypso",

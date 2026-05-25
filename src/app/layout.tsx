@@ -5,7 +5,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
-import { HideBootSplash } from "@/app/components/HideBootSplash";
 import { AppShellSkeleton } from "@/app/components/AppShellSkeleton";
 import { LayoutComposer } from "@/app/LayoutComposer";
 import { SiteProtection } from "@/app/features/auth";
@@ -36,6 +35,25 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Synapso",
+    // ⚡ COLD START iOS PWA standalone : remplace l'écran noir natif iOS
+    // entre le tap sur l'icône et l'arrivée du HTML par un splash (logo
+    // centré sur #F8FAFB). PNGs générés via scripts/generate-apple-splash.mjs.
+    // Format média = (device-width × device-height en px CSS) + pixel ratio.
+    // Android n'a pas besoin de cela : Chrome génère le splash automatiquement
+    // depuis manifest.json (icons + name + background_color).
+    startupImage: [
+      { url: "/splash/iphone-1320x2868.png", media: "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1206x2622.png", media: "(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1290x2796.png", media: "(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1284x2778.png", media: "(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1179x2556.png", media: "(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1170x2532.png", media: "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1242x2688.png", media: "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1125x2436.png", media: "(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-1242x2208.png", media: "(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
+      { url: "/splash/iphone-828x1792.png",  media: "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
+      { url: "/splash/iphone-750x1334.png",  media: "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
+    ],
   },
   icons: {
     icon: '/icon.svg',
@@ -62,49 +80,6 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-// ⚡ COLD START: CSS du splash boot, injecté inline avant tout CSS Tailwind.
-// Doit rester en string (pas de CSS modules) pour être servi dès le 1er byte HTML.
-// z-index 9990 : sous les overlays applicatifs (9999) mais le splash est retiré
-// avant l'hydratation, donc aucune collision pratique avec lightbox/transitions.
-const BOOT_SPLASH_CSS = `
-#boot-splash {
-  position: fixed;
-  inset: 0;
-  z-index: 9990;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  background: #F8FAFB;
-  transition: opacity .35s ease-out;
-  pointer-events: none;
-}
-#boot-splash .boot-splash-logo {
-  width: 96px;
-  height: 96px;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, #1F2937 0 50%, #F3F4F6 50% 100%);
-  border: 2px solid #1F2937;
-  box-shadow: 0 6px 24px rgba(31, 41, 55, .15);
-  animation: bootSplashPulse 1.6s ease-in-out infinite;
-}
-#boot-splash .boot-splash-label {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: .04em;
-  color: #374151;
-}
-@keyframes bootSplashPulse {
-  0%, 100% { transform: scale(1); opacity: .9; }
-  50% { transform: scale(1.06); opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #boot-splash .boot-splash-logo { animation: none; }
-}
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -128,15 +103,6 @@ export default function RootLayout({
         className={`${inter.className} antialiased`}
         style={{ backgroundColor: '#F8FAFB' }}
       >
-        {/* Styles du splash inline — appliqués avant le CSS Tailwind, sans dépendre du JS */}
-        <style dangerouslySetInnerHTML={{ __html: BOOT_SPLASH_CSS }} />
-        {/* Splash boot inline — visible dès le premier byte HTML, masqué par HideBootSplash après hydration.
-            Reste affiché par-dessus l'AppShellSkeleton pendant le boot pour éviter le flash navbar vide. */}
-        <div id="boot-splash" aria-hidden="true">
-          <div className="boot-splash-logo" />
-          <div className="boot-splash-label">Synapso</div>
-        </div>
-        <HideBootSplash />
         <QueryProvider>
           {/* ⚡ FAST FIRST PAINT: fallback shell générique (route-agnostic) pendant
               la résolution de l'auth SSR. Pas de loader plein écran. */}

@@ -1,19 +1,19 @@
-import { subDays } from 'date-fns';
 import type { HistoryEntry } from '@/app/types';
-import { getHistory, formatHistoryForApi } from '@/app/features/historique/api';
+import { formatHistoryForApi, type getHistory } from '@/app/features/historique/api/getHistory';
 // Import direct (pas via le barrel) : éviter d'embarquer HomePinnedTab et autres
 // hooks client non-marqués 'use client' dans le contexte server.
 import { WelcomeHeaderWrapper } from '@/app/features/home/components/WelcomeHeaderWrapper';
 
 type Props = {
-  userId: number;
+  // Promise lancée depuis page.tsx → permet d'attaquer les 2 fetches (history +
+  // exercices) en parallèle dès que l'auth est résolue.
+  historyPromise: ReturnType<typeof getHistory>;
 };
 
-// ⚡ STREAMING SSR: fetch les 40 derniers jours d'historique côté serveur
-// et passe la donnée à WelcomeHeaderWrapper via initialHistory.
-export async function WelcomeHeaderSection({ userId }: Props) {
-  const since = subDays(new Date(), 40);
-  const rawHistory = await getHistory({ userId, since });
+// ⚡ STREAMING SSR: await la promise déjà en vol côté page.tsx, formate, puis
+// passe la donnée à WelcomeHeaderWrapper via initialHistory.
+export async function WelcomeHeaderSection({ historyPromise }: Props) {
+  const rawHistory = await historyPromise;
   const history = formatHistoryForApi(rawHistory);
 
   // Le format API match HistoryEntry au runtime (l'API endpoint renvoie le même shape).

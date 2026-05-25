@@ -22,6 +22,7 @@ import type { HistoryEntry } from '@/app/types';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
+import { HOME_HISTORY_PRELOAD_DAYS } from '../constants/home.constants';
 
 type Props = {
   // ⚡ STREAMING SSR: history prefetché côté serveur par WelcomeHeaderSection.
@@ -46,8 +47,15 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper({ initial
   // (la donnée serveur est pour aujourd'hui, pas pour la date sélectionnée).
   const shouldUseInitialHistory = !isTimeMachineMode && !!initialHistory;
   const { data: history = [] } = useQuery({
-    queryKey: queryKeys.history.list({ days: 40, referenceDate: referenceDateForQuery }),
-    queryFn: () => fetchHistory({ days: 40, referenceDate: referenceDateForQuery }),
+    queryKey: queryKeys.history.list({
+      days: HOME_HISTORY_PRELOAD_DAYS,
+      referenceDate: referenceDateForQuery,
+    }),
+    queryFn: () =>
+      fetchHistory({
+        days: HOME_HISTORY_PRELOAD_DAYS,
+        referenceDate: referenceDateForQuery,
+      }),
     enabled: !!effectiveUser,
     initialData: shouldUseInitialHistory ? initialHistory : undefined,
     initialDataUpdatedAt: shouldUseInitialHistory ? Date.now() : undefined,
@@ -66,10 +74,13 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper({ initial
   );
 
   const heatmapData = useMemo(
-    () => getHeatmapData(history, 40, referenceDate),
+    () => getHeatmapData(history, HOME_HISTORY_PRELOAD_DAYS, referenceDate),
     [history, referenceDate]
   );
 
+  // ⚠️ Streak plafonné à HOME_HISTORY_PRELOAD_DAYS jours : on ne précharge que
+  // cette fenêtre côté SSR pour la perf. Augmenter la constante si on veut
+  // afficher des streaks plus longs.
   const currentStreak = useMemo(
     () => calculateCurrentStreak(heatmapData, referenceDate),
     [heatmapData, referenceDate]

@@ -70,8 +70,8 @@ export function UserProvider({ children, initialData, authPromise }: UserProvide
   const [allUsers, setAllUsers] = useState<UserWithStats[]>([]);
 
   // ⚡ STREAMING SSR: use() suspend le rendu jusqu'à résolution de la promise
-  // → le Suspense parent affiche InitialLoader, le HTML part immédiatement
-  // → plus d'écran noir au cold start lambda Netlify
+  // → le Suspense parent affiche AppShellSkeleton (navbar neutre), pas un loader
+  // → l'utilisateur voit immédiatement la structure du shell
   const resolvedInitialData = authPromise ? use(authPromise) : initialData;
 
   const { data: userData, isLoading: userLoading, refetch: refetchUser } = useQuery({

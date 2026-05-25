@@ -5,8 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthWrapper } from "@/app/components/AuthWrapper";
 import { DevBanner } from "@/app/components/DevBanner";
-import { HideBootSplash } from "@/app/components/HideBootSplash";
-import { InitialLoader } from "@/app/components/InitialLoader";
+import { AppShellSkeleton } from "@/app/components/AppShellSkeleton";
 import { LayoutComposer } from "@/app/LayoutComposer";
 import { SiteProtection } from "@/app/features/auth";
 import { QueryProvider } from "@/app/providers/QueryProvider";
@@ -68,8 +67,9 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   // ⚡ STREAMING SSR: pas d'await — la promise est passée à UserProvider qui la résout via use()
-  // → le HTML (shell + InitialLoader) part immédiatement, sans attendre la DB
-  // → plus d'écran noir au cold start lambda Netlify
+  // → le HTML (shell générique) part immédiatement, sans attendre la DB
+  // → pendant la résolution, le Suspense fallback affiche AppShellSkeleton (navbar
+  //   uniquement, neutre pour toutes les routes), puis chaque page stream son contenu
   const authPromise = getInitialAuthData();
 
   return (
@@ -84,20 +84,10 @@ export default function RootLayout({
         className={`${inter.className} antialiased`}
         style={{ backgroundColor: '#F8FAFB' }}
       >
-        {/* Styles du splash inline — appliqués avant le CSS Tailwind, sans dépendre du JS */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `#boot-splash{position:fixed;inset:0;z-index:9990;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;background:#F8FAFB;transition:opacity .35s ease-out;pointer-events:none}#boot-splash .boot-splash-logo{width:96px;height:96px;border-radius:9999px;background:linear-gradient(135deg,#1F2937 0 50%,#F3F4F6 50% 100%);border:2px solid #1F2937;box-shadow:0 6px 24px rgba(31,41,55,.15);animation:bootSplashPulse 1.6s ease-in-out infinite}#boot-splash .boot-splash-label{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:1.25rem;font-weight:600;letter-spacing:.04em;color:#374151}@keyframes bootSplashPulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.06);opacity:1}}@media(prefers-reduced-motion:reduce){#boot-splash .boot-splash-logo{animation:none}}`,
-          }}
-        />
-        {/* Splash boot inline — visible dès le premier byte HTML, masqué par HideBootSplash après hydration */}
-        <div id="boot-splash" aria-hidden="true">
-          <div className="boot-splash-logo" />
-          <div className="boot-splash-label">Synapso</div>
-        </div>
-        <HideBootSplash />
         <QueryProvider>
-          <Suspense fallback={<InitialLoader />}>
+          {/* ⚡ FAST FIRST PAINT: fallback shell générique (route-agnostic) pendant
+              la résolution de l'auth SSR. Pas de loader plein écran. */}
+          <Suspense fallback={<AppShellSkeleton />}>
             <UserProvider authPromise={authPromise}>
               <ToastProvider>
                 <DayDetailModalProvider>

@@ -1,21 +1,16 @@
 import type { Exercice } from '@/app/types/exercice';
-import { getExercices } from '@/app/features/exercices/api';
+import type { getExercices } from '@/app/features/exercices/api';
 import { HomeExercicesView } from './HomeExercicesView';
 
 type Props = {
-  userId: number;
-  resetFrequency: 'DAILY' | 'WEEKLY';
+  // Promise lancée depuis page.tsx → fetch en parallèle de history.
+  exercicesPromise: ReturnType<typeof getExercices>;
 };
 
-// ⚡ STREAMING SSR: server component qui fetch les exercices et passe la donnée
-// directement à HomeExercicesView via initialData (pas de cache hydration → pas
-// de risque de mismatch query keys).
-export async function ExercicesSection({ userId, resetFrequency }: Props) {
-  const exercices = await getExercices({
-    userId,
-    includeArchived: true,
-    resetFrequency,
-  });
+// ⚡ STREAMING SSR: server component qui await la promise déjà en vol et passe
+// la donnée à HomeExercicesView via initialData.
+export async function ExercicesSection({ exercicesPromise }: Props) {
+  const exercices = await exercicesPromise;
 
   // Cast nécessaire : Prisma type `media` comme JsonValue, alors que le type métier
   // Exercice attend `MediaData | null`. Au runtime, le shape est identique à ce que

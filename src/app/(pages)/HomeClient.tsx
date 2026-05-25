@@ -123,24 +123,14 @@ export function HomeClient({ exercicesSlot, welcomeHeaderSlot }: HomeClientProps
           aria-busy={userLoading}
           aria-atomic="true"
         >
-          {userLoading && (
-            <p className="sr-only" role="status">Chargement du tableau de bord en cours.</p>
-          )}
           {!userLoading && !effectiveUser && (
             <p className="sr-only" role="status">Impossible de charger votre profil. Utilisez le bouton Réessayer.</p>
           )}
+          {/* ⚡ FAST FIRST PAINT: pas de loader plein écran. Avec initialData SSR,
+              le contenu rend immédiatement ; les Suspense internes (welcome/exercices)
+              affichent leurs skeletons individuels si la donnée n'est pas prête. */}
           <AnimatePresence mode="wait">
-            {userLoading ? (
-              <MotionDiv
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center justify-center py-12"
-              >
-                <div className="text-gray-500">Chargement...</div>
-              </MotionDiv>
-            ) : !effectiveUser ? (
+            {!userLoading && !effectiveUser ? (
               <MotionDiv
                 key="no-user"
                 initial={{ opacity: 0 }}

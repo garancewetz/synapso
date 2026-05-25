@@ -34,6 +34,7 @@ import { SegmentedControl, Loader, ProgressButton } from '@/app/components/ui';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
 import type { HeatmapDay } from '@/app/features/historique';
 import { NAVIGATION_EMOJIS, PROGRESS_EMOJIS } from '@/app/constants/emoji.constants';
+import { PROGRESS_ADD_ACTION } from '@/app/constants/progress.constants';
 import { formatProgressForShare } from '@/app/utils/share';
 import { getDateKeyUTC } from '@/app/utils/date.utils';
 import {
@@ -160,38 +161,43 @@ export function HistoriquePageClient({ embeddedInHome = false }: Props) {
 
 
   // Déterminer l'onglet actif depuis l'URL (query param prioritaire, puis hash pour rétrocompat)
+  // Dépend de searchParams pour réagir aux changements d'URL sans remount
+  // (ex : raccourci "Progrès" cliqué alors qu'on est déjà sur /historique)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const hash = window.location.hash;
+    if (typeof window === 'undefined') return;
 
-      if (params.get('action') === 'add-progress') {
-        openForCreate();
+    const replaceParams = (mutate: (params: URLSearchParams) => void) => {
+      const params = new URLSearchParams(searchParams.toString());
+      mutate(params);
+      router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const action = searchParams.get('action');
+    const tabParam = searchParams.get('tab');
+    // Rétrocompat anciens liens : le hash n'évolue qu'au mount, pas besoin de l'observer
+    const hash = window.location.hash;
+
+    if (action === PROGRESS_ADD_ACTION) {
+      openForCreate();
+      replaceParams((params) => {
         params.delete('action');
-        const tab = params.get('tab') || 'progres';
-        params.set('tab', tab);
-        const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-        window.history.replaceState({}, '', newPath);
-      }
+        if (!params.has('tab')) params.set('tab', 'progres');
+      });
+      return;
+    }
 
-      const tabParam = params.get('tab');
-      if (tabParam === 'statistiques' || tabParam === 'progres') {
-        setActiveTab(tabParam);
-      } else if (hash === '#statistiques') {
-        setActiveTab('statistiques');
-        params.set('tab', 'statistiques');
-        const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-        window.history.replaceState({}, '', newPath);
-      } else {
-        setActiveTab('progres');
-        if (!tabParam) {
-          params.set('tab', 'progres');
-          const newPath = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-          window.history.replaceState({}, '', newPath);
-        }
+    if (tabParam === 'statistiques' || tabParam === 'progres') {
+      setActiveTab(tabParam);
+    } else if (hash === '#statistiques') {
+      setActiveTab('statistiques');
+      replaceParams((params) => params.set('tab', 'statistiques'));
+    } else {
+      setActiveTab('progres');
+      if (!tabParam) {
+        replaceParams((params) => params.set('tab', 'progres'));
       }
     }
-  }, [openForCreate]);
+  }, [searchParams, openForCreate, router]);
 
   // Réinitialiser les confettis après l'animation
   useEffect(() => {

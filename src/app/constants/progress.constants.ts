@@ -1,6 +1,11 @@
 import { CATEGORY_ICONS, CATEGORY_COLORS, CATEGORY_ORDER } from './exercice.constants';
 import type { ExerciceCategory } from '@/app/types/exercice';
 
+// Param URL utilisé par les raccourcis menu pour ouvrir la modale de création
+// de progrès en arrivant sur /historique (cf. HistoriquePageClient)
+export const PROGRESS_ADD_ACTION = 'add-progress';
+export const PROGRESS_ADD_HREF = `/historique?action=${PROGRESS_ADD_ACTION}`;
+
 // Mapping couleur de base par catégorie (dérivé de CATEGORY_CONFIG dans exercice.constants.ts)
 // Source unique de vérité : exercice.constants.ts
 const CATEGORY_COLOR_MAP: Record<ExerciceCategory, string> = {

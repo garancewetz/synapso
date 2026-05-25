@@ -6,9 +6,10 @@ import clsx from 'clsx';
 import { TouchLink } from '@/app/components/TouchLink';
 import { PlusIcon, BookIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { useLayoutContext } from '@/app/contexts/LayoutContext';
+import { PROGRESS_ADD_HREF } from '@/app/constants/progress.constants';
 
 const ADD_EXERCICE_HREF = '/exercice/add';
-const ADD_PROGRES_HREF = '/historique?action=add-progress';
+const ADD_PROGRES_HREF = PROGRESS_ADD_HREF;
 const ADD_NOTE_HREF = '/journal/add';
 
 export function AddMenu() {

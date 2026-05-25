@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { MenuLink } from '@/app/components';
 import { PlusIcon, SparklesIcon } from '@/app/components/ui/icons';
 import { MENU_COLORS } from '@/app/constants/card.constants';
+import { PROGRESS_ADD_HREF } from '@/app/constants/progress.constants';
 
 type Props = {
   onMenuClose: () => void;
@@ -29,7 +30,7 @@ function getMenuActions(): MenuAction[] {
       iconTextColor: MENU_COLORS.ADD_EXERCICE.text,
     },
     {
-      href: () => '/historique?action=add-progress',
+      href: () => PROGRESS_ADD_HREF,
       icon: <SparklesIcon />,
       title: 'Noter un progrès',
       iconBgColor: MENU_COLORS.PROGRES.bg,

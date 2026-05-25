@@ -6,7 +6,14 @@ export const IMPERSONATE_COOKIE_NAME = 'synapso_impersonate';
 function getSecret(): string {
   const secret = process.env.COOKIE_SECRET;
   if (secret) return secret;
-  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'production') {
+  // 🔒 SÉCURITÉ: refuser le fallback dev dès que NODE_ENV=production OU que
+  // NEXT_PUBLIC_ENVIRONMENT=production. Avant, seule la 2ᵉ var était checkée :
+  // si elle n'était pas définie sur Netlify (cas réel possible), l'app
+  // démarrait avec un secret hardcodé public → cookies forgeables.
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'production';
+  if (isProduction) {
     throw new Error('COOKIE_SECRET environment variable is required in production');
   }
   return 'dev-only-secret-not-for-production';

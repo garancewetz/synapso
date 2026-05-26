@@ -187,11 +187,16 @@ export function UserProvider({ children, initialData, authPromise }: UserProvide
   // Déconnexion
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { 
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
-      
+
+      // 🔒 Wiper le HTML caché par le service worker : avec la stratégie SWR,
+      // le HTML SSR (qui contient nom user, etc.) est en cache et serait servi
+      // instantanément à un autre user sur le même device.
+      navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_HTML_CACHE' });
+
       // ⚡ TANSTACK QUERY: Invalider la query utilisateur
       queryClient.setQueryData(queryKeys.user.current(), {
         authenticated: false,

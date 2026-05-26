@@ -1,7 +1,7 @@
 // Version du cache - À METTRE À JOUR MANUELLEMENT lors des déploiements importants
 // ⚡ PERFORMANCE: Version fixe pour éviter d'invalider le cache à chaque visite
 // Incrémenter ce numéro uniquement quand les assets statiques changent
-const CACHE_VERSION = 'v1.3.0';
+const CACHE_VERSION = 'v1.4.0';
 const CACHE_NAME = 'synapso-' + CACHE_VERSION;
 const OFFLINE_PAGE = '/offline.html';
 const urlsToCache = [
@@ -47,18 +47,6 @@ self.addEventListener('activate', (event) => {
       clients.claim()
     ])
   );
-  
-  // Notifier toutes les pages qu'une mise à jour est disponible
-  event.waitUntil(
-    clients.matchAll().then((clientList) => {
-      clientList.forEach((client) => {
-        client.postMessage({
-          type: 'SW_UPDATED',
-          cacheVersion: CACHE_VERSION
-        });
-      });
-    })
-  );
 });
 
 // Stratégie de cache : Network First avec fallback Cache
@@ -86,30 +74,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Pour les pages HTML : Network First avec fallback sur cache, puis page offline
+  // Pour les pages HTML : Stale-While-Revalidate
+  // ⚡ COLD START : retour immédiat depuis le cache (zéro attente Lambda Netlify),
+  // revalidation réseau en arrière-plan pour la prochaine visite.
+  // Cas non caché : fallback réseau direct, puis page offline si le réseau échoue.
   if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Si la réponse est valide, la mettre en cache
-          if (response && response.status === 200 && response.type === 'basic') {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Essayer le cache d'abord
-          return caches.match(request).then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
+      caches.match(request).then((cachedResponse) => {
+        const networkFetch = fetch(request)
+          .then((response) => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, responseToCache);
+              });
             }
-            // Si pas de cache, retourner la page offline
-            return caches.match(OFFLINE_PAGE);
-          });
-        })
+            return response;
+          })
+          .catch(() => caches.match(OFFLINE_PAGE));
+
+        return cachedResponse || networkFetch;
+      })
     );
     return;
   }
@@ -182,6 +167,25 @@ self.addEventListener('message', (event) => {
     self.registration.update().then(() => {
       event.ports[0]?.postMessage({ type: 'UPDATE_CHECKED' });
     });
+  }
+
+  // 🔒 SÉCURITÉ : wiper le HTML caché au logout pour éviter de servir le HTML
+  // SSR personnalisé (nom user, etc.) à un autre utilisateur sur le même device.
+  // On garde les assets (images, fonts, JS) — ils ne contiennent pas de données user.
+  if (event.data && event.data.type === 'CLEAR_HTML_CACHE') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then((cache) =>
+        cache.keys().then((requests) =>
+          Promise.all(
+            requests.map((request) => {
+              const path = new URL(request.url).pathname;
+              const hasFileExtension = /\.[a-z0-9]+$/i.test(path);
+              return hasFileExtension ? undefined : cache.delete(request);
+            })
+          )
+        )
+      )
+    );
   }
 });
 

@@ -48,8 +48,8 @@ Apres un AVC, la reeducation est un processus long et exigeant. Les patients doi
 
 ```bash
 # 1. Cloner le repo
-git clone https://github.com/garancewetz/synapso.git
-cd synapso
+git clone https://github.com/garancewetz/synapso-app-reeducation.git
+cd synapso-app-reeducation
 
 # 2. Installer les dependances
 npm install
@@ -96,7 +96,8 @@ src/app/
     progress/       #   suivi de progression
     time-machine/   #   mode sablier
   components/       # Composants partages et UI
-  contexts/         # Contextes React (Time, SelectedDate)
+  contexts/         # Contextes React (Time, SelectedDate, User...)
+  providers/        # Providers transverses (React Query + persistance du cache)
   hooks/            # Hooks transverses
   lib/              # Infrastructure (auth, prisma, logger)
   utils/            # Utilitaires (dates, partage)
@@ -109,6 +110,7 @@ tests/              # Unit + E2E
 - **Gestion des timezones** — Le serveur (Netlify) tourne en UTC tandis que les utilisateurs sont en CET/CEST. Toutes les dates transitent sous forme de `dateKey` (`yyyy-MM-dd`) et sont parsees cote serveur avec le "noon UTC trick" pour eviter les decalages d'un jour.
 - **Mobile-first** — Interface optimisee pour des utilisateurs aux capacites motrices reduites : zones de tap larges, animations douces, navigation simplifiee.
 - **Architecture par features** — Chaque domaine metier (exercices, historique, journal) est isole avec ses propres hooks, composants et appels API, facilitant la maintenance et l'evolution.
+- **Cold-start PWA** — La route d'entree est statique (servie par le CDN) et le cache React Query est persiste en local, pour eliminer l'ecran noir au premier lancement de la PWA iOS et afficher les donnees instantanement. Le service worker assure le mode hors-ligne et une strategie stale-while-revalidate sur le HTML.
 
 ## Securite
 

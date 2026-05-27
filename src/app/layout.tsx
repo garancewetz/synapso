@@ -14,7 +14,6 @@ import { DayDetailModalProvider } from "@/app/contexts/DayDetailModalContext";
 import { TimeProvider } from "@/app/contexts/TimeContext";
 import { ToastProvider } from "@/app/contexts/ToastContext";
 import { ConfettiProvider } from "@/app/contexts/ConfettiContext";
-import { getInitialAuthData } from "@/app/lib/auth-server";
 
 // ⚡ PERFORMANCE: Utiliser next/font pour optimiser le chargement des fonts
 // - Hébergement local des fonts (pas de requête externe à Google Fonts)
@@ -91,12 +90,10 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  // ⚡ STREAMING SSR: pas d'await — la promise est passée à UserProvider qui la résout via use()
-  // → le HTML (shell générique) part immédiatement, sans attendre la DB
-  // → pendant la résolution, le Suspense fallback affiche AppShellSkeleton (navbar
-  //   uniquement, neutre pour toutes les routes), puis chaque page stream son contenu
-  const authPromise = getInitialAuthData();
-
+  // Cold start: the root layout reads neither cookies nor DB. With no dynamic API
+  // in the tree, the entry route `/` is statically prerendered and served from the
+  // CDN (instant first byte, no black screen on cold launch). Auth is resolved
+  // client-side by UserProvider via fetchUser() (/api/auth/check).
   return (
     <html
       lang="fr"
@@ -110,10 +107,11 @@ export default function RootLayout({
         style={{ backgroundColor: '#F8FAFB' }}
       >
         <QueryProvider>
-          {/* ⚡ FAST FIRST PAINT: fallback shell générique (route-agnostic) pendant
-              la résolution de l'auth SSR. Pas de loader plein écran. */}
+          {/* Fast first paint: route-agnostic shell shown if a child suspends.
+              Auth is no longer resolved at SSR — UserProvider loads it client-side
+              and exposes `loading`, handled per page via skeletons. */}
           <Suspense fallback={<AppShellSkeleton />}>
-            <UserProvider authPromise={authPromise}>
+            <UserProvider>
               <ToastProvider>
                 <DayDetailModalProvider>
                   {/* Suspense pour useSearchParams() dans TimeProvider — fallback={null} pour ne pas bloquer le rendu */}

@@ -1,52 +1,14 @@
-import { Suspense } from 'react';
-import { subDays } from 'date-fns';
-import { getInitialAuthData } from '@/app/lib/auth-server';
-import { getHistory } from '@/app/features/historique/api';
-import { getExercices } from '@/app/features/exercices/api';
-import { HOME_HISTORY_PRELOAD_DAYS } from '@/app/features/home/constants/home.constants';
 import { HomeClient } from './HomeClient';
-import { ExercicesSection } from './ExercicesSection';
-import { HomeExercicesSkeleton } from './HomeExercicesSkeleton';
-import { WelcomeHeaderSection } from './WelcomeHeaderSection';
-import { WelcomeHeaderSkeleton } from './WelcomeHeaderSkeleton';
 
-// ⚡ STREAMING SSR maximisé:
-// - L'auth est await (rapide, déjà cachée si déjà résolue côté layout)
-// - Les 2 fetches data (history 7j + exercices) sont lancés en PARALLÈLE
-//   immédiatement après l'auth, puis passés aux Sections via Promise
-// - Chaque Section stream indépendamment via Suspense → skeletons individuels
-export default async function HomePage() {
-  const initial = await getInitialAuthData();
-  const effectiveUser = initial.impersonatedUser ?? initial.user;
+// Cold start: the entry route (PWA start_url) is fully static, served from the
+// Netlify CDN with no serverless boot nor Prisma connection — instant first byte.
+// This removes the ~11s black screen on the first morning launch of the iOS
+// standalone PWA, where the service worker does not yet control the first
+// navigation. User and data (exercices, history) load client-side via React
+// Query (HomeClient). See memory: cold-start-static-entry — do not reintroduce
+// cookies()/DB here, it would make `/` dynamic again.
+export const dynamic = 'force-static';
 
-  if (!effectiveUser) {
-    return <HomeClient />;
-  }
-
-  const userId = effectiveUser.id;
-  const resetFrequency = effectiveUser.resetFrequency ?? 'DAILY';
-
-  // ⚡ Kick-off des 2 fetches en parallèle (pas d'await ici → les promises sont
-  // passées aux Suspense, qui les awaiteront pendant le streaming).
-  const historyPromise = getHistory({
-    userId,
-    since: subDays(new Date(), HOME_HISTORY_PRELOAD_DAYS),
-  });
-  const exercicesPromise = getExercices({ userId, includeArchived: true, resetFrequency });
-
-  const welcomeHeaderSlot = (
-    <Suspense fallback={<WelcomeHeaderSkeleton />}>
-      <WelcomeHeaderSection historyPromise={historyPromise} />
-    </Suspense>
-  );
-
-  const exercicesSlot = (
-    <Suspense fallback={<HomeExercicesSkeleton />}>
-      <ExercicesSection exercicesPromise={exercicesPromise} />
-    </Suspense>
-  );
-
-  return (
-    <HomeClient welcomeHeaderSlot={welcomeHeaderSlot} exercicesSlot={exercicesSlot} />
-  );
+export default function HomePage() {
+  return <HomeClient />;
 }

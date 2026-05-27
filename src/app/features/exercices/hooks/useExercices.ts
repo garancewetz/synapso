@@ -7,6 +7,7 @@ import type { ExerciceCategory } from '@/app/types/exercice';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchExercices } from '@/app/lib/api-queries';
+import { PERSISTED_QUERY_GC_TIME } from '@/app/providers/queryPersister';
 // ⚡ FIX TIMEZONE: On envoie le dateKey (yyyy-MM-dd) directement, pas un ISO string
 // Voir CLAUDE.md → section "Timezone" pour comprendre pourquoi
 
@@ -14,8 +15,9 @@ type UseExercicesOptions = {
   category?: ExerciceCategory;
   equipments?: string[];
   includeArchived?: boolean;
-  // ⚡ STREAMING SSR: données initiales fournies par un server component (ex: ExercicesSection).
-  // Évite un fetch client au mount quand la donnée est déjà disponible côté serveur.
+  // Server-provided initial exercices, hydrated as initialData to skip the client
+  // fetch at mount. Currently unused (the entry route `/` is static — no SSR data);
+  // kept as a brick for a future PPR/streaming-SSR home.
   initialData?: Exercice[];
 };
 
@@ -57,12 +59,13 @@ export function useExercices({ category, equipments, includeArchived, initialDat
     queryFn: () => fetchExercices(filters),
     enabled: !!effectiveUser, // Démarrer dès que l'utilisateur est disponible (pas besoin d'attendre userLoading)
     placeholderData: undefined,
-    // ⚡ STREAMING SSR: si on a des données initiales (fournies par un server component),
-    // on les marque comme fraîches → pas de refetch immédiat au mount.
+    // When initialData is provided, mark it fresh → no immediate refetch at mount.
+    // Currently always undefined (static entry route); kept for a future PPR home.
     initialData,
     initialDataUpdatedAt: initialData ? Date.now() : undefined,
     staleTime: 30 * 1000, // 30 secondes — évite les refetches excessifs
-    gcTime: 2 * 60 * 1000,
+    // Persisted root: keep gcTime >= persist maxAge so the snapshot survives.
+    gcTime: PERSISTED_QUERY_GC_TIME,
     refetchOnMount: true, // refetch seulement si stale
     refetchOnWindowFocus: false,
   });

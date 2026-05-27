@@ -5,6 +5,7 @@ import type { HistoryEntry } from '@/app/types';
 import { useUser } from '@/app/contexts/UserContext';
 import { useTimeContext } from '@/app/contexts/TimeContext';
 import { queryKeys, fetchHistory } from '@/app/lib/api-queries';
+import { PERSISTED_QUERY_GC_TIME } from '@/app/providers/queryPersister';
 
 type UseHistoryOptions = {
   days?: number | null;
@@ -30,7 +31,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
     enabled: !!effectiveUser,
     placeholderData: (previousData) => previousData,
     staleTime: 1000,
-    gcTime: 2 * 60 * 1000,
+    // Persisted root: keep gcTime >= persist maxAge so the snapshot survives.
+    gcTime: PERSISTED_QUERY_GC_TIME,
   });
 
   return {

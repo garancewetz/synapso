@@ -23,10 +23,12 @@ import { useTimeContext } from '@/app/contexts/TimeContext';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
 import { HOME_HISTORY_PRELOAD_DAYS } from '../constants/home.constants';
+import { PERSISTED_QUERY_GC_TIME } from '@/app/providers/queryPersister';
 
 type Props = {
-  // ⚡ STREAMING SSR: history prefetché côté serveur par WelcomeHeaderSection.
-  // Évite un fetch client au mount → heatmap et streak visibles immédiatement.
+  // Server-prefetched history, hydrated as initialData to avoid a client fetch at
+  // mount. Currently unused (the entry route `/` is static — no SSR data); kept as
+  // a brick for a future PPR/streaming-SSR home. See memory: cold-start-static-entry.
   initialHistory?: HistoryEntry[];
 };
 
@@ -42,9 +44,9 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper({ initial
 
   const referenceDateForQuery = isTimeMachineMode && referenceDateKey ? referenceDateKey : undefined;
 
-  // ⚡ STREAMING SSR: en mode normal (pas time machine), on hydrate avec la donnée
-  // fournie par WelcomeHeaderSection. En mode time machine, on ignore initialHistory
-  // (la donnée serveur est pour aujourd'hui, pas pour la date sélectionnée).
+  // In normal mode, hydrate with server-provided history when available. In time
+  // machine mode we ignore initialHistory (server data is for today, not the
+  // selected date). initialHistory is currently never passed (static entry route).
   const shouldUseInitialHistory = !isTimeMachineMode && !!initialHistory;
   const { data: history = [] } = useQuery({
     queryKey: queryKeys.history.list({
@@ -61,7 +63,8 @@ export const WelcomeHeaderWrapper = memo(function WelcomeHeaderWrapper({ initial
     initialDataUpdatedAt: shouldUseInitialHistory ? Date.now() : undefined,
     placeholderData: isTimeMachineMode ? undefined : (previousData) => previousData,
     staleTime: 30 * 1000, // 30 secondes
-    gcTime: 2 * 60 * 1000,
+    // Persisted root: keep gcTime >= persist maxAge so the snapshot survives.
+    gcTime: PERSISTED_QUERY_GC_TIME,
   });
 
   const frequency = resetFrequency || 'DAILY';

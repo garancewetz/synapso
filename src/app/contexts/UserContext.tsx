@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { queryKeys, fetchUser, type FetchUserResponse } from '@/app/lib/api-queries';
+import { clearPersistedQueryCache, PERSISTED_QUERY_GC_TIME } from '@/app/providers/queryPersister';
 
 type User = {
   id: number;
@@ -78,7 +79,8 @@ export function UserProvider({ children, initialData, authPromise }: UserProvide
     queryKey: queryKeys.user.current(),
     queryFn: fetchUser,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    // Persisted root: keep gcTime >= persist maxAge so the snapshot survives.
+    gcTime: PERSISTED_QUERY_GC_TIME,
     placeholderData: (previousData) => previousData,
     retry: false,
     initialData: resolvedInitialData,
@@ -196,6 +198,11 @@ export function UserProvider({ children, initialData, authPromise }: UserProvide
       // le HTML SSR (qui contient nom user, etc.) est en cache et serait servi
       // instantanément à un autre user sur le même device.
       navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_HTML_CACHE' });
+
+      // 🔒 Also wipe the persisted React Query cache (localStorage): it holds
+      // health data (history, exercices) and would otherwise be restored for the
+      // next user on the same device.
+      clearPersistedQueryCache();
 
       // ⚡ TANSTACK QUERY: Invalider la query utilisateur
       queryClient.setQueryData(queryKeys.user.current(), {

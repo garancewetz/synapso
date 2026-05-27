@@ -1,9 +1,16 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
+import {
+  createQueryPersister,
+  isPersistedQueryKey,
+  PERSIST_MAX_AGE_MS,
+  QUERY_CACHE_BUSTER,
+} from './queryPersister';
 
 export function QueryProvider({ children }: PropsWithChildren) {
   // ⚡ PERFORMANCE: Créer le QueryClient une seule fois (singleton)
@@ -30,12 +37,32 @@ export function QueryProvider({ children }: PropsWithChildren) {
     },
   }));
 
+  // ⚡ COLD START: persist the cache (user/history/exercices) to localStorage.
+  // The entry route `/` is static → no SSR data anymore: without this the heatmap
+  // renders empty on first paint then fills after the client fetch (the filled→empty
+  // flash on stale SSR HTML still held by the SW). Restoration repaints the last
+  // known heatmap instantly, then revalidates in the background.
+  const [persister] = useState(() => createQueryPersister());
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        // Health data — kept 24h max, revalidated at mount anyway.
+        maxAge: PERSIST_MAX_AGE_MS,
+        buster: QUERY_CACHE_BUSTER,
+        dehydrateOptions: {
+          // Only persist successful queries from the allowlisted roots.
+          shouldDehydrateQuery: (query) =>
+            query.state.status === 'success' && isPersistedQueryKey(query.queryKey),
+        },
+      }}
+    >
       {children}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
